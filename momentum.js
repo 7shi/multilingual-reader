@@ -8,7 +8,7 @@ datasets.push([
 {
 "fr": "Marie: Bienvenue dans « Bonds Quantiques », l'émission qui donne un sens à l'univers, un mystère à la fois. Je suis Marie.",
 "en": "Mary: Welcome to \"Quantum Leaps,\" the show that makes sense of the universe, one puzzle at a time. I'm Mary.",
-"ja": "Mary: 『量子の跳躍』へようこそ。この番組では、1つずつ謎を解きながら、宇宙の意味を明らかにします。私はマリーです。"
+"ja": "Mary: 『量子の跳躍』へようこそ。この番組では、1つずつ謎を解きながら、宇宙の意味を明らかにします。私はメアリーです。"
 },
 {
 "fr": "Jean: Et je suis Jean. C'est un plaisir d'être ici.",
@@ -343,7 +343,7 @@ datasets.push([
 {
 "fr": "Jean: C’était un plaisir, Marie.",
 "en": "John: It was my pleasure, Mary.",
-"ja": "John: どういたしまして、マリー。"
+"ja": "John: どういたしまして、メアリー。"
 },
 {
 "fr": "Marie: Maintenant, voici une question à laquelle nous aimerions que vous réfléchissiez. Si la nature vous forçait à faire un choix, préféreriez-vous connaître avec une absolue et parfaite certitude : exactement où vous êtes en ce moment...",
