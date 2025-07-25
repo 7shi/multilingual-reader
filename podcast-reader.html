@@ -1,15 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Podcast Reader</title>
     <link rel="stylesheet" href="podcast-reader.css">
 </head>
+
 <body>
     <div class="container">
         <h1>🎧 Multilingual Podcast Reader</h1>
-        
+
         <div class="controls">
             <div class="language-selector">
                 <label for="language">Language:</label>
@@ -20,7 +22,7 @@
                     <option value="ja">日本語</option>
                 </select>
             </div>
-            
+
             <div class="dataset-selector">
                 <label for="dataset">Dataset:</label>
                 <select id="dataset">
@@ -28,61 +30,60 @@
                     <option value="momentum">⚡ Momentum</option>
                 </select>
             </div>
-            
-            
+
             <div class="speech-controls">
                 <button id="playPauseBtn" class="play-pause-btn">▶️ Play</button>
                 <button id="stopBtn" class="stop-btn">⏹️ Stop</button>
             </div>
-            
-            <div class="rate-control">
-                <label for="rate">Global Speed:</label>
-                <input type="range" id="rate" min="0.5" max="2" step="0.1" value="1">
-                <span id="rateValue">1.0x</span>
-            </div>
-            
         </div>
-        
+
         <div id="speakerVoices" class="speaker-voices" style="display: none;">
             <div class="collapsible-header" onclick="toggleSpeakerVoices()">
                 <h3>🎭 Speaker Voice Assignment & Language Speeds</h3>
                 <span id="toggleIcon" class="toggle-icon">▼</span>
             </div>
             <div id="voiceAssignmentContainer" class="voice-assignment-horizontal collapsed">
-                <div id="voiceAssignment-fr" class="voice-assignment-column">
-                    <h4>Français (fr-FR)</h4>
-                    <div class="language-speed-control">
-                        <label>Speed:</label>
-                        <input type="range" id="rateFr" min="0.5" max="2" step="0.1" value="1.0">
-                        <span id="rateValueFr">1.0x</span>
-                    </div>
-                    <div class="speaker-voice-list"></div>
+                <div class="global-speed-control">
+                    <label for="rate">Global Speed:</label>
+                    <input type="range" id="rate" min="0.5" max="2" step="0.1" value="1">
+                    <span id="rateValue">1.0x</span>
                 </div>
-                <div id="voiceAssignment-en" class="voice-assignment-column">
-                    <h4>English (en-US)</h4>
-                    <div class="language-speed-control">
-                        <label>Speed:</label>
-                        <input type="range" id="rateEn" min="0.5" max="2" step="0.1" value="1.0">
-                        <span id="rateValueEn">1.0x</span>
+                <div class="language-columns">
+                    <div id="voiceAssignment-fr" class="voice-assignment-column">
+                        <h4>Français (fr-FR)</h4>
+                        <div class="language-speed-control">
+                            <label>Speed:</label>
+                            <input type="range" id="rateFr" min="0.5" max="2" step="0.1" value="1.0">
+                            <span id="rateValueFr">1.0x</span>
+                        </div>
+                        <div class="speaker-voice-list"></div>
                     </div>
-                    <div class="speaker-voice-list"></div>
-                </div>
-                <div id="voiceAssignment-ja" class="voice-assignment-column">
-                    <h4>日本語 (ja-JP)</h4>
-                    <div class="language-speed-control">
-                        <label>Speed:</label>
-                        <input type="range" id="rateJa" min="0.5" max="2" step="0.1" value="1.5">
-                        <span id="rateValueJa">1.5x</span>
+                    <div id="voiceAssignment-en" class="voice-assignment-column">
+                        <h4>English (en-US)</h4>
+                        <div class="language-speed-control">
+                            <label>Speed:</label>
+                            <input type="range" id="rateEn" min="0.5" max="2" step="0.1" value="1.0">
+                            <span id="rateValueEn">1.0x</span>
+                        </div>
+                        <div class="speaker-voice-list"></div>
                     </div>
-                    <div class="speaker-voice-list"></div>
+                    <div id="voiceAssignment-ja" class="voice-assignment-column">
+                        <h4>日本語 (ja-JP)</h4>
+                        <div class="language-speed-control">
+                            <label>Speed:</label>
+                            <input type="range" id="rateJa" min="0.5" max="2" step="0.1" value="1.5">
+                            <span id="rateValueJa">1.5x</span>
+                        </div>
+                        <div class="speaker-voice-list"></div>
+                    </div>
                 </div>
             </div>
         </div>
-        
+
         <div id="textContent" class="text-content">
             <!-- Content will be loaded here -->
         </div>
-        
+
         <div id="status" class="status stopped">Ready to play</div>
     </div>
 
@@ -90,4 +91,5 @@
     <script src="momentum.js"></script>
     <script src="podcast-reader.js"></script>
 </body>
+
 </html>
