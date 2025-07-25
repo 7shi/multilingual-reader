@@ -329,12 +329,26 @@ function playFromLine(lineIndex) {
 
 function playFromLineInLanguage(lineIndex, lang) {
     stopText();
-    currentLineIndex = lineIndex;
     
-    if (lang === 'multi' || isMultiLanguageMode) {
-        multiLangCurrentStep = 0;
+    // stopText()でリセットされた後に正しい値を設定
+    currentLineIndex = lineIndex;
+    isPaused = false; // 確実にfalseに設定
+    
+    // Multilingualモードの場合、クリックした言語から開始
+    if (isMultiLanguageMode) {
+        // クリックした言語に応じてmultiLangCurrentStepを設定
+        if (lang === 'fr') {
+            multiLangCurrentStep = 0;
+        } else if (lang === 'en') {
+            multiLangCurrentStep = 1;
+        } else if (lang === 'ja') {
+            multiLangCurrentStep = 2;
+        } else {
+            multiLangCurrentStep = 0; // デフォルトはフランス語から
+        }
         speakLineMultiLanguage(currentLineIndex);
     } else {
+        // 単一言語モードの場合
         speakLineInLanguage(currentLineIndex, lang);
     }
     updatePlayPauseButton();
