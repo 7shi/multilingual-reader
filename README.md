@@ -65,6 +65,7 @@ physics-podcast-reader/
 ├── physics-podcast-reader.js      # JavaScriptロジック
 ├── podcast-text-data.js          # 多言語テキストデータ
 ├── split_podcast_data.py         # テキスト分割スクリプト
+├── convert_genspark.py           # GenSpark HTML対話データ抽出
 ├── pyproject.toml                # Pythonプロジェクト設定
 └── README.md                      # このファイル
 ```
@@ -145,6 +146,24 @@ physics-podcast-reader/
 1. `podcast-text-data.js`でテキスト更新
 2. 話者名と数式記号の読み上げ対応確認
 3. 行の長さと音声ファイルサイズを考慮
+
+### GenSpark HTML対話データの抽出
+`convert_genspark.py`スクリプトを使用して、GenSpark HTMLファイルから対話データを抽出：
+
+```bash
+# 基本使用（デフォルトの話者名 A,B）
+python convert_genspark.py input.html -o output.txt
+
+# 話者名を指定
+python convert_genspark.py input.html -o output.txt --speaker Camille,Luc
+```
+
+**スクリプト機能**：
+- GenSpark HTMLファイルから話者別対話データを抽出
+- `--speaker`オプションで話者名をカンマ区切りで指定可能
+- デフォルトでは話者名A,Bを使用
+- プル型XMLパーサーによる効率的なHTML解析
+- UTF-8エンコーディングで多言語対応
 
 ### テキストデータの分割
 `split_podcast_data.py`スクリプトを使用して、多言語テキストを個別ファイルに分割可能：
