@@ -8,7 +8,7 @@ datasets.push([
 {
 "fr": "Marie: Bienvenue dans « Bonds Quantiques », l'émission qui donne un sens à l'univers, un mystère à la fois. Je suis Marie.",
 "en": "Mary: Welcome to \"Quantum Leaps,\" the show that makes sense of the universe, one puzzle at a time. I'm Mary.",
-"ja": "Mary: 『量子の跳躍』へようこそ。この番組では、1つずつ謎を解きながら、宇宙の意味を明らかにします。私はMaryです。"
+"ja": "Mary: 『量子の跳躍』へようこそ。この番組では、1つずつ謎を解きながら、宇宙の意味を明らかにします。私はメアリーです。"
 },
 {
 "fr": "Jean: Et je suis Jean. C'est un plaisir d'être ici.",
@@ -33,7 +33,7 @@ datasets.push([
 {
 "fr": "Jean: J'adore ceux-ci. Qu'est-ce que c'est ?",
 "en": "John: I love those. What is it?",
-"ja": "John: それらが大好きです。これは何ですか？"
+"ja": "John: それらが大好きです。何ですか？"
 },
 {
 "fr": "Marie: Ils demandent, euh, « en mécanique quantique, on obtient le moment cinétique à partir de quelque chose appelé un « opérateur » ».",
@@ -58,7 +58,7 @@ datasets.push([
 {
 "fr": "Marie: Vraiment?",
 "en": "Mary: Right?",
-"ja": "Mary: 本当か？"
+"ja": "Mary: 本当？"
 },
 {
 "fr": "Jean: Cela rend parfaitement compte du passage que nous devons faire de notre intuition quotidienne, classique à la réalité quantique.",
@@ -91,7 +91,7 @@ datasets.push([
 "ja": "Mary: わかりました。"
 },
 {
-"fr": "Jean: L'essentiel, c'est que l'électron n'est pas seulement une petite balle ; c'est aussi une onde... une vague.",
+"fr": "Jean: L'essentiel, c'est que l'électron n'est pas seulement une petite balle ; c'est aussi une onde... une onde.",
 "en": "John: The key is that an electron isn't just a tiny ball; it's also a wave... a wave.",
 "ja": "John: 重要なのは、電子が単なる小さなボールではなく、波でもあるということです…波です。"
 },
@@ -108,20 +108,20 @@ datasets.push([
 {
 "fr": "Marie: Hmm.",
 "en": "Mary: Hmm.",
-"ja": "Mary: Hmm."
+"ja": "Mary: ふむ。"
 },
 {
-"fr": "Jean: Imaginez des rides sur un étang. Le moment d'une particule quantique est comme la « ondulation » de sa vague dans l'espace — la distance entre les crêtes.",
+"fr": "Jean: Imaginez des rides sur un étang. Le moment d'une particule quantique est comme la « ondulation » de son onde dans l'espace — la distance entre les crêtes.",
 "en": "John: Imagine ripples on a pond. The momentum of a quantum particle is like the 'waviness' of its wave in space—how close together the crests are.",
 "ja": "John: 池の水面にできる波紋を想像してみてください。量子粒子の運動量は、空間におけるその波の「波打ち具合」、つまり波の山と山の間隔のように考えられます。"
 },
 {
-"fr": "Marie: Alors, une vague très serrée et très ondulée signifie un moment élevé ?",
+"fr": "Marie: Alors, une onde très serrée et très ondulée signifie un moment élevé ?",
 "en": "Mary: So, a very tightly packed, wiggly wave means high momentum?",
 "ja": "Mary: では、非常に密に詰まっており、波打ち具合が激しい波ということは、運動量が高いということですか？"
 },
 {
-"fr": "Jean: Vous avez raison. Et l'« opérateur de moment » n'est rien d'autre qu'un outil mathématique qui pose une question à la vague : « Combien es-tu ondulée ? »",
+"fr": "Jean: Vous avez raison. Et l'« opérateur de moment » n'est rien d'autre qu'un outil mathématique qui pose une question à l'onde : « Combien es-tu ondulée ? »",
 "en": "John: You've got it. And the 'momentum operator' is simply the mathematical tool that asks the wave a question: 'How wavy are you?'",
 "ja": "John: その通りです。そして「運動量演算子」は、波に質問する数学的なツールで、その質問は「どのくらい波打ち具合が強いですか？」です。"
 },
@@ -131,12 +131,12 @@ datasets.push([
 "ja": "Mary: そうです。"
 },
 {
-"fr": "Jean: Il mesure le taux de changement de la forme de la vague. Nous ne suivons pas un point en mouvement ; nous analysons la forme intrinsèque de la vague elle-même.",
+"fr": "Jean: Il mesure le taux de changement de la forme de l'onde. Nous ne suivons pas un point en mouvement ; nous analysons la forme intrinsèque de l'onde elle-même.",
 "en": "John: It measures the rate of change of the wave's shape. We're not tracking a moving dot; we're analyzing the inherent form of the wave itself.",
 "ja": "John: それは波の形状の変化率を測定しています。動く点を追跡しているのではなく、波そのものの本来の形を分析しているのです。"
 },
 {
-"fr": "Marie: Ah, je vois ! Donc, cela ne dépend pas d'un changement de position, car c'est une caractéristique de la vague à un seul moment. Mais attendez… si la position et le moment ne sont que deux aspects différents de la même vague…",
+"fr": "Marie: Ah, je vois ! Donc, cela ne dépend pas d'un changement de position, car c'est une caractéristique de l'onde à un seul moment. Mais attendez… si la position et le moment ne sont que deux aspects différents de la même onde…",
 "en": "Mary: Ah, I see! So it doesn't depend on a change in position, because it's a feature of the wave at a single moment. But wait… if position and momentum are just two different aspects of the same wave...",
 "ja": "Mary: ああ、わかりました！だから、それは位置の変化に依存するわけではないのです。なぜなら、それはある一瞬の波の特性だからです。しかし、位置と運動量が同じ波の2つの異なる側面であるなら…"
 },
@@ -196,14 +196,14 @@ datasets.push([
 "ja": "John: どうぞ。"
 },
 {
-"fr": "Marie: la vague doit être un pic unique et net.",
+"fr": "Marie: l'onde doit être un pic unique et net.",
 "en": "Mary: ...the wave has to be a single, sharp spike.",
 "ja": "Mary: 波は一つの鋭いピークである必要があります。"
 },
 {
-"fr": "Jean: Exactly. Mais une pointe n'a pas de longueur d'onde définie. C'est juste… une pointe.",
+"fr": "Jean: Exactement. Mais une pointe n'a pas de longueur d'onde définie. C'est juste… une pointe.",
 "en": "John: Exactly. But a spike has no defined wavelength. It's just… a spike.",
-"ja": "John: Exactly. しかし、スパイクには明確な波長はありません。それはただ… スパイクです。"
+"ja": "John: その通りです。しかし、このような鋭いピークには明確な波長はありません。それはただ… 鋭いピークです。"
 },
 {
 "fr": "Marie: Exactement.",
@@ -328,7 +328,7 @@ datasets.push([
 {
 "fr": "Marie: Hmm.",
 "en": "Mary: Hmm.",
-"ja": "Mary: Hmm."
+"ja": "Mary: ふむ。"
 },
 {
 "fr": "Jean: C'est le résultat d'une action dynamique que vous effectuez sur le système. La question de l'auditeur révèle vraiment cette toute nouvelle révolution dans la pensée.",
@@ -353,7 +353,7 @@ datasets.push([
 {
 "fr": "Jean: Hmm.",
 "en": "John: Hmm.",
-"ja": "John: Hmm."
+"ja": "John: ふむ。"
 },
 {
 "fr": "Marie: ou la direction et la quantité de mouvement exactes avec lesquelles vous avancez ?",
