@@ -111,8 +111,8 @@ datasets.push([
 "ja": "Mary: ふむ。"
 },
 {
-"fr": "Jean: Imaginez des rides sur un étang. Le moment d'une particule quantique est comme la « ondulation » de son onde dans l'espace — la distance entre les crêtes.",
-"en": "John: Imagine ripples on a pond. The momentum of a quantum particle is like the 'waviness' of its wave in space—how close together the crests are.",
+"fr": "Jean: Imaginez des rides sur un étang. Le moment d'une particule quantique est comme « l'ondulation » de son onde dans l'espace — la distance entre les crêtes.",
+"en": "John: Imagine ripples on a pond. The momentum of a quantum particle is like 'the waviness' of its wave in space—how close together the crests are.",
 "ja": "John: 池に広がる波紋を想像してみて。量子粒子の運動量っていうのは、空間におけるその波の「波っぽさ」、つまり波の山と山がどれだけ詰まっているか、ということなんだ。"
 },
 {
@@ -121,8 +121,8 @@ datasets.push([
 "ja": "Mary: じゃあ、波がぎゅっと詰まっていて、小刻みに波打っているほど、運動量が大きいってこと？"
 },
 {
-"fr": "Jean: Vous avez raison. Et l'« opérateur de moment » n'est rien d'autre qu'un outil mathématique qui pose une question à l'onde : « Combien es-tu ondulée ? »",
-"en": "John: You've got it. And the 'momentum operator' is simply the mathematical tool that asks the wave a question: 'How wavy are you?'",
+"fr": "Jean: Vous avez raison. Et « l'opérateur de moment » n'est rien d'autre qu'un outil mathématique qui pose une question à l'onde : « Combien es-tu ondulée ? »",
+"en": "John: You've got it. And 'the momentum operator' is simply the mathematical tool that asks the wave a question: 'How wavy are you?'"
 "ja": "John: その通り。「運動量演算子」っていうのは、その波に「君はどれくらい波打ってるんだい？」って問いかけるための、数学的な道具にすぎないんだ。"
 },
 {
@@ -211,7 +211,7 @@ datasets.push([
 "ja": "Mary: ですよね。"
 },
 {
-"fr": "Jean: Donc, sa « ondulation », son moment, deviennent complètement inconnus. Et ce n'est pas une limite de nos outils ; c'est un compromis fondamental inscrit dans la réalité.",
+"fr": "Jean: Donc, son « ondulation », son moment, deviennent complètement inconnus. Et ce n'est pas une limite de nos outils ; c'est un compromis fondamental inscrit dans la réalité.",
 "en": "John: So its 'waviness,' its momentum, becomes completely unknown. And this isn't a limit of our tools; it's a fundamental trade-off baked into reality.",
 "ja": "John: だから、その「波っぽさ」、つまり運動量は完全に未知のものになる。これは測定器の限界じゃなくて、この現実そのものに組み込まれた、根本的なトレードオフなんだ。"
 },

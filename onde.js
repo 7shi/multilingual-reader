@@ -201,8 +201,8 @@ datasets.push([
 "ja": "Camille: これは本当に驚くべき類似点だわ。"
 },
 {
-"fr": "Luc: Attends. Donc la « probabilité de présence » d'une particule quantique... se calcule de la même manière que l'« énergie » d'une onde lumineuse classique.",
-"en": "Luc: Wait. So the 'probability of presence' of a quantum particle... is calculated in the same way as the 'energy' of a classical light wave.",
+"fr": "Luc: Attends. Donc la « probabilité de présence » d'une particule quantique... se calcule de la même manière que « l'énergie » d'une onde lumineuse classique.",
+"en": "Luc: Wait. So the 'probability of presence' of a quantum particle... is calculated in the same way as 'the energy' of a classical light wave.",
 "ja": "Luc: 待ってくれ。ということは、量子的な粒子の「存在確率」は…古典的な光の波の「エネルギー」と、まったく同じ方法で計算されるということかい？"
 },
 {
@@ -361,8 +361,8 @@ datasets.push([
 "ja": "Camille: あら！"
 },
 {
-"fr": "Luc: Ça veut dire que l'information sur les détails plus fins est transportée par des ondes très spéciales, les « ondes évanescentes ».",
-"en": "Luc: That means that information about finer details is transported by very special waves, the 'evanescent waves'.",
+"fr": "Luc: Ça veut dire que l'information sur les détails plus fins est transportée par des ondes très spéciales, « les ondes évanescentes ».",
+"en": "Luc: That means that information about finer details is transported by very special waves, 'the evanescent waves'."
 "ja": "Luc: もっと細かい部分の情報は、「エバネッセント波」っていう特殊な波が運んでいる、ということなんだ。"
 },
 {
@@ -466,8 +466,8 @@ datasets.push([
 "ja": "Luc: お？"
 },
 {
-"fr": "Camille: Si la « probabilité de présence » en quantique et l'« énergie » en classique suivent toutes les deux la même règle de l'amplitude au carré…",
-"en": "Camille: If the 'probability of presence' in quantum mechanics and 'energy' in classical mechanics both follow the same rule of the square of the amplitude…",
+"fr": "Camille: Si la « probabilité de présence » en quantique et « l'énergie » en classique suivent toutes les deux la même règle de l'amplitude au carré…",
+"en": "Camille: If the 'probability of presence' in quantum mechanics and 'the energy' in classical mechanics both follow the same rule of the square of the amplitude…"
 "ja": "Camille: 量子力学の「存在確率」と、古典力学の「エネルギー」が、どちらも振幅の2乗という同じ法則に従うのなら…"
 },
 {
