@@ -12,14 +12,15 @@ Example:
 """
 
 import argparse
+import json
 import re
 import sys
 from pathlib import Path
 
 
-def extract_js_object_content(js_content: str, object_name: str) -> dict:
+def extract_js_array_content(js_content: str, object_name: str) -> dict:
     """
-    Extract the content of a JavaScript object from the JS file.
+    Extract the content of a JavaScript array from the JS file (new format).
     
     Args:
         js_content: The full JavaScript file content
@@ -28,31 +29,61 @@ def extract_js_object_content(js_content: str, object_name: str) -> dict:
     Returns:
         Dictionary with language codes as keys and text content as values
     """
-    # Pattern to match the object declaration and its content
-    pattern = rf'const\s+{object_name}\s*=\s*\{{([^}}]+(?:\}}[^}}]*)*)\}};'
-    
-    match = re.search(pattern, js_content, re.DOTALL)
-    if not match:
+    # 先頭から`const podcastTexts =`を検索
+    start_pattern = rf'const\s+{object_name}\s*='
+    start_match = re.search(start_pattern, js_content)
+    if not start_match:
         raise ValueError(f"Could not find object '{object_name}' in JavaScript file")
     
-    object_content = match.group(1)
+    start_pos = start_match.end()
     
-    # Extract each language section
-    languages = {}
+    # 末尾から`;`を検索
+    end_match = re.search(r';\s*$', js_content)
+    if not end_match:
+        raise ValueError("Could not find ending semicolon in JavaScript file")
     
-    # Pattern to match language keys and their template literal content
-    lang_pattern = r'(\w+):\s*`([^`]*(?:`[^`]*`[^`]*)*)`'
+    end_pos = end_match.start()
     
-    for lang_match in re.finditer(lang_pattern, object_content, re.DOTALL):
-        lang_code = lang_match.group(1)
-        lang_text = lang_match.group(2)
-        
-        # Clean up the text content
-        # Remove any escaped backticks and normalize line endings
-        lang_text = lang_text.replace('\\`', '`')
-        lang_text = lang_text.replace('\\n', '\n')
-        
-        languages[lang_code] = lang_text.strip()
+    # その間を取り出してjson.loads
+    json_content = js_content[start_pos:end_pos].strip()
+    
+    try:
+        data = json.loads(json_content)
+    except json.JSONDecodeError as e:
+        raise ValueError(f"Failed to parse JSON content: {e}")
+    
+    if not isinstance(data, list):
+        raise ValueError("Expected JSON array format")
+    
+    # 最初の行で言語を取得
+    if not data:
+        raise ValueError("No data found in JSON array")
+    
+    first_item = data[0]
+    if not isinstance(first_item, dict):
+        raise ValueError("Expected dictionary format in JSON array")
+    
+    expected_languages = set(first_item.keys())
+    
+    # 各言語の行を結合
+    languages = {lang: [] for lang in expected_languages}
+    
+    for i, item in enumerate(data):
+        if isinstance(item, dict):
+            # 言語に変化がないかチェック
+            current_languages = set(item.keys())
+            if current_languages != expected_languages:
+                print(f"警告: 行{i+1}で言語構成が変化しました。期待: {expected_languages}, 実際: {current_languages}", file=sys.stderr)
+            
+            for lang in expected_languages:
+                if lang in item:
+                    languages[lang].append(item[lang])
+                else:
+                    languages[lang].append("")  # 空行で補完
+    
+    # リストを文字列に変換
+    for lang in languages:
+        languages[lang] = '\n'.join(languages[lang])
     
     return languages
 
@@ -160,8 +191,8 @@ Examples:
         with open(input_file, 'r', encoding='utf-8') as f:
             js_content = f.read()
         
-        # Extract the podcast texts object
-        languages = extract_js_object_content(js_content, 'podcastTexts')
+        # Extract the podcast texts array (new format)
+        languages = extract_js_array_content(js_content, 'podcastTexts')
         
         if not languages:
             print("No language data found in the JavaScript file", file=sys.stderr)

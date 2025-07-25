@@ -658,32 +658,43 @@ function getFilteredVoicesForLanguage(lang) {
     return prioritizeVoices(fallbackMatches);
 }
 
-// Shared text parsing function
+// Shared text parsing function - updated for new JSON array format
 function parseAllLanguageTexts() {
     const allLanguageLines = {};
-    Object.keys(texts).forEach(lang => {
-        const text = texts[lang];
-        allLanguageLines[lang] = text.split('\n').filter(line => line.trim() !== '').map((line, index) => {
-            // Find the first occurrence of ': ' to separate speaker from text
-            const colonIndex = line.indexOf(': ');
-            if (colonIndex !== -1) {
-                return {
-                    index: index,
-                    speaker: line.substring(0, colonIndex),
-                    text: line.substring(colonIndex + 2), // +2 to skip ': '
-                    fullLine: line
-                };
-            } else {
-                // If no ': ' found, treat the entire line as text with unknown speaker
-                return {
-                    index: index,
-                    speaker: 'Unknown',
-                    text: line,
-                    fullLine: line
-                };
+    const languages = ['fr', 'en', 'ja']; // サポートされている言語
+    
+    // 各言語のライン配列を初期化
+    languages.forEach(lang => {
+        allLanguageLines[lang] = [];
+    });
+    
+    // 新形式のJSONデータを処理
+    texts.forEach((textObj, index) => {
+        languages.forEach(lang => {
+            if (textObj[lang]) {
+                const line = textObj[lang];
+                // スピーカーとテキストを分離するために最初の ': ' を検索
+                const colonIndex = line.indexOf(': ');
+                if (colonIndex !== -1) {
+                    allLanguageLines[lang].push({
+                        index: index,
+                        speaker: line.substring(0, colonIndex),
+                        text: line.substring(colonIndex + 2), // +2 to skip ': '
+                        fullLine: line
+                    });
+                } else {
+                    // ': 'が見つからない場合、行全体をUnknownスピーカーのテキストとして扱う
+                    allLanguageLines[lang].push({
+                        index: index,
+                        speaker: 'Unknown',
+                        text: line,
+                        fullLine: line
+                    });
+                }
             }
         });
     });
+    
     return allLanguageLines;
 }
 

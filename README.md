@@ -64,7 +64,8 @@ physics-podcast-reader/
 ├── physics-podcast-reader.css     # スタイルシート
 ├── physics-podcast-reader.js      # JavaScriptロジック
 ├── podcast-text-data.js          # 多言語テキストデータ
-├── split_podcast_data.py         # テキスト分割スクリプト
+├── split_podcast_data.py         # テキスト分割スクリプト（JSON配列形式対応）
+├── merge_podcast_data.py         # テキスト統合スクリプト（複数言語ファイル→JavaScript形式）
 ├── convert_genspark.py           # GenSpark HTML対話データ抽出
 ├── translate.py                  # 多言語翻訳スクリプト（英語→フランス語・日本語）
 ├── pyproject.toml                # Pythonプロジェクト設定
@@ -191,8 +192,37 @@ python translate.py input-en.txt --test
 - 翻訳前の推論過程を含む構造化出力
 - 動的な出力ファイル名生成
 
-### テキストデータの分割
-`split_podcast_data.py`スクリプトを使用して、多言語テキストを個別ファイルに分割可能：
+### テキスト統合・分割
+
+#### テキスト統合（merge_podcast_data.py）
+複数言語のテキストファイルを行ごとの対訳形式でJavaScript形式に統合：
+
+```bash
+# プレフィックスを使用した自動検索
+python merge_podcast_data.py -o output.js --prefix quantum_physics
+# → quantum_physics-fr.txt, quantum_physics-en.txt, quantum_physics-ja.txt を自動検索
+
+# ファイルを直接指定
+python merge_podcast_data.py -o output.js file1-fr.txt file2-en.txt file3-ja.txt
+```
+
+**出力形式**：
+```javascript
+const podcastTexts = [
+  {"fr": "...", "en": "...", "ja": "..."},
+  {"fr": "...", "en": "...", "ja": "..."},
+  ...
+];
+```
+
+**スクリプト機能**：
+- 複数言語ファイルの自動検出・読み込み
+- 行ごとの対訳形式でJSON配列生成
+- JavaScript形式（`const podcastTexts = ...`）で出力
+- プレフィックス指定とファイル直接指定の両方に対応
+
+#### テキスト分割（split_podcast_data.py）
+JSON配列形式の多言語データを個別ファイルに分割：
 
 ```bash
 # 基本使用
@@ -205,10 +235,11 @@ python split_podcast_data.py podcast-text-data.js -o quantum_physics
 ```
 
 **スクリプト機能**：
-- JavaScript形式の多言語データを自動解析
+- JSON配列形式の多言語データを自動解析
+- 動的な言語検出（決め打ちなし）
+- 言語構成の一貫性チェック
 - 各言語のテキストを個別のテキストファイルに抽出
-- UTF-8エンコーディングで日本語・フランス語に対応
-- 話者形式（Speaker: text）の検証とクリーニング
+- UTF-8エンコーディングで多言語対応
 
 ### ハイライト機能の仕組み
 - **Web Speech API**: `SpeechSynthesisUtterance.onboundary`イベントを使用
