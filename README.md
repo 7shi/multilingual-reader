@@ -109,7 +109,7 @@ multilingual-reader/
 
 ```bash
 # テキストファイルから多言語データセットを生成
-python merge_podcast_data.py -o new_dataset.js --prefix new_dataset_name
+uv run merge_podcast_data.py -o new_dataset.js --prefix new_dataset_name
 ```
 
 #### 2. HTMLファイルでのスクリプト読み込み
@@ -155,10 +155,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
 ```bash
 # 基本使用（デフォルトの話者名 A,B）
-python convert_genspark.py input.html -o output.txt
+uv run convert_genspark.py input.html -o output.txt
 
 # 話者名を指定
-python convert_genspark.py input.html -o output.txt --speaker Camille,Luc
+uv run convert_genspark.py input.html -o output.txt --speaker Camille,Luc
 ```
 
 **スクリプト機能**：
@@ -169,29 +169,34 @@ python convert_genspark.py input.html -o output.txt --speaker Camille,Luc
 - UTF-8エンコーディングで多言語対応
 
 ### 多言語翻訳
-`translate.py`スクリプトを使用して、英語テキストをフランス語と日本語に翻訳：
+`translate.py`スクリプトを使用して、指定した言語間で1:1翻訳：
 
 ```bash
 # 基本使用（デフォルトモデル: ollama:gemma3n:e4b）
-python translate.py input-en.txt
+uv run translate.py input.txt -f English -t Japanese -o output.txt
 
 # カスタムモデル指定
-python translate.py input-en.txt -m ollama:llama3.1:8b
+uv run translate.py input.txt -f French -t English -o translated.txt -m ollama:llama3.1:8b
 
 # テストモード（実際の翻訳は行わない）
-python translate.py input-en.txt --test
-
-# 出力ファイル
-# input-fr.txt  (フランス語翻訳)
-# input-ja.txt  (日本語翻訳)
+uv run translate.py input.txt -f English -t Japanese -o test.txt --test
 ```
 
+**必須オプション**：
+- `-f/--from`: 原語（完全な言語名: English, French, Japanese, German等）
+- `-t/--to`: 翻訳先言語（完全な言語名: English, French, Japanese, German等）
+- `-o/--output`: 出力ファイル名
+
+**オプション**：
+- `-m/--model`: 翻訳モデル（デフォルト: ollama:gemma3n:e4b）
+- `--test`: dry-runモード
+
 **スクリプト機能**：
-- 英語対話テキストをフランス語・日本語に翻訳
+- 任意の言語間での1:1翻訳
 - ローカルLLMによる文脈付き翻訳（ollama対応）
 - 話者別対話形式の保持
 - 翻訳前の推論過程を含む構造化出力
-- 動的な出力ファイル名生成
+- 完全な言語名による直感的な操作
 
 ### テキスト統合・分割
 
@@ -200,11 +205,11 @@ python translate.py input-en.txt --test
 
 ```bash
 # プレフィックスを使用した自動検索
-python merge_podcast_data.py -o onde.js --prefix onde_physics
+uv run merge_podcast_data.py -o onde.js --prefix onde_physics
 # → onde_physics-fr.txt, onde_physics-en.txt, onde_physics-ja.txt を自動検索
 
 # ファイルを直接指定
-python merge_podcast_data.py -o momentum.js file1-fr.txt file2-en.txt file3-ja.txt
+uv run merge_podcast_data.py -o momentum.js file1-fr.txt file2-en.txt file3-ja.txt
 ```
 
 **出力形式**（nameフィールドなし）：
@@ -233,8 +238,8 @@ datasets配列形式の多言語データを個別ファイルに分割：
 
 ```bash
 # 新しいdatasets配列形式
-python split_podcast_data.py onde.js -o onde_physics
-python split_podcast_data.py momentum.js -o momentum_physics
+uv run split_podcast_data.py onde.js -o onde_physics
+uv run split_podcast_data.py momentum.js -o momentum_physics
 
 # 出力ファイル
 # onde_physics-fr.txt     (フランス語)
