@@ -41,9 +41,9 @@ datasets.push([
 "ja": "Mary: 彼らは、ええと、「量子力学では、「演算子」と呼ばれるものから運動量を得る」と尋ねています。"
 },
 {
-"fr": "Jean: Okay",
+"fr": "Jean: D'accord",
 "en": "John: Okay.",
-"ja": "John: オーケー"
+"ja": "John: わかりました"
 },
 {
 "fr": "Marie: Mais dans ma tête, le momentum vient de regarder quelque chose se déplacer — d’un changement de position. Comment peut-il être une chose que l’on mesure toute seule ?",
@@ -73,7 +73,7 @@ datasets.push([
 {
 "fr": "Jean: D'accord.",
 "en": "John: Sure.",
-"ja": "John: もちろんです。"
+"ja": "John: その通りです。"
 },
 {
 "fr": "Marie: Je vois son changement de position. Simple.",
@@ -86,7 +86,7 @@ datasets.push([
 "ja": "John: そして、それこそが私たちが脳を再プログラミングしなければならないところです。電子の場合、ルールはまったく異なります。"
 },
 {
-"fr": "Marie: Okay.",
+"fr": "Marie: D'accord.",
 "en": "Mary: Okay.",
 "ja": "Mary: わかりました。"
 },
@@ -236,9 +236,9 @@ datasets.push([
 "ja": "John: ここが現代物理学の卓越した知恵が登場する場所です。"
 },
 {
-"fr": "Marie: Okay...",
+"fr": "Marie: D'accord...",
 "en": "Mary: Okay...",
-"ja": "Mary: Okay..."
+"ja": "Mary: わかりました..."
 },
 {
 "fr": "Jean: Ils utilisent des stratégies ingénieuses et indirectes. Mon exemple préféré est de prendre un électron et de le placer dans un champ magnétique.",
@@ -246,19 +246,19 @@ datasets.push([
 "ja": "John: 彼らは巧妙で間接的な戦略を使用します。私の好きな例は、電子を取り、それを磁場の中に置くことです。"
 },
 {
-"fr": "Marie: Okay, donc il va commencer à se déplacer en cercle.",
+"fr": "Marie: D'accord, donc il va commencer à se déplacer en cercle.",
 "en": "Mary: Okay, so it will start to move in a circle.",
-"ja": "Mary: Okay、それではそれが円周運動を開始するようになります。"
+"ja": "Mary: わかりました、それではそれが円周運動を開始するようになります。"
 },
 {
-"fr": "Jean: Correct. Maintenant, vous le laissez accomplir exactement une demi-tour.",
+"fr": "Jean: Exactement. Maintenant, vous le laissez accomplir exactement une demi-tour.",
 "en": "John: Correct. Now, you let it complete exactly one half-turn.",
 "ja": "John: 正しいです。今度は、それを正確に半回転させるようにします。"
 },
 {
-"fr": "Marie: Okay.",
+"fr": "Marie: D'accord.",
 "en": "Mary: Okay.",
-"ja": "Mary: Okay."
+"ja": "Mary: わかりました。"
 },
 {
 "fr": "Jean: Et à ce moment précis, vous mesurez sa position.",
