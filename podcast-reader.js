@@ -1,5 +1,5 @@
-// Text data is loaded from external files
-let texts = datasets && datasets[0] ? datasets[0] : [];
+// Text data - will be initialized in init function
+let texts = [];
 
 // Language codes for speech synthesis
 const langCodes = {
@@ -32,27 +32,32 @@ let languageRates = {
     ja: 1.5
 };
 
-// DOM elements
-const languageSelect = document.getElementById('language');
-const datasetSelect = document.getElementById('dataset');
-const playPauseBtn = document.getElementById('playPauseBtn');
-const stopBtn = document.getElementById('stopBtn');
-const rateSlider = document.getElementById('rate');
-const rateValue = document.getElementById('rateValue');
-
-// Language-specific rate controls
-const rateFrSlider = document.getElementById('rateFr');
-const rateEnSlider = document.getElementById('rateEn');
-const rateJaSlider = document.getElementById('rateJa');
-const rateValueFr = document.getElementById('rateValueFr');
-const rateValueEn = document.getElementById('rateValueEn');
-const rateValueJa = document.getElementById('rateValueJa');
-const status = document.getElementById('status');
-const textContent = document.getElementById('textContent');
-const speakerVoicesDiv = document.getElementById('speakerVoices');
+// DOM elements - will be initialized in init function
+let languageSelect, datasetSelect, playPauseBtn, stopBtn, rateSlider, rateValue;
+let rateFrSlider, rateEnSlider, rateJaSlider, rateValueFr, rateValueEn, rateValueJa;
+let status, textContent, speakerVoicesDiv;
 
 // Initialize
 function init(datasetConfig) {
+    // Initialize DOM elements
+    languageSelect = document.getElementById('language');
+    datasetSelect = document.getElementById('dataset');
+    playPauseBtn = document.getElementById('playPauseBtn');
+    stopBtn = document.getElementById('stopBtn');
+    rateSlider = document.getElementById('rate');
+    rateValue = document.getElementById('rateValue');
+    
+    // Language-specific rate controls
+    rateFrSlider = document.getElementById('rateFr');
+    rateEnSlider = document.getElementById('rateEn');
+    rateJaSlider = document.getElementById('rateJa');
+    rateValueFr = document.getElementById('rateValueFr');
+    rateValueEn = document.getElementById('rateValueEn');
+    rateValueJa = document.getElementById('rateValueJa');
+    status = document.getElementById('status');
+    textContent = document.getElementById('textContent');
+    speakerVoicesDiv = document.getElementById('speakerVoices');
+    
     // Store dataset config for later use
     datasetConfigMapping = datasetConfig;
     
