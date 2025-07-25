@@ -66,6 +66,7 @@ physics-podcast-reader/
 ├── podcast-text-data.js          # 多言語テキストデータ
 ├── split_podcast_data.py         # テキスト分割スクリプト
 ├── convert_genspark.py           # GenSpark HTML対話データ抽出
+├── translate.py                  # 多言語翻訳スクリプト（英語→フランス語・日本語）
 ├── pyproject.toml                # Pythonプロジェクト設定
 └── README.md                      # このファイル
 ```
@@ -164,6 +165,31 @@ python convert_genspark.py input.html -o output.txt --speaker Camille,Luc
 - デフォルトでは話者名A,Bを使用
 - プル型XMLパーサーによる効率的なHTML解析
 - UTF-8エンコーディングで多言語対応
+
+### 多言語翻訳
+`translate.py`スクリプトを使用して、英語テキストをフランス語と日本語に翻訳：
+
+```bash
+# 基本使用（デフォルトモデル: ollama:gemma3n:e4b）
+python translate.py input-en.txt
+
+# カスタムモデル指定
+python translate.py input-en.txt -m ollama:llama3.1:8b
+
+# テストモード（実際の翻訳は行わない）
+python translate.py input-en.txt --test
+
+# 出力ファイル
+# input-fr.txt  (フランス語翻訳)
+# input-ja.txt  (日本語翻訳)
+```
+
+**スクリプト機能**：
+- 英語対話テキストをフランス語・日本語に翻訳
+- ローカルLLMによる文脈付き翻訳（ollama対応）
+- 話者別対話形式の保持
+- 翻訳前の推論過程を含む構造化出力
+- 動的な出力ファイル名生成
 
 ### テキストデータの分割
 `split_podcast_data.py`スクリプトを使用して、多言語テキストを個別ファイルに分割可能：
