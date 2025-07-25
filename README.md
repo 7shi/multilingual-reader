@@ -63,7 +63,7 @@ physics-podcast-reader/
 ├── physics-podcast-reader.html    # メインHTML（UI構造）
 ├── physics-podcast-reader.css     # スタイルシート
 ├── physics-podcast-reader.js      # JavaScriptロジック
-├── podcast-text-data.js          # 多言語テキストデータ
+├── onde.js                       # 多言語テキストデータ（JSON配列形式）
 ├── split_podcast_data.py         # テキスト分割スクリプト（JSON配列形式対応）
 ├── merge_podcast_data.py         # テキスト統合スクリプト（複数言語ファイル→JavaScript形式）
 ├── convert_genspark.py           # GenSpark HTML対話データ抽出
@@ -145,7 +145,7 @@ physics-podcast-reader/
 4. CSS色設定追加
 
 ### 新しいコンテンツの追加
-1. `podcast-text-data.js`でテキスト更新
+1. `onde.js`でテキスト更新
 2. 話者名と数式記号の読み上げ対応確認
 3. 行の長さと音声ファイルサイズを考慮
 
@@ -226,7 +226,7 @@ JSON配列形式の多言語データを個別ファイルに分割：
 
 ```bash
 # 基本使用
-python split_podcast_data.py podcast-text-data.js -o quantum_physics
+python split_podcast_data.py onde.js -o quantum_physics
 
 # 出力ファイル
 # quantum_physics-fr.txt  (フランス語)
