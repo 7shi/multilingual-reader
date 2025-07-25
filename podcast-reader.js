@@ -10,6 +10,7 @@ const langCodes = {
 
 let currentSynth = null;
 let isPaused = false;
+let isStopped = false; // Firefox対応：停止状態を明確に管理
 let currentLineIndex = 0;
 let dialogueLines = [];
 // Removed: currentWordIndex and currentLineWords are no longer needed for dynamic highlighting
@@ -245,7 +246,7 @@ function updateRate() {
         if (wasPlaying) {
             currentSynth.cancel();
             setTimeout(() => {
-                if (!isPaused) {
+                if (!isPaused && !isStopped) {
                     speakLine(currentLineIndex);
                 }
             }, 100);
@@ -278,7 +279,7 @@ function updateLanguageRate(event) {
         if (wasPlaying) {
             currentSynth.cancel();
             setTimeout(() => {
-                if (!isPaused) {
+                if (!isPaused && !isStopped) {
                     if (isMultiLanguageMode) {
                         speakLineMultiLanguage(currentLineIndex);
                     } else {
@@ -296,6 +297,7 @@ function togglePlayPause() {
         // Resume paused playback
         speechSynthesis.resume();
         isPaused = false;
+        isStopped = false; // Resume時にもリセット
         updateStatus('playing', 'Playing...');
         updatePlayPauseButton();
     } else if (currentSynth && !isPaused) {
@@ -303,6 +305,7 @@ function togglePlayPause() {
         pauseText();
     } else {
         // Start new playback
+        isStopped = false; // 再生開始時にリセット
         playText();
     }
 }
@@ -310,6 +313,7 @@ function togglePlayPause() {
 function playText() {
     currentLineIndex = 0;
     multiLangCurrentStep = 0;
+    isStopped = false; // 再生開始時にリセット
     
     if (isMultiLanguageMode) {
         speakLineMultiLanguage(currentLineIndex);
@@ -322,6 +326,7 @@ function playText() {
 function playFromLine(lineIndex) {
     stopText();
     currentLineIndex = lineIndex;
+    isStopped = false; // 再生開始時にリセット
     const selectedLang = languageSelect.value;
     speakLineInLanguage(currentLineIndex, selectedLang);
     updatePlayPauseButton();
@@ -333,6 +338,7 @@ function playFromLineInLanguage(lineIndex, lang) {
     // stopText()でリセットされた後に正しい値を設定
     currentLineIndex = lineIndex;
     isPaused = false; // 確実にfalseに設定
+    isStopped = false; // 再生開始時にリセット
     
     // Multilingualモードの場合、クリックした言語から開始
     if (isMultiLanguageMode) {
@@ -380,14 +386,14 @@ function speakLineMultiLanguage(lineIndex) {
             
             // Short pause between lines, then move to next line
             setTimeout(() => {
-                if (isMultiLanguageMode && !isPaused) {
+                if (isMultiLanguageMode && !isPaused && !isStopped) {
                     speakLineMultiLanguage(currentLineIndex);
                 }
             }, 800); // Longer pause between lines
         } else {
             // Continue with next language for the same line
             setTimeout(() => {
-                if (isMultiLanguageMode && !isPaused) {
+                if (isMultiLanguageMode && !isPaused && !isStopped) {
                     speakLineMultiLanguage(currentLineIndex);
                 }
             }, 400); // Short pause between languages
@@ -426,7 +432,11 @@ function speakLineInLanguage(lineIndex, lang) {
     const onSpeechComplete = () => {
         currentLineIndex++;
         // Continue with the same language
-        setTimeout(() => speakLineInLanguage(currentLineIndex, lang), 500); // Short pause between lines
+        setTimeout(() => {
+            if (!isStopped) {
+                speakLineInLanguage(currentLineIndex, lang);
+            }
+        }, 500); // Short pause between lines
     };
     
     // Use shared speech synthesis function
@@ -446,6 +456,9 @@ function pauseText() {
 
 function stopText() {
     const wasPlaying = currentSynth !== null;
+    
+    // Firefox対応：明確に停止状態を設定
+    isStopped = true;
     
     if (currentSynth) {
         speechSynthesis.cancel();
@@ -875,7 +888,7 @@ function speakLineWithUtterance(lineIndex, lang, line, statusMessage, onComplete
             // Clear dynamic highlighting when speech ends
             clearDynamicHighlight();
             
-            if (onComplete && !isPaused) {
+            if (onComplete && !isPaused && !isStopped) {
                 onComplete();
             }
         };
