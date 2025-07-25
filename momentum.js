@@ -122,7 +122,7 @@ datasets.push([
 },
 {
 "fr": "Jean: Vous avez raison. Et « l'opérateur de moment » n'est rien d'autre qu'un outil mathématique qui pose une question à l'onde : « Combien es-tu ondulée ? »",
-"en": "John: You've got it. And 'the momentum operator' is simply the mathematical tool that asks the wave a question: 'How wavy are you?'"
+"en": "John: You've got it. And 'the momentum operator' is simply the mathematical tool that asks the wave a question: 'How wavy are you?'",
 "ja": "John: その通り。「運動量演算子」っていうのは、その波に「君はどれくらい波打ってるんだい？」って問いかけるための、数学的な道具にすぎないんだ。"
 },
 {

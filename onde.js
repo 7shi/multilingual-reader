@@ -362,7 +362,7 @@ datasets.push([
 },
 {
 "fr": "Luc: Ça veut dire que l'information sur les détails plus fins est transportée par des ondes très spéciales, « les ondes évanescentes ».",
-"en": "Luc: That means that information about finer details is transported by very special waves, 'the evanescent waves'."
+"en": "Luc: That means that information about finer details is transported by very special waves, 'the evanescent waves'.",
 "ja": "Luc: もっと細かい部分の情報は、「エバネッセント波」っていう特殊な波が運んでいる、ということなんだ。"
 },
 {
@@ -467,7 +467,7 @@ datasets.push([
 },
 {
 "fr": "Camille: Si la « probabilité de présence » en quantique et « l'énergie » en classique suivent toutes les deux la même règle de l'amplitude au carré…",
-"en": "Camille: If the 'probability of presence' in quantum mechanics and 'the energy' in classical mechanics both follow the same rule of the square of the amplitude…"
+"en": "Camille: If the 'probability of presence' in quantum mechanics and 'the energy' in classical mechanics both follow the same rule of the square of the amplitude…",
 "ja": "Camille: 量子力学の「存在確率」と、古典力学の「エネルギー」が、どちらも振幅の2乗という同じ法則に従うのなら…"
 },
 {
