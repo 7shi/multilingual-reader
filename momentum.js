@@ -6,7 +6,7 @@ if (typeof datasets === 'undefined') {
 // Add momentum dataset to datasets array
 datasets.push([
 {
-"fr": "Marie: Bienvenue dans « Bonds Quantiques », l'émission qui donne un sens à l'univers, un énigme à la fois. Je suis Marie.",
+"fr": "Marie: Bienvenue dans « Bonds Quantiques », l'émission qui donne un sens à l'univers, un mystère à la fois. Je suis Marie.",
 "en": "Mary: Welcome to \"Quantum Leaps,\" the show that makes sense of the universe, one puzzle at a time. I'm Mary.",
 "ja": "Mary: 『量子の跳躍』へようこそ。この番組では、1つずつ謎を解きながら、宇宙の意味を明らかにします。私はMaryです。"
 },
@@ -18,7 +18,7 @@ datasets.push([
 {
 "fr": "Marie: Jean, aujourd'hui nous avons une question d'auditeur qui est juste... fantastique.",
 "en": "Mary: John, today we've got a listener question that's just... fantastic.",
-"ja": "Mary: ジョン、今日は素晴らしいリスナーからの質問があります。"
+"ja": "Mary: ジョン、今日は本当に素晴らしいリスナーからの質問があります。"
 },
 {
 "fr": "Jean: Oh?",
@@ -38,7 +38,7 @@ datasets.push([
 {
 "fr": "Marie: Ils demandent, euh, « en mécanique quantique, on obtient le moment cinétique à partir de quelque chose appelé un « opérateur » ».",
 "en": "Mary: They ask, uh, \"In quantum mechanics, you get momentum from something called an 'operator.'\"",
-"ja": "Mary: 彼らは、ええと、「量子力学では、『演算子』と呼ばれるものから運動量を得る」と尋ねています。"
+"ja": "Mary: 彼らは、ええと、「量子力学では、「演算子」と呼ばれるものから運動量を得る」と尋ねています。"
 },
 {
 "fr": "Jean: Okay",
@@ -93,7 +93,7 @@ datasets.push([
 {
 "fr": "Jean: L'essentiel, c'est que l'électron n'est pas seulement une petite balle ; c'est aussi une onde... une vague.",
 "en": "John: The key is that an electron isn't just a tiny ball; it's also a wave... a wave.",
-"ja": "John: 重要なのは、電子が単なる小さなボールではなく、波（onde）でもあるということです…波です。"
+"ja": "John: 重要なのは、電子が単なる小さなボールではなく、波でもあるということです…波です。"
 },
 {
 "fr": "Marie: La dualité onde-particule. C’est vrai.",
@@ -111,7 +111,7 @@ datasets.push([
 "ja": "Mary: Hmm."
 },
 {
-"fr": "Jean: Imaginez des rides sur un étang. Le moment d'une particule quantique est comme la « waviness » de sa vague dans l'espace — la distance entre les crêtes.",
+"fr": "Jean: Imaginez des rides sur un étang. Le moment d'une particule quantique est comme la « ondulation » de sa vague dans l'espace — la distance entre les crêtes.",
 "en": "John: Imagine ripples on a pond. The momentum of a quantum particle is like the 'waviness' of its wave in space—how close together the crests are.",
 "ja": "John: 池の水面にできる波紋を想像してみてください。量子粒子の運動量は、空間におけるその波の「波打ち具合」、つまり波の山と山の間隔のように考えられます。"
 },
@@ -188,7 +188,7 @@ datasets.push([
 {
 "fr": "Marie: Vous n'avez aucune idée. Sa position est complètement incertaine. Et… laissez-moi deviner… si vous voulez connaître sa position parfaitement…",
 "en": "Mary: You have no idea. Its position is completely uncertain. And… let me guess… if you want to know its position perfectly...",
-"ja": "Mary: 全く想像もつかないわ。その位置は完全に不確実よ。そして…私が想像するなら…その位置を完全に把握したいとしたら…"
+"ja": "Mary: 全く分からない。その位置は完全に不確実です。そして…想像してみると…その位置を完全に把握したいとしたら…"
 },
 {
 "fr": "Jean: Allez-y.",
@@ -211,7 +211,7 @@ datasets.push([
 "ja": "Mary: そう。"
 },
 {
-"fr": "Jean: Donc, sa « waviness », son moment, deviennent complètement inconnus. Et ce n'est pas une limite de nos outils ; c'est un compromis fondamental inscrit dans la réalité.",
+"fr": "Jean: Donc, sa « ondulation », son moment, deviennent complètement inconnus. Et ce n'est pas une limite de nos outils ; c'est un compromis fondamental inscrit dans la réalité.",
 "en": "John: So its 'waviness,' its momentum, becomes completely unknown. And this isn't a limit of our tools; it's a fundamental trade-off baked into reality.",
 "ja": "John: したがって、その「波動性」、その「運動量」は完全に未知になります。そしてこれは私たちの道具の限界ではなく、現実の本質に組み込まれた根本的なトレードオフです。"
 },
@@ -281,9 +281,9 @@ datasets.push([
 "ja": "Mary: すごい！"
 },
 {
-"fr": "Jean: exactement au début",
+"fr": "Jean: ...exactement au début.",
 "en": "John: ...right back at the start.",
-"ja": "John: 最初の場所に戻る"
+"ja": "John: ...最初の時点に戻って。"
 },
 {
 "fr": "Marie: Attendez, vous me dites que mesurer où il est maintenant nous apprend comment il se déplaçait autrefois ?",
