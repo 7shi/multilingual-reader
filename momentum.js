@@ -343,7 +343,7 @@ datasets.push([
 {
 "fr": "Jean: C’était un plaisir, Marie.",
 "en": "John: It was my pleasure, Mary.",
-"ja": "John: Maryさん、私の喜びでした。"
+"ja": "John: それは良かったです、メアリーさん。"
 },
 {
 "fr": "Marie: Maintenant, voici une question à laquelle nous aimerions que vous réfléchissiez. Si la nature vous forçait à faire un choix, préféreriez-vous connaître avec une absolue et parfaite certitude : exactement où vous êtes en ce moment...",
