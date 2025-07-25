@@ -91,8 +91,8 @@ datasets.push([
 "ja": "Mary: わかりました。"
 },
 {
-"fr": "Jean: L'essentiel, c'est que l'électron n'est pas seulement une petite balle ; c'est aussi une *onde*... une vague.",
-"en": "John: The key is that an electron isn't just a tiny ball; it's also a *wave*... a wave.",
+"fr": "Jean: L'essentiel, c'est que l'électron n'est pas seulement une petite balle ; c'est aussi une onde... une vague.",
+"en": "John: The key is that an electron isn't just a tiny ball; it's also a wave... a wave.",
 "ja": "John: 重要なのは、電子が単なる小さなボールではなく、波（onde）でもあるということです…波です。"
 },
 {
@@ -101,8 +101,8 @@ datasets.push([
 "ja": "Mary: 波動-粒子二重性。その通り。"
 },
 {
-"fr": "Jean: Et son moment n'est pas une vitesse que nous calculons, mais une... une propriété fondamentale *de cette onde*.",
-"en": "John: And its momentum isn't a speed we calculate, but a... a fundamental property *of that wave*.",
+"fr": "Jean: Et son moment n'est pas une vitesse que nous calculons, mais une... une propriété fondamentale de cette onde.",
+"en": "John: And its momentum isn't a speed we calculate, but a... a fundamental property of that wave.",
 "ja": "John: その運動量は我々が計算する速度ではなく、…その波の基本的な性質です。"
 },
 {
@@ -121,8 +121,8 @@ datasets.push([
 "ja": "Mary: では、非常に密に詰まっており、波打ち具合が激しい波ということは、運動量が高いということですか？"
 },
 {
-"fr": "Jean: Vous avez raison. Et l'« opérateur de moment » n'est rien d'autre qu'un outil mathématique qui *pose* une question à la vague : « Combien es-tu ondulée ? »",
-"en": "John: You've got it. And the 'momentum operator' is simply the mathematical tool that *asks* the wave a question: 'How wavy are you?'",
+"fr": "Jean: Vous avez raison. Et l'« opérateur de moment » n'est rien d'autre qu'un outil mathématique qui pose une question à la vague : « Combien es-tu ondulée ? »",
+"en": "John: You've got it. And the 'momentum operator' is simply the mathematical tool that asks the wave a question: 'How wavy are you?'",
 "ja": "John: その通りです。そして「運動量演算子」は、波に質問する数学的なツールで、その質問は「どのくらい波打ち具合が強いですか？」です。"
 },
 {
@@ -136,8 +136,8 @@ datasets.push([
 "ja": "John: それは波の形状の変化率を測定しています。動く点を追跡しているのではなく、波そのものの本来の形を分析しているのです。"
 },
 {
-"fr": "Marie: Ah, je vois ! Donc, cela ne *dépend* pas d'un changement de position, car c'est une caractéristique de la vague à un seul moment. Mais attendez… si la position et le moment ne sont que deux aspects différents de la même vague…",
-"en": "Mary: Ah, I see! So it doesn't *depend* on a change in position, because it's a feature of the wave at a single moment. But wait… if position and momentum are just two different aspects of the same wave...",
+"fr": "Marie: Ah, je vois ! Donc, cela ne dépend pas d'un changement de position, car c'est une caractéristique de la vague à un seul moment. Mais attendez… si la position et le moment ne sont que deux aspects différents de la même vague…",
+"en": "Mary: Ah, I see! So it doesn't depend on a change in position, because it's a feature of the wave at a single moment. But wait… if position and momentum are just two different aspects of the same wave...",
 "ja": "Mary: ああ、わかりました！だから、それは位置の変化に依存するわけではないのです。なぜなら、それはある一瞬の波の特性だからです。しかし、位置と運動量が同じ波の2つの異なる側面であるなら…"
 },
 {
@@ -251,8 +251,8 @@ datasets.push([
 "ja": "Mary: Okay、それではそれが円周運動を開始するようになります。"
 },
 {
-"fr": "Jean: Correct. Maintenant, vous le laissez accomplir *exactement* une demi-tour.",
-"en": "John: Correct. Now, you let it complete *exactly* one half-turn.",
+"fr": "Jean: Correct. Maintenant, vous le laissez accomplir exactement une demi-tour.",
+"en": "John: Correct. Now, you let it complete exactly one half-turn.",
 "ja": "John: 正しいです。今度は、それを正確に半回転させるようにします。"
 },
 {
@@ -261,9 +261,9 @@ datasets.push([
 "ja": "Mary: Okay."
 },
 {
-"fr": "Jean: Et à ce moment précis, vous mesurez sa *position*.",
-"en": "John: And at that precise moment, you measure its *position*.",
-"ja": "John: その正確な時刻に、その*位置*を測定します。"
+"fr": "Jean: Et à ce moment précis, vous mesurez sa position.",
+"en": "John: And at that precise moment, you measure its position.",
+"ja": "John: その正確な時刻に、その位置を測定します。"
 },
 {
 "fr": "Marie: Vous mesurez sa position. Et… qu'est-ce que cela vous apprend ?",
@@ -271,9 +271,9 @@ datasets.push([
 "ja": "Mary: その位置を測定します。そして…それはあなたに何を教えてくれるでしょうか？"
 },
 {
-"fr": "Jean: C'est là que réside la magie. Cette mesure unique de sa position finale vous dit, avec une précision incroyable, quelle était sa quantité de mouvement *initiale*…",
-"en": "John: Here’s the magic. That single measurement of its final position tells you, with incredible precision, what its *initial* momentum was...",
-"ja": "John: これが魔法の部分です。その最終的な位置に関する単一の測定は、驚くほど正確に、その*初期の*運動量をあなたに教えてくれます…"
+"fr": "Jean: C'est là que réside la magie. Cette mesure unique de sa position finale vous dit, avec une précision incroyable, quelle était sa quantité de mouvement initiale…",
+"en": "John: Here’s the magic. That single measurement of its final position tells you, with incredible precision, what its initial momentum was...",
+"ja": "John: これが魔法の部分です。その最終的な位置に関する単一の測定は、驚くほど正確に、その初期の運動量をあなたに教えてくれます…"
 },
 {
 "fr": "Marie: Wow.",
@@ -286,8 +286,8 @@ datasets.push([
 "ja": "John: 最初の場所に戻る"
 },
 {
-"fr": "Marie: Attendez, vous me dites que mesurer où il *est* maintenant nous apprend comment il *se déplaçait* autrefois ?",
-"en": "Mary: Wait, you're telling me that measuring where it *is* now tells you how it *was moving* back then?",
+"fr": "Marie: Attendez, vous me dites que mesurer où il est maintenant nous apprend comment il se déplaçait autrefois ?",
+"en": "Mary: Wait, you're telling me that measuring where it is now tells you how it was moving back then?",
 "ja": "Mary: ちょっと待って、今いる場所を測定することで、かつてどう動いていたかがわかるって言ってるの？"
 },
 {
@@ -332,7 +332,7 @@ datasets.push([
 },
 {
 "fr": "Jean: C'est le résultat d'une action dynamique que vous effectuez sur le système. La question de l'auditeur révèle vraiment cette toute nouvelle révolution dans la pensée.",
-"en": "John: It is the outcome of a dynamic *action* you perform on the system. That listener's question, it really uncovers that entire, revolutionary shift in thinking.",
+"en": "John: It is the outcome of a dynamic action you perform on the system. That listener's question, it really uncovers that entire, revolutionary shift in thinking.",
 "ja": "John: それはあなたがシステムに対して行う動的な「行動」の結果です。聞き手の質問は、その全体的な、革命的な思考の転換を本当に明らかにしています。"
 },
 {
@@ -346,9 +346,9 @@ datasets.push([
 "ja": "John: Maryさん、私の喜びでした。"
 },
 {
-"fr": "Marie: Maintenant, voici une question à laquelle nous aimerions que vous réfléchissiez. Si la nature vous forçait à faire un choix, préféreriez-vous connaître avec une absolue et parfaite certitude : exactement *où vous êtes* en ce moment...",
-"en": "Mary: Now, here's a question we'd like you to think about. If nature forced you to make a choice, which would you rather know with absolute, perfect certainty: exactly *where you are* in this moment...",
-"ja": "Mary: では、ここで皆さんに考えていただきたい質問があります。もし自然があなたに選択を迫ったとしたら、絶対的で完璧な確信で知りたいのは、この瞬間に *あなたがどこにいるか* でしょうか..."
+"fr": "Marie: Maintenant, voici une question à laquelle nous aimerions que vous réfléchissiez. Si la nature vous forçait à faire un choix, préféreriez-vous connaître avec une absolue et parfaite certitude : exactement où vous êtes en ce moment...",
+"en": "Mary: Now, here's a question we'd like you to think about. If nature forced you to make a choice, which would you rather know with absolute, perfect certainty: exactly where you are in this moment...",
+"ja": "Mary: では、ここで皆さんに考えていただきたい質問があります。もし自然があなたに選択を迫ったとしたら、絶対的で完璧な確信で知りたいのは、この瞬間に あなたがどこにいるか でしょうか..."
 },
 {
 "fr": "Jean: Hmm.",
@@ -356,9 +356,9 @@ datasets.push([
 "ja": "John: Hmm."
 },
 {
-"fr": "Marie: ou la direction et la quantité de mouvement exactes avec lesquelles *vous avancez* ?",
-"en": "Mary: ...or the exact direction and momentum with which *you are moving forward*?",
-"ja": "Mary: それとも、あなたがどの方向に、どの勢いで *進んでいるか* の正確な情報でしょうか？"
+"fr": "Marie: ou la direction et la quantité de mouvement exactes avec lesquelles vous avancez ?",
+"en": "Mary: ...or the exact direction and momentum with which you are moving forward?",
+"ja": "Mary: それとも、あなたがどの方向に、どの勢いで 進んでいるか の正確な情報でしょうか？"
 },
 {
 "fr": "Jean: Et comment ce choix changerait-il votre vision de votre propre existence ?",
