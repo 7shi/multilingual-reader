@@ -22,6 +22,7 @@ let speakerVoicesByLanguage = {
 }; // Store voice settings per language by speaker index
 let isMultiLanguageMode = false;
 let multiLangCurrentStep = 0; // 0: fr, 1: en, 2: ja
+let datasetConfigMapping = {}; // Store dataset name to index mapping
 
 // Language-specific speed settings
 let languageRates = {
@@ -50,17 +51,18 @@ const textContent = document.getElementById('textContent');
 const speakerVoicesDiv = document.getElementById('speakerVoices');
 
 // Initialize
-function init() {
+function init(datasetConfig) {
+    // Store dataset config for later use
+    datasetConfigMapping = datasetConfig;
+    
     // Initialize multi-language mode based on default selection
     isMultiLanguageMode = (languageSelect.value === 'multi');
     
-    // Initialize dataset based on default selection
+    // Initialize dataset based on provided config
     const selectedDataset = datasetSelect.value;
-    if (datasets) {
-        if (selectedDataset === 'momentum' && datasets[1]) {
-            texts = datasets[1];
-        } else if (selectedDataset === 'onde' && datasets[0]) {
-            texts = datasets[0];
+    if (datasets && datasetConfig) {
+        if (datasetConfig[selectedDataset] !== undefined && datasets[datasetConfig[selectedDataset]]) {
+            texts = datasets[datasetConfig[selectedDataset]];
         }
     }
     
@@ -118,17 +120,15 @@ function onDatasetChange() {
     // Update texts based on dataset selection
     const selectedDataset = datasetSelect.value;
     
-    if (datasets) {
-        if (selectedDataset === 'momentum' && datasets[1]) {
-            texts = datasets[1];
-        } else if (selectedDataset === 'onde' && datasets[0]) {
-            texts = datasets[0];
+    if (datasets && datasetConfigMapping) {
+        if (datasetConfigMapping[selectedDataset] !== undefined && datasets[datasetConfigMapping[selectedDataset]]) {
+            texts = datasets[datasetConfigMapping[selectedDataset]];
         } else {
-            console.error(`Dataset '${selectedDataset}' not found`);
+            console.error(`Dataset '${selectedDataset}' not found in config`);
             return;
         }
     } else {
-        console.error('Datasets not loaded');
+        console.error('Datasets or config not loaded');
         return;
     }
     
@@ -979,6 +979,3 @@ function toggleSpeakerVoices() {
         icon.textContent = '▼';
     }
 }
-
-// Initialize when page loads
-document.addEventListener('DOMContentLoaded', init);

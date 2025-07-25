@@ -100,6 +100,56 @@ multilingual-reader/
 
 ## 🎨 カスタマイズ
 
+### 新しいデータセットの追加
+
+アプリケーションに新しいデータセットを追加するには、以下の手順に従ってください：
+
+#### 1. データセットファイルの作成
+新しいデータセット用のJavaScriptファイルを作成します：
+
+```bash
+# テキストファイルから多言語データセットを生成
+python merge_podcast_data.py -o new_dataset.js --prefix new_dataset_name
+```
+
+#### 2. HTMLファイルでのスクリプト読み込み
+`podcast-reader.html`に新しいデータセットファイルを追加：
+
+```html
+<script src="onde.js"></script>
+<script src="momentum.js"></script>
+<script src="new_dataset.js"></script> <!-- 新しいデータセット -->
+```
+
+#### 3. HTMLのselectオプション追加
+dataset選択プルダウンに新しいオプションを追加：
+
+```html
+<select id="dataset">
+    <option value="onde" selected>🌊 Onde (Waves)</option>
+    <option value="momentum">⚡ Momentum</option>
+    <option value="new_dataset">🆕 New Dataset</option> <!-- 新しいオプション -->
+</select>
+```
+
+#### 4. 初期化設定の更新
+`podcast-reader.html`の初期化部分でデータセットマッピングを更新：
+
+```javascript
+document.addEventListener('DOMContentLoaded', () => {
+    init({
+        'onde': 0,
+        'momentum': 1,
+        'new_dataset': 2  // 新しいデータセットのインデックス
+    });
+});
+```
+
+**注意事項**：
+- データセットのインデックスは、JavaScriptファイルが読み込まれる順序に対応します
+- 各データセットファイルは`datasets.push([...])`形式で配列に追加されます
+- ファイル読み込み順序とマッピングのインデックスを一致させる必要があります
+
 ### GenSpark HTML対話データの抽出
 `convert_genspark.py`スクリプトを使用して、GenSpark HTMLファイルから対話データを抽出：
 
