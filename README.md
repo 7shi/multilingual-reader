@@ -64,6 +64,8 @@ physics-podcast-reader/
 ├── physics-podcast-reader.css     # スタイルシート
 ├── physics-podcast-reader.js      # JavaScriptロジック
 ├── podcast-text-data.js          # 多言語テキストデータ
+├── split_podcast_data.py         # テキスト分割スクリプト
+├── pyproject.toml                # Pythonプロジェクト設定
 └── README.md                      # このファイル
 ```
 
@@ -143,6 +145,25 @@ physics-podcast-reader/
 1. `podcast-text-data.js`でテキスト更新
 2. 話者名と数式記号の読み上げ対応確認
 3. 行の長さと音声ファイルサイズを考慮
+
+### テキストデータの分割
+`split_podcast_data.py`スクリプトを使用して、多言語テキストを個別ファイルに分割可能：
+
+```bash
+# 基本使用
+python split_podcast_data.py podcast-text-data.js -o quantum_physics
+
+# 出力ファイル
+# quantum_physics-fr.txt  (フランス語)
+# quantum_physics-en.txt  (英語)
+# quantum_physics-ja.txt  (日本語)
+```
+
+**スクリプト機能**：
+- JavaScript形式の多言語データを自動解析
+- 各言語のテキストを個別のテキストファイルに抽出
+- UTF-8エンコーディングで日本語・フランス語に対応
+- 話者形式（Speaker: text）の検証とクリーニング
 
 ### ハイライト機能の仕組み
 - **Web Speech API**: `SpeechSynthesisUtterance.onboundary`イベントを使用

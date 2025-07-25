@@ -4,10 +4,10 @@ Script to extract multilingual text data from podcast-text-data.js
 and split it into separate text files for each language.
 
 Usage:
-    python split_podcast_data.py -o output_prefix
+    python split_podcast_data.py input_file -o output_prefix
 
 Example:
-    python split_podcast_data.py -o quantum_physics
+    python split_podcast_data.py podcast-text-data.js -o quantum_physics
     # Creates: quantum_physics-fr.txt, quantum_physics-en.txt, quantum_physics-ja.txt
 """
 
@@ -128,10 +128,10 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  %(prog)s -o physics_podcast
+  %(prog)s podcast-text-data.js -o physics_podcast
     Creates: physics_podcast-fr.txt, physics_podcast-en.txt, physics_podcast-ja.txt
   
-  %(prog)s -o quantum_mechanics
+  %(prog)s custom-data.js -o quantum_mechanics
     Creates: quantum_mechanics-fr.txt, quantum_mechanics-en.txt, quantum_mechanics-ja.txt
         """
     )
@@ -143,17 +143,16 @@ Examples:
     )
     
     parser.add_argument(
-        '-i', '--input',
-        default='podcast-text-data.js',
-        help='Input JavaScript file (default: podcast-text-data.js)'
+        'input_file',
+        help='Input JavaScript file'
     )
     
     args = parser.parse_args()
     
     # Check if input file exists
-    input_file = Path(args.input)
+    input_file = Path(args.input_file)
     if not input_file.exists():
-        print(f"Error: Input file '{args.input}' not found", file=sys.stderr)
+        print(f"Error: Input file '{args.input_file}' not found", file=sys.stderr)
         sys.exit(1)
     
     try:
