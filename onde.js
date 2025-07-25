@@ -61,7 +61,7 @@ datasets.push([
 "ja": "Camille: それは…可能性の波。"
 },
 {
-"fr": "Luc: Une onde de possibilités… Tu veux dire qu'elle ne décrit pas un objet réel, mais plutôt la... la probabilité de trouver l'objet quelque part ?",
+"fr": "Luc: Une onde de possibilités… Vous voulez dire qu'elle ne décrit pas un objet réel, mais plutôt la... la probabilité de trouver l'objet quelque part ?",
 "en": "Luc: A wave of possibilities... Do you mean it doesn't describe a real object, but rather the... the probability of finding the object somewhere?",
 "ja": "Luc: 可能性の波…つまり、それは実在する物体を記述しているんじゃなくて、その物体がどこかで見つかる…確率を表しているということかい？"
 },
@@ -76,7 +76,7 @@ datasets.push([
 "ja": "Luc: わかった。"
 },
 {
-"fr": "Camille: C'est le carré de son amplitude. Ou de sa « hauteur », si tu préfères.",
+"fr": "Camille: C'est le carré de son amplitude. Ou de sa « hauteur », si vous préférez.",
 "en": "Camille: It's the square of its amplitude. Or its \"height\", if you prefer.",
 "ja": "Camille: その振幅の2乗よ。あるいは、分かりやすく言えばその「高さ」の2乗ね。"
 },
@@ -176,7 +176,7 @@ datasets.push([
 "ja": "Luc: なるほど。"
 },
 {
-"fr": "Camille: Mais... il y a une raison encore plus belle. Une raison qui fait le lien avec ton domaine, Luc.",
+"fr": "Camille: Mais... il y a une raison encore plus belle. Une raison qui fait le lien avec votre domaine, Luc.",
 "en": "Camille: But... there's an even more beautiful reason. A reason that connects to your field, Luc.",
 "ja": "Camille: でも…もっと美しい理由もあるの。あなたの専門分野につながる理由がね、ルック。"
 },
@@ -256,7 +256,7 @@ datasets.push([
 "ja": "Luc: ということは、違う。実際、振幅と幅というこの2つのパラメータは、独立しているように思える。"
 },
 {
-"fr": "Camille: Tu as parfaitement raison. Ce sont deux paramètres indépendants.",
+"fr": "Camille: Vous avez parfaitement raison. Ce sont deux paramètres indépendants.",
 "en": "Camille: You are absolutely right. These are two independent parameters.",
 "ja": "Camille: まったくその通り。その2つは独立したパラメータよ。"
 },
@@ -346,7 +346,7 @@ datasets.push([
 "ja": "Luc: でも…それが本当は何を意味しているのか、注意が必要だ…"
 },
 {
-"fr": "Camille: Vas-y, explique-nous cette nuance, elle est capitale.",
+"fr": "Camille: Allez-y, expliquez-nous cette nuance, elle est capitale.",
 "en": "Camille: Go on, explain that nuance to us, it's crucial.",
 "ja": "Camille: ええ、お願い。そのニュアンスを説明してくれる？とても重要なことよ。"
 },
