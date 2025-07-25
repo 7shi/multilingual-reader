@@ -67,10 +67,10 @@
 ## 📁 ファイル構成
 
 ```
-physics-podcast-reader/
-├── physics-podcast-reader.html    # メインHTML（UI構造）
-├── physics-podcast-reader.css     # スタイルシート
-├── physics-podcast-reader.js      # JavaScriptロジック
+multilingual-reader/
+├── podcast-reader.html           # メインHTML（UI構造）
+├── podcast-reader.css            # スタイルシート
+├── podcast-reader.js             # JavaScriptロジック
 ├── onde.js                       # 多言語テキストデータ（波動・量子力学）
 ├── momentum.js                   # 多言語テキストデータ（運動量・測定理論）
 ├── split_podcast_data.py         # テキスト分割スクリプト（データセット配列対応）
@@ -314,4 +314,4 @@ python split_podcast_data.py momentum.js -o momentum_physics
 
 ---
 
-*「量子世界の神秘と日常の物理学を結ぶ架け橋」- Physics Podcast Reader*
+*「量子世界の神秘と日常の物理学を結ぶ架け橋」- Multilingual Podcast Reader*
