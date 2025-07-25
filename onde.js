@@ -1,4 +1,10 @@
-const podcastTexts = [
+// Initialize datasets array if undefined
+if (typeof datasets === 'undefined') {
+    var datasets = [];
+}
+
+// Add onde dataset to datasets array
+datasets.push([
 {
 "fr": "Camille: Bonjour à toutes et à tous, et bienvenue dans « Passerelles en Physique ». Le podcast où, eh bien, on jette un pont entre les mystères du monde quantique et la physique de notre quotidien.",
 "en": "Camille: Hello everyone, and welcome to \"Bridges in Physics\". The podcast where, well, we build a bridge between the mysteries of the quantum world and the physics of our everyday lives.",
@@ -494,4 +500,4 @@ const podcastTexts = [
 "en": "Camille: Thank you for listening to us, and see you soon on \"Bridges in Physics\".",
 "ja": "Camille: ご清聴ありがとうございました。また「物理の架け橋」でお会いしましょう。"
 }
-];
+]);

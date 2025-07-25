@@ -18,39 +18,56 @@ import sys
 from pathlib import Path
 
 
-def extract_js_array_content(js_content: str, object_name: str) -> dict:
+def extract_js_array_content(js_content: str, object_name: str = None) -> dict:
     """
-    Extract the content of a JavaScript array from the JS file (new format).
+    Extract the content of a JavaScript array from the JS file (supports both old format and new datasets format).
     
     Args:
         js_content: The full JavaScript file content
-        object_name: Name of the object to extract (e.g., 'podcastTexts')
+        object_name: Name of the object to extract (e.g., 'podcastTexts') - for old format
         
     Returns:
         Dictionary with language codes as keys and text content as values
     """
-    # 先頭から`const podcastTexts =`を検索
-    start_pattern = rf'const\s+{object_name}\s*='
-    start_match = re.search(start_pattern, js_content)
-    if not start_match:
-        raise ValueError(f"Could not find object '{object_name}' in JavaScript file")
+    data = None
     
-    start_pos = start_match.end()
+    # Try new datasets format first - extract first datasets.push([...]) found
+    pattern = r'datasets\.push\(\s*(\[.*?\])\s*\);'
+    match = re.search(pattern, js_content, re.DOTALL)
+    if match:
+        json_content = match.group(1)
+        try:
+            data = json.loads(json_content)
+        except json.JSONDecodeError as e:
+            raise ValueError(f"Failed to parse JSON content from datasets format: {e}")
     
-    # 末尾から`;`を検索
-    end_match = re.search(r';\s*$', js_content)
-    if not end_match:
-        raise ValueError("Could not find ending semicolon in JavaScript file")
+    # Try old format if new format failed or wasn't specified
+    if data is None and object_name:
+        # 先頭から`const podcastTexts =`を検索
+        start_pattern = rf'const\s+{object_name}\s*='
+        start_match = re.search(start_pattern, js_content)
+        if not start_match:
+            raise ValueError(f"Could not find object '{object_name}' in JavaScript file")
+        
+        start_pos = start_match.end()
+        
+        # 末尾から`;`を検索
+        end_match = re.search(r';\s*$', js_content)
+        if not end_match:
+            raise ValueError("Could not find ending semicolon in JavaScript file")
+        
+        end_pos = end_match.start()
+        
+        # その間を取り出してjson.loads
+        json_content = js_content[start_pos:end_pos].strip()
+        
+        try:
+            data = json.loads(json_content)
+        except json.JSONDecodeError as e:
+            raise ValueError(f"Failed to parse JSON content: {e}")
     
-    end_pos = end_match.start()
-    
-    # その間を取り出してjson.loads
-    json_content = js_content[start_pos:end_pos].strip()
-    
-    try:
-        data = json.loads(json_content)
-    except json.JSONDecodeError as e:
-        raise ValueError(f"Failed to parse JSON content: {e}")
+    if data is None:
+        raise ValueError("Could not extract data from JavaScript file")
     
     if not isinstance(data, list):
         raise ValueError("Expected JSON array format")
@@ -159,11 +176,16 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  %(prog)s podcast-text-data.js -o physics_podcast
-    Creates: physics_podcast-fr.txt, physics_podcast-en.txt, physics_podcast-ja.txt
+  # New datasets format
+  %(prog)s onde.js -o onde_physics
+    Creates: onde_physics-fr.txt, onde_physics-en.txt, onde_physics-ja.txt
   
-  %(prog)s custom-data.js -o quantum_mechanics
-    Creates: quantum_mechanics-fr.txt, quantum_mechanics-en.txt, quantum_mechanics-ja.txt
+  %(prog)s momentum.js -o momentum_physics
+    Creates: momentum_physics-fr.txt, momentum_physics-en.txt, momentum_physics-ja.txt
+  
+  # Old format
+  %(prog)s podcast-text-data.js --object podcastTexts -o physics_podcast
+    Creates: physics_podcast-fr.txt, physics_podcast-en.txt, physics_podcast-ja.txt
         """
     )
     
@@ -171,6 +193,13 @@ Examples:
         '-o', '--output',
         required=True,
         help='Output filename prefix (e.g., "physics" creates physics-fr.txt, physics-en.txt, physics-ja.txt)'
+    )
+    
+    
+    parser.add_argument(
+        '--object',
+        default='podcastTexts',
+        help='Object name to extract from old format (default: podcastTexts)'
     )
     
     parser.add_argument(
@@ -191,8 +220,8 @@ Examples:
         with open(input_file, 'r', encoding='utf-8') as f:
             js_content = f.read()
         
-        # Extract the podcast texts array (new format)
-        languages = extract_js_array_content(js_content, 'podcastTexts')
+        # Extract the podcast texts array (supports both old and new formats)
+        languages = extract_js_array_content(js_content, object_name=args.object)
         
         if not languages:
             print("No language data found in the JavaScript file", file=sys.stderr)

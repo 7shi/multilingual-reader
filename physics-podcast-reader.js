@@ -1,5 +1,5 @@
-// Text data is loaded from external file
-const texts = podcastTexts;
+// Text data is loaded from external files
+let texts = datasets && datasets[0] ? datasets[0] : [];
 
 // Language codes for speech synthesis
 const langCodes = {
@@ -16,10 +16,10 @@ let dialogueLines = [];
 let availableVoices = [];
 let speakers = [];
 let speakerVoicesByLanguage = {
-    fr: {},
-    en: {},
-    ja: {}
-}; // Store voice settings per language
+    fr: [],
+    en: [],
+    ja: []
+}; // Store voice settings per language by speaker index
 let isMultiLanguageMode = false;
 let multiLangCurrentStep = 0; // 0: fr, 1: en, 2: ja
 
@@ -32,8 +32,8 @@ let languageRates = {
 
 // DOM elements
 const languageSelect = document.getElementById('language');
-const playBtn = document.getElementById('playBtn');
-const pauseBtn = document.getElementById('pauseBtn');
+const datasetSelect = document.getElementById('dataset');
+const playPauseBtn = document.getElementById('playPauseBtn');
 const stopBtn = document.getElementById('stopBtn');
 const rateSlider = document.getElementById('rate');
 const rateValue = document.getElementById('rateValue');
@@ -54,14 +54,27 @@ function init() {
     // Initialize multi-language mode based on default selection
     isMultiLanguageMode = (languageSelect.value === 'multi');
     
+    // Initialize dataset based on default selection
+    const selectedDataset = datasetSelect.value;
+    if (datasets) {
+        if (selectedDataset === 'momentum' && datasets[1]) {
+            texts = datasets[1];
+        } else if (selectedDataset === 'onde' && datasets[0]) {
+            texts = datasets[0];
+        }
+    }
+    
     loadVoices();
     loadLanguageRateSettings();
     loadText();
     
+    // Initialize button state
+    updatePlayPauseButton();
+    
     // Event listeners
     languageSelect.addEventListener('change', onLanguageChange);
-    playBtn.addEventListener('click', playText);
-    pauseBtn.addEventListener('click', pauseText);
+    datasetSelect.addEventListener('change', onDatasetChange);
+    playPauseBtn.addEventListener('click', togglePlayPause);
     stopBtn.addEventListener('click', stopText);
     rateSlider.addEventListener('input', updateRate);
     
@@ -98,6 +111,41 @@ function onLanguageChange() {
     stopText();
     
     // Load text content
+    loadText();
+}
+
+function onDatasetChange() {
+    // Update texts based on dataset selection
+    const selectedDataset = datasetSelect.value;
+    
+    if (datasets) {
+        if (selectedDataset === 'momentum' && datasets[1]) {
+            texts = datasets[1];
+        } else if (selectedDataset === 'onde' && datasets[0]) {
+            texts = datasets[0];
+        } else {
+            console.error(`Dataset '${selectedDataset}' not found`);
+            return;
+        }
+    } else {
+        console.error('Datasets not loaded');
+        return;
+    }
+    
+    // データセット変更時にステータスを更新
+    updateStatus('stopped', `Ready to play - ${selectedDataset} dataset loaded`);
+    
+    // Reset voice assignments when switching datasets
+    speakerVoicesByLanguage = {
+        fr: [],
+        en: [],
+        ja: []
+    };
+    
+    // Stop current playback when switching datasets
+    stopText();
+    
+    // Load text content with new dataset
     loadText();
 }
 
@@ -243,14 +291,23 @@ function updateLanguageRate(event) {
 }
 
 
-function playText() {
+function togglePlayPause() {
     if (isPaused && currentSynth) {
+        // Resume paused playback
         speechSynthesis.resume();
         isPaused = false;
         updateStatus('playing', 'Playing...');
-        return;
+        updatePlayPauseButton();
+    } else if (currentSynth && !isPaused) {
+        // Pause current playback
+        pauseText();
+    } else {
+        // Start new playback
+        playText();
     }
-    
+}
+
+function playText() {
     currentLineIndex = 0;
     multiLangCurrentStep = 0;
     
@@ -259,6 +316,7 @@ function playText() {
     } else {
         speakLine(currentLineIndex);
     }
+    updatePlayPauseButton();
 }
 
 function playFromLine(lineIndex) {
@@ -266,6 +324,7 @@ function playFromLine(lineIndex) {
     currentLineIndex = lineIndex;
     const selectedLang = languageSelect.value;
     speakLineInLanguage(currentLineIndex, selectedLang);
+    updatePlayPauseButton();
 }
 
 function playFromLineInLanguage(lineIndex, lang) {
@@ -278,6 +337,7 @@ function playFromLineInLanguage(lineIndex, lang) {
     } else {
         speakLineInLanguage(currentLineIndex, lang);
     }
+    updatePlayPauseButton();
 }
 
 function speakLineMultiLanguage(lineIndex) {
@@ -366,10 +426,13 @@ function pauseText() {
         speechSynthesis.pause();
         isPaused = true;
         updateStatus('paused', 'Paused');
+        updatePlayPauseButton();
     }
 }
 
 function stopText() {
+    const wasPlaying = currentSynth !== null;
+    
     if (currentSynth) {
         speechSynthesis.cancel();
         currentSynth = null;
@@ -388,7 +451,11 @@ function stopText() {
     // Clear any dynamic highlighting
     clearDynamicHighlight();
     
-    updateStatus('stopped', 'Stopped');
+    // Only update status to "Stopped" if we were actually playing
+    if (wasPlaying) {
+        updateStatus('stopped', 'Stopped');
+    }
+    updatePlayPauseButton();
 }
 
 function updateStatus(type, message) {
@@ -396,17 +463,72 @@ function updateStatus(type, message) {
     status.textContent = message;
 }
 
-// Speaker identification
-function identifySpeakers() {
-    const uniqueSpeakers = new Set();
-    if (dialogueLines && Array.isArray(dialogueLines)) {
-        dialogueLines.forEach(line => {
-            if (line && line.speaker && line.text) { // Only count lines with both speaker and text
-                uniqueSpeakers.add(line.speaker);
-            }
-        });
+function updatePlayPauseButton() {
+    if (currentSynth && !isPaused) {
+        // Currently playing
+        playPauseBtn.textContent = '⏸️ Pause';
+        playPauseBtn.className = 'pause-btn';
+    } else {
+        // Stopped or paused
+        playPauseBtn.textContent = '▶️ Play';
+        playPauseBtn.className = 'play-btn';
     }
-    speakers = Array.from(uniqueSpeakers);
+}
+
+// Speaker identification - creates a unified list across all languages
+function identifySpeakers() {
+    const allLanguageLines = parseAllLanguageTexts();
+    const speakerMapping = new Map(); // Map to track speaker equivalences across languages
+    let speakerIndex = 0;
+    
+    // Process each text entry to build speaker mapping
+    texts.forEach((textObj, index) => {
+        const speakers_fr = textObj.fr ? extractSpeakerFromLine(textObj.fr) : null;
+        const speakers_en = textObj.en ? extractSpeakerFromLine(textObj.en) : null;
+        const speakers_ja = textObj.ja ? extractSpeakerFromLine(textObj.ja) : null;
+        
+        // Use French as the primary language for speaker identification
+        if (speakers_fr && !speakerMapping.has(speakers_fr)) {
+            speakerMapping.set(speakers_fr, speakerIndex);
+            if (speakers_en) speakerMapping.set(speakers_en, speakerIndex);
+            if (speakers_ja) speakerMapping.set(speakers_ja, speakerIndex);
+            speakerIndex++;
+        }
+    });
+    
+    // Create speakers array from French speakers (primary language)
+    speakers = [];
+    speakerMapping.forEach((index, speakerName) => {
+        // Only add French speakers to maintain consistent indexing
+        if (allLanguageLines.fr.some(line => line.speaker === speakerName)) {
+            speakers[index] = speakerName;
+        }
+    });
+    
+    // Remove undefined entries and compact array
+    speakers = speakers.filter(speaker => speaker !== undefined);
+}
+
+function extractSpeakerFromLine(line) {
+    const colonIndex = line.indexOf(': ');
+    return colonIndex !== -1 ? line.substring(0, colonIndex) : null;
+}
+
+function getSpeakerIndex(speakerName, lang, lineIndex) {
+    // For languages other than French, we need to map the speaker to the French equivalent
+    // by looking at the same line index in the French version
+    if (lang === 'fr') {
+        return speakers.indexOf(speakerName);
+    }
+    
+    // For non-French languages, find the equivalent French speaker at the same line index
+    if (lineIndex < texts.length && texts[lineIndex].fr) {
+        const frenchSpeaker = extractSpeakerFromLine(texts[lineIndex].fr);
+        return speakers.indexOf(frenchSpeaker);
+    }
+    
+    // Fallback: try direct mapping
+    return speakers.indexOf(speakerName);
 }
 
 // Voice management functions
@@ -481,7 +603,7 @@ function prioritizeVoices(voices) {
 function autoAssignDefaultVoicesForLanguage(lang, filteredVoices) {
     // Only auto-assign if no voices are currently set for any speaker in this language
     const currentVoices = speakerVoicesByLanguage[lang];
-    const hasExistingVoices = speakers.some(speaker => currentVoices[speaker]);
+    const hasExistingVoices = currentVoices.some(voice => voice !== undefined);
     if (hasExistingVoices || filteredVoices.length === 0) {
         return;
     }
@@ -519,32 +641,22 @@ function autoAssignDefaultVoicesForLanguage(lang, filteredVoices) {
     
     // Try to assign different gender voices if available
     if (speakers.length >= 2 && maleVoices.length > 0 && femaleVoices.length > 0) {
-        // Assign female voice to Camille, male voice to Luc
-        if (speakers.includes('Camille')) {
-            currentVoices['Camille'] = femaleVoices[0];
-        }
-        if (speakers.includes('Luc')) {
-            currentVoices['Luc'] = maleVoices[0];
-        }
-        
-        // Handle additional speakers with alternating pattern
-        let maleIndex = speakers.includes('Luc') ? 1 : 0;
-        let femaleIndex = speakers.includes('Camille') ? 1 : 0;
+        // Alternate between female and male voices by speaker index
+        let maleIndex = 0;
+        let femaleIndex = 0;
         
         speakers.forEach((speaker, index) => {
-            if (speaker !== 'Camille' && speaker !== 'Luc' && !currentVoices[speaker]) {
-                if (index % 2 === 0 && femaleIndex < femaleVoices.length) {
-                    currentVoices[speaker] = femaleVoices[femaleIndex++];
-                } else if (maleIndex < maleVoices.length) {
-                    currentVoices[speaker] = maleVoices[maleIndex++];
-                }
+            if (index % 2 === 0 && femaleIndex < femaleVoices.length) {
+                currentVoices[index] = femaleVoices[femaleIndex++];
+            } else if (maleIndex < maleVoices.length) {
+                currentVoices[index] = maleVoices[maleIndex++];
             }
         });
     } else {
-        // Fallback: assign different voices sequentially
+        // Fallback: assign different voices sequentially by index
         speakers.forEach((speaker, index) => {
             if (index < filteredVoices.length) {
-                currentVoices[speaker] = filteredVoices[index];
+                currentVoices[index] = filteredVoices[index];
             }
         });
     }
@@ -574,28 +686,24 @@ function createVoiceAssignmentsForLanguage(lang) {
     // Auto-assign different voices if no voices are currently set
     autoAssignDefaultVoicesForLanguage(lang, filteredVoices);
     
-    speakers.forEach(speaker => {
+    speakers.forEach((speaker, speakerIndex) => {
         const assignment = document.createElement('div');
         assignment.className = 'speaker-voice-assignment';
         
-        const speakerNameSpan = document.createElement('span');
-        speakerNameSpan.className = `speaker-name ${speaker.toLowerCase()}`;
-        speakerNameSpan.textContent = speaker + ':';
-        
         const voiceSelect = document.createElement('select');
         voiceSelect.className = 'speaker-voice-select';
-        voiceSelect.setAttribute('data-speaker', speaker);
+        voiceSelect.setAttribute('data-speaker-index', speakerIndex);
         voiceSelect.setAttribute('data-lang', lang);
         
         // Add default option
         const defaultOption = document.createElement('option');
         defaultOption.value = '';
-        defaultOption.textContent = 'Use Default Voice';
+        defaultOption.textContent = `Speaker ${speakerIndex + 1} - Default Voice`;
         voiceSelect.appendChild(defaultOption);
         
-        // Find the previously selected voice for this speaker in this language
+        // Find the previously selected voice for this speaker index in this language
         let selectedVoiceIndex = '';
-        const currentSpeakerVoice = speakerVoicesByLanguage[lang][speaker];
+        const currentSpeakerVoice = speakerVoicesByLanguage[lang][speakerIndex];
         
         // Add voice options
         filteredVoices.forEach((voice, index) => {
@@ -619,18 +727,17 @@ function createVoiceAssignmentsForLanguage(lang) {
         
         // Add event listener for voice selection
         voiceSelect.addEventListener('change', (e) => {
-            const speakerName = e.target.getAttribute('data-speaker');
+            const speakerIndex = parseInt(e.target.getAttribute('data-speaker-index'));
             const targetLang = e.target.getAttribute('data-lang');
             const selectedIndex = e.target.value;
             
             if (selectedIndex === '') {
-                delete speakerVoicesByLanguage[targetLang][speakerName];
+                speakerVoicesByLanguage[targetLang][speakerIndex] = undefined;
             } else {
-                speakerVoicesByLanguage[targetLang][speakerName] = filteredVoices[parseInt(selectedIndex)];
+                speakerVoicesByLanguage[targetLang][speakerIndex] = filteredVoices[parseInt(selectedIndex)];
             }
         });
         
-        assignment.appendChild(speakerNameSpan);
         assignment.appendChild(voiceSelect);
         speakerList.appendChild(assignment);
     });
@@ -733,7 +840,8 @@ function speakLineWithUtterance(lineIndex, lang, line, statusMessage, onComplete
         
         // Set speaker-specific voice for current language
         const currentSpeakerVoices = speakerVoicesByLanguage[lang];
-        const speakerVoice = currentSpeakerVoices[line.speaker];
+        const speakerIndex = getSpeakerIndex(line.speaker, lang, lineIndex);
+        const speakerVoice = currentSpeakerVoices[speakerIndex];
         if (speakerVoice) {
             utterance.voice = speakerVoice;
         }

@@ -7,11 +7,11 @@
 ### 📖 対訳表示
 - **3言語同時表示**: フランス語（原文）、英語、日本語を行ごとに対訳表示
 - **視覚的識別**: 各言語に色分けされた国旗表示（FR/EN/JA）
-- **話者識別**: Camille（理論物理学者）とLuc（実験物理学者）を色分け表示
+- **話者識別**: 話者を登場順（Speaker 1, Speaker 2）で識別・色分け表示
 
 ### 🔊 高品質音声合成
 - **言語別音声選択**: 各言語で最適化された音声を自動選択
-- **話者別音声設定**: CamilleとLucに異なる音声を割り当て可能
+- **話者別音声設定**: Speaker 1、Speaker 2に異なる音声を割り当て可能（データセット間で共通）
 - **音声品質優先**: オンライン音声（localService=false）を優先選択
 - **Multilingual音声除外**: 品質の劣るMultilingual音声を自動除外
 
@@ -21,7 +21,12 @@
 - **動的ハイライト**: 再生中の文字・単語を動的にリアルタイム強調表示（ブラウザ対応時）
 - **多言語対応ハイライト**: 日本語の分かち書きなしテキストにも対応
 - **速度調整**: 0.5倍速から2倍速まで調整可能
-- **音声制御**: 再生・一時停止・停止機能（多言語モードは言語選択で統合）
+- **統合音声制御**: Play/Pauseボタンが状態に応じて切り替わる直感的操作
+
+### 📚 データセット機能
+- **複数データセット対応**: 異なる物理学トピックを切り替え可能
+- **データセット切り替え**: ドロップダウンで簡単にコンテンツ変更
+- **音声設定保持**: データセット変更時も話者別音声設定を維持
 
 ### 🧮 数式読み上げ対応
 物理学の数式記号を各言語で読み上げ可能な単語に変換：
@@ -32,22 +37,25 @@
 ## 🚀 使用方法
 
 ### 基本操作
-1. **言語選択**: 上部のLanguageドロップダウンで再生モードを選択
-   - 🌐 **Multi-Language**: 各文をフランス語→英語→日本語の順で連続読み上げ（デフォルト）
-   - **Français/English/日本語**: 選択言語のみで読み上げ
-2. **音声設定**: 「Speaker Voice Assignment & Language Speeds」セクションをクリックして展開
+1. **コンテンツ選択**: 
+   - **Dataset**: どの物理学トピック（Onde/Momentum）を学習するか選択
+   - **Language**: 再生モード選択（Multi-Language/単言語）
+2. **再生制御**:
+   - **▶️/⏸️ ボタン**: 再生状態に応じてPlay/Pauseが切り替わる統合ボタン
+   - **⏹️ Stop**: 再生停止
+   - 行クリック: 特定の行・言語から再生開始
+3. **音声設定**: 「Speaker Voice Assignment & Language Speeds」セクションをクリックして展開
    - 折りたたみ可能なUIでスペースを節約
    - 言語ごとに横並びで表示される設定パネル
-3. **再生開始**: 
-   - ▶️ **Play**ボタン: 選択モードで順次再生開始
-   - 行クリック: 特定の行・言語で再生開始
+   - Speaker 1/Speaker 2の音声を個別選択
 
 ### 音声設定
 1. **横並び表示**: 3言語（Français/English/日本語）が横に並んで表示
 2. **言語別速度調整**: 各言語ごとに個別の再生速度を設定可能
-3. **話者別設定**: CamilleとLucに個別の音声を割り当て
+3. **話者別設定**: Speaker 1/Speaker 2に個別の音声を割り当て
 4. **自動選択**: 初回時は性別に基づいて最適な音声を自動割り当て
 5. **折りたたみUI**: デフォルトで折りたたまれ、必要時のみ展開
+6. **データセット間共通**: 音声設定はデータセット切り替え時にリセット
 
 ### 学習機能
 - **多言語比較学習**: Multi-Langモードで同じ文を3言語で連続比較
@@ -63,9 +71,10 @@ physics-podcast-reader/
 ├── physics-podcast-reader.html    # メインHTML（UI構造）
 ├── physics-podcast-reader.css     # スタイルシート
 ├── physics-podcast-reader.js      # JavaScriptロジック
-├── onde.js                       # 多言語テキストデータ（JSON配列形式）
-├── split_podcast_data.py         # テキスト分割スクリプト（JSON配列形式対応）
-├── merge_podcast_data.py         # テキスト統合スクリプト（複数言語ファイル→JavaScript形式）
+├── onde.js                       # 多言語テキストデータ（波動・量子力学）
+├── momentum.js                   # 多言語テキストデータ（運動量・測定理論）
+├── split_podcast_data.py         # テキスト分割スクリプト（データセット配列対応）
+├── merge_podcast_data.py         # テキスト統合スクリプト（nameフィールドなし配列形式）
 ├── convert_genspark.py           # GenSpark HTML対話データ抽出
 ├── translate.py                  # 多言語翻訳スクリプト（英語→フランス語・日本語）
 ├── pyproject.toml                # Pythonプロジェクト設定
@@ -74,8 +83,8 @@ physics-podcast-reader/
 
 ## 🎓 コンテンツ内容
 
-### テーマ: 量子力学の基礎概念
-物理学者CamilleとLucの対話形式で以下のトピックを解説：
+### 🌊 Dataset 1: Onde (波動・量子力学)
+物理学者CamilleとLucの対話形式で量子力学の基礎概念を解説：
 
 1. **波動関数（ψ）の本質**
    - 物質波と確率波の違い
@@ -96,6 +105,29 @@ physics-podcast-reader/
 5. **哲学的考察**
    - 確率の物理的実在性
    - 量子世界と日常世界の架け橋
+
+### ⚡ Dataset 2: Momentum (運動量・測定理論)
+物理学者MaryとJohnの対話形式で量子測定理論を解説：
+
+1. **量子運動量の概念転換**
+   - 古典的直感から量子現実への跳躍
+   - 運動量演算子の物理的意味
+
+2. **波動-粒子二重性**
+   - 電子の波的性質
+   - 波の「波打ち具合」としての運動量
+
+3. **不確定性原理の実践的理解**
+   - 完全な運動量 vs 完全な位置
+   - 測定の根本的トレードオフ
+
+4. **一般化された測定**
+   - 間接測定の巧妙な戦略
+   - 磁場を利用した運動量測定
+
+5. **測定の哲学**
+   - 受動的観察から能動的操作へ
+   - 量子世界における物理量の本質
 
 ## 🌐 ブラウザ対応
 
@@ -145,9 +177,15 @@ physics-podcast-reader/
 4. CSS色設定追加
 
 ### 新しいコンテンツの追加
-1. `onde.js`でテキスト更新
-2. 話者名と数式記号の読み上げ対応確認
-3. 行の長さと音声ファイルサイズを考慮
+1. **新しいデータセット作成**:
+   - `datasets.push([...]);`形式でJavaScriptファイル作成
+   - HTMLで読み込み（`<script src="new_dataset.js"></script>`）
+2. **UIの更新**:
+   - HTMLのdatasetセレクターに新しいオプション追加
+   - JavaScriptの配列インデックス対応追加
+3. **音声設定の確認**:
+   - 話者数と音声自動割り当ての確認
+   - 数式記号の読み上げ対応確認
 
 ### GenSpark HTML対話データの抽出
 `convert_genspark.py`スクリプトを使用して、GenSpark HTMLファイルから対話データを抽出：
@@ -195,47 +233,54 @@ python translate.py input-en.txt --test
 ### テキスト統合・分割
 
 #### テキスト統合（merge_podcast_data.py）
-複数言語のテキストファイルを行ごとの対訳形式でJavaScript形式に統合：
+複数言語のテキストファイルを行ごとの対訳形式でJavaScript配列形式に統合：
 
 ```bash
 # プレフィックスを使用した自動検索
-python merge_podcast_data.py -o output.js --prefix quantum_physics
-# → quantum_physics-fr.txt, quantum_physics-en.txt, quantum_physics-ja.txt を自動検索
+python merge_podcast_data.py -o onde.js --prefix onde_physics
+# → onde_physics-fr.txt, onde_physics-en.txt, onde_physics-ja.txt を自動検索
 
 # ファイルを直接指定
-python merge_podcast_data.py -o output.js file1-fr.txt file2-en.txt file3-ja.txt
+python merge_podcast_data.py -o momentum.js file1-fr.txt file2-en.txt file3-ja.txt
 ```
 
-**出力形式**：
+**出力形式**（nameフィールドなし）：
 ```javascript
-const podcastTexts = [
+// Initialize datasets array if undefined
+if (typeof datasets === 'undefined') {
+    var datasets = [];
+}
+
+// Add dataset to datasets array
+datasets.push([
   {"fr": "...", "en": "...", "ja": "..."},
   {"fr": "...", "en": "...", "ja": "..."},
   ...
-];
+]);
 ```
 
 **スクリプト機能**：
 - 複数言語ファイルの自動検出・読み込み
 - 行ごとの対訳形式でJSON配列生成
-- JavaScript形式（`const podcastTexts = ...`）で出力
+- datasets配列形式（nameフィールドなし）で出力
 - プレフィックス指定とファイル直接指定の両方に対応
 
 #### テキスト分割（split_podcast_data.py）
-JSON配列形式の多言語データを個別ファイルに分割：
+datasets配列形式の多言語データを個別ファイルに分割：
 
 ```bash
-# 基本使用
-python split_podcast_data.py onde.js -o quantum_physics
+# 新しいdatasets配列形式
+python split_podcast_data.py onde.js -o onde_physics
+python split_podcast_data.py momentum.js -o momentum_physics
 
 # 出力ファイル
-# quantum_physics-fr.txt  (フランス語)
-# quantum_physics-en.txt  (英語)
-# quantum_physics-ja.txt  (日本語)
+# onde_physics-fr.txt     (フランス語)
+# onde_physics-en.txt     (英語) 
+# onde_physics-ja.txt     (日本語)
 ```
 
 **スクリプト機能**：
-- JSON配列形式の多言語データを自動解析
+- datasets配列形式の自動検出・解析（最初のdatasets.push()を抽出）
 - 動的な言語検出（決め打ちなし）
 - 言語構成の一貫性チェック
 - 各言語のテキストを個別のテキストファイルに抽出

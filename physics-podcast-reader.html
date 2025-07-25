@@ -21,10 +21,17 @@
                 </select>
             </div>
             
+            <div class="dataset-selector">
+                <label for="dataset">Dataset:</label>
+                <select id="dataset">
+                    <option value="onde" selected>🌊 Onde (Waves)</option>
+                    <option value="momentum">⚡ Momentum</option>
+                </select>
+            </div>
+            
             
             <div class="speech-controls">
-                <button id="playBtn" class="play-btn">▶️ Play</button>
-                <button id="pauseBtn" class="pause-btn">⏸️ Pause</button>
+                <button id="playPauseBtn" class="play-pause-btn">▶️ Play</button>
                 <button id="stopBtn" class="stop-btn">⏹️ Stop</button>
             </div>
             
@@ -35,8 +42,6 @@
             </div>
             
         </div>
-        
-        <div id="status" class="status stopped">Ready to play</div>
         
         <div id="speakerVoices" class="speaker-voices" style="display: none;">
             <div class="collapsible-header" onclick="toggleSpeakerVoices()">
@@ -77,9 +82,12 @@
         <div id="textContent" class="text-content">
             <!-- Content will be loaded here -->
         </div>
+        
+        <div id="status" class="status stopped">Ready to play</div>
     </div>
 
     <script src="onde.js"></script>
+    <script src="momentum.js"></script>
     <script src="physics-podcast-reader.js"></script>
 </body>
 </html>

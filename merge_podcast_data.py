@@ -100,7 +100,7 @@ def merge_language_files(language_files: Dict[str, Path]) -> List[Dict[str, str]
 
 def generate_javascript_output(merged_data: List[Dict[str, str]]) -> str:
     """
-    マージされたデータからJavaScript形式の文字列を生成する。
+    マージされたデータからJavaScript形式の文字列を生成する（datasets配列形式、nameフィールドなし）。
     
     Args:
         merged_data: 行ごとの対訳データ
@@ -111,8 +111,14 @@ def generate_javascript_output(merged_data: List[Dict[str, str]]) -> str:
     # JSONとして整形（インデント付き）
     json_str = json.dumps(merged_data, ensure_ascii=False, indent=0)
     
-    # JavaScript形式でラップ
-    js_output = f"const podcastTexts = {json_str};"
+    # 新形式（datasets配列、nameフィールドなし）
+    js_output = f"""// Initialize datasets array if undefined
+if (typeof datasets === 'undefined') {{
+    var datasets = [];
+}}
+
+// Add dataset to datasets array
+datasets.push({json_str});"""
     
     return js_output
 
@@ -123,11 +129,11 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 使用例:
-  %(prog)s -o output.js file1-fr.txt file2-en.txt file3-ja.txt
-    指定されたファイルを直接読み込み
+  %(prog)s -o onde.js file1-fr.txt file2-en.txt file3-ja.txt
+    指定されたファイルを直接読み込んでデータセットとして出力
 
-  %(prog)s -o output.js --prefix quantum_physics
-    quantum_physics-fr.txt, quantum_physics-en.txt, quantum_physics-ja.txt を自動検索
+  %(prog)s -o momentum.js --prefix quantum_physics
+    quantum_physics-fr.txt, quantum_physics-en.txt, quantum_physics-ja.txt を自動検索してデータセットとして出力
         """
     )
     
@@ -141,6 +147,7 @@ def main():
         '--prefix',
         help='ファイル名のプレフィックス（例: quantum_physics）'
     )
+    
     
     parser.add_argument(
         'files',
