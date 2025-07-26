@@ -5,16 +5,17 @@
 ## 🎯 特徴
 
 ### 📖 対訳表示
-- **3言語同時表示**: フランス語（原文）、英語、日本語を行ごとに対訳表示
-- **視覚的識別**: 各言語に色分けされた国旗表示（FR/EN/JA）
+- **多言語同時表示**: 設定された言語を行ごとに対訳表示（デフォルト：フランス語・英語・日本語）
+- **視覚的識別**: 各言語に言語コード表示（FR/EN/JA等）
 - **話者識別**: 話者を登場順（Speaker 1, Speaker 2）で識別・色分け表示
+- **言語フラグ制御**: 言語フラグをクリックして読み上げ対象言語を選択
 
 ### 🎛️ 再生機能
-- **多言語連続読み上げ**: 各文をフランス語→英語→日本語の順で自動読み上げ
+- **選択的多言語読み上げ**: 有効化された言語のみを順次読み上げ
 - **言語別音声選択**: 各言語で最適化された音声を自動選択
 - **話者別音声設定**: Speaker 1、Speaker 2に異なる音声を割り当て可能（データセット間で共通）
 - **動的ハイライト**: 再生中の文字・単語を動的にリアルタイム強調表示（ブラウザ対応時）
-- **速度調整**: 0.5倍速から2倍速まで調整可能
+- **速度調整**: グローバル速度（0.5-2.0倍速）と言語別速度調整
 
 ## 📁 ファイル構成
 
@@ -109,6 +110,7 @@ uv run merge_podcast_data.py -o new_dataset.js new_dataset-fr.txt new_dataset-en
 
 ```html
 <script src="transformer.js"></script>
+<script src="finetuning.js"></script>
 <script src="onde.js"></script>
 <script src="momentum.js"></script>
 <script src="new_dataset.js"></script> <!-- 新しいデータセット -->
@@ -119,12 +121,23 @@ uv run merge_podcast_data.py -o new_dataset.js new_dataset-fr.txt new_dataset-en
 
 ```javascript
 document.addEventListener('DOMContentLoaded', () => {
-    init({
+    // データセット設定
+    const datasetLabels = {
         'transformer': '🤖 Transformer',
+        'finetuning': '🎯 Fine-tuning',
         'onde': '🌊 Onde (Waves)',
         'momentum': '⚡ Momentum',
         'new_dataset': '🆕 New Dataset'  // 新しいデータセット
-    });
+    };
+    
+    // 言語設定（必要に応じて言語を追加・変更）
+    const languageConfig = {
+        fr: { code: 'fr-FR', name: 'Français', defaultRate: 1.0 },
+        en: { code: 'en-US', name: 'English', defaultRate: 1.0 },
+        ja: { code: 'ja-JP', name: '日本語', defaultRate: 1.4 }
+    };
+    
+    init(datasetLabels, languageConfig);
 });
 ```
 
@@ -133,6 +146,43 @@ document.addEventListener('DOMContentLoaded', () => {
 - 最初に記述されたデータセットが自動的に選択されます
 - HTMLのselectオプションは自動生成されるため、手動で追加する必要はありません
 - データセットのインデックスは、JavaScriptファイルが読み込まれる順序に対応します
+
+### 新しい言語の追加
+
+アプリケーションに新しい言語を追加するには、以下の手順に従ってください：
+
+#### 1. 言語設定の追加
+`podcast-reader.html`の`languageConfig`に新しい言語を追加：
+
+```javascript
+const languageConfig = {
+    fr: { code: 'fr-FR', name: 'Français', defaultRate: 1.0 },
+    en: { code: 'en-US', name: 'English', defaultRate: 1.0 },
+    ja: { code: 'ja-JP', name: '日本語', defaultRate: 1.4 },
+    de: { code: 'de-DE', name: 'Deutsch', defaultRate: 1.0 },     // ドイツ語追加
+    es: { code: 'es-ES', name: 'Español', defaultRate: 1.0 }      // スペイン語追加
+};
+```
+
+#### 2. データセットファイルの対応
+新しい言語に対応したデータセットファイルを作成：
+
+```bash
+# 例：4言語対応データセット
+uv run merge_podcast_data.py -o multilang_dataset.js \
+  dataset-fr.txt dataset-en.txt dataset-ja.txt dataset-de.txt
+```
+
+#### 3. 言語設定パラメータ
+- **言語キー**: 短縮コード（fr, en, ja等）- データセット内のプロパティ名と一致
+- **code**: Web Speech APIで使用する言語コード（BCP 47形式）
+- **name**: UI表示用の言語名
+- **defaultRate**: デフォルト読み上げ速度（0.5-2.0）
+
+**注意事項**：
+- 言語キーはデータセット内のプロパティ名と完全に一致する必要があります
+- Web Speech APIで対応していない言語コードは音声合成されません
+- 言語フラグは自動的に生成されクリック可能になります
 
 ### GenSpark HTML対話データの抽出
 `convert_genspark.py`スクリプトを使用して、GenSpark HTMLファイルから対話データを抽出：
