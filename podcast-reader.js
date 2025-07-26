@@ -13,15 +13,17 @@ let dialogueLines = [];
 let availableVoices = [];
 let speakers = [];
 let speakerVoicesByLanguage = {}; // Store voice settings per language by speaker index - will be initialized in init function
-let isMultiLanguageMode = false;
-let multiLangCurrentStep = 0; // 0: fr, 1: en, 2: ja
+let multiLangCurrentStep = 0; // Current step in multi-language playback
 let datasetConfigMapping = {}; // Store dataset name to index mapping
 
 // Language-specific speed settings - will be initialized in init function
 let languageRates = {};
 
+// Language flag states - tracks which languages are enabled/disabled
+let languageFlagStates = {};
+
 // DOM elements - will be initialized in init function
-let languageSelect, datasetSelect, playPauseBtn, stopBtn, rateSlider, rateValue;
+let datasetSelect, playPauseBtn, stopBtn, rateSlider, rateValue;
 let status, textContent, speakerVoicesDiv;
 
 // Language configuration - will be initialized in init function
@@ -40,20 +42,20 @@ function init(datasetLabels, languageConfigParam) {
     langCodes = {};
     languageRates = {};
     speakerVoicesByLanguage = {};
+    languageFlagStates = {};
     
     Object.keys(languageConfig).forEach(langKey => {
         const config = languageConfig[langKey];
         langCodes[langKey] = config.code;
         languageRates[langKey] = config.defaultRate;
         speakerVoicesByLanguage[langKey] = [];
+        languageFlagStates[langKey] = true; // デフォルトで全言語有効
     });
     
     // Initialize DOM elements
-    languageSelect = document.getElementById('language');
     datasetSelect = document.getElementById('dataset');
     
-    // Populate language and dataset select options from config
-    populateLanguageOptions();
+    // Populate dataset select options from config
     populateDatasetOptions(datasetLabels);
     playPauseBtn = document.getElementById('playPauseBtn');
     stopBtn = document.getElementById('stopBtn');
@@ -69,8 +71,7 @@ function init(datasetLabels, languageConfigParam) {
         datasetConfigMapping[key] = index;
     });
     
-    // Initialize multi-language mode based on default selection
-    isMultiLanguageMode = (languageSelect.value === 'multi');
+    // Note: Application is now always in multi-language mode
     
     // Initialize dataset based on provided config
     const selectedDataset = datasetSelect.value;
@@ -89,7 +90,6 @@ function init(datasetLabels, languageConfigParam) {
     updatePlayPauseButton();
     
     // Event listeners
-    languageSelect.addEventListener('change', onLanguageChange);
     datasetSelect.addEventListener('change', onDatasetChange);
     playPauseBtn.addEventListener('click', togglePlayPause);
     stopBtn.addEventListener('click', stopText);
@@ -108,27 +108,6 @@ function init(datasetLabels, languageConfigParam) {
     }
 }
 
-// 言語のselect要素に選択肢を動的に追加
-function populateLanguageOptions() {
-    // 既存のオプションをクリア
-    languageSelect.innerHTML = '';
-    
-    // Multi-Language オプションを追加
-    const multiOption = document.createElement('option');
-    multiOption.value = 'multi';
-    multiOption.textContent = '🌐 Multi-Language';
-    multiOption.selected = true;
-    languageSelect.appendChild(multiOption);
-    
-    // 設定された言語オプションを追加
-    Object.keys(languageConfig).forEach(langKey => {
-        const config = languageConfig[langKey];
-        const option = document.createElement('option');
-        option.value = langKey;
-        option.textContent = config.name;
-        languageSelect.appendChild(option);
-    });
-}
 
 // データセットのselect要素に選択肢を動的に追加
 function populateDatasetOptions(datasetLabels) {
@@ -309,23 +288,6 @@ function createVoiceSelectForSpeaker(langKey, speakerIndex) {
     return voiceSelect;
 }
 
-function onLanguageChange() {
-    // Update multi-language mode based on selection
-    isMultiLanguageMode = (languageSelect.value === 'multi');
-    
-    // Update status message
-    if (isMultiLanguageMode) {
-        updateStatus('stopped', 'Multi-language mode enabled');
-    } else {
-        updateStatus('stopped', 'Single language mode');
-    }
-    
-    // Stop current playback when switching modes
-    stopText();
-    
-    // Load text content
-    loadText();
-}
 
 function onDatasetChange() {
     // Update texts based on dataset selection
@@ -363,13 +325,8 @@ function loadText() {
     // Parse dialogue lines for all languages using shared logic
     const allLanguageLines = parseAllLanguageTexts();
     
-    // Use the first available language for line count if multi-language mode
-    let selectedLang;
-    if (isMultiLanguageMode || languageSelect.value === 'multi') {
-        selectedLang = Object.keys(languageConfig)[0]; // Use first configured language as base for multi-language mode
-    } else {
-        selectedLang = languageSelect.value;
-    }
+    // Use the first available language for line count in multi-language mode
+    const selectedLang = Object.keys(languageConfig)[0]; // Use first configured language as base
     dialogueLines = allLanguageLines[selectedLang];
     
     // Ensure dialogueLines is not undefined
@@ -382,6 +339,9 @@ function loadText() {
     
     displayTranslationText(allLanguageLines);
     createAllLanguageVoiceAssignments();
+    
+    // 言語フラグの表示状態を更新
+    updateLanguageFlagDisplay();
 }
 
 // Removed displayText function - no longer needed with dynamic highlighting and translation mode
@@ -406,11 +366,25 @@ function displayTranslationText(allLanguageLines) {
                 translationLine.className = 'translation-line';
                 translationLine.setAttribute('data-line-index', i);
                 translationLine.setAttribute('data-lang', lang);
-                translationLine.addEventListener('click', () => playFromLineInLanguage(i, lang));
+                translationLine.addEventListener('click', () => {
+                    // 無効な言語の場合は自動的に有効化
+                    if (!languageFlagStates[lang]) {
+                        languageFlagStates[lang] = true;
+                        updateLanguageFlagDisplay();
+                        const langConfig = languageConfig[lang];
+                        const langName = langConfig ? langConfig.name : lang;
+                        updateStatus('stopped', `${langName}を有効にして再生を開始します`);
+                    }
+                    playFromLineInLanguage(i, lang);
+                });
                 
                 const langFlag = document.createElement('div');
                 langFlag.className = `language-flag ${lang}`;
                 langFlag.textContent = lang.toUpperCase();
+                langFlag.addEventListener('click', (e) => {
+                    e.stopPropagation(); // テキスト行のクリックイベントを防ぐ
+                    toggleLanguageFlag(lang);
+                });
                 
                 const translationContent = document.createElement('div');
                 translationContent.className = 'translation-content';
@@ -456,7 +430,7 @@ function updateRate() {
             currentSynth.cancel();
             setTimeout(() => {
                 if (!isPaused && !isStopped) {
-                    speakLine(currentLineIndex);
+                    speakLineMultiLanguage(currentLineIndex);
                 }
             }, 100);
         }
@@ -486,11 +460,7 @@ function updateLanguageRate(event) {
             currentSynth.cancel();
             setTimeout(() => {
                 if (!isPaused && !isStopped) {
-                    if (isMultiLanguageMode) {
-                        speakLineMultiLanguage(currentLineIndex);
-                    } else {
-                        speakLine(currentLineIndex);
-                    }
+                    speakLineMultiLanguage(currentLineIndex);
                 }
             }, 100);
         }
@@ -521,11 +491,7 @@ function playText() {
     multiLangCurrentStep = 0;
     isStopped = false; // 再生開始時にリセット
     
-    if (isMultiLanguageMode) {
-        speakLineMultiLanguage(currentLineIndex);
-    } else {
-        speakLine(currentLineIndex);
-    }
+    speakLineMultiLanguage(currentLineIndex);
     updatePlayPauseButton();
 }
 
@@ -533,8 +499,8 @@ function playFromLine(lineIndex) {
     stopText();
     currentLineIndex = lineIndex;
     isStopped = false; // 再生開始時にリセット
-    const selectedLang = languageSelect.value;
-    speakLineInLanguage(currentLineIndex, selectedLang);
+    // マルチ言語モードで再生
+    speakLineMultiLanguage(currentLineIndex);
     updatePlayPauseButton();
 }
 
@@ -546,23 +512,40 @@ function playFromLineInLanguage(lineIndex, lang) {
     isPaused = false; // 確実にfalseに設定
     isStopped = false; // 再生開始時にリセット
     
-    // Multilingualモードの場合、クリックした言語から開始
-    if (isMultiLanguageMode) {
-        // クリックした言語に応じてmultiLangCurrentStepを設定
-        const languages = Object.keys(languageConfig);
-        const langIndex = languages.indexOf(lang);
-        multiLangCurrentStep = langIndex >= 0 ? langIndex : 0; // デフォルトは最初の言語から
-        speakLineMultiLanguage(currentLineIndex);
-    } else {
-        // 単一言語モードの場合
-        speakLineInLanguage(currentLineIndex, lang);
-    }
+    // クリックした言語に応じてmultiLangCurrentStepを設定
+    const languages = Object.keys(languageConfig);
+    const langIndex = languages.indexOf(lang);
+    multiLangCurrentStep = langIndex >= 0 ? langIndex : 0; // デフォルトは最初の言語から
+    speakLineMultiLanguage(currentLineIndex);
     updatePlayPauseButton();
 }
 
 function speakLineMultiLanguage(lineIndex) {
     const languages = Object.keys(languageConfig);
-    const currentLang = languages[multiLangCurrentStep];
+    
+    // 有効な言語のみを取得
+    const enabledLanguages = languages.filter(lang => languageFlagStates[lang]);
+    
+    // 有効な言語がない場合は停止
+    if (enabledLanguages.length === 0) {
+        updateStatus('stopped', '有効な言語がありません');
+        stopText();
+        return;
+    }
+    
+    // 現在のステップが有効な言語の範囲を超えている場合は次の行へ
+    if (multiLangCurrentStep >= enabledLanguages.length) {
+        multiLangCurrentStep = 0;
+        currentLineIndex++;
+        setTimeout(() => {
+            if (!isPaused && !isStopped) {
+                speakLineMultiLanguage(currentLineIndex);
+            }
+        }, 800);
+        return;
+    }
+    
+    const currentLang = enabledLanguages[multiLangCurrentStep];
     
     // Get the dialogue lines for all languages using shared logic
     const allLanguageLines = parseAllLanguageTexts();
@@ -575,25 +558,25 @@ function speakLineMultiLanguage(lineIndex) {
     
     const line = langLines[lineIndex];
     
-    // Create completion callback for multi-language mode
+    // Create completion callback for language sequence
     const onSpeechComplete = () => {
         multiLangCurrentStep++;
         
-        // If we've completed all languages for this line
-        if (multiLangCurrentStep >= languages.length) {
+        // If we've completed all enabled languages for this line
+        if (multiLangCurrentStep >= enabledLanguages.length) {
             multiLangCurrentStep = 0;
             currentLineIndex++;
             
             // Short pause between lines, then move to next line
             setTimeout(() => {
-                if (isMultiLanguageMode && !isPaused && !isStopped) {
+                if (!isPaused && !isStopped) {
                     speakLineMultiLanguage(currentLineIndex);
                 }
             }, 800); // Longer pause between lines
         } else {
-            // Continue with next language for the same line
+            // Continue with next enabled language for the same line
             setTimeout(() => {
-                if (isMultiLanguageMode && !isPaused && !isStopped) {
+                if (!isPaused && !isStopped) {
                     speakLineMultiLanguage(currentLineIndex);
                 }
             }, 400); // Short pause between languages
@@ -602,19 +585,11 @@ function speakLineMultiLanguage(lineIndex) {
     
     // Use shared speech synthesis function
     const langConfig = languageConfig[currentLang];
-    const statusMessage = `Playing line ${lineIndex + 1} in ${langConfig ? langConfig.name : currentLang} (${multiLangCurrentStep + 1}/${languages.length})`;
+    const statusMessage = `Playing line ${lineIndex + 1} in ${langConfig ? langConfig.name : currentLang} (${multiLangCurrentStep + 1}/${enabledLanguages.length})`;
     
     speakLineWithUtterance(lineIndex, currentLang, line, statusMessage, onSpeechComplete);
 }
 
-function speakLine(lineIndex) {
-    if (isMultiLanguageMode) {
-        speakLineMultiLanguage(lineIndex);
-    } else {
-        const selectedLang = languageSelect.value;
-        speakLineInLanguage(lineIndex, selectedLang);
-    }
-}
 
 function speakLineInLanguage(lineIndex, lang) {
     // Get the dialogue lines for all languages using shared logic
@@ -628,7 +603,7 @@ function speakLineInLanguage(lineIndex, lang) {
     
     const line = langLines[lineIndex];
     
-    // Create completion callback for single language mode
+    // Create completion callback for single language playback
     const onSpeechComplete = () => {
         currentLineIndex++;
         // Continue with the same language
@@ -733,29 +708,6 @@ function loadVoices() {
     availableVoices = speechSynthesis.getVoices();
 }
 
-function getFilteredVoices() {
-    const selectedLang = languageSelect.value;
-    const langCode = langCodes[selectedLang];
-    
-    // First try to get exact language match (e.g., fr-FR, en-US, ja-JP)
-    let exactMatches = availableVoices.filter(voice => 
-        voice.lang.toLowerCase() === langCode.toLowerCase()
-    );
-    
-    // If we have exact matches, prioritize them
-    if (exactMatches.length > 0) {
-        return prioritizeVoices(exactMatches);
-    }
-    
-    // Fallback to language base matching (fr, en, ja)
-    const targetLangBase = langCode.split('-')[0].toLowerCase();
-    const fallbackMatches = availableVoices.filter(voice => {
-        const voiceLangBase = voice.lang.split('-')[0].toLowerCase();
-        return voiceLangBase === targetLangBase;
-    });
-    
-    return prioritizeVoices(fallbackMatches);
-}
 
 function prioritizeVoices(voices) {
     // Filter out Multilingual voices
@@ -1143,5 +1095,45 @@ function toggleSpeakerVoices() {
         container.classList.add('collapsed');
         icon.classList.remove('expanded');
         icon.textContent = '▼';
+    }
+}
+
+// 言語フラグの表示状態を更新する関数
+function updateLanguageFlagDisplay() {
+    const languageFlags = document.querySelectorAll('.language-flag');
+    
+    languageFlags.forEach(flag => {
+        // 言語フラグのクラスから言語キーを取得
+        let lang = null;
+        Object.keys(languageConfig).forEach(langKey => {
+            if (flag.classList.contains(langKey)) {
+                lang = langKey;
+            }
+        });
+        
+        if (lang) {
+            // 言語フラグの状態に基づいて有効状態を設定
+            const isEnabled = languageFlagStates[lang];
+            flag.classList.toggle('enabled', isEnabled);
+        }
+    });
+}
+
+// 言語フラグの有効・無効を切り替える関数
+function toggleLanguageFlag(lang) {
+    if (languageFlagStates[lang] !== undefined) {
+        languageFlagStates[lang] = !languageFlagStates[lang];
+        updateLanguageFlagDisplay();
+        
+        // 再生中の場合は停止
+        if (currentSynth) {
+            stopText();
+        }
+        
+        // ステータスメッセージを更新
+        const langConfig = languageConfig[lang];
+        const langName = langConfig ? langConfig.name : lang;
+        const status = languageFlagStates[lang] ? '有効' : '無効';
+        updateStatus('stopped', `${langName}を${status}にしました`);
     }
 }

@@ -350,12 +350,25 @@ h1 {
     font-weight: bold;
     color: #666;
     margin-right: 15px;
-    padding-top: 2px;
+    padding: 4px 6px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    border-radius: 4px;
+    user-select: none;
+    text-align: center;
+    box-sizing: border-box;
 }
 
-.language-flag.fr { color: #0055a4; }
-.language-flag.en { color: #c8102e; }
-.language-flag.ja { color: #bc002d; }
+.language-flag:hover {
+    background-color: #f8f9fa;
+    color: #333;
+}
+
+/* 読み上げ有効状態の言語フラグのスタイル */
+.language-flag.enabled {
+    background-color: #28a745;
+    color: white;
+}
 
 .translation-content {
     flex: 1;
