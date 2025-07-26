@@ -42,12 +42,12 @@ datasets.push(
 "ja": "じゃあ、事前学習が終わったAIは、大学の新卒みたいなものね。頭はいいけど、実務経験はない、みたいな。"
 },{
 "speaker": "Luc",
-"fr": "Précisément. Et pendant longtemps, l'étape suivante a été l'« affinage » (fine-tuning). C'est comme envoyer ce diplômé suivre une spécialisation.",
+"fr": "Précisément. Et pendant longtemps, l'étape suivante a été « l'affinage » (fine-tuning). C'est comme envoyer ce diplômé suivre une spécialisation.",
 "en": "Precisely. And for a long time, the next step was \"fine-tuning.\" This is like sending that graduate to get a specialist degree.",
 "ja": "その通り。で、長い間、次のステップは「ファインチューニング」でした。これは、その新卒に専門学位を取らせるようなものですね。"
 },{
 "speaker": "Camille",
-"fr": "L'affinage... c'est là qu'intervient l'« apprentissage par transfert » ? J'ai déjà entendu ce terme.",
+"fr": "L'affinage... c'est là qu'intervient « l'apprentissage par transfert » ? J'ai déjà entendu ce terme.",
 "en": "Fine-tuning... is that where \"transfer learning\" comes into play? I've heard that term before.",
 "ja": "ファインチューニング…そこで「転移学習」が出てくるのね？その言葉、聞いたことあるわ。"
 },{
