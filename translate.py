@@ -14,6 +14,7 @@ parser.add_argument("--test", action="store_true", help="dry-runモード（実�
 args = parser.parse_args()
 
 import json
+import re
 from pathlib import Path
 from pydantic import BaseModel, Field
 from llm7shi.compat import generate_with_schema
@@ -22,6 +23,13 @@ from llm7shi import create_json_descriptions_prompt
 class Translation(BaseModel):
     reasoning: str = Field(description="reasoning before translation")
     translation: str = Field(description="translation result")
+
+def normalize(text):
+    # ord(ch)<32の文字をすべてスペースに変換
+    normalized = ''.join(' ' if ord(ch) < 32 else ch for ch in text)
+    # スペースの連続を1個にまとめる
+    normalized = re.sub(r' +', ' ', normalized)
+    return normalized.strip()
 
 # fr-onde.txtを読み込み
 with open(args.input_file, "r", encoding="utf-8") as f:
@@ -76,7 +84,7 @@ for i, line in enumerate(lines):
             if result and result.text:
                 try:
                     parsed = json.loads(result.text.strip())
-                    translated_text = parsed['translation']
+                    translated_text = normalize(parsed['translation'])
                 except json.JSONDecodeError:
                     # JSON解析失敗時は原文を保持
                     translated_text = text

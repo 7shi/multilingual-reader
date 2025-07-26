@@ -119,6 +119,14 @@ def extract_js_array_content(js_content: str, object_name: str = None) -> dict:
     return languages
 
 
+def normalize(text):
+    # ord(ch)<32の文字をすべてスペースに変換
+    normalized = ''.join(' ' if ord(ch) < 32 else ch for ch in text)
+    # スペースの連続を1個にまとめる
+    normalized = re.sub(r' +', ' ', normalized)
+    return normalized.strip()
+
+
 def clean_text_content(text: str) -> str:
     """
     Clean and format the extracted text content.
@@ -134,8 +142,8 @@ def clean_text_content(text: str) -> str:
     cleaned_lines = []
     
     for line in lines:
-        # Remove leading/trailing whitespace
-        line = line.strip()
+        # normalize処理を適用
+        line = normalize(line)
         
         # Skip empty lines
         if not line:

@@ -14,9 +14,18 @@
 
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
 from typing import Dict, List, Optional
+
+
+def normalize(text):
+    # ord(ch)<32の文字をすべてスペースに変換
+    normalized = ''.join(' ' if ord(ch) < 32 else ch for ch in text)
+    # スペースの連続を1個にまとめる
+    normalized = re.sub(r' +', ' ', normalized)
+    return normalized.strip()
 
 
 def detect_language_from_filename(filename: str) -> Optional[str]:
@@ -71,11 +80,14 @@ def extract_speaker_and_text(text: str) -> tuple[Optional[str], str]:
     Returns:
         (話者名, 話者名を除いた本文)のタプル
     """
+    # normalize処理を適用
+    text = normalize(text)
+    
     if ':' in text:
         parts = text.split(':', 1)
         if len(parts) == 2:
-            speaker = parts[0].strip()
-            content = parts[1].strip()
+            speaker = normalize(parts[0])
+            content = normalize(parts[1])
             return speaker, content
     
     return None, text
