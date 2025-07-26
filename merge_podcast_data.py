@@ -110,6 +110,7 @@ def generate_javascript_output(merged_data: List[Dict[str, str]]) -> str:
     """
     # JSONとして整形（インデント付き）
     json_str = json.dumps(merged_data, ensure_ascii=False, indent=0)
+    json_str = json_str.replace("[\n{", "[{").replace("},\n{", "},{").replace("}\n]", "}]")
     
     # 新形式（datasets配列、nameフィールドなし）
     js_output = f"""// Initialize datasets array if undefined
@@ -118,7 +119,10 @@ if (typeof datasets === 'undefined') {{
 }}
 
 // Add dataset to datasets array
-datasets.push({json_str});"""
+datasets.push(
+{json_str}
+);
+"""
     
     return js_output
 
