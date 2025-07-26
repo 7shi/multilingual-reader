@@ -796,6 +796,49 @@ function prioritizeVoices(voices) {
     });
 }
 
+function prioritizeVoicesByRegion(voices, targetLangCode) {
+    if (voices.length === 0) return voices;
+    
+    // Filter out Multilingual voices
+    const nonMultilingualVoices = voices.filter(voice => 
+        !voice.name.toLowerCase().includes('multilingual')
+    );
+    
+    // Use filtered voices if available, otherwise use all voices
+    const voicesToSort = nonMultilingualVoices.length > 0 ? nonMultilingualVoices : voices;
+    
+    const targetLangCodeLower = targetLangCode.toLowerCase();
+    
+    // Sort voices with priority:
+    // 1. Exact language-region match (e.g., en-US when targeting en-US)
+    // 2. localService = false (online voices)
+    // 3. Default voices
+    // 4. Alphabetical order
+    return voicesToSort.sort((a, b) => {
+        // Priority 1: Exact language-region match
+        const aExactMatch = a.lang.toLowerCase() === targetLangCodeLower;
+        const bExactMatch = b.lang.toLowerCase() === targetLangCodeLower;
+        if (aExactMatch !== bExactMatch) {
+            return bExactMatch - aExactMatch; // true (exact match) comes first
+        }
+        
+        // Priority 2: localService = false (online voices)
+        const aIsOnline = a.localService === false;
+        const bIsOnline = b.localService === false;
+        if (aIsOnline !== bIsOnline) {
+            return bIsOnline - aIsOnline; // false (online) comes first
+        }
+        
+        // Priority 3: Default voices
+        if (a.default !== b.default) {
+            return b.default - a.default; // true comes first
+        }
+        
+        // Priority 4: Alphabetical order
+        return a.name.localeCompare(b.name);
+    });
+}
+
 
 function autoAssignDefaultVoicesForLanguage(lang, filteredVoices) {
     // Only auto-assign if no voices are currently set for any speaker in this language
@@ -881,23 +924,17 @@ function createAllLanguageVoiceAssignments() {
 function getFilteredVoicesForLanguage(lang) {
     const langCode = langCodes[lang];
     
-    // First try to get exact language match
-    let exactMatches = availableVoices.filter(voice => 
-        voice.lang.toLowerCase() === langCode.toLowerCase()
-    );
-    
-    if (exactMatches.length > 0) {
-        return prioritizeVoices(exactMatches);
-    }
-    
-    // Fallback to language base matching
+    // 言語ベース（例：en, fr, ja）を取得
     const targetLangBase = langCode.split('-')[0].toLowerCase();
-    const fallbackMatches = availableVoices.filter(voice => {
+    
+    // 同一言語の全音声を取得
+    const allLanguageMatches = availableVoices.filter(voice => {
         const voiceLangBase = voice.lang.split('-')[0].toLowerCase();
         return voiceLangBase === targetLangBase;
     });
     
-    return prioritizeVoices(fallbackMatches);
+    // 指定地域の音声を優先して並び替え
+    return prioritizeVoicesByRegion(allLanguageMatches, langCode);
 }
 
 // Shared text parsing function - updated for new JSON array format with separate speaker field
