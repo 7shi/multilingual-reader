@@ -38,10 +38,13 @@ let rateFrSlider, rateEnSlider, rateJaSlider, rateValueFr, rateValueEn, rateValu
 let status, textContent, speakerVoicesDiv;
 
 // Initialize
-function init(datasetConfig) {
+function init(datasetLabels) {
     // Initialize DOM elements
     languageSelect = document.getElementById('language');
     datasetSelect = document.getElementById('dataset');
+    
+    // Populate dataset select options from config
+    populateDatasetOptions(datasetLabels);
     playPauseBtn = document.getElementById('playPauseBtn');
     stopBtn = document.getElementById('stopBtn');
     rateSlider = document.getElementById('rate');
@@ -58,17 +61,20 @@ function init(datasetConfig) {
     textContent = document.getElementById('textContent');
     speakerVoicesDiv = document.getElementById('speakerVoices');
     
-    // Store dataset config for later use
-    datasetConfigMapping = datasetConfig;
+    // Store dataset config for later use (記述順をインデックスとして使用)
+    datasetConfigMapping = {};
+    Object.keys(datasetLabels).forEach((key, index) => {
+        datasetConfigMapping[key] = index;
+    });
     
     // Initialize multi-language mode based on default selection
     isMultiLanguageMode = (languageSelect.value === 'multi');
     
     // Initialize dataset based on provided config
     const selectedDataset = datasetSelect.value;
-    if (datasets && datasetConfig) {
-        if (datasetConfig[selectedDataset] !== undefined && datasets[datasetConfig[selectedDataset]]) {
-            texts = datasets[datasetConfig[selectedDataset]];
+    if (datasets && datasetConfigMapping) {
+        if (datasetConfigMapping[selectedDataset] !== undefined && datasets[datasetConfigMapping[selectedDataset]]) {
+            texts = datasets[datasetConfigMapping[selectedDataset]];
         }
     }
     
@@ -102,6 +108,24 @@ function init(datasetConfig) {
         status.textContent = 'Speech synthesis not supported in this browser';
         status.className = 'status stopped';
     }
+}
+
+// データセットのselect要素に選択肢を動的に追加
+function populateDatasetOptions(datasetLabels) {
+    // 既存のオプションをクリア
+    datasetSelect.innerHTML = '';
+    
+    // データセット情報からオプションを生成（記述順で処理、最初の項目を選択）
+    Object.keys(datasetLabels).forEach((key, index) => {
+        const label = datasetLabels[key];
+        const option = document.createElement('option');
+        option.value = key;
+        option.textContent = label;
+        if (index === 0) {
+            option.selected = true;
+        }
+        datasetSelect.appendChild(option);
+    });
 }
 
 function onLanguageChange() {
