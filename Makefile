@@ -1,11 +1,9 @@
+DATASETS = transformer finetuning onde momentum
+
 all:
 
 split:
-	uv run split_podcast_data.py -o examples/transformer transformer.js
-	uv run split_podcast_data.py -o examples/onde onde.js
-	uv run split_podcast_data.py -o examples/momentum momentum.js
+	for ds in $(DATASETS); do uv run split_podcast_data.py -o examples/$$ds $$ds.js; done
 
 merge:
-	uv run merge_podcast_data.py -o transformer.js examples/transformer-{fr,en,ja}.txt
-	uv run merge_podcast_data.py -o onde.js examples/onde-{fr,en,ja}.txt
-	uv run merge_podcast_data.py -o momentum.js examples/momentum-{fr,en,ja}.txt
+	for ds in $(DATASETS); do uv run merge_podcast_data.py -o $$ds.js examples/$$ds-{fr,en,ja}.txt; done
