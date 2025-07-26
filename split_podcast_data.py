@@ -82,8 +82,11 @@ def extract_js_array_content(js_content: str, object_name: str = None) -> dict:
     
     expected_languages = set(first_item.keys())
     
+    # speakerキーを除外してテキスト用の言語を取得
+    text_languages = expected_languages - {'speaker'}
+    
     # 各言語の行を結合
-    languages = {lang: [] for lang in expected_languages}
+    languages = {lang: [] for lang in text_languages}
     
     for i, item in enumerate(data):
         if isinstance(item, dict):
@@ -92,9 +95,20 @@ def extract_js_array_content(js_content: str, object_name: str = None) -> dict:
             if current_languages != expected_languages:
                 print(f"警告: 行{i+1}で言語構成が変化しました。期待: {expected_languages}, 実際: {current_languages}", file=sys.stderr)
             
-            for lang in expected_languages:
+            # 話者情報を取得
+            speaker = item.get('speaker', '')
+            
+            for lang in text_languages:
                 if lang in item:
-                    languages[lang].append(item[lang])
+                    text = item[lang]
+                    # 話者情報がある場合は「話者: 文章」形式で復元
+                    if speaker and text:
+                        restored_text = f"{speaker}: {text}"
+                    elif text:
+                        restored_text = text
+                    else:
+                        restored_text = ""
+                    languages[lang].append(restored_text)
                 else:
                     languages[lang].append("")  # 空行で補完
     
@@ -127,9 +141,8 @@ def clean_text_content(text: str) -> str:
         if not line:
             continue
             
-        # Ensure proper speaker format (Speaker: text)
-        if ':' in line and not line.startswith(' '):
-            cleaned_lines.append(line)
+        # すべての行を追加（話者: 文章形式はすでに復元済み）
+        cleaned_lines.append(line)
     
     return '\n'.join(cleaned_lines)
 

@@ -61,6 +61,26 @@ def read_text_file(filepath: Path) -> List[str]:
         return []
 
 
+def extract_speaker_and_text(text: str) -> tuple[Optional[str], str]:
+    """
+    テキストから話者名を抽出する。
+    
+    Args:
+        text: 元のテキスト
+        
+    Returns:
+        (話者名, 話者名を除いた本文)のタプル
+    """
+    if ':' in text:
+        parts = text.split(':', 1)
+        if len(parts) == 2:
+            speaker = parts[0].strip()
+            content = parts[1].strip()
+            return speaker, content
+    
+    return None, text
+
+
 def merge_language_files(language_files: Dict[str, Path]) -> List[Dict[str, str]]:
     """
     複数言語のファイルを行ごとの対訳形式でマージする。
@@ -69,7 +89,7 @@ def merge_language_files(language_files: Dict[str, Path]) -> List[Dict[str, str]
         language_files: 言語コードをキー、ファイルパスを値とする辞書
         
     Returns:
-        行ごとの対訳データのリスト
+        行ごとの対訳データのリスト（speaker, fr, en, ja形式）
     """
     # 各言語のテキストを読み込み
     texts = {}
@@ -85,11 +105,29 @@ def merge_language_files(language_files: Dict[str, Path]) -> List[Dict[str, str]
     merged_data = []
     
     for i in range(max_lines):
-        line_data = {}
+        speaker = None
         
-        for lang_code in ['fr', 'en', 'ja']:  # 順序を固定
+        # 話者情報を抽出（frから優先的に取得）
+        for lang_code in ['fr', 'en', 'ja']:
             if lang_code in texts and i < len(texts[lang_code]):
-                line_data[lang_code] = texts[lang_code][i]
+                text = texts[lang_code][i]
+                extracted_speaker, _ = extract_speaker_and_text(text)
+                if extracted_speaker and not speaker:
+                    speaker = extracted_speaker
+        
+        # line_dataを作成（speakerを最初に配置）
+        line_data = {}
+        if speaker:
+            line_data["speaker"] = speaker
+        else:
+            line_data["speaker"] = ""
+        
+        # 各言語のテキストを追加
+        for lang_code in ['fr', 'en', 'ja']:
+            if lang_code in texts and i < len(texts[lang_code]):
+                text = texts[lang_code][i]
+                _, content = extract_speaker_and_text(text)
+                line_data[lang_code] = content
             else:
                 line_data[lang_code] = ""  # 足りない行は空文字
         

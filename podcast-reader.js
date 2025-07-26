@@ -509,36 +509,18 @@ function updatePlayPauseButton() {
 
 // Speaker identification - creates a unified list across all languages
 function identifySpeakers() {
-    const allLanguageLines = parseAllLanguageTexts();
-    const speakerMapping = new Map(); // Map to track speaker equivalences across languages
-    let speakerIndex = 0;
+    const speakerSet = new Set();
     
-    // Process each text entry to build speaker mapping
+    // 新形式では speaker 要素から直接話者を取得
     texts.forEach((textObj, index) => {
-        const speakers_fr = textObj.fr ? extractSpeakerFromLine(textObj.fr) : null;
-        const speakers_en = textObj.en ? extractSpeakerFromLine(textObj.en) : null;
-        const speakers_ja = textObj.ja ? extractSpeakerFromLine(textObj.ja) : null;
-        
-        // Use French as the primary language for speaker identification
-        if (speakers_fr && !speakerMapping.has(speakers_fr)) {
-            speakerMapping.set(speakers_fr, speakerIndex);
-            if (speakers_en) speakerMapping.set(speakers_en, speakerIndex);
-            if (speakers_ja) speakerMapping.set(speakers_ja, speakerIndex);
-            speakerIndex++;
+        const speaker = textObj.speaker;
+        if (speaker && speaker !== 'Unknown') {
+            speakerSet.add(speaker);
         }
     });
     
-    // Create speakers array from French speakers (primary language)
-    speakers = [];
-    speakerMapping.forEach((index, speakerName) => {
-        // Only add French speakers to maintain consistent indexing
-        if (allLanguageLines.fr.some(line => line.speaker === speakerName)) {
-            speakers[index] = speakerName;
-        }
-    });
-    
-    // Remove undefined entries and compact array
-    speakers = speakers.filter(speaker => speaker !== undefined);
+    // ユニークな話者のリストを作成
+    speakers = Array.from(speakerSet).sort();
 }
 
 function extractSpeakerFromLine(line) {
@@ -547,19 +529,7 @@ function extractSpeakerFromLine(line) {
 }
 
 function getSpeakerIndex(speakerName, lang, lineIndex) {
-    // For languages other than French, we need to map the speaker to the French equivalent
-    // by looking at the same line index in the French version
-    if (lang === 'fr') {
-        return speakers.indexOf(speakerName);
-    }
-    
-    // For non-French languages, find the equivalent French speaker at the same line index
-    if (lineIndex < texts.length && texts[lineIndex].fr) {
-        const frenchSpeaker = extractSpeakerFromLine(texts[lineIndex].fr);
-        return speakers.indexOf(frenchSpeaker);
-    }
-    
-    // Fallback: try direct mapping
+    // 新形式では全言語で同じspeaker要素を使用するため、直接インデックスを返す
     return speakers.indexOf(speakerName);
 }
 
@@ -797,7 +767,7 @@ function getFilteredVoicesForLanguage(lang) {
     return prioritizeVoices(fallbackMatches);
 }
 
-// Shared text parsing function - updated for new JSON array format
+// Shared text parsing function - updated for new JSON array format with separate speaker field
 function parseAllLanguageTexts() {
     const allLanguageLines = {};
     const languages = ['fr', 'en', 'ja']; // サポートされている言語
@@ -807,29 +777,19 @@ function parseAllLanguageTexts() {
         allLanguageLines[lang] = [];
     });
     
-    // 新形式のJSONデータを処理
+    // 新形式のJSONデータを処理（speaker要素が分離されている）
     texts.forEach((textObj, index) => {
+        const speaker = textObj.speaker || 'Unknown'; // speaker要素を取得
+        
         languages.forEach(lang => {
             if (textObj[lang]) {
-                const line = textObj[lang];
-                // スピーカーとテキストを分離するために最初の ': ' を検索
-                const colonIndex = line.indexOf(': ');
-                if (colonIndex !== -1) {
-                    allLanguageLines[lang].push({
-                        index: index,
-                        speaker: line.substring(0, colonIndex),
-                        text: line.substring(colonIndex + 2), // +2 to skip ': '
-                        fullLine: line
-                    });
-                } else {
-                    // ': 'が見つからない場合、行全体をUnknownスピーカーのテキストとして扱う
-                    allLanguageLines[lang].push({
-                        index: index,
-                        speaker: 'Unknown',
-                        text: line,
-                        fullLine: line
-                    });
-                }
+                const text = textObj[lang];
+                allLanguageLines[lang].push({
+                    index: index,
+                    speaker: speaker,
+                    text: text,
+                    fullLine: `${speaker}: ${text}` // 表示用に結合
+                });
             }
         });
     });
