@@ -254,7 +254,7 @@ Examples:
         created_files = write_language_files(languages, args.output)
         
         if created_files:
-            print(f"\nSuccessfully created {len(created_files)} files:")
+            print(f"Successfully created {len(created_files)} files:")
             for filename in created_files:
                 print(f"  - {filename}")
         else:
