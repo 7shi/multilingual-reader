@@ -24,7 +24,7 @@ datasets.push(
 "speaker": "Luc",
 "fr": "Et je suis Luc, physicien expérimentateur. Camille, pour commencer, j'aimerais qu'on plonge directement dans une image que... que tout le monde connaît, en fait.",
 "en": "And I'm Luc, an experimental physicist. Camille, to start, I'd like to dive right into an image that... that everyone knows, in fact.",
-"ja": "そして僕はルック、実験物理学者だ。カミーユ、まず、誰もが知っているイメージから話を始めたいんだ。"
+"ja": "そして僕はリュック、実験物理学者だ。カミーユ、まず、誰もが知っているイメージから話を始めたいんだ。"
 },{
 "speaker": "Camille",
 "fr": "Oui ?",
@@ -39,7 +39,7 @@ datasets.push(
 "speaker": "Camille",
 "fr": "C'est une question absolument fondamentale, Luc, parce que ça touche à notre intuition la plus profonde.",
 "en": "It's an absolutely fundamental question, Luc, because it touches on our deepest intuition.",
-"ja": "それはとても根源的な問いね、ルック。だって、私たちの最も深い直感に触れる問題だから。"
+"ja": "それはとても根源的な問いね、リュック。だって、私たちの最も深い直感に触れる問題だから。"
 },{
 "speaker": "Luc",
 "fr": "Oui.",
@@ -179,7 +179,7 @@ datasets.push(
 "speaker": "Camille",
 "fr": "Mais... il y a une raison encore plus belle. Une raison qui fait le lien avec votre domaine, Luc.",
 "en": "But... there's an even more beautiful reason. A reason that connects to your field, Luc.",
-"ja": "でも…もっと美しい理由もあるの。あなたの専門分野につながる理由がね、ルック。"
+"ja": "でも…もっと美しい理由もあるの。あなたの専門分野につながる理由がね、リュック。"
 },{
 "speaker": "Luc",
 "fr": "Ah ? Laquelle ?",

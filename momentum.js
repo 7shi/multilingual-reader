@@ -14,12 +14,12 @@ datasets.push(
 "speaker": "Luc",
 "fr": "Et je suis Luc. C'est un plaisir d'être ici.",
 "en": "And I'm Luc. It's a pleasure to be here.",
-"ja": "僕はルック。ここに来られて光栄だよ。"
+"ja": "僕はリュック。ここに来られて光栄だよ。"
 },{
 "speaker": "Camille",
 "fr": "Luc, aujourd'hui nous avons une question d'auditeur qui est juste... fantastique.",
 "en": "Luc, today we've got a listener question that's just... fantastic.",
-"ja": "ルック、今日はリスナーから、もう…最高の質問が届いているの。"
+"ja": "リュック、今日はリスナーから、もう…最高の質問が届いているの。"
 },{
 "speaker": "Luc",
 "fr": "Oh?",
@@ -339,7 +339,7 @@ datasets.push(
 "speaker": "Camille",
 "fr": "Cela remet complètement en question le monde. Luc, merci. C'était d'une clarté saisissante.",
 "en": "That completely reframes the world. Luc, thank you. That was stunningly clear.",
-"ja": "世界の見方がまったく変わってしまうわ。ルック、ありがとう。息をのむほど分かりやすかった。"
+"ja": "世界の見方がまったく変わってしまうわ。リュック、ありがとう。息をのむほど分かりやすかった。"
 },{
 "speaker": "Luc",
 "fr": "C’était un plaisir, Camille.",
