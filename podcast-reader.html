@@ -26,7 +26,8 @@
             <div class="dataset-selector">
                 <label for="dataset">Dataset:</label>
                 <select id="dataset">
-                    <option value="onde" selected>🌊 Onde (Waves)</option>
+                    <option value="transformer" selected>🤖 Transformer</option>
+                    <option value="onde">🌊 Onde (Waves)</option>
                     <option value="momentum">⚡ Momentum</option>
                 </select>
             </div>
@@ -87,14 +88,16 @@
         <div id="status" class="status stopped">Ready to play</div>
     </div>
 
+    <script src="transformer.js"></script>
     <script src="onde.js"></script>
     <script src="momentum.js"></script>
     <script src="podcast-reader.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             init({
-                'onde': 0,
-                'momentum': 1
+                'transformer': 0,
+                'onde': 1,
+                'momentum': 2
             });
         });
     </script>
