@@ -23,6 +23,7 @@ multilingual-reader/
 ├── podcast-reader.html           # メインHTML（UI構造）
 ├── podcast-reader.css            # スタイルシート
 ├── podcast-reader.js             # JavaScriptロジック
+├── transformer.js                # 多言語テキストデータ（Transformerテクノロジー）
 ├── onde.js                       # 多言語テキストデータ（波動・量子力学）
 ├── momentum.js                   # 多言語テキストデータ（運動量・測定理論）
 ├── split_podcast_data.py         # テキスト分割スクリプト（データセット配列対応）
@@ -35,7 +36,30 @@ multilingual-reader/
 
 ## 🎓 コンテンツ内容
 
-### 🌊 Dataset 1: Onde (波動・量子力学)
+### 🤖 Dataset 1: Transformer (Transformerテクノロジー)
+AI研究者CamilleとLucの対話形式でTransformerアーキテクチャの革新を解説：
+
+1. **Attention機構の革命**
+   - 「Attention is All You Need」の衝撃
+   - 従来のRNN/CNNからの転換
+
+2. **Self-Attentionの技術革新**
+   - Query, Key, Valueの概念
+   - 並列処理による計算効率の大幅改善
+
+3. **マルチヘッドアテンション**
+   - 複数の視点からの情報統合
+   - 表現の豊かさと多様性
+
+4. **Position Encodingの独創性**
+   - 位置情報の巧妙な埋め込み
+   - シーケンシャルな順序の保持
+
+5. **現代AIへの影響**
+   - GPT、BERT、ChatGPTへの発展
+   - 自然言語処理の新時代の到来
+
+### 🌊 Dataset 2: Onde (波動・量子力学)
 物理学者CamilleとLucの対話形式で量子力学の基礎概念を解説：
 
 1. **波動関数（ψ）の本質**
@@ -58,7 +82,7 @@ multilingual-reader/
    - 確率の物理的実在性
    - 量子世界と日常世界の架け橋
 
-### ⚡ Dataset 2: Momentum (運動量・測定理論)
+### ⚡ Dataset 3: Momentum (運動量・測定理論)
 物理学者MaryとJohnの対話形式で量子測定理論を解説：
 
 1. **量子運動量の概念転換**
@@ -116,39 +140,31 @@ uv run merge_podcast_data.py -o new_dataset.js new_dataset-fr.txt new_dataset-en
 `podcast-reader.html`に新しいデータセットファイルを追加：
 
 ```html
+<script src="transformer.js"></script>
 <script src="onde.js"></script>
 <script src="momentum.js"></script>
 <script src="new_dataset.js"></script> <!-- 新しいデータセット -->
 ```
 
-#### 3. HTMLのselectオプション追加
-dataset選択プルダウンに新しいオプションを追加：
-
-```html
-<select id="dataset">
-    <option value="onde" selected>🌊 Onde (Waves)</option>
-    <option value="momentum">⚡ Momentum</option>
-    <option value="new_dataset">🆕 New Dataset</option> <!-- 新しいオプション -->
-</select>
-```
-
-#### 4. 初期化設定の更新
-`podcast-reader.html`の初期化部分でデータセットマッピングを更新：
+#### 3. 初期化設定の更新
+`podcast-reader.html`の初期化部分でデータセット情報を追加：
 
 ```javascript
 document.addEventListener('DOMContentLoaded', () => {
     init({
-        'onde': 0,
-        'momentum': 1,
-        'new_dataset': 2  // 新しいデータセットのインデックス
+        'transformer': '🤖 Transformer',
+        'onde': '🌊 Onde (Waves)',
+        'momentum': '⚡ Momentum',
+        'new_dataset': '🆕 New Dataset'  // 新しいデータセット
     });
 });
 ```
 
 **注意事項**：
+- 記述順がインデックス順となります（最初に記述したものがインデックス0）
+- 最初に記述されたデータセットが自動的に選択されます
+- HTMLのselectオプションは自動生成されるため、手動で追加する必要はありません
 - データセットのインデックスは、JavaScriptファイルが読み込まれる順序に対応します
-- 各データセットファイルは`datasets.push([...])`形式で配列に追加されます
-- ファイル読み込み順序とマッピングのインデックスを一致させる必要があります
 
 ### GenSpark HTML対話データの抽出
 `convert_genspark.py`スクリプトを使用して、GenSpark HTMLファイルから対話データを抽出：
