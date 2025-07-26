@@ -477,9 +477,10 @@ function playFromLineInLanguage(lineIndex, lang) {
     isStopped = false; // 再生開始時にリセット
     
     // クリックした言語に応じてmultiLangCurrentStepを設定
-    const languages = Object.keys(languageConfig);
-    const langIndex = languages.indexOf(lang);
-    multiLangCurrentStep = langIndex >= 0 ? langIndex : 0; // デフォルトは最初の言語から
+    // 有効な言語のみを考慮する
+    const enabledLanguages = Object.keys(languageConfig).filter(l => languageFlagStates[l]);
+    const langIndex = enabledLanguages.indexOf(lang);
+    multiLangCurrentStep = langIndex >= 0 ? langIndex : 0; // 有効言語内でのインデックス
     speakLineMultiLanguage(currentLineIndex);
     updatePlayPauseButton();
 }
