@@ -1,42 +1,33 @@
-// Text data - will be initialized in init function
+// グローバル変数
 let texts = [];
-
-// Language codes for speech synthesis - will be initialized in init function
 let langCodes = {};
-
 let currentSynth = null;
 let isPaused = false;
-let isStopped = false; // Firefox対応：停止状態を明確に管理
+let isStopped = false;
 let currentLineIndex = 0;
-let dialogueLines = [];
-// Removed: currentWordIndex and currentLineWords are no longer needed for dynamic highlighting
 let availableVoices = [];
 let speakers = [];
-let speakerVoicesByLanguage = {}; // Store voice settings per language by speaker index - will be initialized in init function
-let multiLangCurrentStep = 0; // Current step in multi-language playback
-let datasetConfigMapping = {}; // Store dataset name to index mapping
-
-// Language-specific speed settings - will be initialized in init function
+let speakerVoicesByLanguage = {};
+let multiLangCurrentStep = 0;
+let datasetConfigMapping = {};
 let languageRates = {};
-
-// Language flag states - tracks which languages are enabled/disabled
 let languageFlagStates = {};
+let languageConfig = {};
 
-// DOM elements - will be initialized in init function
+// DOM要素
 let datasetSelect, playPauseBtn, stopBtn, rateSlider, rateValue;
 let status, textContent, speakerVoicesDiv;
 
-// Language configuration - will be initialized in init function
-let languageConfig = {};
-
 // Initialize
 function init(datasetLabels, languageConfigParam) {
+    // languageConfigParamが設定されていない場合は終了
+    if (!languageConfigParam) {
+        console.error('languageConfigParam is required');
+        return;
+    }
+    
     // Initialize language configuration
-    languageConfig = languageConfigParam || {
-        fr: { code: 'fr-FR', name: 'Français', defaultRate: 1.0 },
-        en: { code: 'en-US', name: 'English', defaultRate: 1.0 },
-        ja: { code: 'ja-JP', name: '日本語', defaultRate: 1.5 }
-    };
+    languageConfig = languageConfigParam;
     
     // Initialize language-related objects based on config
     langCodes = {};
@@ -71,7 +62,6 @@ function init(datasetLabels, languageConfigParam) {
         datasetConfigMapping[key] = index;
     });
     
-    // Note: Application is now always in multi-language mode
     
     // Initialize dataset based on provided config
     const selectedDataset = datasetSelect.value;
@@ -322,29 +312,14 @@ function onDatasetChange() {
 }
 
 function loadText() {
-    // Parse dialogue lines for all languages using shared logic
     const allLanguageLines = parseAllLanguageTexts();
     
-    // Use the first available language for line count in multi-language mode
-    const selectedLang = Object.keys(languageConfig)[0]; // Use first configured language as base
-    dialogueLines = allLanguageLines[selectedLang];
-    
-    // Ensure dialogueLines is not undefined
-    if (!dialogueLines) {
-        dialogueLines = [];
-    }
-    
-    // Identify unique speakers
     identifySpeakers();
-    
     displayTranslationText(allLanguageLines);
     createAllLanguageVoiceAssignments();
-    
-    // 言語フラグの表示状態を更新
     updateLanguageFlagDisplay();
 }
 
-// Removed displayText function - no longer needed with dynamic highlighting and translation mode
 
 function displayTranslationText(allLanguageLines) {
     textContent.innerHTML = '';
@@ -419,12 +394,9 @@ function displayTranslationText(allLanguageLines) {
     }
 }
 
-function updateRate() {
-    const rate = parseFloat(rateSlider.value);
-    rateValue.textContent = rate.toFixed(1) + 'x';
-    
+// 共通の音声再開処理
+function restartSpeechIfPlaying() {
     if (currentSynth) {
-        // Cancel current speech and restart if playing
         const wasPlaying = !currentSynth.paused;
         if (wasPlaying) {
             currentSynth.cancel();
@@ -437,11 +409,16 @@ function updateRate() {
     }
 }
 
+function updateRate() {
+    const rate = parseFloat(rateSlider.value);
+    rateValue.textContent = rate.toFixed(1) + 'x';
+    restartSpeechIfPlaying();
+}
+
 function updateLanguageRate(event) {
     const langKey = event.target.getAttribute('data-lang');
     const rate = parseFloat(event.target.value);
     
-    // Update corresponding display value
     if (langKey && languageRates[langKey] !== undefined) {
         languageRates[langKey] = rate;
         const rateValueElement = document.getElementById(`rateValue${langKey.charAt(0).toUpperCase() + langKey.slice(1)}`);
@@ -450,21 +427,8 @@ function updateLanguageRate(event) {
         }
     }
     
-    // Save settings to localStorage
     saveLanguageRateSettings();
-    
-    // Cancel current speech and restart if playing
-    if (currentSynth) {
-        const wasPlaying = !currentSynth.paused;
-        if (wasPlaying) {
-            currentSynth.cancel();
-            setTimeout(() => {
-                if (!isPaused && !isStopped) {
-                    speakLineMultiLanguage(currentLineIndex);
-                }
-            }, 100);
-        }
-    }
+    restartSpeechIfPlaying();
 }
 
 
@@ -520,70 +484,61 @@ function playFromLineInLanguage(lineIndex, lang) {
     updatePlayPauseButton();
 }
 
+// ヘルパー関数: 次の再生をスケジュール
+function scheduleNextPlayback(delay) {
+    setTimeout(() => {
+        if (!isPaused && !isStopped) {
+            speakLineMultiLanguage(currentLineIndex);
+        }
+    }, delay);
+}
+
+// ヘルパー関数: 指定した行と言語のデータを取得
+function getLineData(lineIndex, lang) {
+    const allLanguageLines = parseAllLanguageTexts();
+    const langLines = allLanguageLines[lang];
+    
+    if (!langLines || lineIndex >= langLines.length) {
+        return { line: null, currentLang: lang };
+    }
+    
+    return { line: langLines[lineIndex], currentLang: lang };
+}
+
 function speakLineMultiLanguage(lineIndex) {
-    const languages = Object.keys(languageConfig);
+    const enabledLanguages = Object.keys(languageConfig).filter(lang => languageFlagStates[lang]);
     
-    // 有効な言語のみを取得
-    const enabledLanguages = languages.filter(lang => languageFlagStates[lang]);
-    
-    // 有効な言語がない場合は停止
     if (enabledLanguages.length === 0) {
         updateStatus('stopped', '有効な言語がありません');
         stopText();
         return;
     }
     
-    // 現在のステップが有効な言語の範囲を超えている場合は次の行へ
     if (multiLangCurrentStep >= enabledLanguages.length) {
         multiLangCurrentStep = 0;
         currentLineIndex++;
-        setTimeout(() => {
-            if (!isPaused && !isStopped) {
-                speakLineMultiLanguage(currentLineIndex);
-            }
-        }, 800);
+        scheduleNextPlayback(800);
         return;
     }
     
-    const currentLang = enabledLanguages[multiLangCurrentStep];
-    
-    // Get the dialogue lines for all languages using shared logic
-    const allLanguageLines = parseAllLanguageTexts();
-    
-    const langLines = allLanguageLines[currentLang];
-    if (!langLines || lineIndex >= langLines.length) {
+    const { line, currentLang } = getLineData(lineIndex, enabledLanguages[multiLangCurrentStep]);
+    if (!line) {
         stopText();
         return;
     }
     
-    const line = langLines[lineIndex];
-    
-    // Create completion callback for language sequence
     const onSpeechComplete = () => {
         multiLangCurrentStep++;
         
-        // If we've completed all enabled languages for this line
         if (multiLangCurrentStep >= enabledLanguages.length) {
             multiLangCurrentStep = 0;
             currentLineIndex++;
-            
-            // Short pause between lines, then move to next line
-            setTimeout(() => {
-                if (!isPaused && !isStopped) {
-                    speakLineMultiLanguage(currentLineIndex);
-                }
-            }, 800); // Longer pause between lines
+            scheduleNextPlayback(800);
         } else {
-            // Continue with next enabled language for the same line
-            setTimeout(() => {
-                if (!isPaused && !isStopped) {
-                    speakLineMultiLanguage(currentLineIndex);
-                }
-            }, 400); // Short pause between languages
+            scheduleNextPlayback(400);
         }
     };
     
-    // Use shared speech synthesis function
     const langConfig = languageConfig[currentLang];
     const statusMessage = `Playing line ${lineIndex + 1} in ${langConfig ? langConfig.name : currentLang} (${multiLangCurrentStep + 1}/${enabledLanguages.length})`;
     
@@ -591,34 +546,6 @@ function speakLineMultiLanguage(lineIndex) {
 }
 
 
-function speakLineInLanguage(lineIndex, lang) {
-    // Get the dialogue lines for all languages using shared logic
-    const allLanguageLines = parseAllLanguageTexts();
-    
-    const langLines = allLanguageLines[lang];
-    if (!langLines || lineIndex >= langLines.length) {
-        stopText();
-        return;
-    }
-    
-    const line = langLines[lineIndex];
-    
-    // Create completion callback for single language playback
-    const onSpeechComplete = () => {
-        currentLineIndex++;
-        // Continue with the same language
-        setTimeout(() => {
-            if (!isStopped) {
-                speakLineInLanguage(currentLineIndex, lang);
-            }
-        }, 500); // Short pause between lines
-    };
-    
-    // Use shared speech synthesis function
-    const statusMessage = `Playing line ${lineIndex + 1} in ${lang.toUpperCase()}`;
-    
-    speakLineWithUtterance(lineIndex, lang, line, statusMessage, onSpeechComplete);
-}
 
 function pauseText() {
     if (currentSynth && !isPaused) {
@@ -693,13 +620,8 @@ function identifySpeakers() {
     speakers = Array.from(speakerSet).sort();
 }
 
-function extractSpeakerFromLine(line) {
-    const colonIndex = line.indexOf(': ');
-    return colonIndex !== -1 ? line.substring(0, colonIndex) : null;
-}
 
-function getSpeakerIndex(speakerName, lang, lineIndex) {
-    // 新形式では全言語で同じspeaker要素を使用するため、直接インデックスを返す
+function getSpeakerIndex(speakerName) {
     return speakers.indexOf(speakerName);
 }
 
@@ -709,44 +631,6 @@ function loadVoices() {
 }
 
 
-function prioritizeVoices(voices) {
-    // Filter out Multilingual voices
-    const nonMultilingualVoices = voices.filter(voice => 
-        !voice.name.toLowerCase().includes('multilingual')
-    );
-    
-    // Use filtered voices if available, otherwise use all voices
-    const voicesToSort = nonMultilingualVoices.length > 0 ? nonMultilingualVoices : voices;
-    
-    // Sort voices with priority:
-    // 1. localService = false (online voices)
-    // 2. Non-multilingual voices
-    // 3. Default voices
-    // 4. Alphabetical order
-    return voicesToSort.sort((a, b) => {
-        // Priority 1: localService = false (online voices first)
-        const aIsOnline = a.localService === false;
-        const bIsOnline = b.localService === false;
-        if (aIsOnline !== bIsOnline) {
-            return bIsOnline - aIsOnline; // false (online) comes first
-        }
-        
-        // Priority 2: Non-multilingual voices first
-        const aIsMultilingual = a.name.toLowerCase().includes('multilingual');
-        const bIsMultilingual = b.name.toLowerCase().includes('multilingual');
-        if (aIsMultilingual !== bIsMultilingual) {
-            return aIsMultilingual - bIsMultilingual; // false (non-multilingual) comes first
-        }
-        
-        // Priority 3: Default voices first
-        if (a.default !== b.default) {
-            return b.default - a.default; // true comes first
-        }
-        
-        // Priority 4: Alphabetical order
-        return a.name.localeCompare(b.name);
-    });
-}
 
 function prioritizeVoicesByRegion(voices, targetLangCode) {
     if (voices.length === 0) return voices;
@@ -954,7 +838,7 @@ function speakLineWithUtterance(lineIndex, lang, line, statusMessage, onComplete
         
         // Set speaker-specific voice for current language
         const currentSpeakerVoices = speakerVoicesByLanguage[lang];
-        const speakerIndex = getSpeakerIndex(line.speaker, lang, lineIndex);
+        const speakerIndex = getSpeakerIndex(line.speaker);
         const speakerVoice = currentSpeakerVoices[speakerIndex];
         if (speakerVoice) {
             utterance.voice = speakerVoice;
@@ -1035,7 +919,6 @@ function highlightTextDynamically(lineElement, originalText, charIndex, charLeng
     }
 }
 
-// Removed findWordEnd and getJapaneseScriptType functions - no longer needed since we only highlight when charLength is available
 
 function clearDynamicHighlight() {
     // Remove all dynamic highlighting by restoring original text
