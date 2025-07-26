@@ -108,8 +108,8 @@ multilingual-reader/
 新しいデータセット用のJavaScriptファイルを作成します：
 
 ```bash
-# テキストファイルから多言語データセットを生成
-uv run merge_podcast_data.py -o new_dataset.js --prefix new_dataset_name
+# 指定されたファイルから多言語データセットを生成
+uv run merge_podcast_data.py -o new_dataset.js new_dataset-fr.txt new_dataset-en.txt new_dataset-ja.txt
 ```
 
 #### 2. HTMLファイルでのスクリプト読み込み
@@ -204,12 +204,11 @@ uv run translate.py input.txt -f English -t Japanese -o test.txt --test
 複数言語のテキストファイルを行ごとの対訳形式でJavaScript配列形式に統合：
 
 ```bash
-# プレフィックスを使用した自動検索
-uv run merge_podcast_data.py -o onde.js --prefix onde_physics
-# → onde_physics-fr.txt, onde_physics-en.txt, onde_physics-ja.txt を自動検索
+# ファイルを指定順序で統合（拡張子を除いた最後の-xx部分を言語コードとして認識）
+uv run merge_podcast_data.py -o onde.js onde_physics-fr.txt onde_physics-en.txt onde_physics-ja.txt
+uv run merge_podcast_data.py -o momentum.js momentum_data-fr.txt momentum_data-en.txt momentum_data-ja.txt
 
-# ファイルを直接指定
-uv run merge_podcast_data.py -o momentum.js file1-fr.txt file2-en.txt file3-ja.txt
+# 指定順序でマージされ、データ構造に反映される
 ```
 
 **出力形式**（nameフィールドなし）：
@@ -228,10 +227,10 @@ datasets.push([
 ```
 
 **スクリプト機能**：
-- 複数言語ファイルの自動検出・読み込み
-- 行ごとの対訳形式でJSON配列生成
+- ファイル名から言語コードを自動検出（拡張子除去後の-xx部分）
+- 指定順序での行ごと対訳形式JSON配列生成
 - datasets配列形式（nameフィールドなし）で出力
-- プレフィックス指定とファイル直接指定の両方に対応
+- 任意の言語コード・言語順序に対応
 
 #### テキスト分割（split_podcast_data.py）
 datasets配列形式の多言語データを個別ファイルに分割：

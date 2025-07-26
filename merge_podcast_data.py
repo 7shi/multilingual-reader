@@ -5,11 +5,9 @@
 
 使用方法:
     python merge_podcast_data.py -o output.js file1-fr.txt file2-en.txt file3-ja.txt
-    python merge_podcast_data.py -o output.js --prefix quantum_physics
 
 例:
     python merge_podcast_data.py -o podcast-text-data.js quantum_physics-fr.txt quantum_physics-en.txt quantum_physics-ja.txt
-    python merge_podcast_data.py -o podcast-text-data.js --prefix quantum_physics
 """
 
 import argparse
@@ -30,21 +28,22 @@ def normalize(text):
 
 def detect_language_from_filename(filename: str) -> Optional[str]:
     """
-    ファイル名から言語コードを検出する。
+    ファイル名から言語コードを検出する（拡張子を取り除いてから処理）。
     
     Args:
         filename: ファイル名
         
     Returns:
-        言語コード（fr, en, ja）またはNone
+        言語コード（fr, en, ja等）またはNone
     """
-    filename_lower = filename.lower()
-    if filename_lower.endswith('-fr.txt'):
-        return 'fr'
-    elif filename_lower.endswith('-en.txt'):
-        return 'en'
-    elif filename_lower.endswith('-ja.txt'):
-        return 'ja'
+    # 拡張子を取り除く
+    name_without_ext = Path(filename).stem
+    
+    # 最後のハイフン以降を言語コードとして取得
+    if '-' in name_without_ext:
+        lang_code = name_without_ext.split('-')[-1].lower()
+        return lang_code
+    
     return None
 
 
@@ -93,23 +92,25 @@ def extract_speaker_and_text(text: str) -> tuple[Optional[str], str]:
     return None, text
 
 
-def merge_language_files(language_files: Dict[str, Path]) -> List[Dict[str, str]]:
+def merge_language_files(language_files: List[tuple[str, Path]]) -> List[Dict[str, str]]:
     """
     複数言語のファイルを行ごとの対訳形式でマージする。
     
     Args:
-        language_files: 言語コードをキー、ファイルパスを値とする辞書
+        language_files: (言語コード, ファイルパス)のタプルのリスト（指定順序を保持）
         
     Returns:
-        行ごとの対訳データのリスト（speaker, fr, en, ja形式）
+        行ごとの対訳データのリスト（speaker + 指定された言語順）
     """
-    # 各言語のテキストを読み込み
-    texts = {}
+    # 各言語のテキストを読み込み（順序を保持）
+    texts = []
+    lang_codes = []
     max_lines = 0
     
-    for lang_code, filepath in language_files.items():
+    for lang_code, filepath in language_files:
         lines = read_text_file(filepath)
-        texts[lang_code] = lines
+        texts.append(lines)
+        lang_codes.append(lang_code)
         max_lines = max(max_lines, len(lines))
         print(f"読み込み完了: {filepath} ({len(lines)}行)")
     
@@ -119,10 +120,10 @@ def merge_language_files(language_files: Dict[str, Path]) -> List[Dict[str, str]
     for i in range(max_lines):
         speaker = None
         
-        # 話者情報を抽出（frから優先的に取得）
-        for lang_code in ['fr', 'en', 'ja']:
-            if lang_code in texts and i < len(texts[lang_code]):
-                text = texts[lang_code][i]
+        # 話者情報を抽出（最初のファイルから優先的に取得）
+        for j, lines in enumerate(texts):
+            if i < len(lines):
+                text = lines[i]
                 extracted_speaker, _ = extract_speaker_and_text(text)
                 if extracted_speaker and not speaker:
                     speaker = extracted_speaker
@@ -134,10 +135,10 @@ def merge_language_files(language_files: Dict[str, Path]) -> List[Dict[str, str]
         else:
             line_data["speaker"] = ""
         
-        # 各言語のテキストを追加
-        for lang_code in ['fr', 'en', 'ja']:
-            if lang_code in texts and i < len(texts[lang_code]):
-                text = texts[lang_code][i]
+        # 各言語のテキストを指定順序で追加
+        for j, lang_code in enumerate(lang_codes):
+            if i < len(texts[j]):
+                text = texts[j][i]
                 _, content = extract_speaker_and_text(text)
                 line_data[lang_code] = content
             else:
@@ -186,8 +187,6 @@ def main():
   %(prog)s -o onde.js file1-fr.txt file2-en.txt file3-ja.txt
     指定されたファイルを直接読み込んでデータセットとして出力
 
-  %(prog)s -o momentum.js --prefix quantum_physics
-    quantum_physics-fr.txt, quantum_physics-en.txt, quantum_physics-ja.txt を自動検索してデータセットとして出力
         """
     )
     
@@ -197,10 +196,6 @@ def main():
         help='出力JavaScriptファイル名'
     )
     
-    parser.add_argument(
-        '--prefix',
-        help='ファイル名のプレフィックス（例: quantum_physics）'
-    )
     
     
     parser.add_argument(
@@ -211,37 +206,31 @@ def main():
     
     args = parser.parse_args()
     
-    # ファイルリストの決定
-    language_files = {}
+    # ファイルリストの決定（指定順序を保持）
+    language_files = []
     
-    if args.prefix:
-        # プレフィックスから自動的にファイル名を生成
-        for lang_code in ['fr', 'en', 'ja']:
-            filepath = Path(f"{args.prefix}-{lang_code}.txt")
-            if filepath.exists():
-                language_files[lang_code] = filepath
-            else:
-                print(f"警告: ファイルが見つかりません: {filepath}", file=sys.stderr)
+    if not args.files:
+        print("エラー: ファイルを指定してください", file=sys.stderr)
+        sys.exit(1)
     
-    if args.files:
-        # 直接指定されたファイルから言語コードを検出
-        for filename in args.files:
-            filepath = Path(filename)
-            if not filepath.exists():
-                print(f"エラー: ファイルが見つかりません: {filepath}", file=sys.stderr)
-                continue
-            
-            lang_code = detect_language_from_filename(filepath.name)
-            if lang_code:
-                language_files[lang_code] = filepath
-            else:
-                print(f"警告: 言語コードを検出できません: {filepath}", file=sys.stderr)
+    # 直接指定されたファイルから言語コードを検出（順序を保持）
+    for filename in args.files:
+        filepath = Path(filename)
+        if not filepath.exists():
+            print(f"エラー: ファイルが見つかりません: {filepath}", file=sys.stderr)
+            continue
+        
+        lang_code = detect_language_from_filename(filepath.name)
+        if lang_code:
+            language_files.append((lang_code, filepath))
+        else:
+            print(f"警告: 言語コードを検出できません: {filepath}", file=sys.stderr)
     
     if not language_files:
         print("エラー: 処理する言語ファイルが見つかりません", file=sys.stderr)
         sys.exit(1)
     
-    print(f"検出された言語ファイル: {', '.join(f'{k}={v}' for k, v in language_files.items())}")
+    print(f"検出された言語ファイル: {', '.join(f'{k}={v}' for k, v in language_files)}")
     
     # ファイルをマージ
     merged_data = merge_language_files(language_files)
@@ -259,7 +248,7 @@ def main():
             f.write(js_output)
         
         print(f"統合完了: {output_path} ({len(merged_data)}行)")
-        print(f"含まれる言語: {', '.join(language_files.keys())}")
+        print(f"含まれる言語: {', '.join(lang_code for lang_code, _ in language_files)}")
         
     except IOError as e:
         print(f"出力ファイル書き込みエラー: {e}", file=sys.stderr)
