@@ -425,6 +425,116 @@ h1 {
     color: #721c24;
 }
 
+/* Language controls table styling */
+.language-controls-container {
+    margin-top: 15px;
+}
+
+.language-controls-table {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.language-controls-table th {
+    background: #f8f9fa;
+    padding: 8px 10px;
+    text-align: center;
+    border-bottom: 2px solid #e9ecef;
+    border-right: 1px solid #e9ecef;
+}
+
+.language-controls-table th:last-child {
+    border-right: none;
+}
+
+.language-controls-table th label {
+    font-weight: bold;
+    color: #555;
+    margin: 0;
+    font-size: 16px;
+}
+
+.language-controls-table td {
+    padding: 8px 10px;
+    text-align: center;
+    border-bottom: 1px solid #f8f9fa;
+    border-right: 1px solid #f8f9fa;
+    vertical-align: middle;
+}
+
+.language-controls-table td:last-child {
+    border-right: none;
+}
+
+.language-controls-table tr:last-child td {
+    border-bottom: none;
+}
+
+.language-controls-table tr:nth-child(even) {
+    background-color: #fbfbfb;
+}
+
+.language-controls-table tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* 言語列の幅を適切に設定 */
+.language-controls-table td:first-child,
+.language-controls-table th:first-child {
+    width: 120px;
+    min-width: 80px;
+    text-align: left;
+    font-size: 14px;
+    line-height: 1.2;
+}
+
+/* 速度コントロール列の幅設定 */
+.language-controls-table td:nth-child(2),
+.language-controls-table th:nth-child(2) {
+    width: 150px;
+    min-width: 80px;
+}
+
+/* スピーカー列の幅設定 */
+.language-controls-table .speaker-cell {
+    width: 180px;
+    min-width: 180px;
+}
+
+.speed-control-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: center;
+}
+
+.speed-control-container input[type="range"] {
+    width: 80px;
+    height: 20px;
+}
+
+.speed-control-container span {
+    min-width: 35px;
+    font-size: 14px;
+    color: #666;
+    font-weight: bold;
+}
+
+.speaker-cell .speaker-voice-select {
+    width: 100%;
+    padding: 4px 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 13px;
+    background: white;
+    box-sizing: border-box;
+}
+
 @media (max-width: 768px) {
     .controls {
         flex-direction: column;
@@ -443,5 +553,26 @@ h1 {
     .voice-assignment-column {
         flex: 1 1 auto;
         width: 100%;
+    }
+    
+    .language-controls-table {
+        font-size: 12px;
+    }
+    
+    .language-controls-table td:first-child,
+    .language-controls-table th:first-child {
+        width: 120px;
+        min-width: 120px;
+    }
+    
+    .language-controls-table td:nth-child(2),
+    .language-controls-table th:nth-child(2) {
+        width: 120px;
+        min-width: 120px;
+    }
+    
+    .speaker-cell {
+        width: 150px;
+        min-width: 150px;
     }
 }

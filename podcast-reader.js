@@ -1,12 +1,8 @@
 // Text data - will be initialized in init function
 let texts = [];
 
-// Language codes for speech synthesis
-const langCodes = {
-    fr: 'fr-FR',
-    en: 'en-US',
-    ja: 'ja-JP'
-};
+// Language codes for speech synthesis - will be initialized in init function
+let langCodes = {};
 
 let currentSynth = null;
 let isPaused = false;
@@ -16,47 +12,53 @@ let dialogueLines = [];
 // Removed: currentWordIndex and currentLineWords are no longer needed for dynamic highlighting
 let availableVoices = [];
 let speakers = [];
-let speakerVoicesByLanguage = {
-    fr: [],
-    en: [],
-    ja: []
-}; // Store voice settings per language by speaker index
+let speakerVoicesByLanguage = {}; // Store voice settings per language by speaker index - will be initialized in init function
 let isMultiLanguageMode = false;
 let multiLangCurrentStep = 0; // 0: fr, 1: en, 2: ja
 let datasetConfigMapping = {}; // Store dataset name to index mapping
 
-// Language-specific speed settings
-let languageRates = {
-    fr: 1.0,
-    en: 1.0,
-    ja: 1.5
-};
+// Language-specific speed settings - will be initialized in init function
+let languageRates = {};
 
 // DOM elements - will be initialized in init function
 let languageSelect, datasetSelect, playPauseBtn, stopBtn, rateSlider, rateValue;
-let rateFrSlider, rateEnSlider, rateJaSlider, rateValueFr, rateValueEn, rateValueJa;
 let status, textContent, speakerVoicesDiv;
 
+// Language configuration - will be initialized in init function
+let languageConfig = {};
+
 // Initialize
-function init(datasetLabels) {
+function init(datasetLabels, languageConfigParam) {
+    // Initialize language configuration
+    languageConfig = languageConfigParam || {
+        fr: { code: 'fr-FR', name: 'Français', defaultRate: 1.0 },
+        en: { code: 'en-US', name: 'English', defaultRate: 1.0 },
+        ja: { code: 'ja-JP', name: '日本語', defaultRate: 1.5 }
+    };
+    
+    // Initialize language-related objects based on config
+    langCodes = {};
+    languageRates = {};
+    speakerVoicesByLanguage = {};
+    
+    Object.keys(languageConfig).forEach(langKey => {
+        const config = languageConfig[langKey];
+        langCodes[langKey] = config.code;
+        languageRates[langKey] = config.defaultRate;
+        speakerVoicesByLanguage[langKey] = [];
+    });
+    
     // Initialize DOM elements
     languageSelect = document.getElementById('language');
     datasetSelect = document.getElementById('dataset');
     
-    // Populate dataset select options from config
+    // Populate language and dataset select options from config
+    populateLanguageOptions();
     populateDatasetOptions(datasetLabels);
     playPauseBtn = document.getElementById('playPauseBtn');
     stopBtn = document.getElementById('stopBtn');
     rateSlider = document.getElementById('rate');
     rateValue = document.getElementById('rateValue');
-    
-    // Language-specific rate controls
-    rateFrSlider = document.getElementById('rateFr');
-    rateEnSlider = document.getElementById('rateEn');
-    rateJaSlider = document.getElementById('rateJa');
-    rateValueFr = document.getElementById('rateValueFr');
-    rateValueEn = document.getElementById('rateValueEn');
-    rateValueJa = document.getElementById('rateValueJa');
     status = document.getElementById('status');
     textContent = document.getElementById('textContent');
     speakerVoicesDiv = document.getElementById('speakerVoices');
@@ -80,6 +82,7 @@ function init(datasetLabels) {
     
     loadVoices();
     loadLanguageRateSettings();
+    createLanguageControlsTable();
     loadText();
     
     // Initialize button state
@@ -92,11 +95,6 @@ function init(datasetLabels) {
     stopBtn.addEventListener('click', stopText);
     rateSlider.addEventListener('input', updateRate);
     
-    // Language-specific rate controls
-    rateFrSlider.addEventListener('input', updateLanguageRate);
-    rateEnSlider.addEventListener('input', updateLanguageRate);
-    rateJaSlider.addEventListener('input', updateLanguageRate);
-    
     
     // Load voices when they become available
     if ('speechSynthesis' in window) {
@@ -108,6 +106,28 @@ function init(datasetLabels) {
         status.textContent = 'Speech synthesis not supported in this browser';
         status.className = 'status stopped';
     }
+}
+
+// 言語のselect要素に選択肢を動的に追加
+function populateLanguageOptions() {
+    // 既存のオプションをクリア
+    languageSelect.innerHTML = '';
+    
+    // Multi-Language オプションを追加
+    const multiOption = document.createElement('option');
+    multiOption.value = 'multi';
+    multiOption.textContent = '🌐 Multi-Language';
+    multiOption.selected = true;
+    languageSelect.appendChild(multiOption);
+    
+    // 設定された言語オプションを追加
+    Object.keys(languageConfig).forEach(langKey => {
+        const config = languageConfig[langKey];
+        const option = document.createElement('option');
+        option.value = langKey;
+        option.textContent = config.name;
+        languageSelect.appendChild(option);
+    });
 }
 
 // データセットのselect要素に選択肢を動的に追加
@@ -126,6 +146,167 @@ function populateDatasetOptions(datasetLabels) {
         }
         datasetSelect.appendChild(option);
     });
+}
+
+// テーブル形式の言語コントロールを生成
+function createLanguageControlsTable() {
+    const container = document.getElementById('languageControlsContainer');
+    container.innerHTML = '';
+    
+    // テーブル要素を作成
+    const table = document.createElement('table');
+    table.className = 'language-controls-table';
+    
+    // ヘッダー行を作成（スピーカー数が確定してから完全なヘッダーを作成）
+    const headerRow = document.createElement('tr');
+    
+    const langHeader = document.createElement('th');
+    langHeader.innerHTML = '<label>Language</label>';
+    headerRow.appendChild(langHeader);
+    
+    const speedHeader = document.createElement('th');
+    speedHeader.innerHTML = '<label>Speed</label>';
+    headerRow.appendChild(speedHeader);
+    
+    table.appendChild(headerRow);
+    
+    // 各言語の行を作成
+    Object.keys(languageConfig).forEach(langKey => {
+        const config = languageConfig[langKey];
+        const row = document.createElement('tr');
+        row.setAttribute('data-lang', langKey);
+        row.id = `languageRow-${langKey}`;
+        
+        // 言語名セル
+        const langCell = document.createElement('td');
+        langCell.textContent = `${config.name} (${config.code})`;
+        row.appendChild(langCell);
+        
+        // 速度コントロールセル
+        const speedCell = document.createElement('td');
+        const speedContainer = document.createElement('div');
+        speedContainer.className = 'speed-control-container';
+        
+        const speedSlider = document.createElement('input');
+        speedSlider.type = 'range';
+        speedSlider.min = '0.5';
+        speedSlider.max = '2';
+        speedSlider.step = '0.1';
+        speedSlider.value = config.defaultRate;
+        speedSlider.id = `rate${langKey.charAt(0).toUpperCase() + langKey.slice(1)}`;
+        speedSlider.setAttribute('data-lang', langKey);
+        
+        const speedValue = document.createElement('span');
+        speedValue.textContent = config.defaultRate.toFixed(1) + 'x';
+        speedValue.id = `rateValue${langKey.charAt(0).toUpperCase() + langKey.slice(1)}`;
+        
+        speedSlider.addEventListener('input', updateLanguageRate);
+        
+        speedContainer.appendChild(speedSlider);
+        speedContainer.appendChild(speedValue);
+        speedCell.appendChild(speedContainer);
+        row.appendChild(speedCell);
+        
+        table.appendChild(row);
+    });
+    
+    container.appendChild(table);
+}
+
+// スピーカー列をテーブルに追加
+function addSpeakerColumnsToTable() {
+    if (speakers.length === 0) return;
+    
+    const table = document.querySelector('.language-controls-table');
+    if (!table) return;
+    
+    const headerRow = table.querySelector('tr');
+    
+    // 既存のスピーカーヘッダーを削除
+    const existingSpeakerHeaders = headerRow.querySelectorAll('.speaker-header');
+    existingSpeakerHeaders.forEach(header => header.remove());
+    
+    // スピーカーヘッダーを追加
+    speakers.forEach((speaker, index) => {
+        const speakerHeader = document.createElement('th');
+        speakerHeader.className = 'speaker-header';
+        speakerHeader.innerHTML = `<label>Speaker ${index + 1}</label>`;
+        headerRow.appendChild(speakerHeader);
+    });
+    
+    // 各言語行にスピーカー選択を追加
+    Object.keys(languageConfig).forEach(langKey => {
+        const row = document.getElementById(`languageRow-${langKey}`);
+        if (!row) return;
+        
+        // 既存のスピーカーセルを削除
+        const existingSpeakerCells = row.querySelectorAll('.speaker-cell');
+        existingSpeakerCells.forEach(cell => cell.remove());
+        
+        // 各スピーカーの音声選択セルを追加
+        speakers.forEach((speaker, speakerIndex) => {
+            const speakerCell = document.createElement('td');
+            speakerCell.className = 'speaker-cell';
+            
+            const voiceSelect = createVoiceSelectForSpeaker(langKey, speakerIndex);
+            speakerCell.appendChild(voiceSelect);
+            row.appendChild(speakerCell);
+        });
+    });
+}
+
+// 特定のスピーカーと言語に対する音声選択を作成
+function createVoiceSelectForSpeaker(langKey, speakerIndex) {
+    const voiceSelect = document.createElement('select');
+    voiceSelect.className = 'speaker-voice-select';
+    voiceSelect.setAttribute('data-speaker-index', speakerIndex);
+    voiceSelect.setAttribute('data-lang', langKey);
+    
+    // デフォルトオプション
+    const defaultOption = document.createElement('option');
+    defaultOption.value = '';
+    defaultOption.textContent = 'Default';
+    voiceSelect.appendChild(defaultOption);
+    
+    // 利用可能な音声オプション
+    const filteredVoices = getFilteredVoicesForLanguage(langKey);
+    let selectedVoiceIndex = '';
+    const currentSpeakerVoice = speakerVoicesByLanguage[langKey][speakerIndex];
+    
+    filteredVoices.forEach((voice, index) => {
+        const option = document.createElement('option');
+        option.value = index;
+        option.textContent = `${voice.name} (${voice.lang})`;
+        if (voice.default) {
+            option.textContent += ' - Default';
+        }
+        
+        // 現在選択されている音声かチェック
+        if (currentSpeakerVoice && voice.name === currentSpeakerVoice.name && voice.lang === currentSpeakerVoice.lang) {
+            selectedVoiceIndex = index;
+        }
+        
+        voiceSelect.appendChild(option);
+    });
+    
+    // 選択されている音声を復元
+    voiceSelect.value = selectedVoiceIndex;
+    
+    // イベントリスナーを追加
+    voiceSelect.addEventListener('change', (e) => {
+        const speakerIndex = parseInt(e.target.getAttribute('data-speaker-index'));
+        const targetLang = e.target.getAttribute('data-lang');
+        const selectedIndex = e.target.value;
+        
+        if (selectedIndex === '') {
+            speakerVoicesByLanguage[targetLang][speakerIndex] = undefined;
+        } else {
+            const filteredVoices = getFilteredVoicesForLanguage(targetLang);
+            speakerVoicesByLanguage[targetLang][speakerIndex] = filteredVoices[parseInt(selectedIndex)];
+        }
+    });
+    
+    return voiceSelect;
 }
 
 function onLanguageChange() {
@@ -166,11 +347,10 @@ function onDatasetChange() {
     updateStatus('stopped', `Ready to play - ${selectedDataset} dataset loaded`);
     
     // Reset voice assignments when switching datasets
-    speakerVoicesByLanguage = {
-        fr: [],
-        en: [],
-        ja: []
-    };
+    speakerVoicesByLanguage = {};
+    Object.keys(languageConfig).forEach(langKey => {
+        speakerVoicesByLanguage[langKey] = [];
+    });
     
     // Stop current playback when switching datasets
     stopText();
@@ -186,7 +366,7 @@ function loadText() {
     // Use the first available language for line count if multi-language mode
     let selectedLang;
     if (isMultiLanguageMode || languageSelect.value === 'multi') {
-        selectedLang = 'fr'; // Use French as base for multi-language mode
+        selectedLang = Object.keys(languageConfig)[0]; // Use first configured language as base for multi-language mode
     } else {
         selectedLang = languageSelect.value;
     }
@@ -284,19 +464,16 @@ function updateRate() {
 }
 
 function updateLanguageRate(event) {
-    const sliderId = event.target.id;
+    const langKey = event.target.getAttribute('data-lang');
     const rate = parseFloat(event.target.value);
     
     // Update corresponding display value
-    if (sliderId === 'rateFr') {
-        languageRates.fr = rate;
-        rateValueFr.textContent = rate.toFixed(1) + 'x';
-    } else if (sliderId === 'rateEn') {
-        languageRates.en = rate;
-        rateValueEn.textContent = rate.toFixed(1) + 'x';
-    } else if (sliderId === 'rateJa') {
-        languageRates.ja = rate;
-        rateValueJa.textContent = rate.toFixed(1) + 'x';
+    if (langKey && languageRates[langKey] !== undefined) {
+        languageRates[langKey] = rate;
+        const rateValueElement = document.getElementById(`rateValue${langKey.charAt(0).toUpperCase() + langKey.slice(1)}`);
+        if (rateValueElement) {
+            rateValueElement.textContent = rate.toFixed(1) + 'x';
+        }
     }
     
     // Save settings to localStorage
@@ -372,15 +549,9 @@ function playFromLineInLanguage(lineIndex, lang) {
     // Multilingualモードの場合、クリックした言語から開始
     if (isMultiLanguageMode) {
         // クリックした言語に応じてmultiLangCurrentStepを設定
-        if (lang === 'fr') {
-            multiLangCurrentStep = 0;
-        } else if (lang === 'en') {
-            multiLangCurrentStep = 1;
-        } else if (lang === 'ja') {
-            multiLangCurrentStep = 2;
-        } else {
-            multiLangCurrentStep = 0; // デフォルトはフランス語から
-        }
+        const languages = Object.keys(languageConfig);
+        const langIndex = languages.indexOf(lang);
+        multiLangCurrentStep = langIndex >= 0 ? langIndex : 0; // デフォルトは最初の言語から
         speakLineMultiLanguage(currentLineIndex);
     } else {
         // 単一言語モードの場合
@@ -390,7 +561,7 @@ function playFromLineInLanguage(lineIndex, lang) {
 }
 
 function speakLineMultiLanguage(lineIndex) {
-    const languages = ['fr', 'en', 'ja'];
+    const languages = Object.keys(languageConfig);
     const currentLang = languages[multiLangCurrentStep];
     
     // Get the dialogue lines for all languages using shared logic
@@ -408,8 +579,8 @@ function speakLineMultiLanguage(lineIndex) {
     const onSpeechComplete = () => {
         multiLangCurrentStep++;
         
-        // If we've completed all 3 languages for this line
-        if (multiLangCurrentStep >= 3) {
+        // If we've completed all languages for this line
+        if (multiLangCurrentStep >= languages.length) {
             multiLangCurrentStep = 0;
             currentLineIndex++;
             
@@ -430,8 +601,8 @@ function speakLineMultiLanguage(lineIndex) {
     };
     
     // Use shared speech synthesis function
-    const langNames = { fr: 'Français', en: 'English', ja: '日本語' };
-    const statusMessage = `Playing line ${lineIndex + 1} in ${langNames[currentLang]} (${multiLangCurrentStep + 1}/3)`;
+    const langConfig = languageConfig[currentLang];
+    const statusMessage = `Playing line ${lineIndex + 1} in ${langConfig ? langConfig.name : currentLang} (${multiLangCurrentStep + 1}/${languages.length})`;
     
     speakLineWithUtterance(lineIndex, currentLang, line, statusMessage, onSpeechComplete);
 }
@@ -696,78 +867,16 @@ function createAllLanguageVoiceAssignments() {
     
     speakerVoicesDiv.style.display = 'block';
     
-    // Create voice assignments for each language
-    Object.keys(langCodes).forEach(lang => {
-        createVoiceAssignmentsForLanguage(lang);
+    // 各言語での自動音声割り当て
+    Object.keys(languageConfig).forEach(lang => {
+        const filteredVoices = getFilteredVoicesForLanguage(lang);
+        autoAssignDefaultVoicesForLanguage(lang, filteredVoices);
     });
+    
+    // テーブルにスピーカー列を追加
+    addSpeakerColumnsToTable();
 }
 
-function createVoiceAssignmentsForLanguage(lang) {
-    const column = document.getElementById(`voiceAssignment-${lang}`);
-    const speakerList = column.querySelector('.speaker-voice-list');
-    speakerList.innerHTML = '';
-    
-    const filteredVoices = getFilteredVoicesForLanguage(lang);
-    
-    // Auto-assign different voices if no voices are currently set
-    autoAssignDefaultVoicesForLanguage(lang, filteredVoices);
-    
-    speakers.forEach((speaker, speakerIndex) => {
-        const assignment = document.createElement('div');
-        assignment.className = 'speaker-voice-assignment';
-        
-        const voiceSelect = document.createElement('select');
-        voiceSelect.className = 'speaker-voice-select';
-        voiceSelect.setAttribute('data-speaker-index', speakerIndex);
-        voiceSelect.setAttribute('data-lang', lang);
-        
-        // Add default option
-        const defaultOption = document.createElement('option');
-        defaultOption.value = '';
-        defaultOption.textContent = `Speaker ${speakerIndex + 1} - Default Voice`;
-        voiceSelect.appendChild(defaultOption);
-        
-        // Find the previously selected voice for this speaker index in this language
-        let selectedVoiceIndex = '';
-        const currentSpeakerVoice = speakerVoicesByLanguage[lang][speakerIndex];
-        
-        // Add voice options
-        filteredVoices.forEach((voice, index) => {
-            const option = document.createElement('option');
-            option.value = index;
-            option.textContent = `${voice.name} (${voice.lang})`;
-            if (voice.default) {
-                option.textContent += ' - Default';
-            }
-            
-            // Check if this was the previously selected voice
-            if (currentSpeakerVoice && voice.name === currentSpeakerVoice.name && voice.lang === currentSpeakerVoice.lang) {
-                selectedVoiceIndex = index;
-            }
-            
-            voiceSelect.appendChild(option);
-        });
-        
-        // Restore the previously selected voice
-        voiceSelect.value = selectedVoiceIndex;
-        
-        // Add event listener for voice selection
-        voiceSelect.addEventListener('change', (e) => {
-            const speakerIndex = parseInt(e.target.getAttribute('data-speaker-index'));
-            const targetLang = e.target.getAttribute('data-lang');
-            const selectedIndex = e.target.value;
-            
-            if (selectedIndex === '') {
-                speakerVoicesByLanguage[targetLang][speakerIndex] = undefined;
-            } else {
-                speakerVoicesByLanguage[targetLang][speakerIndex] = filteredVoices[parseInt(selectedIndex)];
-            }
-        });
-        
-        assignment.appendChild(voiceSelect);
-        speakerList.appendChild(assignment);
-    });
-}
 
 function getFilteredVoicesForLanguage(lang) {
     const langCode = langCodes[lang];
@@ -794,7 +903,7 @@ function getFilteredVoicesForLanguage(lang) {
 // Shared text parsing function - updated for new JSON array format with separate speaker field
 function parseAllLanguageTexts() {
     const allLanguageLines = {};
-    const languages = ['fr', 'en', 'ja']; // サポートされている言語
+    const languages = Object.keys(languageConfig); // 設定された言語
     
     // 各言語のライン配列を初期化
     languages.forEach(lang => {
@@ -970,14 +1079,18 @@ function loadLanguageRateSettings() {
 }
 
 function updateLanguageRateUI() {
-    rateFrSlider.value = languageRates.fr;
-    rateValueFr.textContent = languageRates.fr.toFixed(1) + 'x';
-    
-    rateEnSlider.value = languageRates.en;
-    rateValueEn.textContent = languageRates.en.toFixed(1) + 'x';
-    
-    rateJaSlider.value = languageRates.ja;
-    rateValueJa.textContent = languageRates.ja.toFixed(1) + 'x';
+    Object.keys(languageConfig).forEach(langKey => {
+        const sliderId = `rate${langKey.charAt(0).toUpperCase() + langKey.slice(1)}`;
+        const valueId = `rateValue${langKey.charAt(0).toUpperCase() + langKey.slice(1)}`;
+        
+        const slider = document.getElementById(sliderId);
+        const valueElement = document.getElementById(valueId);
+        
+        if (slider && valueElement && languageRates[langKey] !== undefined) {
+            slider.value = languageRates[langKey];
+            valueElement.textContent = languageRates[langKey].toFixed(1) + 'x';
+        }
+    });
 }
 
 // Collapsible functionality for Speaker Voice Assignment

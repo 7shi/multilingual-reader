@@ -16,10 +16,7 @@
             <div class="language-selector">
                 <label for="language">Language:</label>
                 <select id="language">
-                    <option value="multi" selected>🌐 Multi-Language</option>
-                    <option value="fr">Français (Original)</option>
-                    <option value="en">English</option>
-                    <option value="ja">日本語</option>
+                    <!-- オプションはJavaScriptで動的に生成される -->
                 </select>
             </div>
 
@@ -47,34 +44,8 @@
                     <input type="range" id="rate" min="0.5" max="2" step="0.1" value="1">
                     <span id="rateValue">1.0x</span>
                 </div>
-                <div class="language-columns">
-                    <div id="voiceAssignment-fr" class="voice-assignment-column">
-                        <h4>Français (fr-FR)</h4>
-                        <div class="language-speed-control">
-                            <label>Speed:</label>
-                            <input type="range" id="rateFr" min="0.5" max="2" step="0.1" value="1.0">
-                            <span id="rateValueFr">1.0x</span>
-                        </div>
-                        <div class="speaker-voice-list"></div>
-                    </div>
-                    <div id="voiceAssignment-en" class="voice-assignment-column">
-                        <h4>English (en-US)</h4>
-                        <div class="language-speed-control">
-                            <label>Speed:</label>
-                            <input type="range" id="rateEn" min="0.5" max="2" step="0.1" value="1.0">
-                            <span id="rateValueEn">1.0x</span>
-                        </div>
-                        <div class="speaker-voice-list"></div>
-                    </div>
-                    <div id="voiceAssignment-ja" class="voice-assignment-column">
-                        <h4>日本語 (ja-JP)</h4>
-                        <div class="language-speed-control">
-                            <label>Speed:</label>
-                            <input type="range" id="rateJa" min="0.5" max="2" step="0.1" value="1.5">
-                            <span id="rateValueJa">1.5x</span>
-                        </div>
-                        <div class="speaker-voice-list"></div>
-                    </div>
+                <div id="languageControlsContainer" class="language-controls-container">
+                    <!-- 言語コントロールはJavaScriptで動的に生成される -->
                 </div>
             </div>
         </div>
@@ -98,12 +69,22 @@
     <script src="podcast-reader.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            init({
+            // データセット設定
+            const datasetLabels = {
                 'transformer': '🤖 Transformer',
                 'finetuning': '🎯 Fine-tuning',
                 'onde': '🌊 Onde (Waves)',
                 'momentum': '⚡ Momentum',
-            });
+            };
+            
+            // 言語設定
+            const languageConfig = {
+                fr: { code: 'fr-FR', name: 'Français', defaultRate: 1.0 },
+                en: { code: 'en-US', name: 'English', defaultRate: 1.0 },
+                ja: { code: 'ja-JP', name: '日本語', defaultRate: 1.5 }
+            };
+            
+            init(datasetLabels, languageConfig);
         });
     </script>
 </body>
