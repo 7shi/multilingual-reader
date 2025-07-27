@@ -2,6 +2,9 @@
 
 多言語対応のポッドキャスト音声読み上げアプリケーション。対訳形式で3言語（フランス語・英語・日本語）を同時表示し、各文を3言語で連続読み上げする学習ツールです。
 
+
+デモページ: [Multilingual Podcast Reader](https://codepen.io/7shi/embed/QwjKWmv?default-tab=result)
+
 ## 🎯 特徴
 
 ### 📖 対訳表示
