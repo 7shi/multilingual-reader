@@ -13,6 +13,7 @@ let datasetConfigMapping = {};
 let languageRates = {};
 let languageFlagStates = {};
 let languageConfig = {};
+let allLanguageLines = {};
 
 // DOM要素
 let datasetSelect, playPauseBtn, stopBtn, rateSlider, rateValue;
@@ -312,7 +313,7 @@ function onDatasetChange() {
 }
 
 function loadText() {
-    const allLanguageLines = parseAllLanguageTexts();
+    allLanguageLines = parseAllLanguageTexts();
     
     identifySpeakers();
     displayTranslationText(allLanguageLines);
@@ -496,7 +497,6 @@ function scheduleNextPlayback(delay) {
 
 // ヘルパー関数: 指定した行と言語のデータを取得
 function getLineData(lineIndex, lang) {
-    const allLanguageLines = parseAllLanguageTexts();
     const langLines = allLanguageLines[lang];
     
     if (!langLines || lineIndex >= langLines.length) {
@@ -541,7 +541,8 @@ function speakLineMultiLanguage(lineIndex) {
     };
     
     const langConfig = languageConfig[currentLang];
-    const statusMessage = `Playing line ${lineIndex + 1} in ${langConfig ? langConfig.name : currentLang} (${multiLangCurrentStep + 1}/${enabledLanguages.length})`;
+    const totalLines = Math.max(...Object.values(allLanguageLines).map(lines => lines.length));
+    const statusMessage = `Playing line ${lineIndex + 1}/${totalLines} in ${langConfig ? langConfig.name : currentLang} (${multiLangCurrentStep + 1}/${enabledLanguages.length})`;
     
     speakLineWithUtterance(lineIndex, currentLang, line, statusMessage, onSpeechComplete);
 }
