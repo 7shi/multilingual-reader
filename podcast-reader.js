@@ -694,8 +694,10 @@ function autoAssignDefaultVoicesForLanguage(lang, filteredVoices) {
         const englishMaleNames = ['david', 'guy', 'mark', 'richard', 'ryan', 'brian', 'christopher', 'eric', 'jacob', 'benjamin'];
         // Japanese male names
         const japaneseMaleNames = ['ichiro', 'keita'];
+        // Chinese male names
+        const chineseMaleNames = ['yunjian'];
         
-        const allMaleNames = [...frenchMaleNames, ...englishMaleNames, ...japaneseMaleNames];
+        const allMaleNames = [...frenchMaleNames, ...englishMaleNames, ...japaneseMaleNames, ...chineseMaleNames];
         
         return name.includes('male') || name.includes('man') || name.includes('homme') || 
                name.includes('masculine') || allMaleNames.some(maleName => name.includes(maleName));
@@ -709,8 +711,10 @@ function autoAssignDefaultVoicesForLanguage(lang, filteredVoices) {
         const englishFemaleNames = ['aria', 'jenny', 'nancy', 'sara', 'jane', 'michelle', 'emma', 'elizabeth', 'amber'];
         // Japanese female names
         const japaneseFemaleNames = ['ayumi', 'haruka', 'sayaka', 'nanami'];
+        // Chinese female names
+        const chineseFemaleNames = ['xiaoxiao'];
         
-        const allFemaleNames = [...frenchFemaleNames, ...englishFemaleNames, ...japaneseFemaleNames];
+        const allFemaleNames = [...frenchFemaleNames, ...englishFemaleNames, ...japaneseFemaleNames, ...chineseFemaleNames];
         
         return name.includes('female') || name.includes('woman') || name.includes('femme') || 
                name.includes('feminine') || allFemaleNames.some(femaleName => name.includes(femaleName));
