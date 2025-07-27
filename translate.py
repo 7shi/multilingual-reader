@@ -34,8 +34,7 @@ def normalize(text):
     normalized = re.sub(r' +', ' ', normalized)
     return normalized.strip()
 
-translated_lines = []  # 翻訳結果を保存するリスト
-context_history = []   # 文脈保持用
+context_history = []  # 文脈保持用
 
 # 翻訳対象行を事前にカウント
 translation_lines = [line for line in lines if line.strip() and ":" in line.strip()]
@@ -47,6 +46,9 @@ for i, line in enumerate(tqdm(lines, desc="翻訳処理")):
     # 話者が分離できなければスキップ
     if ":" not in line:
         continue
+    
+    print()
+    print(line)
     
     # 話者を分離
     speaker, text = line.split(":", 1)
@@ -69,17 +71,27 @@ for i, line in enumerate(tqdm(lines, desc="翻訳処理")):
     prompt = f"Translate the following {args.from_lang} text spoken by {speaker} into {args.to_lang}:\n{text}"
     
     # 実際の翻訳実行
-    print()
-    result = generate_with_schema(
-        [context, prompt, json_descriptions],
-        schema=Translation,
-        model=args.model,
-    )
-    parsed = json.loads(result.text.strip())
-    translated_text = normalize(parsed['translation'])
-    translated_lines.append(f"{speaker}: {translated_text}")
+    for j in range(5):
+        if j:
+            print("Retry:", j)
+        try:
+            result = generate_with_schema(
+                [context, prompt, json_descriptions],
+                schema=Translation,
+                model=args.model,
+                max_length=4096,
+                show_params=False,
+            )
+            parsed = json.loads(result.text.strip())
+            break
+        except Exception as e:
+            if j < 4:
+                print(e)
+            else:
+                raise
     
     # 文脈履歴に追加
+    translated_text = normalize(parsed['translation'])
     context_history.append({
         'speaker': speaker,
         'original': text,
@@ -89,7 +101,7 @@ for i, line in enumerate(tqdm(lines, desc="翻訳処理")):
 
 # 結果を保存
 with open(args.output_file, "w", encoding="utf-8") as f:
-    for line in translated_lines:
-        f.write(line + "\n")
+    for ctx in context_history:
+        f.write(f"{ctx['speaker']}: {ctx['translation']}\n")
 
 print(f"翻訳完了: {args.from_lang} → {args.to_lang} ({args.output_file})")
