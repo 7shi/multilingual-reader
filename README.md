@@ -136,6 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 言語設定（必要に応じて言語を追加・変更）
     const languageConfig = {
         fr: { code: 'fr-FR', name: 'Français', defaultRate: 1.0 },
+        de: { code: 'de-DE', name: 'Deutsch', defaultRate: 1.0 },
         en: { code: 'en-US', name: 'English', defaultRate: 1.0 },
         ja: { code: 'ja-JP', name: '日本語', defaultRate: 1.4 }
     };
@@ -160,10 +161,10 @@ document.addEventListener('DOMContentLoaded', () => {
 ```javascript
 const languageConfig = {
     fr: { code: 'fr-FR', name: 'Français', defaultRate: 1.0 },
+    es: { code: 'es-ES', name: 'Español', defaultRate: 1.0 },  // スペイン語追加
+    de: { code: 'de-DE', name: 'Deutsch', defaultRate: 1.0 },
     en: { code: 'en-US', name: 'English', defaultRate: 1.0 },
-    ja: { code: 'ja-JP', name: '日本語', defaultRate: 1.4 },
-    de: { code: 'de-DE', name: 'Deutsch', defaultRate: 1.0 },     // ドイツ語追加
-    es: { code: 'es-ES', name: 'Español', defaultRate: 1.0 }      // スペイン語追加
+    ja: { code: 'ja-JP', name: '日本語', defaultRate: 1.4 }
 };
 ```
 
