@@ -223,10 +223,10 @@ datasets.push(
 "ja": "え？どんな？"
 },{
 "speaker": "Camille",
-"fr": "En optique classique, l'énergie d'une onde lumineuse, ce qui fait sa brillance, est elle aussi proportionnelle au carré de l'amplitude. E au carré.",
-"de": "In der klassischen Optik ist die Energie einer Lichtwelle, die ihre Helligkeit ausmacht, ebenfalls proportional zum Quadrat der Amplitude. E-Quadrat.",
-"en": "In classical optics, the energy of a light wave, which gives it its brilliance, is also proportional to the square of the amplitude. E squared.",
-"ja": "古典光学では、光波のエネルギー、つまりその明るさは、同じく振幅の2乗に比例するの。Eの2乗にね。"
+"fr": "En optique classique, l'énergie d'une onde lumineuse, ce qui fait sa brillance, est elle aussi proportionnelle au carré de l'amplitude du champ électrique. E au carré.",
+"de": "In der klassischen Optik ist die Energie einer Lichtwelle, die ihre Helligkeit ausmacht, ebenfalls proportional zum Quadrat der Amplitude des elektrischen Feldes. E-Quadrat.",
+"en": "In classical optics, the energy of a light wave, which gives it its brilliance, is also proportional to the square of the amplitude of the electric field. E squared.",
+"ja": "古典光学では、光波のエネルギー、つまりその明るさは、同じく電場の振幅の2乗に比例するの。Eの2乗にね。"
 },{
 "speaker": "Luc",
 "fr": "Wow.",
@@ -349,10 +349,10 @@ datasets.push(
 "ja": "その通り。"
 },{
 "speaker": "Luc",
-"fr": "En voulant localiser une onde avec une précision extrême, donc une petite largeur delta x, on perd toute information sur sa direction. On a un grand delta k.",
+"fr": "En voulant localiser une onde avec une précision extrême, donc une petite largeur delta x, on perd toute information sur son impulsion. On a un grand delta p.",
 "de": "Wenn man versucht, eine Welle mit extremer Präzision zu lokalisieren, also mit einer kleinen Ortsunschärfe Delta-x, verliert man alle Informationen über ihren Impuls. Man hat dann eine große Impulsunschärfe Delta-p.",
-"en": "When trying to localize a wave with extreme precision, i.e., a small width delta x, we lose all information about its direction. We have a large delta k.",
-"ja": "波の位置を極めて正確に、つまり幅（Δx）を小さく特定しようとすると、その運動量（Δk）に関する情報が全く分からなくなってしまうんだ。"
+"en": "When trying to localize a wave with extreme precision, i.e., a small width delta x, we lose all information about its direction. We have a large delta p.",
+"ja": "波の位置を極めて正確に、つまり幅（Δx）を小さく特定しようとすると、その運動量（Δp）に関する情報が全く分からなくなってしまうんだ。"
 },{
 "speaker": "Camille",
 "fr": "Oui.",
@@ -393,7 +393,7 @@ datasets.push(
 "speaker": "Camille",
 "fr": "Voilà !",
 "de": "Genau!",
-"en": "Voilà!",
+"en": "Exactly!",
 "ja": "その通り！"
 },{
 "speaker": "Luc",
