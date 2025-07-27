@@ -138,7 +138,9 @@ document.addEventListener('DOMContentLoaded', () => {
         fr: { code: 'fr-FR', name: 'Français', defaultRate: 1.0 },
         de: { code: 'de-DE', name: 'Deutsch', defaultRate: 1.0 },
         en: { code: 'en-US', name: 'English', defaultRate: 1.0 },
-        zh: { code: 'zh-CN', name: '中文', defaultRate: 1.0 },
+        zh: { code: 'zh-CN', name: '中文', defaultRate: 1.0,
+              fontFamily: ['Noto Sans SC', 'Microsoft YaHei', 'PingFang SC',
+                           'Hiragino Sans GB', 'sans-serif'] },
         ja: { code: 'ja-JP', name: '日本語', defaultRate: 1.4 }
     };
     
@@ -165,7 +167,9 @@ const languageConfig = {
     es: { code: 'es-ES', name: 'Español', defaultRate: 1.0 },  // スペイン語追加
     de: { code: 'de-DE', name: 'Deutsch', defaultRate: 1.0 },
     en: { code: 'en-US', name: 'English', defaultRate: 1.0 },
-    zh: { code: 'zh-CN', name: '中文', defaultRate: 1.0 },
+    zh: { code: 'zh-CN', name: '中文', defaultRate: 1.0,
+          fontFamily: ['Noto Sans SC', 'Microsoft YaHei', 'PingFang SC',
+                       'Hiragino Sans GB', 'sans-serif'] },
     ja: { code: 'ja-JP', name: '日本語', defaultRate: 1.4 }
 };
 ```
@@ -184,6 +188,7 @@ uv run merge_podcast_data.py -o multilang_dataset.js \
 - **code**: Web Speech APIで使用する言語コード（BCP 47形式）
 - **name**: UI表示用の言語名
 - **defaultRate**: デフォルト読み上げ速度（0.5-2.0）
+- **fontFamily**: （オプション）言語固有のフォント設定（文字列配列）
 
 **注意事項**：
 - 言語キーはデータセット内のプロパティ名と完全に一致する必要があります

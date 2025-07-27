@@ -385,6 +385,14 @@ function displayTranslationText(allLanguageLines) {
                 translationContent.appendChild(speaker);
                 translationContent.appendChild(textContainer);
                 
+                // 言語固有のフォント設定を適用
+                const langConfig = languageConfig[lang];
+                if (langConfig && langConfig.fontFamily) {
+                    textContainer.style.fontFamily = langConfig.fontFamily.map(font => 
+                        font.includes(' ') ? `"${font}"` : font
+                    ).join(', ');
+                }
+                
                 translationLine.appendChild(langFlag);
                 translationLine.appendChild(translationContent);
                 translationGroup.appendChild(translationLine);
