@@ -10,7 +10,7 @@ datasets.push(
 "fr": "Bonjour et bienvenue dans « Tech Éclair », le podcast où nous décryptons la technologie qui façonne notre monde. Je suis Camille.",
 "de": "Hallo und willkommen zurück zu „Tech-Blitz“, dem Podcast, in dem wir die Technologie, die unsere Welt prägt, verständlich machen. Ich bin Camille.",
 "en": "Hello and welcome back to \"Tech Flash,\" the podcast where we make sense of the technology shaping our world. I'm Camille.",
-"zh": "大家好，欢迎回到“科技快报”（Tech Flash），在这里我们将解读塑造我们世界的科技。我是卡米尔。",
+"zh": "大家好，欢迎回到“科技快报”，在这里我们将解读塑造我们世界的科技。我是卡米尔。",
 "ja": "皆さん、こんにちは。「テックフラッシュ」へようこそ。私たちの世界を形作るテクノロジーを分かりやすく解説するポッドキャストです。私はカミーユです。"
 },{
 "speaker": "Luc",
