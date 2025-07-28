@@ -9,7 +9,7 @@ parser.add_argument("-f", "--from", dest="from_lang", required=True, help="原�
 parser.add_argument("-t", "--to", dest="to_lang", required=True, help="翻訳先言語（例: English, French, Japanese）")
 parser.add_argument("-o", "--output", dest="output_file", required=True, help="出力ファイル名")
 parser.add_argument("-m", "--model", default=DEFAULT_MODEL, help=f"翻訳に使用するモデル（デフォルト: {DEFAULT_MODEL}）")
-parser.add_argument("-r", "--reasoning-level", type=int, default=1, choices=[0, 1, 2], help="推論レベル: 0=推論なし, 1=標準推論, 2=2段階翻訳")
+parser.add_argument("-r", "--reasoning-level", type=int, default=2, choices=[0, 1, 2], help="推論レベル: 0=推論なし, 1=標準推論, 2=2段階翻訳")
 args = parser.parse_args()
 
 with open(args.input_file, "r", encoding="utf-8") as f:
