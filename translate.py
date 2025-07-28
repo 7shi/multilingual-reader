@@ -9,6 +9,7 @@ parser.add_argument("-f", "--from", dest="from_lang", required=True, help="原�
 parser.add_argument("-t", "--to", dest="to_lang", required=True, help="翻訳先言語（例: English, French, Japanese）")
 parser.add_argument("-o", "--output", dest="output_file", required=True, help="出力ファイル名")
 parser.add_argument("-m", "--model", default=DEFAULT_MODEL, help=f"翻訳に使用するモデル（デフォルト: {DEFAULT_MODEL}）")
+parser.add_argument("--no-reasoning", action="store_true", help="推論過程を出力しない")
 args = parser.parse_args()
 
 with open(args.input_file, "r", encoding="utf-8") as f:
@@ -21,9 +22,13 @@ from llm7shi.compat import generate_with_schema
 from llm7shi import create_json_descriptions_prompt
 from tqdm import tqdm
 
-class Translation(BaseModel):
-    reasoning: str = Field(description="Carefully analyze the meaning and context of the original text. Consider cultural nuances, idiomatic expressions, and the speaker's intent. Evaluate different possible translation choices and explain your reasoning for selecting the most appropriate words and phrasing for the target language.")
-    translation: str = Field(description="translation result")
+if args.no_reasoning:
+    class Translation(BaseModel):
+        translation: str = Field(description=f"{args.from_lang} to {args.to_lang} translation result")
+else:
+    class Translation(BaseModel):
+        reasoning: str = Field(description=f"Carefully analyze the meaning and context of the original {args.from_lang} text. Consider cultural nuances, idiomatic expressions, and the speaker's intent. Evaluate different possible translation choices and explain your reasoning for selecting the most appropriate words and phrasing for the {args.to_lang} translation.")
+        translation: str = Field(description=f"{args.from_lang} to {args.to_lang} translation result")
 
 json_descriptions = create_json_descriptions_prompt(Translation)
 
