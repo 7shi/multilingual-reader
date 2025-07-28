@@ -22,7 +22,7 @@ from llm7shi import create_json_descriptions_prompt
 from tqdm import tqdm
 
 class Translation(BaseModel):
-    reasoning: str = Field(description="reasoning before translation")
+    reasoning: str = Field(description="Carefully analyze the meaning and context of the original text. Consider cultural nuances, idiomatic expressions, and the speaker's intent. Evaluate different possible translation choices and explain your reasoning for selecting the most appropriate words and phrasing for the target language.")
     translation: str = Field(description="translation result")
 
 json_descriptions = create_json_descriptions_prompt(Translation)
