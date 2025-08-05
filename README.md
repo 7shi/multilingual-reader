@@ -31,6 +31,7 @@ multilingual-reader/
 ├── finetuning.js                 # 多言語テキストデータ（ファインチューニング・転移学習）
 ├── onde.js                       # 多言語テキストデータ（波動・量子力学）
 ├── momentum.js                   # 多言語テキストデータ（運動量・測定理論）
+├── experimental/                 # ローカルLLM翻訳実験とパフォーマンス分析
 ├── split_podcast_data.py         # テキスト分割スクリプト（データセット配列対応）
 ├── merge_podcast_data.py         # テキスト統合スクリプト（nameフィールドなし配列形式）
 ├── convert_genspark.py           # GenSpark HTML対話データ抽出
@@ -38,6 +39,14 @@ multilingual-reader/
 ├── pyproject.toml                # Pythonプロジェクト設定
 └── README.md                     # このファイル
 ```
+
+### experimental/ - ローカルLLM翻訳実験とパフォーマンス分析
+
+フランス語からスペイン語への翻訳システムの包括的な性能分析実験が含まれています。Gemini 2.5 Flashによる客観評価を用いて、構造化出力と推論レベルが翻訳品質に与える影響を体系的に分析。
+
+**重要な発見**: 「複雑な推論システム = 高品質翻訳」という従来仮説を客観評価により否定し、「適切なモデル選択 + シンプルな直接出力 = 最高効率」を実証。
+
+詳細は [experimental/README.md](experimental/README.md) を参照してください。
 
 ## 🎓 コンテンツ内容
 
