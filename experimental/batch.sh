@@ -77,4 +77,13 @@ for m in qwen3:4b qwen3:14b; do
     done
 done
 
+for m in gpt-oss:20b; do
+    echo "======== $m ========"
+    for h in 05 10 20; do
+        process_translation "$CMD4 --history $h" tr4/${m/:/-}-tr4-$h.txt ollama:$m
+        process_translation "$CMD5 --history $h" tr5/${m/:/-}-tr5-$h.txt ollama:$m
+        process_translation "$CMD6 --history $h" tr6/${m/:/-}-tr6-$h.txt ollama:$m
+    done
+done
+
 uv run aggregate_evaluations.py tr{-cmp,-0,-1,-2,4,5,6}/*.json > SCORES.txt
