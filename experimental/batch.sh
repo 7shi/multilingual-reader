@@ -35,7 +35,7 @@ CMD6="uv run translate6.py -f French -t Spanish ../examples/finetuning-fr.txt"
 
 mkdir -p tr-cmp tr-0 tr-1 tr-2 tr4 tr5 tr6
 
-for m in gemma3:4b gemma3n:e4b gemma2:9b gemma3:12b phi4 qwen3:4b qwen3:14b; do
+for m in gemma3:4b gemma3n:e4b gemma2:9b gemma3:12b phi4 qwen3:4b qwen3:14b qwen3:30b; do
     echo "======== $m ========"
     m2=${m/:/-}
     if [[ "$m" == "gemma2:9b" ]]; then
