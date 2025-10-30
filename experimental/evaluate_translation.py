@@ -24,7 +24,7 @@ with open(args.translation, "r", encoding="utf-8") as f:
 
 class ReasoningAndScore(BaseModel):
     reasoning: str = Field(description="Detailed reasoning and consideration for scoring this evaluation criterion")
-    score: int = Field(minimum=0, maximum=20, description="Score out of 20 points")
+    score: int = Field(ge=0, le=20, description="Score out of 20 points")
 
 # 評価項目の定義（SCORE.md基準）
 class TranslationEvaluation(BaseModel):
