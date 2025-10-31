@@ -17,10 +17,10 @@
    - テーブル: フラグ付きモデルとして別行で表示
    - 実用設定一覧: フラグ付きで表示するが、ソート時はベースモデル名で判断
 
-4. モデル別実用設定一覧（各モデルの上位5項目かつ85点以上）
+4. モデル別実用設定一覧（各モデルの上位3項目かつ85点以上）
    - ソート順: ベースモデル名の最高スコア降順（フラグは捨象）
    - 表示: フラグ付きモデル名で表示
-   - 各モデル内: スコアの降順で上位5項目のみ表示
+   - 各モデル内: スコアの降順で上位3項目のみ表示
    - 同じモデル・同じスコア: 設定をカンマ区切りで結合
 
 5. 最大値の太字表示
@@ -635,7 +635,7 @@ def generate_markdown(all_scores, output_file):
 
         # モデル別実用設定一覧
         f.write("## モデル別実用設定一覧\n\n")
-        f.write("スコア変動を考慮し、各モデルの上位5項目（かつ85点以上）を実用レベルの目安として設定。\n\n")
+        f.write("スコア変動を考慮し、各モデルの上位3項目（かつ85点以上）を実用レベルの目安として設定。\n\n")
         f.write("| モデル | スコア | 設定 |\n")
         f.write("|:---|:---:|:---|\n")
 
@@ -663,15 +663,15 @@ def generate_markdown(all_scores, output_file):
                 models_scores[base_model] = []
             models_scores[base_model].append((display_model, score, configs))
 
-        # 各モデル内でスコアの降順にソートし、上位5項目のみを取得
+        # 各モデル内でスコアの降順にソートし、上位3項目のみを取得
         filtered_models_scores = {}
         for base_model, scores_list in models_scores.items():
             # スコアの降順にソート
             sorted_scores = sorted(scores_list, key=lambda x: -x[1])
-            # 上位5項目のみを取得（85点以上の条件は既に満たしている）
-            top_5 = sorted_scores[:5]
-            if top_5:
-                filtered_models_scores[base_model] = top_5
+            # 上位3項目のみを取得（85点以上の条件は既に満たしている）
+            top_3 = sorted_scores[:3]
+            if top_3:
+                filtered_models_scores[base_model] = top_3
 
         # モデルを最高スコアの降順でソート
         sorted_models = sorted(filtered_models_scores.keys(),
