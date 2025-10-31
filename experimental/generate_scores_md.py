@@ -635,43 +635,52 @@ def generate_markdown(all_scores, output_file):
 
         # モデル別実用設定一覧
         f.write("## モデル別実用設定一覧\n\n")
-        f.write("スコア変動を考慮し、各モデルの上位3項目（かつ85点以上）を実用レベルの目安として設定。\n\n")
+        f.write("スコア変動を考慮し、各モデルの上位3項目（90点以上）または最高点1項目を実用レベルの目安として設定。\n\n")
         f.write("| モデル | スコア | 設定 |\n")
         f.write("|:---|:---:|:---|\n")
 
-        # 85点以上のスコアを収集
+        # 全スコアを収集
         # ソート用のベースモデル名と表示用のモデル名（フラグ付き）を分けて管理
-        high_scores = {}  # {(base_model, display_model, score): [configs]}
+        all_scores_by_model = {}  # {(base_model, display_model, score): [configs]}
         for test_name, score in all_scores.items():
-            if score >= 85:
-                parsed = parse_test_name(test_name)
-                if parsed:
-                    # ベースモデル名（ソート用）
-                    base_model = parsed['model']
-                    # 表示用モデル名（フラグ付き）
-                    display_model = get_model_display_name(parsed['model'], parsed['flags'])
-                    config = test_name.replace(f"{parsed['model']}-", "")
-                    key = (base_model, display_model, score)
-                    if key not in high_scores:
-                        high_scores[key] = []
-                    high_scores[key].append(config)
+            parsed = parse_test_name(test_name)
+            if parsed:
+                # ベースモデル名（ソート用）
+                base_model = parsed['model']
+                # 表示用モデル名（フラグ付き）
+                display_model = get_model_display_name(parsed['model'], parsed['flags'])
+                config = test_name.replace(f"{parsed['model']}-", "")
+                key = (base_model, display_model, score)
+                if key not in all_scores_by_model:
+                    all_scores_by_model[key] = []
+                all_scores_by_model[key].append(config)
 
         # ベースモデル名→(表示モデル名, スコア, 設定)でグループ化
         models_scores = {}
-        for (base_model, display_model, score), configs in high_scores.items():
+        for (base_model, display_model, score), configs in all_scores_by_model.items():
             if base_model not in models_scores:
                 models_scores[base_model] = []
             models_scores[base_model].append((display_model, score, configs))
 
-        # 各モデル内でスコアの降順にソートし、上位3項目のみを取得
+        # 各モデル内でスコアの降順にソートし、フィルタリング
         filtered_models_scores = {}
         for base_model, scores_list in models_scores.items():
             # スコアの降順にソート
             sorted_scores = sorted(scores_list, key=lambda x: -x[1])
-            # 上位3項目のみを取得（85点以上の条件は既に満たしている）
-            top_3 = sorted_scores[:3]
-            if top_3:
-                filtered_models_scores[base_model] = top_3
+
+            # 90点以上のスコアを取得
+            scores_above_90 = [s for s in sorted_scores if s[1] >= 90]
+
+            # フィルタリング
+            if scores_above_90:
+                # 90点以上がある場合: 上位3項目まで
+                selected = scores_above_90[:3]
+            else:
+                # 90点以上がない場合: 最高点の1項目のみ
+                selected = sorted_scores[:1]
+
+            if selected:
+                filtered_models_scores[base_model] = selected
 
         # モデルを最高スコアの降順でソート
         sorted_models = sorted(filtered_models_scores.keys(),
