@@ -684,6 +684,19 @@ def generate_markdown(all_scores, output_file):
                 config_str = ', '.join(sorted(configs))
                 f.write(f"| **{display_model}** | {score} | {config_str} |\n")
 
+        # 96点以上のスコア一覧（モデル別実用設定一覧から96点以上をフィルタ）
+        f.write("\n### 96点以上のスコア一覧\n\n")
+        f.write("| モデル | スコア | 設定 |\n")
+        f.write("|:---|:---:|:---|\n")
+
+        # モデル別実用設定一覧と同じ順序で96点以上のみを出力
+        for base_model in sorted_models:
+            for display_model, score, configs in filtered_models_scores[base_model]:
+                if score >= 96:
+                    # 設定をカンマ区切りで結合
+                    config_str = ', '.join(sorted(configs))
+                    f.write(f"| **{display_model}** | {score} | {config_str} |\n")
+
 def main():
     """メイン処理"""
     scores_file = Path(__file__).parent / "SCORES.txt"
