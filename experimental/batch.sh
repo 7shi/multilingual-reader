@@ -36,13 +36,11 @@ CMD6="uv run translate6.py -f French -t Spanish ../examples/finetuning-fr.txt"
 mkdir -p tr-cmp tr-0 tr-1 tr-2 tr4 tr5 tr6
 #process_translation "$CMD -r 0" tr-cmp/gpt-oss-20b-0.txt ollama:hf.co/unsloth/gpt-oss-20b-GGUF
 
-for m in gemma3:4b gemma3n:e4b gemma2:9b gemma3:12b gemma3:27b phi4 command-r7b aya-expanse:8b aya-expanse:32b qwen3:4b qwen3:14b qwen3:30b qwen3:32b llama3.3 llama4-scout gpt-oss:20b gpt-oss:120b mistral-small3.2; do
+for m in gemma3:4b gemma3n:e4b gemma2:9b gemma3:12b gemma3:27b phi4 command-r7b aya-expanse:8b aya-expanse:32b qwen3:4b qwen3:14b qwen3:30b qwen3:32b llama3.3 llama4:scout gpt-oss:20b gpt-oss:120b mistral-small3.2; do
     echo "======== $m ========"
     m2=${m/:/-}
     if [[ "$m" == "gemma2:9b" ]]; then
         model_name="ollama:${m}-instruct-q4_K_M"
-    elif [[ "$m" == "llama4-scout" ]]; then
-        model_name="ollama:hf.co/unsloth/Llama-4-Scout-17B-16E-Instruct-GGUF:Q2_K_XL"
     elif [[ "$m" == "gpt-oss:120b" ]]; then
         if [ -z "$LLAMACPP_ENDPOINT" ]; then
             echo "Error: LLAMACPP_ENDPOINT environment variable is not set" >&2
