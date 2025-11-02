@@ -41,12 +41,6 @@ for m in gemma3:4b gemma3n:e4b gemma2:9b gemma3:12b gemma3:27b phi4 command-r7b 
     m2=${m/:/-}
     if [[ "$m" == "gemma2:9b" ]]; then
         model_name="ollama:${m}-instruct-q4_K_M"
-    elif [[ "$m" == "gpt-oss:120b" ]]; then
-        if [ -z "$LLAMACPP_ENDPOINT" ]; then
-            echo "Error: LLAMACPP_ENDPOINT environment variable is not set" >&2
-            exit 1
-        fi
-        model_name="openai:llama.cpp/gpt-oss@$LLAMACPP_ENDPOINT"
     else
         model_name="ollama:$m"
     fi
