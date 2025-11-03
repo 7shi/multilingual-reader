@@ -90,6 +90,7 @@ sh batch.sh
 **評価後の集計フロー**:
 - `aggregate_evaluations.py`: 最終的なスコアを集約し、`SCORES.txt`に保存
 - `generate_scores_md.py`: `SCORES.txt`から`SCORES.md`を生成
+- `sync_scores.py`: `SCORES.md`の表を`README.md`に自動同期
 
 ### 翻訳システムの構成
 - [translate.py](translate.py): 構造化出力による5段階推論レベル

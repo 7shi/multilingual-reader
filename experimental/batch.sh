@@ -80,3 +80,4 @@ done
 
 uv run aggregate_evaluations.py tr{-cmp,-0,-1,-2,4,5,6}/*.json > SCORES.txt
 uv run generate_scores_md.py
+uv run sync_scores.py
