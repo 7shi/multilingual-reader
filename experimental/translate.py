@@ -85,7 +85,7 @@ def generate_with_retry(prompts, schema, model, stage_name=""):
                 prompts + [descriptions],
                 schema=schema,
                 model=model,
-                max_length=8192,
+                max_length=8192*2,
                 show_params=False,
             )
             return json.loads(result.text.strip())
