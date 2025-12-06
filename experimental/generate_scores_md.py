@@ -31,6 +31,38 @@ import re
 from collections import defaultdict
 from pathlib import Path
 
+def natural_sort_key(text):
+    """自然順ソート用のキー生成関数
+
+    文字列を文字と数字のリストに変換し、数字部分は整数として扱う。
+    これにより "a2" が "a11" より前にソートされる。
+
+    各要素をタプル(type, value)形式にすることで、異なる型の比較エラーを回避。
+    数字は(0, int_value)、文字列は(1, str_value)として扱う。
+
+    例:
+        "gemma2-9b" -> [(1, "gemma"), (0, 2), (1, "-"), (0, 9), (1, "b")]
+        "qwen3-30b" -> [(1, "qwen"), (0, 3), (1, "-"), (0, 30), (1, "b")]
+        "a2" -> [(1, "a"), (0, 2)]
+        "a11" -> [(1, "a"), (0, 11)]
+
+    Args:
+        text: ソート対象の文字列
+
+    Returns:
+        タプルのリスト（比較キー）
+    """
+    parts = []
+    for part in re.split(r'(\d+)', text):
+        if part:
+            if part.isdigit():
+                # 数字は優先度0で整数値として格納
+                parts.append((0, int(part)))
+            else:
+                # 文字列は優先度1で文字列として格納
+                parts.append((1, part))
+    return parts
+
 def parse_test_name(test_name):
     """テスト名を解析してモデル名とテスト種別を抽出"""
     # パターン例:
@@ -168,7 +200,7 @@ def extract_models_from_scores(all_scores):
         if parsed and parsed['model']:
             models_set.add(parsed['model'])
 
-    return sorted(models_set)
+    return sorted(models_set, key=natural_sort_key)
 
 def get_test_configs_by_pattern(all_scores, pattern_type):
     """特定のパターンのテスト設定を抽出"""
@@ -195,7 +227,7 @@ def get_test_configs_by_pattern(all_scores, pattern_type):
             if parsed['type'] == f"tr{tr_num}-" and parsed['history']:
                 configs_set.add(parsed['history'])
 
-    return sorted(configs_set)
+    return sorted(configs_set, key=natural_sort_key)
 
 def has_flag_variant(all_scores, model_name, flag, pattern_prefix=''):
     """特定のモデルとフラグの組み合わせがデータに存在するかチェック"""
@@ -314,7 +346,7 @@ def generate_markdown(all_scores, output_file):
                     configs_set.add(parsed['history'])
 
             # プレフィックス付きの列ヘッダーを生成
-            configs = sorted(configs_set)
+            configs = sorted(configs_set, key=natural_sort_key)
             column_headers = [f"{level}-{config}" for config in configs]
 
             # このレベルのデータがあるモデルを抽出
@@ -357,7 +389,7 @@ def generate_markdown(all_scores, output_file):
                 if parsed['history'] not in ['15', '25']:
                     configs_2.add(f"2-{parsed['history']}")
 
-        configs = sorted(configs_0) + sorted(configs_2)
+        configs = sorted(configs_0, key=natural_sort_key) + sorted(configs_2, key=natural_sort_key)
 
         # データがあるモデルを抽出
         models = []
@@ -385,7 +417,7 @@ def generate_markdown(all_scores, output_file):
                 if parsed['history'] not in ['15', '25']:
                     configs_tr4.add(f"tr4-{parsed['history']}")
 
-        configs = sorted(configs_0) + sorted(configs_tr4)
+        configs = sorted(configs_0, key=natural_sort_key) + sorted(configs_tr4, key=natural_sort_key)
 
         # ヘッダー
         f.write("| モデル |")
@@ -475,7 +507,7 @@ def generate_markdown(all_scores, output_file):
                 if parsed['history'] not in ['15', '25']:
                     configs_tr6.add(f"tr6-{parsed['history']}")
 
-        configs = sorted(configs_1) + sorted(configs_tr6)
+        configs = sorted(configs_1, key=natural_sort_key) + sorted(configs_tr6, key=natural_sort_key)
 
         # ヘッダー
         f.write("| モデル |")
@@ -561,7 +593,7 @@ def generate_markdown(all_scores, output_file):
             elif parsed and parsed['type'] == 'tr6-' and parsed['history']:
                 configs_tr6.add(f"tr6-{parsed['history']}")
 
-        configs = sorted(configs_tr5) + sorted(configs_tr6)
+        configs = sorted(configs_tr5, key=natural_sort_key) + sorted(configs_tr6, key=natural_sort_key)
 
         # ヘッダー
         f.write("| モデル |")
@@ -690,7 +722,7 @@ def generate_markdown(all_scores, output_file):
         for base_model in sorted_models:
             for display_model, score, configs in filtered_models_scores[base_model]:
                 # 設定をカンマ区切りで結合
-                config_str = ', '.join(sorted(configs))
+                config_str = ', '.join(sorted(configs, key=natural_sort_key))
                 f.write(f"| **{display_model}** | {score} | {config_str} |\n")
 
         # 96点以上のスコア一覧（モデル別実用設定一覧から96点以上をフィルタ）
@@ -703,7 +735,7 @@ def generate_markdown(all_scores, output_file):
             for display_model, score, configs in filtered_models_scores[base_model]:
                 if score >= 96:
                     # 設定をカンマ区切りで結合
-                    config_str = ', '.join(sorted(configs))
+                    config_str = ', '.join(sorted(configs, key=natural_sort_key))
                     f.write(f"| **{display_model}** | {score} | {config_str} |\n")
 
 def main():
