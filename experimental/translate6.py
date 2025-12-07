@@ -29,6 +29,7 @@ def normalize(text):
 
 def generate_with_retry(system_prompt, prompts, model):
     """リトライ機能付きのLLM生成関数"""
+    multiplier = 2  # 倍数の初期値
     for j in range(5):
         if j:
             print(f"Retry: {j}")
@@ -37,11 +38,14 @@ def generate_with_retry(system_prompt, prompts, model):
                 prompts,
                 system_prompt=system_prompt,
                 model=model,
-                max_length=8192,
+                max_length=8192*multiplier,
                 show_params=False,
                 include_thoughts=(not args.no_think),
             )
-            return result.text.strip()
+            if result.max_length is not None:
+                multiplier += 1
+            elif not result.repetition:
+                return result.text.strip()
         except Exception as e:
             if j < 4:
                 print(e)
