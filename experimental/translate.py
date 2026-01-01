@@ -10,6 +10,7 @@ parser.add_argument("-m", "--model", required=True, help="翻訳に使用する�
 parser.add_argument("-r", "--reasoning-level", type=int, default=2, choices=[0, 1, 2, 3, 4], help="推論レベル: 0=推論なし, 1=標準推論, 2=2段階翻訳, 3=3段階翻訳, 4=分割3段階翻訳")
 parser.add_argument("--history", type=int, default=5, help="コンテキストに含める過去の対話履歴数 (デフォルト: 5)")
 parser.add_argument("--translated-context", action="store_true", help="履歴コンテキストに翻訳文のみを提供（対訳形式ではなく）")
+parser.add_argument("--no-think", action="store_true", help="thinking処理を無効化（Qwen3モデル用）")
 args = parser.parse_args()
 
 with open(args.input_file, "r", encoding="utf-8") as f:
@@ -87,6 +88,7 @@ def generate_with_retry(prompts, schema, model, stage_name=""):
                 model=model,
                 max_length=8192*2,
                 show_params=False,
+                include_thoughts=(not args.no_think),
             )
             return json.loads(result.text.strip())
         except Exception as e:

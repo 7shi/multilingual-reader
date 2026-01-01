@@ -47,7 +47,7 @@ for m in gemma3:4b gemma3n:e4b gemma2:9b gemma3:12b gemma3:27b phi4 command-r7b 
         model_name="ollama:$m"
     fi
     for i in {0..4}; do
-       process_translation "$CMD -r $i" tr-cmp/$m2-$i.txt $model_name
+        process_translation "$CMD -r $i" tr-cmp/$m2-$i.txt $model_name
     done
     process_translation "$CMD -r 0 --history 05" tr-0/$m2-0-05.txt $model_name
     process_translation "$CMD -r 0 --history 10" tr-0/$m2-0-10.txt $model_name
@@ -73,10 +73,38 @@ done
 
 for m in qwen3:4b qwen3:14b qwen3:30b qwen3:32b; do
     echo "======== $m ========"
+    m2=${m/:/-}
+    # tr-cmpでのno-think版
+    for i in {0..4}; do
+        process_translation "$CMD -r $i --no-think" tr-cmp/$m2-$i-nt.txt ollama:$m
+    done
+    # tr-0, tr-1, tr-2でのno-think版
     for h in 05 10 20; do
-        process_translation "$CMD4 --history $h --no-think" tr4/${m/:/-}-tr4-nt-$h.txt ollama:$m
-        process_translation "$CMD5 --history $h --no-think" tr5/${m/:/-}-tr5-nt-$h.txt ollama:$m
-        process_translation "$CMD6 --history $h --no-think" tr6/${m/:/-}-tr6-nt-$h.txt ollama:$m
+        process_translation "$CMD -r 0 --history $h --no-think" tr-0/$m2-0-nt-$h.txt ollama:$m
+        process_translation "$CMD -r 1 --history $h --no-think" tr-1/$m2-1-nt-$h.txt ollama:$m
+        process_translation "$CMD -r 2 --history $h --no-think" tr-2/$m2-2-nt-$h.txt ollama:$m
+    done
+    # tr-0での-20-a/-20-bのno-think版
+    process_translation "$CMD -r 0 --history 20 --no-think" tr-0/$m2-0-nt-20-a.txt ollama:$m
+    process_translation "$CMD -r 0 --history 20 --no-think" tr-0/$m2-0-nt-20-b.txt ollama:$m
+    # qwen3:4b専用の追加設定
+    if [[ "$m" == "qwen3:4b" ]]; then
+        for h in 15 25; do
+            process_translation "$CMD -r 0 --history $h --no-think" tr-0/$m2-0-nt-$h.txt ollama:$m
+            process_translation "$CMD -r 1 --history $h --no-think" tr-1/$m2-1-nt-$h.txt ollama:$m
+            process_translation "$CMD -r 2 --history $h --no-think" tr-2/$m2-2-nt-$h.txt ollama:$m
+        done
+        for h in 05 10 15 20 25; do
+            process_translation "$CMD -r 0 --history $h --translated-context --no-think" tr-0/$m2-0-nt-t-$h.txt ollama:$m
+            process_translation "$CMD -r 1 --history $h --translated-context --no-think" tr-1/$m2-1-nt-t-$h.txt ollama:$m
+            process_translation "$CMD -r 2 --history $h --translated-context --no-think" tr-2/$m2-2-nt-t-$h.txt ollama:$m
+        done
+    fi
+    # tr4, tr5, tr6でのno-think版
+    for h in 05 10 20; do
+        process_translation "$CMD4 --history $h --no-think" tr4/$m2-tr4-nt-$h.txt ollama:$m
+        process_translation "$CMD5 --history $h --no-think" tr5/$m2-tr5-nt-$h.txt ollama:$m
+        process_translation "$CMD6 --history $h --no-think" tr6/$m2-tr6-nt-$h.txt ollama:$m
     done
 done
 
