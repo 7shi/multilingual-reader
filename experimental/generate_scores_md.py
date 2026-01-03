@@ -136,6 +136,14 @@ def parse_test_name(test_name):
             test_type = '-r'
             variant = part
             i += 1
+            # 次がntフラグかチェック
+            if i < len(remaining) and remaining[i] == 'nt':
+                flags.append('nt')
+                i += 1
+            # 次がtフラグかチェック
+            if i < len(remaining) and remaining[i] == 't':
+                flags.append('t')
+                i += 1
             # 次がhistoryかチェック
             if i < len(remaining) and remaining[i] in ['05', '10', '15', '20', '25']:
                 history = remaining[i]
@@ -244,7 +252,7 @@ def has_flag_variant(all_scores, model_name, flag, pattern_prefix=''):
 def get_model_display_name(model_name, flags):
     """モデル表示名を生成（フラグ付き）"""
     if flags:
-        return f"{model_name} ({''.join(flags)})"
+        return f"{model_name} ({','.join(flags)})"
     return model_name
 
 def generate_table(f, title, models, test_configs, all_scores, column_headers=None):
@@ -322,7 +330,7 @@ def generate_markdown(all_scores, output_file):
         # -r 0-4 のデータがあるモデルのみ抽出
         models_with_r = []
         for model in all_models:
-            # -r 0-4 のいずれかのデータがあるかチェック
+            # -r 0-4 のいずれかのデータがあるかチェック（通常版）
             has_r_data = False
             for i in range(5):
                 if f"{model}-{i}" in all_scores:
@@ -330,6 +338,15 @@ def generate_markdown(all_scores, output_file):
                     break
             if has_r_data:
                 models_with_r.append({'model': model, 'pattern': f'{model}-{{config}}'})
+
+            # -r 0-4 のいずれかのデータがあるかチェック（nt版）
+            has_nt_data = False
+            for i in range(5):
+                if f"{model}-{i}-nt" in all_scores:
+                    has_nt_data = True
+                    break
+            if has_nt_data:
+                models_with_r.append({'model': model, 'flags': ['nt'], 'pattern': f'{model}-{{config}}-nt'})
 
         generate_table(f, "", models_with_r, ['0', '1', '2', '3', '4'], all_scores)
 
@@ -361,6 +378,15 @@ def generate_markdown(all_scores, output_file):
                 if has_data:
                     models.append({'model': model, 'pattern': f'{model}-{level}-{{config}}'})
 
+                # (nt) バリアントのデータがあるかチェック
+                has_nt_data = False
+                for config in configs:
+                    if f"{model}-{level}-nt-{config}" in all_scores:
+                        has_nt_data = True
+                        break
+                if has_nt_data:
+                    models.append({'model': model, 'flags': ['nt'], 'pattern': f'{model}-{level}-nt-{{config}}'})
+
                 # (t) バリアントのデータがあるかチェック
                 has_t_data = False
                 for config in configs:
@@ -369,6 +395,15 @@ def generate_markdown(all_scores, output_file):
                         break
                 if has_t_data:
                     models.append({'model': model, 'flags': ['t'], 'pattern': f'{model}-{level}-t-{{config}}'})
+
+                # (nt,t) バリアントのデータがあるかチェック
+                has_nt_t_data = False
+                for config in configs:
+                    if f"{model}-{level}-nt-t-{config}" in all_scores:
+                        has_nt_t_data = True
+                        break
+                if has_nt_t_data:
+                    models.append({'model': model, 'flags': ['nt', 't'], 'pattern': f'{model}-{level}-nt-t-{{config}}'})
 
             generate_table(f, "", models, configs, all_scores, column_headers)
 
@@ -391,14 +426,65 @@ def generate_markdown(all_scores, output_file):
 
         configs = sorted(configs_0, key=natural_sort_key) + sorted(configs_2, key=natural_sort_key)
 
-        # データがあるモデルを抽出
-        models = []
+        # ヘッダー
+        f.write("| モデル |")
+        for config in configs:
+            f.write(f" {config} |")
+        f.write("\n")
+        f.write("|:---|")
+        for _ in configs:
+            f.write(":---:|")
+        f.write("\n")
+
+        # データがあるモデルとバリアントを抽出
+        model_configs = []
         for model in all_models:
+            # 通常バージョン
             has_data = any(f"{model}-{config}" in all_scores for config in configs)
             if has_data:
-                models.append({'model': model, 'pattern': f'{model}-{{config}}'})
+                model_configs.append((model, None))
 
-        generate_table(f, "", models, configs, all_scores)
+            # (nt) バリアント
+            has_nt_data = False
+            for config in configs:
+                nt_config = config.replace('0-', '0-nt-').replace('2-', '2-nt-')
+                if f"{model}-{nt_config}" in all_scores:
+                    has_nt_data = True
+                    break
+            if has_nt_data:
+                model_configs.append((model, 'nt'))
+
+        for model_base, flag_variant in model_configs:
+            display_name = f"{model_base} (nt)" if flag_variant == 'nt' else model_base
+            f.write(f"| **{display_name}** |")
+
+            max_score = -1
+            scores_in_row = []
+
+            for config in configs:
+                if flag_variant == 'nt':
+                    # config内の0-や2-の後にnt-を挿入
+                    nt_config = config.replace('0-', '0-nt-').replace('2-', '2-nt-')
+                    test_name = f"{model_base}-{nt_config}"
+                else:
+                    test_name = f"{model_base}-{config}"
+
+                score = all_scores.get(test_name)
+                scores_in_row.append(score)
+                if score is not None and score > max_score:
+                    max_score = score
+
+            # スコアを出力
+            for score in scores_in_row:
+                if score is None:
+                    f.write(" - |")
+                elif score == max_score and max_score >= 0:
+                    f.write(f" **{score}** |")
+                else:
+                    f.write(f" {score} |")
+            f.write("\n")
+
+        f.write("\n")
 
         # 直接翻訳における構造化出力の影響調査（レベル0 vs tr4）
         f.write("### 直接翻訳における構造化出力の影響調査（レベル0 vs tr4）\n\n")
@@ -457,14 +543,15 @@ def generate_markdown(all_scores, output_file):
             scores_in_row = []
 
             for config in configs:
-                # 0-xx のデータは通常のパターン、tr4-xx はnt付きパターン
+                # 0-xx と tr4-xx でnt処理が異なる
                 if config.startswith('0-'):
                     if flag_variant == 'nt':
-                        # ntモデルは0-xxのデータなし
-                        score = None
+                        # 0-05 -> 0-nt-05
+                        nt_config = config.replace('0-', '0-nt-')
+                        test_name = f"{model_base}-{nt_config}"
                     else:
                         test_name = f"{model_base}-{config}"
-                        score = all_scores.get(test_name)
+                    score = all_scores.get(test_name)
                 else:  # tr4-xx
                     if flag_variant == 'nt':
                         # tr4-05 -> tr4-nt-05
@@ -547,14 +634,15 @@ def generate_markdown(all_scores, output_file):
             scores_in_row = []
 
             for config in configs:
-                # 1-xx のデータは通常のパターン、tr6-xx はnt付きパターン
+                # 1-xx と tr6-xx でnt処理が異なる
                 if config.startswith('1-'):
                     if flag_variant == 'nt':
-                        # ntモデルは1-xxのデータなし
-                        score = None
+                        # 1-05 -> 1-nt-05
+                        nt_config = config.replace('1-', '1-nt-')
+                        test_name = f"{model_base}-{nt_config}"
                     else:
                         test_name = f"{model_base}-{config}"
-                        score = all_scores.get(test_name)
+                    score = all_scores.get(test_name)
                 else:  # tr6-xx
                     if flag_variant == 'nt':
                         # tr6-05 -> tr6-nt-05
