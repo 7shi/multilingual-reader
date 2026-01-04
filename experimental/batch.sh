@@ -1,6 +1,8 @@
 set -e
 
-EVAL_CMD="uv run evaluate_translation.py --original ../examples/finetuning-fr.txt -f French -t Spanish -m google:gemini-2.5-flash"
+EVALUATOR="google:gemini-2.5-flash"
+EVAL_DIR="gemini-2.5-flash"
+EVAL_CMD="uv run evaluate_translation.py --original ../examples/finetuning-fr.txt -f French -t Spanish -m $EVALUATOR"
 
 process_translation() {
     local command=$1
@@ -16,7 +18,7 @@ process_translation() {
     
     # 評価を3回実行
     for eval_run in {1..3}; do
-        local eval_output="${output%.txt}-${eval_run}.json"
+        local eval_output="$EVAL_DIR/${output%.txt}-${eval_run}.json"
         if [ -f "$eval_output" ]; then
             : #echo "Skipping evaluation $eval_output (already exists)"
         else
@@ -33,7 +35,7 @@ CMD4="uv run translate4.py -f French -t Spanish ../examples/finetuning-fr.txt"
 CMD5="uv run translate5.py -f French -t Spanish ../examples/finetuning-fr.txt"
 CMD6="uv run translate6.py -f French -t Spanish ../examples/finetuning-fr.txt"
 
-mkdir -p tr-cmp tr-0 tr-1 tr-2 tr4 tr5 tr6
+mkdir -p tr-cmp tr-0 tr-1 tr-2 tr4 tr5 tr6 $EVAL_DIR/{tr-cmp,tr-0,tr-1,tr-2,tr4,tr5,tr6}
 #process_translation "$CMD -r 0" tr-cmp/gpt-oss-20b-0.txt ollama:hf.co/unsloth/gpt-oss-20b-GGUF
 
 for m in gemma3:4b gemma3n:e4b gemma2:9b gemma3:12b gemma3:27b phi4 command-r7b command-r:35b aya-expanse:8b aya-expanse:32b qwen3:4b qwen3:14b qwen3:30b qwen3:32b llama3.3 llama4:scout gpt-oss:20b gpt-oss:120b mistral-small3.2 mixtral:8x7b mixtral:8x22b ministral-3:3b ministral-3:8b ministral-3:14b; do
@@ -63,7 +65,6 @@ for m in gemma3:4b gemma3n:e4b gemma2:9b gemma3:12b gemma3:27b phi4 command-r7b 
 done
 
 echo "======== qwen3:4b ========"
-mkdir -p tr-0 tr-1 tr-2
 for h in 05 10 15 20 25; do
     for i in 0 1 2; do
         process_translation "$CMD -r $i --history $h" tr-$i/qwen3-4b-$i-$h.txt ollama:qwen3:4b
@@ -92,6 +93,6 @@ for m in qwen3:4b qwen3:14b qwen3:30b qwen3:32b; do
     done
 done
 
-uv run aggregate_evaluations.py tr{-cmp,-0,-1,-2,4,5,6}/*.json > SCORES.txt
+(cd $EVAL_DIR && uv run ../aggregate_evaluations.py tr{-cmp,-0,-1,-2,4,5,6}/*.json) > SCORES.txt
 uv run generate_scores_md.py
 uv run sync_scores.py
