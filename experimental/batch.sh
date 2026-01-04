@@ -2,7 +2,9 @@ set -e
 
 EVALUATOR="google:gemini-2.5-flash"
 EVAL_DIR="gemini-2.5-flash"
-EVAL_CMD="uv run evaluate_translation.py --original ../examples/finetuning-fr.txt -f French -t Spanish -m $EVALUATOR"
+RETRY_WAIT=90
+
+EVAL_CMD="uv run evaluate_translation.py --original ../examples/finetuning-fr.txt -f French -t Spanish -m $EVALUATOR -w $RETRY_WAIT"
 
 process_translation() {
     local command=$1
@@ -93,6 +95,6 @@ for m in qwen3:4b qwen3:14b qwen3:30b qwen3:32b; do
     done
 done
 
-(cd $EVAL_DIR && uv run ../aggregate_evaluations.py tr{-cmp,-0,-1,-2,4,5,6}/*.json) > SCORES.txt
-uv run generate_scores_md.py
-uv run sync_scores.py
+(cd $EVAL_DIR && uv run ../aggregate_evaluations.py tr{-cmp,-0,-1,-2,4,5,6}/*.json) > $EVAL_DIR/SCORES.txt
+uv run generate_scores_md.py $EVAL_DIR/SCORES.txt
+uv run sync_scores.py $EVAL_DIR/SCORES.md

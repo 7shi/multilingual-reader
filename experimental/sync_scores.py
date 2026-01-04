@@ -7,8 +7,6 @@ SCORES.mdの表をREADME.mdに自動的に同期するスクリプト
 2. README.mdを行ごとに走査して、表のヘッダが検出されればdictからマッチング
 """
 
-from pathlib import Path
-
 
 def extract_tables_from_scores(content: str) -> dict[str, list[str]]:
     """
@@ -116,10 +114,16 @@ def sync_readme_with_scores(readme_content: str, tables_dict: dict[str, list[str
 
 
 def main():
+    import argparse
+    from pathlib import Path
+
+    parser = argparse.ArgumentParser(description='SCORES.mdの表をREADME.mdに同期するスクリプト')
+    parser.add_argument('scores_path', type=Path, help='SCORES.mdファイルのパス')
+    args = parser.parse_args()
+
     # ファイルパス
-    script_dir = Path(__file__).parent
-    scores_path = script_dir / 'SCORES.md'
-    readme_path = script_dir / 'README.md'
+    scores_path = args.scores_path
+    readme_path = Path(__file__).parent / 'README.md'
 
     # 存在確認
     if not scores_path.exists():

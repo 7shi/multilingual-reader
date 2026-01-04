@@ -7,6 +7,9 @@ from pydantic import BaseModel, Field
 from llm7shi.compat import generate_with_schema
 from llm7shi import create_json_descriptions_prompt
 
+# デフォルトの待機時間（秒）
+DEFAULT_RETRY_WAIT_SECONDS = 3
+
 parser = argparse.ArgumentParser(description="翻訳品質を5項目基準で評価")
 parser.add_argument("--original", required=True, help="原文ファイル")
 parser.add_argument("--translation", required=True, help="翻訳文ファイル")
@@ -14,6 +17,8 @@ parser.add_argument("-m", "--model", required=True, help="評価に使用する�
 parser.add_argument("-f", "--from", dest="from_lang", required=True, help="原語（例: English, Japanese）")
 parser.add_argument("-t", "--to", dest="to_lang", required=True, help="翻訳先言語（例: English, Japanese）")
 parser.add_argument("-o", "--output", dest="output_file", help="評価結果をJSONで保存するファイル名")
+parser.add_argument("-w", "--retry-wait", type=int, default=DEFAULT_RETRY_WAIT_SECONDS,
+                    help=f"リトライ時の待機時間（秒）（デフォルト: {DEFAULT_RETRY_WAIT_SECONDS}秒）")
 args = parser.parse_args()
 
 # ファイルから内容を読み込み
@@ -86,7 +91,7 @@ for attempt in range(max_retries):
     except json.JSONDecodeError as e:
         if attempt < max_retries - 1:
             print(f"JSONデコードエラー（試行{attempt + 1}/{max_retries}）: {e}")
-            for i in range(90, -1, -1):
+            for i in range(args.retry_wait, -1, -1):
                 print(f"\rリトライ待ち... {i}s ", end="", flush=True)
                 time.sleep(1)
             print()

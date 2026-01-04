@@ -28,8 +28,6 @@
 """
 
 import re
-from collections import defaultdict
-from pathlib import Path
 
 def natural_sort_key(text):
     """自然順ソート用のキー生成関数
@@ -828,8 +826,16 @@ def generate_markdown(all_scores, output_file):
 
 def main():
     """メイン処理"""
-    scores_file = Path(__file__).parent / "SCORES.txt"
-    output_file = Path(__file__).parent / "SCORES.md"
+    import argparse
+    from pathlib import Path
+
+    parser = argparse.ArgumentParser(description='SCORES.txtからSCORES.mdを生成するスクリプト')
+    parser.add_argument('scores_file', type=Path, help='入力ファイル')
+    parser.add_argument('-o', '--output', type=Path, help='出力ファイル (デフォルト: 入力ファイルの拡張子を.mdに変更)')
+    args = parser.parse_args()
+
+    scores_file = args.scores_file
+    output_file = args.output or scores_file.with_suffix('.md')
 
     if not scores_file.exists():
         print(f"エラー: {scores_file} が見つかりません")
