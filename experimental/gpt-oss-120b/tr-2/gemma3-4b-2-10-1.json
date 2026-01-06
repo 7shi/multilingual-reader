@@ -1,0 +1,31 @@
+{
+  "original_file": "../examples/finetuning-fr.txt",
+  "translation_file": "tr-2/gemma3-4b-2-10.txt",
+  "source_language": "French",
+  "target_language": "Spanish",
+  "model_used": "ollama:gpt-oss:120b",
+  "evaluation": {
+    "readability": {
+      "reasoning": "The Spanish text is generally understandable and follows the original flow, but there are several awkward phrasings, stray punctuation marks, and occasional untranslated English fragments (e.g., “or”, “fine‑tuning”). Some sentences are overly literal (“¿Ya está familiarizado con la gramática…?”) which can momentarily confuse the reader. Overall a native speaker can grasp the meaning, but the smoothness is affected.",
+      "score": 15
+    },
+    "fluency": {
+      "reasoning": "Many expressions sound unnatural: “Es como enviar a este graduado a que siga una especialización”, “El aprendizaje en contexto, similar al bachotage, es como si estudiara para un examen”, and the presence of stray symbols (\"}**\", \"or\") break the flow. Vocabulary is appropriate, but the translation contains several grammatical slips and unnecessary English terms (prompt, fine‑tuning) that reduce naturalness.",
+      "score": 12
+    },
+    "terminology": {
+      "reasoning": "Technical terminology is largely well‑handled: “pre‑entrenamiento”, “ajuste fino”, “aprendizaje por transferencia”, “ventana contextual”, “aprendizaje en contexto (ICL)”. However, the loanword “bachotage” is left untranslated, and “prompt” remains in English without explanation. Consistency is good otherwise.",
+      "score": 16
+    },
+    "contextual_adaptation": {
+      "reasoning": "The translation keeps the original intent and tone, adapting the analogies to Spanish well. Cultural references are fine for a tech‑savvy audience. The main drawback is the leftover formatting artefacts and English snippets, which slightly weaken the adaptation.",
+      "score": 14
+    },
+    "information_completeness": {
+      "reasoning": "All major ideas from the French script are present, and no substantive content is omitted. Minor issues exist where parts of the original sentence are cut off or where stray symbols interrupt the text, but the overall information is intact.",
+      "score": 17
+    },
+    "overall_comment": "The translation conveys the core concepts of pre‑training, fine‑tuning, transfer learning, and in‑context learning accurately and with appropriate terminology. Nevertheless, the text suffers from several stylistic and formatting errors that affect readability and fluency. Cleaning up the stray symbols, translating or explaining loanwords like \"bachotage\", and smoothing out awkward sentences would raise the quality considerably.\n\nOverall the translation is functional and informative but needs polishing to reach a native‑like level.\n\nOverall score (out of 20): 15"
+  },
+  "total_score": 74
+}

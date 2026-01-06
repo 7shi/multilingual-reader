@@ -1,0 +1,31 @@
+{
+  "original_file": "../examples/finetuning-fr.txt",
+  "translation_file": "tr-1/command-r7b-1-10.txt",
+  "source_language": "French",
+  "target_language": "Spanish",
+  "model_used": "ollama:gpt-oss:120b",
+  "evaluation": {
+    "readability": {
+      "reasoning": "The Spanish text is overall understandable, but numerous grammatical slips, mixed‑language fragments (French words like “Exactement”, Italian “conoscencias”, leftover French brackets) and awkward phrasing break the flow. A reader can get the main idea, yet must work around the noise, which lowers readability.",
+      "score": 10
+    },
+    "fluency": {
+      "reasoning": "Many sentences sound unnatural for a native speaker: \"Tienen todo claro\", \"¿Qué es decir?\", \"enracinamiento\", inconsistent gender agreement, and the presence of untranslated French/Italian bits. The register is also uneven, shifting between formal podcast style and clumsy literal translations.",
+      "score": 8
+    },
+    "terminology": {
+      "reasoning": "Key technical terms such as \"preentrenamiento\", \"afinamiento\", \"aprendizaje por transferencia\", \"ventana de contexto\" and \"aprendizaje en contexto\" are correctly rendered. However, some terms are mishandled (e.g., \"enracinamiento\" instead of \"enraizamiento\" or \"anclaje\", \"memoria\" without clarification) and occasional French terms remain, hurting consistency.",
+      "score": 12
+    },
+    "contextual_adaptation": {
+      "reasoning": "The translation generally preserves the original intent, but cultural adaptation is hampered by literal leftovers and bracketed notes that belong to the source‑language drafting process. These intrusions distract the Spanish‑speaking audience.",
+      "score": 9
+    },
+    "information_completeness": {
+      "reasoning": "Almost all the information from the French script is present; no major ideas are omitted. The main loss comes from the noisy artefacts (brackets, French snippets) rather than missing content, so completeness is acceptable.",
+      "score": 13
+    },
+    "overall_comment": "The translation conveys the core message of the podcast but suffers from serious quality issues: mixed‑language remnants, typographical errors, inaccurate term choices, and unnatural phrasing. A thorough edit is required to remove the French/Italian artefacts, correct grammar, and use idiomatic Spanish for technical discourse. As it stands, the text is only marginally usable for a native audience.\nOverall score (average of the five criteria): 10/20."
+  },
+  "total_score": 52
+}

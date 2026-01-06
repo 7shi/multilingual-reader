@@ -1,0 +1,31 @@
+{
+  "original_file": "../examples/finetuning-fr.txt",
+  "translation_file": "tr-0/qwen3-4b-0-nt-t-10.txt",
+  "source_language": "French",
+  "target_language": "Spanish",
+  "model_used": "ollama:gpt-oss:120b",
+  "evaluation": {
+    "readability": {
+      "reasoning": "The Spanish translation is generally clear and the flow of ideas follows the original. Most sentences are understandable, and the technical concepts are presented in a way that a Spanish‑speaking audience can follow. Minor issues such as the preposition error \"bienvenido en\" and occasional punctuation quirks slightly reduce smoothness, but they do not impede comprehension.",
+      "score": 16
+    },
+    "fluency": {
+      "reasoning": "There are several non‑native constructions: \"¡Hola y bienvenido en\", \"El afinado... es allí donde interviene\", the stray English word \"Simply\", and the incorrect neologism \"antiespuma\" for \"antisèche\". These make the text feel awkward to a native speaker. Vocabulary is mostly appropriate, but the unnatural phrasing lowers fluency.",
+      "score": 14
+    },
+    "terminology": {
+      "reasoning": "Technical terms are mostly rendered correctly (preentrenamiento, aprendizaje por transferencia, ventana de contexto, ICL, anclaje, memoria). However, \"el afinado\" is a less common rendering of \"fine‑tuning\" (\"ajuste fino\" would be standard), and the translation of \"antisèche\" as \"antiespuma\" is outright wrong. The leftover English word \"Simply\" also breaks terminology consistency.",
+      "score": 12
+    },
+    "contextual_adaptation": {
+      "reasoning": "The translation conveys the original intent and the pedagogical tone, but cultural‑linguistic nuances are occasionally off (e.g., wrong preposition, literal translation of \"consultant\" instead of a more natural \"consultor\", and the odd \"antiespuma\"). Overall the message is preserved, but minor adjustments would make it feel more natural for Spanish‑speaking listeners.",
+      "score": 15
+    },
+    "information_completeness": {
+      "reasoning": "All major ideas from the French script are present: pre‑training, fine‑tuning, transfer learning, in‑context learning, the distinction between temporary and permanent knowledge, and the description of \"memory\" features. The only loss is the mistranslated term \"antisèche\" and the stray English word, which are minor but affect precision.",
+      "score": 17
+    },
+    "overall_comment": "The translation does a solid job of transferring the educational content of the podcast into Spanish. It is largely complete and understandable, but several linguistic slips—especially the incorrect \"antiespuma\", the English residue \"Simply\", and a few unnatural phrasings—prevent it from sounding fully native. Improving these points and using more standard technical vocabulary would raise the quality considerably.\nOverall score (average of the five criteria): 15/20."
+  },
+  "total_score": 74
+}

@@ -4,8 +4,12 @@ set -e
 # EVAL_DIR="gemini-2.5-flash"
 # RETRY_WAIT=90
 
-EVALUATOR="ollama:gpt-oss:20b"
-EVAL_DIR="gpt-oss-20b"
+# EVALUATOR="ollama:gpt-oss:20b"
+# EVAL_DIR="gpt-oss-20b"
+# RETRY_WAIT=3
+
+EVALUATOR="ollama:gpt-oss:120b"
+EVAL_DIR="gpt-oss-120b"
 RETRY_WAIT=3
 
 EVAL_CMD="uv run evaluate_translation.py --original ../examples/finetuning-fr.txt -f French -t Spanish -m $EVALUATOR -w $RETRY_WAIT"

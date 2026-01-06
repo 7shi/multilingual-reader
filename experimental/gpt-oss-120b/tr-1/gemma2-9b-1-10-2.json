@@ -1,0 +1,31 @@
+{
+  "original_file": "../examples/finetuning-fr.txt",
+  "translation_file": "tr-1/gemma2-9b-1-10.txt",
+  "source_language": "French",
+  "target_language": "Spanish",
+  "model_used": "ollama:gpt-oss:120b",
+  "evaluation": {
+    "readability": {
+      "reasoning": "El texto es en general comprensible y sigue la lógica del guión original. Sin embargo, aparecen fragmentos en francés (por ejemplo, \"Voyez plutôt :\" y \"C'est là qu'intervient le concept d'« ancrage »\") que interrumpen la fluidez lectora y pueden confundir al lector hispanohablante.",
+      "score": 14
+    },
+    "fluency": {
+      "reasoning": "La mayoría de las frases suenan naturales en español y la terminología técnica está bien integrada. Los restos en francés y algunas construcciones ligeramente forzadas (p. ej., \"El afinado, por otro lado\") reducen la naturalidad del discurso.",
+      "score": 13
+    },
+    "terminology": {
+      "reasoning": "Los términos clave (preentrenamiento, ajuste fino, transferencia de aprendizaje, ventana de contexto, ICL, grounding) se traducen o se mantienen en inglés de forma adecuada para un público técnico. Sólo el término \"ancrage\" se dejó sin traducir, lo que rompe la consistencia.",
+      "score": 15
+    },
+    "contextual_adaptation": {
+      "reasoning": "Se conserva el tono didáctico y el objetivo de explicar conceptos complejos al público general. La presencia de expresiones francesas y la ausencia de una adaptación cultural completa (por ejemplo, la traducción de \"ancrage\" a \"anclaje\") limitan ligeramente la adaptación al lector hispano.",
+      "score": 14
+    },
+    "information_completeness": {
+      "reasoning": "Todo el contenido del guión original está presente; no se pierden ideas ni ejemplos. Los únicos problemas son estilísticos, no de omisión de información.",
+      "score": 18
+    },
+    "overall_comment": "La traducción transmite fielmente la información y la estructura del episodio original, pero la falta de una revisión completa que elimine los fragmentos en francés y que armonice la terminología afecta la calidad global. Con una corrección de esos detalles, el texto sería excelente para la audiencia hispanohablante.\n\nPuntuación media: 14.8 → 15/20.\n\n**Puntuación total:** 15/20"
+  },
+  "total_score": 74
+}

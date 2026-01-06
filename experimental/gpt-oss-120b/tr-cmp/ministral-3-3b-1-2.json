@@ -1,0 +1,31 @@
+{
+  "original_file": "../examples/finetuning-fr.txt",
+  "translation_file": "tr-cmp/ministral-3-3b-1.txt",
+  "source_language": "French",
+  "target_language": "Spanish",
+  "model_used": "ollama:gpt-oss:120b",
+  "evaluation": {
+    "readability": {
+      "reasoning": "Le texte traduit est truffé de phrases incomplètes, de passages en anglais et de notes de traduction (« * », « (Alternative concise version…) »). Le lecteur hispanophone doit deviner le sens ou combler les lacunes, ce qui rend la compréhension très difficile.",
+      "score": 4
+    },
+    "fluency": {
+      "reasoning": "La traduction ne sonne pas du tout naturelle. On trouve des anglicismes non adaptés (« You can take », « That’s exactly it »), des constructions grammaticales erronées et un mélange de langues qui brise le flux du discours. Un locuteur natif percevrait cela comme du texte bâclé.",
+      "score": 3
+    },
+    "terminology": {
+      "reasoning": "Certains termes techniques sont correctement rendus (preentrenamiento, afinado, transferencia de aprendizaje, ventana de contexto, aprendizaje en contexto, ICL, grounding, memoria), mais d’autres restent en français ou en anglais, ou sont traduits de façon incohérente (« el afinado » vs « afinado », « la fenêtre de contexte » laissé en français). L’incohérence nuit à la clarté terminologique.",
+      "score": 5
+    },
+    "contextual_adaptation": {
+      "reasoning": "L’intention originale du podcast – expliquer le pré‑entraînement, le fine‑tuning et l’apprentissage en contexte – est largement perdue à cause des omissions et des fragments de traduction. Le texte ne parvient pas à adapter le discours à un public hispanophone et ne conserve pas le ton pédagogique du script.",
+      "score": 4
+    },
+    "information_completeness": {
+      "reasoning": "De nombreuses parties du dialogue original sont absentes ou remplacées par des annotations de traduction (« (Alternative concise version, if context allows) »). Des passages entiers sont tronqués ou remplacés par du texte anglais, ce qui entraîne une perte d’information importante.",
+      "score": 3
+    },
+    "overall_comment": "La traduction est très médiocre : le texte est incomplet, fragmenté, mélange plusieurs langues et ne respecte ni la fluidité naturelle du espagnol ni la fidélité au contenu du français original. Les concepts clés sont partiellement rendus, mais la majorité du dialogue est illisible ou manquante, ce qui rend l’ensemble inutilisable pour un auditoire hispanophone.\n\nUne révision complète est nécessaire : éliminer les marques de placeholder, traduire intégralement le texte en espagnol fluide, garantir la cohérence terminologique et restituer fidèlement toutes les informations du script original.\n\nScore global (moyenne des critères) : 4 / 20."
+  },
+  "total_score": 19
+}
