@@ -61,7 +61,15 @@ class TranslationEvaluation(BaseModel):
 # 評価プロンプトの作成
 evaluation_prompt = f"""Please evaluate this translation from {args.from_lang} to {args.to_lang}.
 
-Score each evaluation criterion from 0-20 points and provide specific reasoning and comments."""
+**CRITICAL GUIDELINES**:
+1. Verify translation exists and is in {args.to_lang}. If missing/incomplete, assign 0 points to ALL criteria.
+2. Evaluate the ENTIRE file from beginning to end, not just the first or last lines.
+3. Structural defects (mixed languages, JSON fragments, meta-commentary) are CRITICAL errors (0-5 points).
+4. Major defects (grammatical errors, untranslated text) = 6-12 points.
+5. Minor issues (awkward phrasing) = 13-17 points.
+6. High quality (natural, accurate) = 18-20 points.
+
+Score each criterion from 0-20 points based on the ENTIRE document."""
 
 print("翻訳評価を実行中...")
 print()
