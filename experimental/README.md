@@ -35,6 +35,16 @@
 - **従来の仮説**: 複雑な推論システム → 高品質翻訳
 - **客観評価による新発見**: 適切なモデル選択 → シンプルな直接出力 = 最高効率
 
+#### 評価者間比較分析（Gemini vs gpt-oss）
+有償のGemini 2.5 Flashから無償のgpt-oss-120bへの移行可否を統計的に判定：
+
+- **3評価者の比較**: Gemini 2.5 Flash、gpt-oss-20b、gpt-oss-120b（716項目）
+- **統計分析**: 相関係数、一致度、系統的バイアス、問題ケースの抽出
+- **重大な発見**: **Geminiに致命的な評価エラーを発見**（存在しない翻訳を評価）
+- **最終結論**: ✅ **gpt-oss-120bへの完全移行を推奨**
+
+詳細👉[evaluator_comparison/README.md](evaluator_comparison/README.md)
+
 ## 評価システムの技術詳細
 
 ### evaluate_translation.py: 翻訳品質評価ツール
