@@ -313,7 +313,7 @@ def generate_table(f, title, models, test_configs, all_scores, column_headers=No
 
     f.write("\n")
 
-def generate_markdown(all_scores, output_file):
+def generate_markdown(all_scores, output_file, practical_threshold=90, highlight_threshold=96):
     """SCORES.md.origと同じ形式でMarkdownを生成"""
 
     # モデル名とテスト設定を自動抽出
@@ -753,7 +753,7 @@ def generate_markdown(all_scores, output_file):
 
         # モデル別実用設定一覧
         f.write("## モデル別実用設定一覧\n\n")
-        f.write("スコア変動を考慮し、各モデルの上位3項目（90点以上）または最高点1項目を実用レベルの目安として設定。\n\n")
+        f.write(f"スコア変動を考慮し、各モデルの上位3項目（{practical_threshold}点以上）または最高点1項目を実用レベルの目安として設定。\n\n")
         f.write("| モデル | スコア | 設定 |\n")
         f.write("|:---|:---:|:---|\n")
 
@@ -786,13 +786,13 @@ def generate_markdown(all_scores, output_file):
             # スコアの降順にソート
             sorted_scores = sorted(scores_list, key=lambda x: -x[1])
 
-            # 90点以上のスコアを取得
-            scores_above_90 = [s for s in sorted_scores if s[1] >= 90]
+            # practical_threshold点以上のスコアを取得
+            scores_above_threshold = [s for s in sorted_scores if s[1] >= practical_threshold]
 
             # フィルタリング
-            if scores_above_90:
-                # 90点以上がある場合: 上位3項目まで
-                selected = scores_above_90[:3]
+            if scores_above_threshold:
+                # practical_threshold点以上がある場合: 上位3項目まで
+                selected = scores_above_threshold[:3]
             else:
                 # 90点以上がない場合: 最高点の1項目のみ
                 selected = sorted_scores[:1]
@@ -811,15 +811,15 @@ def generate_markdown(all_scores, output_file):
                 config_str = ', '.join(sorted(configs, key=natural_sort_key))
                 f.write(f"| **{display_model}** | {score} | {config_str} |\n")
 
-        # 96点以上のスコア一覧（モデル別実用設定一覧から96点以上をフィルタ）
-        f.write("\n### 96点以上のスコア一覧\n\n")
+        # highlight_threshold点以上のスコア一覧（モデル別実用設定一覧からhighlight_threshold点以上をフィルタ）
+        f.write(f"\n### {highlight_threshold}点以上のスコア一覧\n\n")
         f.write("| モデル | スコア | 設定 |\n")
         f.write("|:---|:---:|:---|\n")
 
         # モデル別実用設定一覧と同じ順序で96点以上のみを出力
         for base_model in sorted_models:
             for display_model, score, configs in filtered_models_scores[base_model]:
-                if score >= 96:
+                if score >= highlight_threshold:
                     # 設定をカンマ区切りで結合
                     config_str = ', '.join(sorted(configs, key=natural_sort_key))
                     f.write(f"| **{display_model}** | {score} | {config_str} |\n")
@@ -832,6 +832,10 @@ def main():
     parser = argparse.ArgumentParser(description='SCORES.txtからSCORES.mdを生成するスクリプト')
     parser.add_argument('scores_file', type=Path, help='入力ファイル')
     parser.add_argument('-o', '--output', type=Path, help='出力ファイル (デフォルト: 入力ファイルの拡張子を.mdに変更)')
+    parser.add_argument('-1', '--practical-threshold', type=int, required=True,
+                        help='モデル別実用設定一覧の選定に用いる基準点')
+    parser.add_argument('-2', '--highlight-threshold', type=int, required=True,
+                        help='ハイライト用スコア一覧の基準点')
     args = parser.parse_args()
 
     scores_file = args.scores_file
@@ -845,7 +849,12 @@ def main():
     scores_by_model = parse_scores(scores_file)
 
     print(f"Markdownファイルを生成しています: {output_file}")
-    generate_markdown(scores_by_model, output_file)
+    generate_markdown(
+        scores_by_model,
+        output_file,
+        practical_threshold=args.practical_threshold,
+        highlight_threshold=args.highlight_threshold,
+    )
 
     print(f"✓ SCORES.mdを生成しました ({len(scores_by_model)}モデル)")
 

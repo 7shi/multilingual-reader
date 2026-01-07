@@ -3,14 +3,20 @@ set -e
 # EVALUATOR="google:gemini-2.5-flash"
 # EVAL_DIR="gemini-2.5-flash"
 # RETRY_WAIT=90
+# THRESHOLD1=90
+# THRESHOLD2=96
 
 # EVALUATOR="ollama:gpt-oss:20b"
 # EVAL_DIR="gpt-oss-20b"
 # RETRY_WAIT=3
+# THRESHOLD1=90
+# THRESHOLD2=91
 
 EVALUATOR="ollama:gpt-oss:120b"
 EVAL_DIR="gpt-oss-120b"
 RETRY_WAIT=3
+THRESHOLD1=91
+THRESHOLD2=92
 
 EVAL_CMD="uv run evaluate_translation.py --original ../examples/finetuning-fr.txt -f French -t Spanish -m $EVALUATOR -w $RETRY_WAIT"
 
@@ -104,5 +110,5 @@ for m in qwen3:4b qwen3:14b qwen3:30b qwen3:32b; do
 done
 
 (cd $EVAL_DIR && uv run ../aggregate_evaluations.py tr{-cmp,-0,-1,-2,4,5,6}/*.json) > $EVAL_DIR/SCORES.txt
-uv run generate_scores_md.py $EVAL_DIR/SCORES.txt
+uv run generate_scores_md.py -1 $THRESHOLD1 -2 $THRESHOLD2 $EVAL_DIR/SCORES.txt
 uv run sync_scores.py $EVAL_DIR/SCORES.md
