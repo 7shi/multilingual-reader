@@ -19,6 +19,7 @@ parser.add_argument("-t", "--to", dest="to_lang", required=True, help="翻訳先
 parser.add_argument("-o", "--output", dest="output_file", help="評価結果をJSONで保存するファイル名")
 parser.add_argument("-w", "--retry-wait", type=int, default=DEFAULT_RETRY_WAIT_SECONDS,
                     help=f"リトライ時の待機時間（秒）（デフォルト: {DEFAULT_RETRY_WAIT_SECONDS}秒）")
+parser.add_argument("--no-think", action="store_true", help="thinking処理を無効化（Qwen3モデル用）")
 args = parser.parse_args()
 
 # ファイルから内容を読み込み
@@ -93,6 +94,7 @@ for attempt in range(max_retries):
             model=args.model,
             max_length=8192,
             show_params=False,
+            include_thoughts=(not args.no_think),
         )
         evaluation_result = json.loads(result.text)
         break  # 成功したらループを抜ける

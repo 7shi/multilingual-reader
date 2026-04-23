@@ -30,6 +30,12 @@ RETRY_WAIT=3
 THRESHOLD1=91
 THRESHOLD2=92
 
+# EVALUATOR="ollama:qwen3.6 --no-think"
+# EVAL_DIR="qwen3.6-nt"
+# RETRY_WAIT=3
+# THRESHOLD1=91
+# THRESHOLD2=92
+
 EVAL_CMD="uv run evaluate_translation.py --original ../examples/finetuning-fr.txt -f French -t Spanish -m $EVALUATOR -w $RETRY_WAIT"
 
 process_translation() {
