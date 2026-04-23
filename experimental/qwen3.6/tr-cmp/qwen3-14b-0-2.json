@@ -1,0 +1,31 @@
+{
+  "original_file": "../examples/finetuning-fr.txt",
+  "translation_file": "tr-cmp/qwen3-14b-0.txt",
+  "source_language": "French",
+  "target_language": "Spanish",
+  "model_used": "ollama:qwen3.6",
+  "evaluation": {
+    "readability": {
+      "reasoning": "El texto en español es claramente comprensible y mantiene la estructura de diálogo técnico-científico del original. Los conceptos de IA se explican paso a paso con analogías pedagógicas que facilitan la lectura. Sin embargo, algunas estructuras sintácticas resultan ligeramente forzadas por calcos del francés, lo que genera pausas mentales en la lectura sin llegar a obstaculizar la comprensión global.",
+      "score": 16
+    },
+    "fluency": {
+      "reasoning": "La fluidez se ve afectada por varias traducciones literales que suenan antinaturales para un hablante nativo: 'informaciones' (en español es invariable/plural 'información'), 'aproximación' en lugar de 'enfoque/método' para referirse a 'approche', '¿Es decir?' como pregunta independiente (en español funciona solo como conjunción 'es decir,'), y 'pista' en lugar de 'chuleta/resumen' para 'antisèche'. Estos calcos frenan la naturalidad del registro conversacional del podcast.",
+      "score": 14
+    },
+    "terminology": {
+      "reasoning": "Los términos técnicos centrales (preentrenamiento, afinamiento, aprendizaje por transferencia, ICL/aprendizaje en contexto) se manejan de forma adecuada y consistente. 'Anclaje' para 'grounding' es aceptable en el contexto de vincular salidas a datos específicos. No obstante, el uso de 'informaciones' y 'aproximación' introduce imprecisiones léxicas que bajan la puntuación en este criterio.",
+      "score": 15
+    },
+    "contextual_adaptation": {
+      "reasoning": "Se preserva con éxito el tono de podcast educativo y las analogías pedagógicas (graduado universitario, consultor, bachoto vs. dominio real, aprender a andar en bicicleta). El registro se adapta bien a un público hispanohablante con interés en tecnología. Las traducciones literales de expresiones coloquiales rompen ligeramente la inmersión, pero no alteran el propósito comunicativo ni la intención original.",
+      "score": 16
+    },
+    "information_completeness": {
+      "reasoning": "Toda la información técnica, los matices explicativos y el flujo dialógico del original se conservan sin omisiones. La explicación de ICL vs. fine-tuning, el mecanismo de la ventana de contexto y la naturaleza del 'bachoto' vs. 'aprendizaje permanente' se transmiten fielmente. Solo hay una leve pérdida de matiz en 'antisèche' -> 'pista', que no afecta la integridad del mensaje.",
+      "score": 17
+    },
+    "overall_comment": "La traducción es funcional y técnica, manteniendo la estructura y el contenido educativo del podcast original. No obstante, adolece de calcos frecuentes del francés que perjudican su naturalidad léxica y sintáctica. Con una revisión focalizada en eliminar las traducciones literales y ajustar el registro a las convenciones del español técnico-científico, alcanzaría un nivel profesional y altamente natural (18-20). Actualmente se sitúa en un nivel sólido pero mejorable (15). El contenido es completo, claro y bien estructurado para lectores hispanohablantes con interés en IA, aunque requiere ajustes de estilo para sonar completamente nativo."
+  },
+  "total_score": 78
+}

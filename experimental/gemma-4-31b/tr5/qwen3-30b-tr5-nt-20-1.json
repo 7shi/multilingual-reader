@@ -1,0 +1,31 @@
+{
+  "original_file": "../examples/finetuning-fr.txt",
+  "translation_file": "tr5/qwen3-30b-tr5-nt-20.txt",
+  "source_language": "French",
+  "target_language": "Spanish",
+  "model_used": "google:gemma-4-31b-it",
+  "evaluation": {
+    "readability": {
+      "reasoning": "The translation is completely non-existent. The output is a collection of internal monologues and reasoning traces from the model, written in English, describing how it would translate various parts of the text, but it never actually provides the translated document. It is completely unreadable as a translation.",
+      "score": 0
+    },
+    "fluency": {
+      "reasoning": "The output contains no translated text in Spanish, only English reasoning traces. Therefore, it is not fluent in the target language.",
+      "score": 0
+    },
+    "terminology": {
+      "reasoning": "No technical terminology was translated into a final output; only discussed in English reasoning blocks.",
+      "score": 0
+    },
+    "contextual_adaptation": {
+      "reasoning": "The text fails to adapt the original content to the target language, providing only meta-commentary on the translation process.",
+      "score": 0
+    },
+    "information_completeness": {
+      "reasoning": "None of the original text was translated into the final output. The original content is completely missing from the result.",
+      "score": 0
+    },
+    "overall_comment": "The output is a complete failure. Instead of providing a Spanish translation of the original French podcast script, the model outputted its internal 'chain-of-thought' reasoning process in English for every single line. No actual translation of the document was produced. Per the critical guidelines, since the translation is missing, all criteria receive 0 points."
+  },
+  "total_score": 0
+}

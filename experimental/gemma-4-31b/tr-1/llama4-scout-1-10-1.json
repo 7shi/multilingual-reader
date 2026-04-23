@@ -1,0 +1,31 @@
+{
+  "original_file": "../examples/finetuning-fr.txt",
+  "translation_file": "tr-1/llama4-scout-1-10.txt",
+  "source_language": "French",
+  "target_language": "Spanish",
+  "model_used": "google:gemma-4-31b-it",
+  "evaluation": {
+    "readability": {
+      "reasoning": "The translation is severely compromised by the presence of untranslated French and English sections. This makes the text disjointed and nearly impossible to read as a cohesive Spanish document.",
+      "score": 5
+    },
+    "fluency": {
+      "reasoning": "While the translated portions are generally fluent, the overall flow is destroyed by the insertion of original French sentences and a full English paragraph, as well as meta-text ('Spanish translation result').",
+      "score": 5
+    },
+    "terminology": {
+      "reasoning": "Technical terms like 'pre-entrenamiento' and 'ajuste fino' are correct, but the failure to translate entire segments containing technical explanations renders the terminology evaluation secondary to the structural failure.",
+      "score": 10
+    },
+    "contextual_adaptation": {
+      "reasoning": "The target audience is meant to be Spanish listeners of a podcast, but the mixed-language output fails completely to adapt the content for that audience.",
+      "score": 5
+    },
+    "information_completeness": {
+      "reasoning": "Significant portions of the original text are missing (replaced by 'Spanish translation result') or left in the original French/English. This is a critical failure in information completeness.",
+      "score": 5
+    },
+    "overall_comment": "This translation is a catastrophic failure. It contains multiple critical errors: 1) Several paragraphs remain in the original French. 2) One paragraph is translated into English instead of Spanish. 3) Some sections are replaced by a placeholder string 'Spanish translation result'. This violates the most basic requirement of a translation task, as a large portion of the content is not in the target language. It is completely unusable."
+  },
+  "total_score": 30
+}

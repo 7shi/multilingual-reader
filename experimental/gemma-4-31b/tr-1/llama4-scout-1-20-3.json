@@ -1,0 +1,31 @@
+{
+  "original_file": "../examples/finetuning-fr.txt",
+  "translation_file": "tr-1/llama4-scout-1-20.txt",
+  "source_language": "French",
+  "target_language": "Spanish",
+  "model_used": "google:gemma-4-31b-it",
+  "evaluation": {
+    "readability": {
+      "reasoning": "The translation is severely interrupted by untranslated segments in English and French, and meta-commentary (e.g., 'Spanish translation result'), making it nearly impossible to read as a coherent script.",
+      "score": 5
+    },
+    "fluency": {
+      "reasoning": "While the Spanish portions are generally grammatical, the abrupt switches to English and the presence of raw French text destroy any sense of fluency or natural flow.",
+      "score": 5
+    },
+    "terminology": {
+      "reasoning": "Technical terms like 'pre-entrenamiento' and 'ajuste fino' are translated correctly in the Spanish sections, but the failure to translate entire blocks of technical explanation into Spanish renders this moot.",
+      "score": 10
+    },
+    "contextual_adaptation": {
+      "reasoning": "The translation fails completely in its purpose as a script because it leaves massive chunks of the dialogue in English and French, and includes internal notes/meta-text that do not belong in the output.",
+      "score": 5
+    },
+    "information_completeness": {
+      "reasoning": "Significant portions of the original text are not translated into Spanish. Entire paragraphs are either left in English or French, and some lines are replaced by placeholder text like 'Spanish translation result'.",
+      "score": 5
+    },
+    "overall_comment": "This is a catastrophic translation failure. The output contains a mixture of Spanish, English, and French, along with meta-commentary ('Spanish translation result', 'French to Spanish translation result'). Large sections of the dialogue were simply not translated. It fails on almost every quality metric."
+  },
+  "total_score": 30
+}

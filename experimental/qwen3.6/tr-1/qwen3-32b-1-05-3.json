@@ -1,0 +1,31 @@
+{
+  "original_file": "../examples/finetuning-fr.txt",
+  "translation_file": "tr-1/qwen3-32b-1-05.txt",
+  "source_language": "French",
+  "target_language": "Spanish",
+  "model_used": "ollama:qwen3.6",
+  "evaluation": {
+    "readability": {
+      "reasoning": "El texto mantiene una estructura dialogada clara y conserva eficazmente las analogías del original (graduado universitario, consultor, bachiller para un examen, aprender a andar en bicicleta), lo que facilita la comprensión de conceptos técnicos complejos. La sintaxis es mayoritariamente lógica y sigue un orden natural para el discurso hablado/podcast. Solo se detectan ligeros tropiezos en conectores conversacionales (`¿Es decir?`, `Se puede decir que.`) que, sin afectar gravemente la legibilidad, rompen momentáneamente el flujo. Se otorgan 17 puntos por una comprensión general muy accesible, con margen de mejora en la naturalidad de las transiciones.",
+      "score": 17
+    },
+    "fluency": {
+      "reasoning": "El texto es comprensible pero presenta varias marcas de traducción poco natural y un error gramatical claro en el español objetivo. Frases como `Se puede decir que.` (falta el pronombre demostrativo o la partícula de afirmación) y `¿Es decir?` (demasiado abrupto/literal) suenan a calco. El error `La IA no se afinada constantemente` es una construcción gramaticalmente incorrecta (`se afinada` no existe; debería ser `se entrena/se ajusta/se afina`). Además, mantener `antisèche` en francés sin adaptar el registro rompe la inmersión y la fluidez nativa. Estos fallos empujan la puntuación al rango de defectos menores/mayores (14/20).",
+      "score": 14
+    },
+    "terminology": {
+      "reasoning": "Los conceptos centrales (`pre-entrenamiento`, `aprendizaje por transferencia`, `ICL`, `ventana de contexto`) se traducen de forma correcta y comprensible. Sin embargo, en el ámbito técnico de la IA en español, `afinamiento` es un calco poco usado (se prefiere `fine-tuning`, `ajuste fino` o `sintonización fina`); `ancoraje` para `grounding` es entendible pero `fundamentación` o `anclaje contextual` son más precisos en literatura especializada. El mantenimiento de `antisèche` (jerga francesa) sin localizar es una falla de adaptación terminológica. Se otorgan 14 puntos por una base técnica correcta pero con margen de profesionalización y precisión normativa.",
+      "score": 14
+    },
+    "contextual_adaptation": {
+      "reasoning": "Se respeta fielmente el propósito del podcast (divulgación técnica accesible) y el tono conversacional entre dos presentadores. Las analogías se adaptan bien al público hispanohablante sin perder el sentido original. No obstante, la adaptación cultural y lingüística es superficial en algunos puntos: las expresiones truncadas y el término francés sin localizar (`antisèche`) demuestran que no se optimizó totalmente el texto para un oyente nativo. El registro es adecuado pero podría pulirse para sonar completamente orgánico. Se otorgan 15 puntos.",
+      "score": 15
+    },
+    "information_completeness": {
+      "reasoning": "La traducción cubre el 100% del contenido original sin omisiones, fusiones innecesarias ni redundancias añadidas. Todos los conceptos técnicos, el flujo del diálogo y las aclaraciones se mantienen intactos. La estructura conserva la progresión lógica del episodio: pre-entrenamiento -> afinamiento -> transferencia -> ICL -> ventana de contexto -> memoria vs. entrenamiento permanente. Se otorgan 19 puntos por una fidelidad y completitud excepcionales.",
+      "score": 19
+    },
+    "overall_comment": "La traducción cumple su objetivo principal de transmitir con claridad un guion técnico de divulgación, manteniendo la integridad de la información y la estructura dialógica. Sin embargo, se detectan varios fallos de fluidez y localización que impiden que el texto suene completamente nativo: un error gramatical evidente (`se afinada`), conectores truncados o calcos (`Se puede decir que.`, `¿Es decir?`), y la conservación de un modismo francés (`antisèche`) que debería adaptarse. Con una revisión de estilo y una normalización de la jerga técnica de IA, el trabajo alcanzaría un nivel profesional óptimo. Puntuación global: 15/20 (calidad media-alta con correcciones necesarias). Se otorgan 15 puntos de forma global. Se otorgan 15 puntos de forma global. Se otorgan 15 puntos de forma global."
+  },
+  "total_score": 79
+}

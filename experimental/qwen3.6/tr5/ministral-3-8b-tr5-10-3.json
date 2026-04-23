@@ -1,0 +1,31 @@
+{
+  "original_file": "../examples/finetuning-fr.txt",
+  "translation_file": "tr5/ministral-3-8b-tr5-10.txt",
+  "source_language": "French",
+  "target_language": "Spanish",
+  "model_used": "ollama:qwen3.6",
+  "evaluation": {
+    "readability": {
+      "reasoning": "La legibilidad se ve severamente comprometida por la presencia de fragmentos en francés sin traducir (`requête`, `coulisses`, `insère`), errores gramaticales (`suele malentendido`, `se recuerda de`, `inmensas conocimientos`) y una puntuación que altera el tono original (preguntas convertidas en declaraciones con `es...`). Estos fallos obligan al lector hispanohablante a detenerse constantemente para descifrar el texto, rompiendo la fluidez narrativa y la claridad expositiva.",
+      "score": 5
+    },
+    "fluency": {
+      "reasoning": "El texto no suena natural en español técnico ni coloquial. Usa falso cognado `informaciones` (en español se usa `información` o `datos`). La alternancia irregular entre `tú` y `usted` (`te recuerden`, `subes a la bicicleta`, `tu nueva requête`, `en coulisses`) genera inestabilidad pragmática. Expresiones como `resumen de apoyo` para `antisèche` o `se recuerda de` por `recuerda` son calcos literales o errores de registro que suenan antinaturales para un hablante nativo.",
+      "score": 5
+    },
+    "terminology": {
+      "reasoning": "Aunque términos clave como `aprendizaje por transferencia`, `aprendizaje en contexto` y `ventana de contexto` se traducen correctamente, hay inconsistencias graves: alterna `afinado` y `ajuste fino` para `fine-tuning`, y no homogeniza `anclaje`/`grounding`. La traducción de `antisèche` por `resumen de apoyo` pierde el matiz técnico de `hoja de referencia/apuntes`. La falta de consistencia terminológica y algunos calques reducen su precisión técnica.",
+      "score": 7
+    },
+    "contextual_adaptation": {
+      "reasoning": "El propósito original es un podcast educativo con un tono conversacional y didáctico. La traducción falla en conservar este registro debido a errores estructurales, la inclusión de comentarios meta-textuales `*(O sea, ¿cómo funciona...?)*` que no están en el original, y la pérdida de analogías clave (`las leyes del equilibrio a cada vez que subes a la bicicleta`). La adaptación cultural y pragmática es deficiente, tratando el texto como una traducción literal en lugar de una adaptación de audioconversación.",
+      "score": 5
+    },
+    "information_completeness": {
+      "reasoning": "Se omiten datos relevantes: se suprime `Luc,` al inicio, se elimina una cláusula explicativa vital en la analogía de la bicicleta, y se cambian interrogativas por enunciativas alterando el diálogo. Además, se añade contenido no original (comentarios entre paréntesis y asteriscos) y se distorsiona la referencia a `vous` vs `tu`. La integridad de la información se mantiene parcialmente, pero las omisiones y adiciones inapropiadas afectan la fidelidad.",
+      "score": 6
+    },
+    "overall_comment": "La traducción presenta defectos críticos y mayores que la hacen inviable para su uso profesional. Combina texto francés sin traducir, errores gramaticales graves, inconsistencias terminológicas, omisiones de contenido y adición de metadatos no solicitados. Requiere una reescritura completa con enfoque en la corrección lingüística, la homogeneización terminológica y la adaptación al registro de podcast educativo en español hispanoamericano o peninsular (según el target). La calidad general se sitúa en la zona de defectos mayores/críticos según las directrices proporcionadas."
+  },
+  "total_score": 28
+}

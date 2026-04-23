@@ -1,0 +1,31 @@
+{
+  "original_file": "../examples/finetuning-fr.txt",
+  "translation_file": "tr-1/llama4-scout-1-20.txt",
+  "source_language": "French",
+  "target_language": "Spanish",
+  "model_used": "google:gemma-4-31b-it",
+  "evaluation": {
+    "readability": {
+      "reasoning": "The translation is severely fragmented. It contains hallucinations of meta-commentary ('Spanish translation result', 'French to Spanish translation result') and switches languages mid-stream, making it impossible for a reader to follow the conversation logically.",
+      "score": 0
+    },
+    "fluency": {
+      "reasoning": "Fluency is non-existent due to the mixture of Spanish, English, and French. Entire paragraphs are left in the source language or translated into English instead of Spanish.",
+      "score": 0
+    },
+    "terminology": {
+      "reasoning": "While some terms like 'ajuste fino' were correctly translated initially, the overall failure to provide a consistent translation renders the terminology evaluation moot.",
+      "score": 0
+    },
+    "contextual_adaptation": {
+      "reasoning": "The translation fails to adapt the context because it fails to be a translation. It introduces English and French segments and meta-text that disrupts the intended podcast format.",
+      "score": 0
+    },
+    "information_completeness": {
+      "reasoning": "Significant portions of the original dialogue are either missing, replaced by meta-comments, or left in the wrong language, leading to a complete loss of information for a Spanish reader.",
+      "score": 0
+    },
+    "overall_comment": "This is a catastrophic failure of a translation. The output is a mixture of Spanish, English, and French, interspersed with AI-generated meta-commentary (e.g., 'Spanish translation result'). Large sections of the dialogue were either not translated or translated into the wrong target language. This violates all critical guidelines for a valid translation."
+  },
+  "total_score": 0
+}

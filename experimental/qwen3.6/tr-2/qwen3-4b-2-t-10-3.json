@@ -1,0 +1,31 @@
+{
+  "original_file": "../examples/finetuning-fr.txt",
+  "translation_file": "tr-2/qwen3-4b-2-t-10.txt",
+  "source_language": "French",
+  "target_language": "Spanish",
+  "model_used": "ollama:qwen3.6",
+  "evaluation": {
+    "readability": {
+      "reasoning": "The text is comprehensible at a glance, but frequent grammatical errors, gender/number agreement mistakes, and awkward sentence structures disrupt logical flow. Critical mistranslations of idioms and technical concepts (e.g., 'aplastar' for cramming, 'antecámara' for cheat sheet) force the reader to mentally correct errors to grasp the original meaning. Several French words ('Tale', 'est', 'à partir', 'système') remain untranslated, breaking readability.",
+      "score": 10
+    },
+    "fluency": {
+      "reasoning": "The translation reads like a raw machine translation draft or a poorly post-edited version. It contains numerous unnatural expressions ('es del aplastar', 'y pronto para', 'enseñaríamos... antes de que se atreviera'), inconsistent register shifts, and direct calques from French ('desciframos', 'revelar el velo sobre la forma en que'). The syntax often feels stiff and unidiomatic for native Spanish speakers.",
+      "score": 8
+    },
+    "terminology": {
+      "reasoning": "While core ML concepts like 'aprendizaje por transferencia' and 'ventana de contexto' are present, several terms are non-standard or incorrect for the technical domain ('afinamiento' instead of 'ajuste fino', 'aprender en contexto' instead of 'aprendizaje en contexto'). More critically, conceptual/idiomatic terms are mistranslated ('bachoter' → 'aplastar', 'antisèche' → 'antecámara'), severely undermining technical and contextual accuracy.",
+      "score": 9
+    },
+    "contextual_adaptation": {
+      "reasoning": "The conversational podcast tone is largely lost due to literal translations and mechanical phrasing. Cultural/linguistic nuances (idioms, humor, tone) are not adapted to Spanish conventions. The mismatch between formal/informal registers ('Mire:', 'Tale est') and the failure to localize metaphors (bike riding, cramming) make the text feel disjointed and culturally unadapted.",
+      "score": 9
+    },
+    "information_completeness": {
+      "reasoning": "No structural or informational omissions are present; all segments and concepts from the French original are mapped to the Spanish text. However, several nuances and technical clarifications are distorted or lost due to inaccurate phrasing. The content remains intact but requires significant mental reconstruction by the reader.",
+      "score": 14
+    },
+    "overall_comment": "The translation is complete in scope but suffers from severe mechanical, grammatical, and semantic flaws. It exhibits hallmark traits of a low-quality machine translation with inadequate post-editing: mixed-language artifacts ('Tale est', 'est', 'à partir', 'système'), gender/number agreement errors ('sus vastas conocimientos', 'las nuevas conocimientos'), literal calques, and critical mistranslations of idioms and technical metaphors ('aplastar' for cramming, 'antecámara' for cheat sheet). While the informational skeleton is preserved, the linguistic execution severely compromises naturalness, accuracy, and professional readiness. It falls firmly into the major defects category and would require extensive human revision to reach publishable quality for a technical audience. Score: 10/20 (Major defects). Overall recommendation: Reject in current form; requires full linguistic and technical post-editing."
+  },
+  "total_score": 50
+}

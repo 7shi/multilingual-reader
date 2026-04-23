@@ -1,0 +1,31 @@
+{
+  "original_file": "../examples/finetuning-fr.txt",
+  "translation_file": "tr-1/llama4-scout-1-20.txt",
+  "source_language": "French",
+  "target_language": "Spanish",
+  "model_used": "ollama:qwen3.6",
+  "evaluation": {
+    "readability": {
+      "reasoning": "The text is heavily disrupted by inserted English, French, and translator instructions, making it extremely difficult for a Spanish reader to follow the dialogue coherently.",
+      "score": 2
+    },
+    "fluency": {
+      "reasoning": "Natural Spanish flow is completely broken by foreign language injections and explicit meta-commentary (e.g., 'Spanish translation result', 'La traducción busca mantener...') left directly in the dialogue turns.",
+      "score": 2
+    },
+    "terminology": {
+      "reasoning": "While some AI-specific terms are correctly adapted where intact, the presence of untranslated blocks and mixed languages severely compromises terminology consistency and professional handling.",
+      "score": 3
+    },
+    "contextual_adaptation": {
+      "reasoning": "The podcast script format is fundamentally broken by the leakage of translation artifacts and instructions, failing to adapt to the target audience's expectation of a clean, native Spanish broadcast script.",
+      "score": 2
+    },
+    "information_completeness": {
+      "reasoning": "Core informational content is present in the intact portions, but critical dialogue turns are replaced or interrupted by foreign text and instructions, resulting in significant omission and unnecessary redundancy.",
+      "score": 3
+    },
+    "overall_comment": "The translation fails fundamentally due to critical structural defects. Multiple instances of English and French text, along with explicit translator instructions (e.g., 'Spanish translation result', 'La traducción busca mantener...', 'French to Spanish translation result'), are leaked directly into the Spanish output. This severely compromises readability, fluency, and professional quality, rendering it unusable in its current state without extensive manual cleanup and redrafting of the affected turns."
+  },
+  "total_score": 12
+}

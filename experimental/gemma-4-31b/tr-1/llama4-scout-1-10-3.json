@@ -1,0 +1,31 @@
+{
+  "original_file": "../examples/finetuning-fr.txt",
+  "translation_file": "tr-1/llama4-scout-1-10.txt",
+  "source_language": "French",
+  "target_language": "Spanish",
+  "model_used": "google:gemma-4-31b-it",
+  "evaluation": {
+    "readability": {
+      "reasoning": "The translation is interrupted by multiple catastrophic failures where French or English text is left untranslated, and there are placeholder phrases like 'Spanish translation result'. This makes the text disjointed and difficult to read.",
+      "score": 5
+    },
+    "fluency": {
+      "reasoning": "While the parts that were actually translated into Spanish are generally fluent, the presence of entire paragraphs in French and English, as well as meta-commentary placeholders, destroys any sense of natural flow.",
+      "score": 5
+    },
+    "terminology": {
+      "reasoning": "The technical terms (e.g., 'pre-entrenamiento', 'ajuste fino') are handled correctly in the sections that were translated, but the failure to translate key segments of the technical explanation renders the terminology evaluation moot for the document as a whole.",
+      "score": 8
+    },
+    "contextual_adaptation": {
+      "reasoning": "The conversational tone of a podcast is partially maintained in the translated sections, but the massive omissions and language switching fail to convey the intent and purpose of the original text.",
+      "score": 5
+    },
+    "information_completeness": {
+      "reasoning": "The translation is critically incomplete. It contains untranslated French blocks, untranslated English blocks, and placeholder text ('Spanish translation result') where actual content should be:",
+      "score": 0
+    },
+    "overall_comment": "This is a catastrophic translation failure. The output is a mixture of Spanish, French, and English, containing several large untranslated sections and placeholder text. It fails the most basic requirement of providing a complete translation in the target language. According to the critical guidelines, structural defects and mixed languages result in a score in the 0-5 range for affected criteria."
+  },
+  "total_score": 23
+}

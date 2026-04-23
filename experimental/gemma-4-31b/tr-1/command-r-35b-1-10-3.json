@@ -1,0 +1,31 @@
+{
+  "original_file": "../examples/finetuning-fr.txt",
+  "translation_file": "tr-1/command-r-35b-1-10.txt",
+  "source_language": "French",
+  "target_language": "Spanish",
+  "model_used": "google:gemma-4-31b-it",
+  "evaluation": {
+    "readability": {
+      "reasoning": "The text is generally easy to follow, but the inclusion of English text and meta-comments ruins the flow for a reader.",
+      "score": 10
+    },
+    "fluency": {
+      "reasoning": "There are severe fluency issues. Several paragraphs are left entirely in English. There are also strange insertions of speaker names (e.g., '**Luc:**') inside the dialogue lines, which is not the original format.",
+      "score": 5
+    },
+    "terminology": {
+      "reasoning": "The technical terms like 'pre-entrenamiento' and 'ventana de contexto' are handled well, but the inconsistency between 'especialización' and 'afinado' for 'fine-tuning' is a minor issue compared to the untranslated sections.",
+      "score": 15
+    },
+    "contextual_adaptation": {
+      "reasoning": "The translation fails to adapt to the target language in several key sections by simply leaving the original English source (or a translation into English) in place.",
+      "score": 5
+    },
+    "information_completeness": {
+      "reasoning": "While the meaning of the untranslated parts is present (since they are in English), it is a failure of translation. However, in terms of content coverage, no information was omitted.",
+      "score": 12
+    },
+    "overall_comment": "This is a very poor translation. A significant portion of the text was left untranslated (in English), and the translator included English translations of the French phrases in parentheses. Additionally, the formatting becomes inconsistent towards the end, adding bolded speaker names within the lines. This is unacceptable for a professional translation."
+  },
+  "total_score": 47
+}

@@ -1,0 +1,31 @@
+{
+  "original_file": "../examples/finetuning-fr.txt",
+  "translation_file": "tr-cmp/gemma3-12b-1.txt",
+  "source_language": "French",
+  "target_language": "Spanish",
+  "model_used": "google:gemma-4-31b-it",
+  "evaluation": {
+    "readability": {
+      "reasoning": "The translation is riddled with omissions and fragments. Entire sentences and paragraphs are missing, making the flow of the conversation impossible to follow for a reader. It reads like a draft with placeholders rather than a completed translation.",
+      "score": 2
+    },
+    "fluency": {
+      "reasoning": "While the few translated sentences are mostly grammatically correct, the overall text is not fluent because it is incomplete. There are also instances of untranslated English phrases ('the difference between temporary knowledge', 'The entirety of your discussion'), which is unacceptable for a Spanish translation.",
+      "score": 3
+    },
+    "terminology": {
+      "reasoning": "Some technical terms like 'ajuste fino' and 'aprendizaje en contexto' are correctly translated, but the lack of completeness makes it impossible to evaluate consistency across the whole text.",
+      "score": 5
+    },
+    "contextual_adaptation": {
+      "reasoning": "The intent of the podcast dialogue is completely lost because large chunks of the conversation are missing. The adaptation is failed because the text is essentially a skeleton of the original.",
+      "score": 2
+    },
+    "information_completeness": {
+      "reasoning": "This is the most critical failure. Huge sections of the original text are missing. Many lines are replaced by single words ('desenmascarar', 'Imagina') or left as fragmented English/French notes. Most of the dialogue is gone.",
+      "score": 0
+    },
+    "overall_comment": "This is an extremely poor translation. It is incomplete, contains untranslated English phrases, and omits vast amounts of the original content. It fails to meet the most basic requirements of a translation task, essentially providing a fragmented outline rather than a translated text."
+  },
+  "total_score": 12
+}

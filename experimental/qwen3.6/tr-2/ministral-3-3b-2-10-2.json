@@ -1,0 +1,31 @@
+{
+  "original_file": "../examples/finetuning-fr.txt",
+  "translation_file": "tr-2/ministral-3-3b-2-10.txt",
+  "source_language": "French",
+  "target_language": "Spanish",
+  "model_used": "ollama:qwen3.6",
+  "evaluation": {
+    "readability": {
+      "reasoning": "The translation is heavily disrupted by embedded meta-commentary, translator notes, and multiple alternative phrasing suggestions (e.g., '(con tilde para mantener la correcta pronunciación en español)', '(o ‘Sí, claro.’ si el tono es más coloquial)', 'No hay una traducción directa del texto original porque Camille no lo dice explícitamente...'). These annotations break the narrative flow and force the reader to constantly differentiate between the actual script and editorial instructions, severely hindering comprehension.",
+      "score": 4
+    },
+    "fluency": {
+      "reasoning": "While the core Spanish phrasing is generally grammatically sound, the constant interruptions with translator notes, regional alternatives, and technical explanations make the text highly unnatural and disjointed. Native readers would find the abrupt shifts between dialogue, meta-instructions, and tonal suggestions extremely jarring and unusable for its intended podcast format.",
+      "score": 4
+    },
+    "terminology": {
+      "reasoning": "Technical terms like 'pre-entrenamiento', 'ajuste fino', 'aprendizaje por transferencia', 'ventana de contexto', and 'ICL' are accurately identified and used. However, the excessive inline explanations and notes clutter the terminology handling. The terms themselves are appropriate for the target audience's technical level, but the presentation method undermines their clarity.",
+      "score": 8
+    },
+    "contextual_adaptation": {
+      "reasoning": "The translator attempts to adapt culturally and tonally by offering regional alternatives and register options, but misapplies them by embedding them directly into the transcript. This breaks the fourth wall and fails to respect the podcast's conversational context. Effective contextual adaptation would require a clean, unified voice with adaptations handled via appendices or footnotes rather than inline.",
+      "score": 5
+    },
+    "information_completeness": {
+      "reasoning": "All original information is technically present and no key concepts are omitted. However, massive redundancy is introduced through the meta-commentary, alternative options, and explanatory notes. While the content is complete, it fails to maintain conciseness and clarity due to the cluttered structure.",
+      "score": 7
+    },
+    "overall_comment": "The translation captures the technical content accurately but is fundamentally compromised by extensive embedded meta-commentary, translator notes, and inline alternative phrasing suggestions. This structural flaw severely disrupts readability and natural flow, making it unusable as a final, polished transcript."
+  },
+  "total_score": 28
+}

@@ -1,0 +1,31 @@
+{
+  "original_file": "../examples/finetuning-fr.txt",
+  "translation_file": "tr-cmp/gemma3-12b-2.txt",
+  "source_language": "French",
+  "target_language": "Spanish",
+  "model_used": "google:gemma-4-31b-it",
+  "evaluation": {
+    "readability": {
+      "reasoning": "The translation is generally easy to follow and the logical flow is maintained. However, there is a catastrophic failure in the middle of the text where the translator left internal notes/deliberations within the final output, which severely disrupts the reading experience.",
+      "score": 5
+    },
+    "fluency": {
+      "reasoning": "The Spanish used is mostly natural and appropriate for a podcast format. However, the inclusion of meta-commentary ('choosing the best option based on specific style...') breaks the fluency entirely, turning a dialogue into a technical translation exercise.",
+      "score": 5
+    },
+    "terminology": {
+      "reasoning": "Technical terms like 'preentrenamiento', 'ajuste fino', and 'In-Context Learning' are handled correctly and consistently with industry standards.",
+      "score": 18
+    },
+    "contextual_adaptation": {
+      "reasoning": "The tone of a tech podcast is well-captured in the translated dialogue parts. However, the translator failed to provide a clean final version, instead including their thought process for one of the sentences, which is a failure of contextual adaptation for the end-user.",
+      "score": 5
+    },
+    "information_completeness": {
+      "reasoning": "All information from the original text is present. In fact, one part is over-complete because it contains three different versions of the same sentence followed by a paragraph of reasoning.",
+      "score": 15
+    },
+    "overall_comment": "The translation is a disaster from a delivery perspective. While the linguistic quality of the actual translated sentences is quite high, the translator left a large block of internal 'scratchpad' notes in the middle of the text. This includes multiple options for the same sentence and a detailed explanation of why one was chosen over the others. Per the critical guidelines, structural defects and meta-commentary are critical errors. This is not a deliverable translation; it is a draft with notes left in."
+  },
+  "total_score": 48
+}

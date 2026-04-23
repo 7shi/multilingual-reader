@@ -1,0 +1,31 @@
+{
+  "original_file": "../examples/finetuning-fr.txt",
+  "translation_file": "tr-2/qwen3-4b-2-15.txt",
+  "source_language": "French",
+  "target_language": "Spanish",
+  "model_used": "ollama:qwen3.6",
+  "evaluation": {
+    "readability": {
+      "reasoning": "La legibilidad se ve severamente comprometida por la intrusión aleatoria y extensa de francés dentro del español. Párrafos enteros o frases completas contienen palabras francesas que rompen la continuidad del texto para un lector nativo (ej. 'rep apprendre qué est un verbe', 'est le apprentissage de último momento', 'fonctionnalités... à intégrer... choses'). Esto obliga al lector a detenerse constantemente para traducir mentalmente, impidiendo una comprensión fluida y natural.",
+      "score": 5
+    },
+    "fluency": {
+      "reasoning": "La fluidez es crítica debido a la mezcla lingüística y a múltiples errores gramaticales en la parte española. Se observan desacuerdos de género/número ('las nuevas conocimientos', 'estos herramientas', 'se le a proporcionado'), conjugaciones incorrectas ('empieze', 'conversación termine') y calcos sintácticos ('muy sorprendentemente', 'se tiene la impresión de que'). La prosa no suena natural ni contemporánea para un hablante nativo de español, cumpliendo con el criterio de defectos mayores y estructurales (6-12 / 0-5 puntos).",
+      "score": 4
+    },
+    "terminology": {
+      "reasoning": "Aunque algunos términos técnicos se manejan bien (ICL, ventana de contexto, grounding), la consistencia es inexistente debido al code-switching. Palabras clave se traducen, otras se quedan en francés, y algunas adaptaciones son poco idiomáticas en español ('afinamiento' para fine-tuning, 'trampa' para astuce). La falta de un glosario o revisión impide que la terminología sea apropiada o coherente.",
+      "score": 6
+    },
+    "contextual_adaptation": {
+      "reasoning": "El tono de podcast educativo se intenta mantener, pero la mezcla de idiomas destruye la adaptación contextual. Expresiones como 'bachoter' se traducen de forma literal ('estudiar apresuradamente') en lugar de adaptarse al registro coloquial latino/europeo ('memorizar para el pongo' o 'estudiar a última hora'). La intención del texto original no se transmite efectivamente debido a los errores de calco y a la ruptura del flujo conversacional.",
+      "score": 5
+    },
+    "information_completeness": {
+      "reasoning": "La traducción cubre textualmente todo el contenido original sin omitir ideas conceptuales importantes. A pesar de los fallos de estilo y mezcla de idiomas, la información técnica sobre preentrenamiento, fine-tuning, aprendizaje por transferencia e ICL se mantiene intacta. No hay redundancias artificiales, pero la presentación defectuosa impide que la información sea completamente aprovechable sin corrección.",
+      "score": 12
+    },
+    "overall_comment": "La traducción sufre de defectos estructurales críticos. A pesar de cubrir el alcance completo del texto original, presenta una mezcla masiva e incontrolada de francés y español a lo largo de todo el documento, lo que indica un fallo grave en la generación o la falta de post-edición profesional. Sumado a errores gramaticales persistentes (acuerdos de género, tildes, conjugaciones) y calcos sintácticos, el resultado es incomprensible para un lector nativo. Se requiere una retraducción completa o una revisión profunda para alcanzar estándares mínimos de calidad técnica y lingüística. No cumple con los requisitos de fluidez, legibilidad ni adaptación contextual establecidos en las guías para un producto final viable."
+  },
+  "total_score": 32
+}

@@ -1,0 +1,31 @@
+{
+  "original_file": "../examples/finetuning-fr.txt",
+  "translation_file": "tr4/gemma3-12b-tr4-05.txt",
+  "source_language": "French",
+  "target_language": "Spanish",
+  "model_used": "ollama:qwen3.6",
+  "evaluation": {
+    "readability": {
+      "reasoning": "La legibilidad se ve afectada por fragmentos de interferencia francesa ('transfière', 'ancaje') y expresiones truncadas o antinaturales ('¿Es decir?', 'Lo olvida todo.'). Aunque el contexto técnico ayuda a deducir el sentido general, el lector hispanohablante se topa con barreras léxicas y sintácticas que dificultan una comprensión fluida y rápida. Se asigna 10/20.",
+      "score": 10
+    },
+    "fluency": {
+      "reasoning": "El texto no suena natural en español debido a múltiples errores de adaptación: 'bachatear' es un false friend crítico (baile latino vs repaso intensivo), 'ancaje' no existe en este contexto (debería ser 'anclaje'), y hay falta de tildes interrogativas ('¿Porque'). La puntuación, el orden de las palabras y los registros mixtos rompen la cohesión textual. Se asigna 9/20.",
+      "score": 9
+    },
+    "terminology": {
+      "reasoning": "La mayor parte de la terminología de IA se conserva, pero existen inconsistencias ('ajuste fino' vs 'afina') y errores graves de precisión ('ancaje' por 'anclaje', 'bachatear' por 'cramming/memorización'). La falta de validación técnica y la traducción literal de modismos ('bachotage') afectan negativamente la adecuación terminológica. Se asigna 8/20.",
+      "score": 8
+    },
+    "contextual_adaptation": {
+      "reasoning": "El propósito pedagógico y el tono de podcast se mantienen en línea general, pero las expresiones poco idiomáticas ('Miren:', 'hoja de trucos' por 'chuleta') y los errores de interpretación cultural/lingüística debilitan la adaptación. La adaptación al público objetivo es parcial y requiere ajuste de registro. Se asigna 9/20.",
+      "score": 9
+    },
+    "information_completeness": {
+      "reasoning": "No hay omisiones estructurales ni de conceptos técnicos; todo el flujo argumental del original está presente. Sin embargo, la precisión semántica se resiente por los errores léxicos que alteran matices clave (ej. confundir un proceso de aprendizaje con un baile). La información está completa pero comprometida por la falta de depuración. Se asigna 11/20.",
+      "score": 11
+    },
+    "overall_comment": "La traducción transmite el contenido y la estructura del podcast original, pero presenta defectos mayores que impiden considerar el texto como listo para publicación. Se identifican residuos de francés sin adaptar, un error de interpretación semántica grave ('bachatear'), inconsistencias terminológicas, errores ortográficos/gramaticales recurrentes y duplicaciones tipográficas. La traducción funciona como un borrador aproximado que requiere una revisión profesional exhaustiva para alcanzar estándares nativos de fluidez, precisión técnica y corrección formal en español. Se asigna 9/20 en general. Porcentaje: 9/20 puntos debido a la presencia de múltiples errores gramaticales, léxicos y de formato que caen en la categoría de defectos mayores (6-12 pts). Aunque la información se conserva, la calidad lingüística y la verificación final son insuficientes."
+  },
+  "total_score": 47
+}

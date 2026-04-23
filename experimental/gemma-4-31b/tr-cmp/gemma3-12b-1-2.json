@@ -1,0 +1,31 @@
+{
+  "original_file": "../examples/finetuning-fr.txt",
+  "translation_file": "tr-cmp/gemma3-12b-1.txt",
+  "source_language": "French",
+  "target_language": "Spanish",
+  "model_used": "google:gemma-4-31b-it",
+  "evaluation": {
+    "readability": {
+      "reasoning": "The translation is essentially broken. Large sections of the dialogue are replaced by single words, fragments, or are left entirely blank. It is impossible for a reader to follow the conversation.",
+      "score": 0
+    },
+    "fluency": {
+      "reasoning": "The fluency is non-existent because the text is not a coherent translation. It contains English phrases ('the difference between temporary knowledge...', 'The entirety of your discussion'), untranslated fragments, and placeholders like ';translati'.",
+      "score": 0
+    },
+    "terminology": {
+      "reasoning": "While a few technical terms like 'pre-entrenamiento' and 'ajuste fino' are translated correctly, the vast majority of the technical explanation is missing due to the massive omissions in the text.",
+      "score": 2
+    },
+    "contextual_adaptation": {
+      "reasoning": "The translation fails to adapt the context because it fails to translate the actual content. The conversational flow of a podcast is completely lost.",
+      "score": 0
+    },
+    "information_completeness": {
+      "reasoning": "Critical information is missing throughout the entire document. Entire paragraphs and sentences were omitted and replaced by fragments (e.g., Luc's second line is just 'desenmascarar', Camille's seventh line is just 'El ajuste fino'). Most of the original meaning is lost.",
+      "score": 0
+    },
+    "overall_comment": "This is a catastrophic failure of a translation. It is not a functional text. It contains massive omissions, fragments of untranslated source text, English phrases, and meta-comments. It is completely unusable and fails on every possible metric of a translation task."
+  },
+  "total_score": 2
+}
