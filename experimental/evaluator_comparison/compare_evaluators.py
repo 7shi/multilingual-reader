@@ -19,6 +19,8 @@ SCORES_FILES = {
     'gemini-2.5-flash': '../gemini-2.5-flash/SCORES.txt',
     'gpt-oss-20b': '../gpt-oss-20b/SCORES.txt',
     'gpt-oss-120b': '../gpt-oss-120b/SCORES.txt',
+    'qwen3.6': '../qwen3.6/SCORES.txt',
+    'gemma-4-31b': '../gemma-4-31b/SCORES.txt',
 }
 
 OUTPUT_JSON = 'stats.json'
@@ -62,6 +64,16 @@ def calculate_basic_stats(scores: Dict[str, int]) -> Dict:
         '81-100': int(np.sum((values >= 81) & (values <= 100))),
     }
 
+    # 高得点帯の分布
+    high_score_counts = {
+        '>=95': int(np.sum(values >= 95)),
+        '>=96': int(np.sum(values >= 96)),
+        '>=97': int(np.sum(values >= 97)),
+        '>=98': int(np.sum(values >= 98)),
+        '>=99': int(np.sum(values >= 99)),
+        '100': int(np.sum(values == 100)),
+    }
+
     return {
         'mean': float(np.mean(values)),
         'median': float(np.median(values)),
@@ -72,6 +84,7 @@ def calculate_basic_stats(scores: Dict[str, int]) -> Dict:
         'q75': float(np.percentile(values, 75)),
         'count': len(values),
         'score_ranges': ranges,
+        'high_score_counts': high_score_counts,
     }
 
 
@@ -383,8 +396,8 @@ def main():
     for name, filepath in SCORES_FILES.items():
         full_path = Path(__file__).parent / filepath
         if not full_path.exists():
-            print(f"エラー: {full_path} が見つかりません")
-            return
+            print(f"警告: {full_path} が見つかりません。スキップします。")
+            continue
 
         all_scores[name] = parse_scores_file(str(full_path))
         print(f"  - {name}: {len(all_scores[name])} 項目")

@@ -2,7 +2,7 @@
 """
 評価者間比較レポート生成スクリプト
 
-stats.jsonと生成されたグラフを元に、包括的なマークダウンレポートを作成する。
+stats.jsonを元に、包括的なマークダウンレポートを作成する。
 """
 
 import json
@@ -10,7 +10,6 @@ from pathlib import Path
 from datetime import datetime
 
 INPUT_JSON = 'stats.json'
-PLOTS_DIR = 'plots'
 OUTPUT_MD = 'REPORT.md'
 
 
@@ -119,6 +118,18 @@ def generate_basic_stats(data):
                  f"{ranges['61-80']} | {ranges['81-100']} |")
 
     md.append("")
+    md.append("### 高得点帯の分布（95点以上）")
+    md.append("")
+    md.append("| 評価者 | 95点以上 | 96点以上 | 97点以上 | 98点以上 | 99点以上 | 100点 |")
+    md.append("|--------|----------|----------|----------|----------|----------|-------|")
+
+    for name, stats in basic_stats.items():
+        if 'high_score_counts' in stats:
+            hsc = stats['high_score_counts']
+            md.append(f"| {name} | {hsc['>=95']} | {hsc['>=96']} | {hsc['>=97']} | "
+                     f"{hsc['>=98']} | {hsc['>=99']} | {hsc['100']} |")
+
+    md.append("")
     return '\n'.join(md)
 
 
@@ -126,9 +137,6 @@ def generate_correlation_analysis(data):
     """相関分析セクションを生成"""
     md = []
     md.append("## 相関分析")
-    md.append("")
-
-    md.append("![散布図マトリクス](plots/scatter_matrix.png)")
     md.append("")
 
     md.append("### 評価者間の相関係数")
@@ -159,9 +167,6 @@ def generate_agreement_analysis(data):
     md.append("## 一致度分析")
     md.append("")
 
-    md.append("![Bland-Altmanプロット](plots/bland_altman.png)")
-    md.append("")
-
     md.append("### 評価者間の一致度指標")
     md.append("")
     md.append("| ペア | MAE | RMSE | ±5点以内 | ±10点以内 | 上位10%一致率 | 平均差 | 標準偏差 |")
@@ -174,10 +179,6 @@ def generate_agreement_analysis(data):
                  f"{agree['top10_agreement']:.1%} | {agree['mean_diff']:+.2f} | {agree['std_diff']:.2f} |")
 
     md.append("")
-
-    md.append("![スコア差の分布](plots/score_diff_histogram.png)")
-    md.append("")
-
     return '\n'.join(md)
 
 
@@ -188,9 +189,6 @@ def generate_systematic_bias_analysis(data):
     md.append("")
 
     md.append("### モデルファミリー別の偏り")
-    md.append("")
-
-    md.append("![モデルファミリー別バイアス](plots/model_family_boxplot.png)")
     md.append("")
 
     md.append("| モデルファミリー | Gemini平均 | GPT-OSS-120B平均 | 差分(Gemini-GPT120B) |")
@@ -377,26 +375,12 @@ def generate_migration_decision(data):
     return '\n'.join(md)
 
 
-def generate_heatmap_section():
-    """ヒートマップセクションを生成"""
-    md = []
-    md.append("## 全項目スコアの俯瞰")
-    md.append("")
-    md.append("![全716項目ヒートマップ](plots/heatmap.png)")
-    md.append("")
-    md.append("このヒートマップは全716項目の評価スコアを色で表現したものです。")
-    md.append("赤色は高得点、緑色は低得点を示します。")
-    md.append("")
-    return '\n'.join(md)
-
-
 def generate_footer(data):
     """フッターを生成"""
     md = []
     md.append("## 詳細データ")
     md.append("")
     md.append(f"- 統計データ: [{INPUT_JSON}]({INPUT_JSON})")
-    md.append(f"- グラフ: [{PLOTS_DIR}/]({PLOTS_DIR}/)")
     md.append("")
     md.append("---")
     md.append("")
@@ -435,7 +419,6 @@ def main():
     md_sections.append(generate_systematic_bias_analysis(data))
     md_sections.append(generate_problem_cases(data))
     md_sections.append(generate_migration_decision(data))
-    md_sections.append(generate_heatmap_section())
     md_sections.append(generate_footer(data))
 
     report_content = '\n'.join(md_sections)

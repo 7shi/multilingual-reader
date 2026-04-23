@@ -12,8 +12,20 @@ set -e
 # THRESHOLD1=90
 # THRESHOLD2=91
 
-EVALUATOR="ollama:gpt-oss:120b"
-EVAL_DIR="gpt-oss-120b"
+# EVALUATOR="ollama:gpt-oss:120b"
+# EVAL_DIR="gpt-oss-120b"
+# RETRY_WAIT=3
+# THRESHOLD1=91
+# THRESHOLD2=92
+
+# EVALUATOR="google:gemma-4-31b-it"
+# EVAL_DIR="gemma-4-31b"
+# RETRY_WAIT=5
+# THRESHOLD1=91
+# THRESHOLD2=92
+
+EVALUATOR="ollama:qwen3.6"
+EVAL_DIR="qwen3.6"
 RETRY_WAIT=3
 THRESHOLD1=91
 THRESHOLD2=92

@@ -4,9 +4,11 @@
     "evaluators": [
       "gemini-2.5-flash",
       "gpt-oss-20b",
-      "gpt-oss-120b"
+      "gpt-oss-120b",
+      "qwen3.6",
+      "gemma-4-31b"
     ],
-    "generated_at": "2026-01-07T15:21:16.922743"
+    "generated_at": "2026-04-23T23:33:28.616692"
   },
   "basic_stats": {
     "gemini-2.5-flash": {
@@ -24,6 +26,14 @@
         "41-60": 129,
         "61-80": 214,
         "81-100": 292
+      },
+      "high_score_counts": {
+        ">=95": 48,
+        ">=96": 38,
+        ">=97": 24,
+        ">=98": 11,
+        ">=99": 5,
+        "100": 2
       }
     },
     "gpt-oss-20b": {
@@ -41,23 +51,89 @@
         "41-60": 29,
         "61-80": 196,
         "81-100": 455
+      },
+      "high_score_counts": {
+        ">=95": 0,
+        ">=96": 0,
+        ">=97": 0,
+        ">=98": 0,
+        ">=99": 0,
+        "100": 0
       }
     },
     "gpt-oss-120b": {
-      "mean": 78.72486033519553,
+      "mean": 78.60754189944134,
       "median": 84.0,
-      "std": 16.725040791907084,
+      "std": 16.897416497765015,
       "min": 0,
-      "max": 96,
-      "q25": 76.75,
+      "max": 92,
+      "q25": 76.0,
       "q75": 88.0,
       "count": 716,
       "score_ranges": {
-        "0-20": 16,
+        "0-20": 17,
         "21-40": 23,
         "41-60": 18,
         "61-80": 207,
-        "81-100": 452
+        "81-100": 451
+      },
+      "high_score_counts": {
+        ">=95": 0,
+        ">=96": 0,
+        ">=97": 0,
+        ">=98": 0,
+        ">=99": 0,
+        "100": 0
+      }
+    },
+    "qwen3.6": {
+      "mean": 66.92039106145252,
+      "median": 74.0,
+      "std": 25.979509469857383,
+      "min": 0,
+      "max": 98,
+      "q25": 53.0,
+      "q75": 89.0,
+      "count": 716,
+      "score_ranges": {
+        "0-20": 53,
+        "21-40": 80,
+        "41-60": 109,
+        "61-80": 184,
+        "81-100": 290
+      },
+      "high_score_counts": {
+        ">=95": 58,
+        ">=96": 28,
+        ">=97": 8,
+        ">=98": 2,
+        ">=99": 0,
+        "100": 0
+      }
+    },
+    "gemma-4-31b": {
+      "mean": 76.27653631284916,
+      "median": 83.0,
+      "std": 24.302385442500956,
+      "min": 0,
+      "max": 100,
+      "q25": 68.0,
+      "q75": 95.0,
+      "count": 716,
+      "score_ranges": {
+        "0-20": 39,
+        "21-40": 26,
+        "41-60": 64,
+        "61-80": 197,
+        "81-100": 390
+      },
+      "high_score_counts": {
+        ">=95": 195,
+        ">=96": 162,
+        ">=97": 132,
+        ">=98": 90,
+        ">=99": 37,
+        "100": 13
       }
     }
   },
@@ -73,18 +149,74 @@
     "gemini25flash_vs_gptoss120b": {
       "pair": "gemini25flash_vs_gptoss120b",
       "num_common": 716,
-      "pearson": 0.6699275852137249,
-      "pearson_p": 1.9711586095520742e-94,
-      "spearman": 0.7759791402506881,
-      "spearman_p": 4.8639070738872325e-145
+      "pearson": 0.6828775379365292,
+      "pearson_p": 1.8997335124452373e-99,
+      "spearman": 0.7841409547410948,
+      "spearman_p": 4.3566893597359214e-150
+    },
+    "gemini25flash_vs_qwen36": {
+      "pair": "gemini25flash_vs_qwen36",
+      "num_common": 716,
+      "pearson": 0.8240555477800928,
+      "pearson_p": 2.230307191038658e-178,
+      "spearman": 0.8352259199559768,
+      "spearman_p": 1.3163515764270217e-187
+    },
+    "gemini25flash_vs_gemma431b": {
+      "pair": "gemini25flash_vs_gemma431b",
+      "num_common": 716,
+      "pearson": 0.8417940046974408,
+      "pearson_p": 2.3074337220131226e-193,
+      "spearman": 0.8534081668191318,
+      "spearman_p": 3.2390595519624784e-204
     },
     "gptoss20b_vs_gptoss120b": {
       "pair": "gptoss20b_vs_gptoss120b",
       "num_common": 716,
-      "pearson": 0.913289458479314,
-      "pearson_p": 1.0036445681362468e-280,
-      "spearman": 0.7446955414280383,
-      "spearman_p": 1.6452744034803749e-127
+      "pearson": 0.9009476329230962,
+      "pearson_p": 4.327109475709416e-261,
+      "spearman": 0.7423547867151049,
+      "spearman_p": 2.657542691107834e-126
+    },
+    "gptoss20b_vs_qwen36": {
+      "pair": "gptoss20b_vs_qwen36",
+      "num_common": 716,
+      "pearson": 0.7569147731305296,
+      "pearson_p": 4.866839191899243e-134,
+      "spearman": 0.7165105755102813,
+      "spearman_p": 8.782085924560528e-114
+    },
+    "gptoss20b_vs_gemma431b": {
+      "pair": "gptoss20b_vs_gemma431b",
+      "num_common": 716,
+      "pearson": 0.8348046656146608,
+      "pearson_p": 3.0190375628578895e-187,
+      "spearman": 0.7533033919282128,
+      "spearman_p": 4.536673770560539e-132
+    },
+    "gptoss120b_vs_qwen36": {
+      "pair": "gptoss120b_vs_qwen36",
+      "num_common": 716,
+      "pearson": 0.8037827088714788,
+      "pearson_p": 3.423279590234033e-163,
+      "spearman": 0.8190179147360357,
+      "spearman_p": 1.9909194558154302e-174
+    },
+    "gptoss120b_vs_gemma431b": {
+      "pair": "gptoss120b_vs_gemma431b",
+      "num_common": 716,
+      "pearson": 0.8817719980686218,
+      "pearson_p": 3.243349536692198e-235,
+      "spearman": 0.8365831651296147,
+      "spearman_p": 8.931195628810215e-189
+    },
+    "qwen36_vs_gemma431b": {
+      "pair": "qwen36_vs_gemma431b",
+      "num_common": 716,
+      "pearson": 0.8952860298670743,
+      "pearson_p": 6.228281930700172e-253,
+      "spearman": 0.877078152461471,
+      "spearman_p": 1.4537871463231784e-229
     }
   },
   "agreement": {
@@ -100,179 +232,303 @@
     },
     "gemini25flash_vs_gptoss120b": {
       "pair": "gemini25flash_vs_gptoss120b",
-      "mae": 13.659217877094973,
-      "rmse": 19.493230453661422,
+      "mae": 13.541899441340782,
+      "rmse": 19.189950232977,
       "within_5pts": 0.3463687150837989,
-      "within_10pts": 0.5488826815642458,
-      "top10_agreement": 0.37055837563451777,
-      "mean_diff": -9.374301675977653,
-      "std_diff": 17.10312968337102
+      "within_10pts": 0.5502793296089385,
+      "top10_agreement": 0.37244897959183676,
+      "mean_diff": -9.256983240223464,
+      "std_diff": 16.821344877085323
+    },
+    "gemini25flash_vs_qwen36": {
+      "pair": "gemini25flash_vs_qwen36",
+      "mae": 9.567039106145252,
+      "rmse": 14.987797643826477,
+      "within_5pts": 0.45670391061452514,
+      "within_10pts": 0.6885474860335196,
+      "top10_agreement": 0.49074074074074076,
+      "mean_diff": 2.430167597765363,
+      "std_diff": 14.799806669493664
+    },
+    "gemini25flash_vs_gemma431b": {
+      "pair": "gemini25flash_vs_gemma431b",
+      "mae": 10.635474860335195,
+      "rmse": 15.036779861504655,
+      "within_5pts": 0.3575418994413408,
+      "within_10pts": 0.6145251396648045,
+      "top10_agreement": 0.4929078014184397,
+      "mean_diff": -6.925977653631285,
+      "std_diff": 13.356074379063646
     },
     "gptoss20b_vs_gptoss120b": {
       "pair": "gptoss20b_vs_gptoss120b",
-      "mae": 4.779329608938547,
-      "rmse": 6.894658283712254,
+      "mae": 4.865921787709497,
+      "rmse": 7.403381380553199,
       "within_5pts": 0.6745810055865922,
       "within_10pts": 0.8994413407821229,
-      "top10_agreement": 0.2638888888888889,
-      "mean_diff": -0.7262569832402235,
-      "std_diff": 6.8610939583928765
+      "top10_agreement": 0.26573426573426573,
+      "mean_diff": -0.6089385474860335,
+      "std_diff": 7.383453698784359
+    },
+    "gptoss20b_vs_qwen36": {
+      "pair": "gptoss20b_vs_qwen36",
+      "mae": 15.226256983240223,
+      "rmse": 20.57477166459641,
+      "within_5pts": 0.2849162011173184,
+      "within_10pts": 0.5027932960893855,
+      "top10_agreement": 0.2,
+      "mean_diff": 11.078212290502794,
+      "std_diff": 17.349779632696247
+    },
+    "gptoss20b_vs_gemma431b": {
+      "pair": "gptoss20b_vs_gemma431b",
+      "mae": 10.361731843575418,
+      "rmse": 14.117770805405735,
+      "within_5pts": 0.3016759776536313,
+      "within_10pts": 0.6396648044692738,
+      "top10_agreement": 0.20216606498194944,
+      "mean_diff": 1.7220670391061452,
+      "std_diff": 14.022144890485377
+    },
+    "gptoss120b_vs_qwen36": {
+      "pair": "gptoss120b_vs_qwen36",
+      "mae": 14.41340782122905,
+      "rmse": 19.77350803756713,
+      "within_5pts": 0.33379888268156427,
+      "within_10pts": 0.5363128491620112,
+      "top10_agreement": 0.4068627450980392,
+      "mean_diff": 11.687150837988828,
+      "std_diff": 15.96113819782985
+    },
+    "gptoss120b_vs_gemma431b": {
+      "pair": "gptoss120b_vs_gemma431b",
+      "mae": 9.350558659217876,
+      "rmse": 12.536148847750688,
+      "within_5pts": 0.33100558659217877,
+      "within_10pts": 0.702513966480447,
+      "top10_agreement": 0.36879432624113473,
+      "mean_diff": 2.3310055865921786,
+      "std_diff": 12.326136406338405
+    },
+    "qwen36_vs_gemma431b": {
+      "pair": "qwen36_vs_gemma431b",
+      "mae": 11.174581005586592,
+      "rmse": 14.912641332385752,
+      "within_5pts": 0.34916201117318435,
+      "within_10pts": 0.5684357541899442,
+      "top10_agreement": 0.5512367491166078,
+      "mean_diff": -9.356145251396647,
+      "std_diff": 11.620585963157119
     }
   },
   "systematic_bias": {
     "by_model_family": {
-      "qwen3": {
-        "gemini-2.5-flash": 70.15254237288136,
-        "gpt-oss-20b": 76.91525423728814,
-        "gpt-oss-120b": 76.71186440677967,
-        "gemini_gpt120b_diff": -6.559322033898312
-      },
-      "gemma3": {
-        "gemini-2.5-flash": 72.66666666666667,
-        "gpt-oss-20b": 78.27777777777777,
-        "gpt-oss-120b": 79.83333333333333,
-        "gemini_gpt120b_diff": -7.166666666666657
-      },
-      "gpt-oss": {
-        "gemini-2.5-flash": 90.35416666666667,
-        "gpt-oss-20b": 86.89583333333333,
-        "gpt-oss-120b": 89.35416666666667,
-        "gemini_gpt120b_diff": 1.0
-      },
-      "mixtral": {
-        "gemini-2.5-flash": 57.416666666666664,
-        "gpt-oss-20b": 73.1875,
-        "gpt-oss-120b": 73.25,
-        "gemini_gpt120b_diff": -15.833333333333336
-      },
-      "gemma3n-e4b": {
-        "gemini-2.5-flash": 68.83333333333333,
-        "gpt-oss-20b": 82.20833333333333,
-        "gpt-oss-120b": 82.25,
-        "gemini_gpt120b_diff": -13.416666666666671
-      },
-      "phi4": {
-        "gemini-2.5-flash": 76.66666666666667,
-        "gpt-oss-20b": 82.95833333333333,
-        "gpt-oss-120b": 84.91666666666667,
-        "gemini_gpt120b_diff": -8.25
-      },
-      "ministral-3": {
-        "gemini-2.5-flash": 56.736111111111114,
-        "gpt-oss-20b": 71.56944444444444,
-        "gpt-oss-120b": 71.93055555555556,
-        "gemini_gpt120b_diff": -15.194444444444443
-      },
-      "command-r": {
-        "gemini-2.5-flash": 71.0,
-        "gpt-oss-20b": 80.54166666666667,
-        "gpt-oss-120b": 83.125,
-        "gemini_gpt120b_diff": -12.125
-      },
       "llama3.3": {
         "gemini-2.5-flash": 81.875,
         "gpt-oss-20b": 84.33333333333333,
         "gpt-oss-120b": 83.66666666666667,
+        "qwen3.6": 79.58333333333333,
+        "gemma-4-31b": 87.95833333333333,
         "gemini_gpt120b_diff": -1.7916666666666714
-      },
-      "aya-expanse": {
-        "gemini-2.5-flash": 69.91666666666667,
-        "gpt-oss-20b": 80.95833333333333,
-        "gpt-oss-120b": 83.10416666666667,
-        "gemini_gpt120b_diff": -13.1875
-      },
-      "llama4-scout": {
-        "gemini-2.5-flash": 61.125,
-        "gpt-oss-20b": 76.54166666666667,
-        "gpt-oss-120b": 74.66666666666667,
-        "gemini_gpt120b_diff": -13.541666666666671
-      },
-      "gemma2": {
-        "gemini-2.5-flash": 63.958333333333336,
-        "gpt-oss-20b": 78.25,
-        "gpt-oss-120b": 80.04166666666667,
-        "gemini_gpt120b_diff": -16.083333333333336
       },
       "mistral-small3.2": {
         "gemini-2.5-flash": 84.375,
         "gpt-oss-20b": 82.16666666666667,
         "gpt-oss-120b": 85.83333333333333,
+        "qwen3.6": 87.375,
+        "gemma-4-31b": 90.75,
         "gemini_gpt120b_diff": -1.4583333333333286
+      },
+      "ministral-3": {
+        "gemini-2.5-flash": 56.736111111111114,
+        "gpt-oss-20b": 71.56944444444444,
+        "gpt-oss-120b": 71.93055555555556,
+        "qwen3.6": 52.861111111111114,
+        "gemma-4-31b": 63.31944444444444,
+        "gemini_gpt120b_diff": -15.194444444444443
+      },
+      "phi4": {
+        "gemini-2.5-flash": 76.66666666666667,
+        "gpt-oss-20b": 82.95833333333333,
+        "gpt-oss-120b": 84.91666666666667,
+        "qwen3.6": 74.45833333333333,
+        "gemma-4-31b": 81.5,
+        "gemini_gpt120b_diff": -8.25
+      },
+      "qwen3": {
+        "gemini-2.5-flash": 70.15254237288136,
+        "gpt-oss-20b": 76.91525423728814,
+        "gpt-oss-120b": 76.71186440677967,
+        "qwen3.6": 64.88983050847457,
+        "gemma-4-31b": 75.42796610169492,
+        "gemini_gpt120b_diff": -6.559322033898312
+      },
+      "gemma3n-e4b": {
+        "gemini-2.5-flash": 68.83333333333333,
+        "gpt-oss-20b": 82.20833333333333,
+        "gpt-oss-120b": 82.25,
+        "qwen3.6": 68.20833333333333,
+        "gemma-4-31b": 83.66666666666667,
+        "gemini_gpt120b_diff": -13.416666666666671
+      },
+      "llama4-scout": {
+        "gemini-2.5-flash": 61.125,
+        "gpt-oss-20b": 76.54166666666667,
+        "gpt-oss-120b": 74.66666666666667,
+        "qwen3.6": 55.5,
+        "gemma-4-31b": 65.54166666666667,
+        "gemini_gpt120b_diff": -13.541666666666671
+      },
+      "gemma3": {
+        "gemini-2.5-flash": 72.66666666666667,
+        "gpt-oss-20b": 78.27777777777777,
+        "gpt-oss-120b": 79.83333333333333,
+        "qwen3.6": 67.58333333333333,
+        "gemma-4-31b": 76.43055555555556,
+        "gemini_gpt120b_diff": -7.166666666666657
+      },
+      "aya-expanse": {
+        "gemini-2.5-flash": 69.91666666666667,
+        "gpt-oss-20b": 80.95833333333333,
+        "gpt-oss-120b": 83.10416666666667,
+        "qwen3.6": 75.89583333333333,
+        "gemma-4-31b": 82.64583333333333,
+        "gemini_gpt120b_diff": -13.1875
+      },
+      "command-r": {
+        "gemini-2.5-flash": 71.0,
+        "gpt-oss-20b": 80.54166666666667,
+        "gpt-oss-120b": 83.125,
+        "qwen3.6": 72.58333333333333,
+        "gemma-4-31b": 82.66666666666667,
+        "gemini_gpt120b_diff": -12.125
+      },
+      "gpt-oss": {
+        "gemini-2.5-flash": 90.35416666666667,
+        "gpt-oss-20b": 86.89583333333333,
+        "gpt-oss-120b": 89.35416666666667,
+        "qwen3.6": 92.47916666666667,
+        "gemma-4-31b": 94.83333333333333,
+        "gemini_gpt120b_diff": 1.0
+      },
+      "gemma2": {
+        "gemini-2.5-flash": 63.958333333333336,
+        "gpt-oss-20b": 78.25,
+        "gpt-oss-120b": 80.04166666666667,
+        "qwen3.6": 63.583333333333336,
+        "gemma-4-31b": 72.83333333333333,
+        "gemini_gpt120b_diff": -16.083333333333336
+      },
+      "mixtral": {
+        "gemini-2.5-flash": 57.416666666666664,
+        "gpt-oss-20b": 73.1875,
+        "gpt-oss-120b": 71.5,
+        "qwen3.6": 56.708333333333336,
+        "gemma-4-31b": 65.4375,
+        "gemini_gpt120b_diff": -14.083333333333336
       },
       "command-r7b": {
         "gemini-2.5-flash": 47.708333333333336,
         "gpt-oss-20b": 72.0,
         "gpt-oss-120b": 73.08333333333333,
+        "qwen3.6": 45.583333333333336,
+        "gemma-4-31b": 63.875,
         "gemini_gpt120b_diff": -25.374999999999993
       }
     },
     "by_inference_level": {
-      "tr5": {
-        "gemini-2.5-flash": 66.52380952380952,
-        "gpt-oss-20b": 74.33333333333333,
-        "gpt-oss-120b": 74.86904761904762
-      },
-      "tr4": {
-        "gemini-2.5-flash": 76.48809523809524,
-        "gpt-oss-20b": 77.28571428571429,
-        "gpt-oss-120b": 79.13095238095238
-      },
       "1": {
         "gemini-2.5-flash": 55.875,
         "gpt-oss-20b": 70.45833333333333,
-        "gpt-oss-120b": 70.54166666666667
-      },
-      "0": {
-        "gemini-2.5-flash": 78.75,
-        "gpt-oss-20b": 84.20833333333333,
-        "gpt-oss-120b": 85.79166666666667
+        "gpt-oss-120b": 70.54166666666667,
+        "qwen3.6": 55.875,
+        "gemma-4-31b": 60.375
       },
       "tr6": {
         "gemini-2.5-flash": 66.75,
         "gpt-oss-20b": 74.89285714285714,
-        "gpt-oss-120b": 75.95238095238095
+        "gpt-oss-120b": 75.95238095238095,
+        "qwen3.6": 64.44047619047619,
+        "gemma-4-31b": 73.44047619047619
       },
-      "4": {
-        "gemini-2.5-flash": 53.625,
-        "gpt-oss-20b": 69.29166666666667,
-        "gpt-oss-120b": 71.0
+      "tr5": {
+        "gemini-2.5-flash": 66.52380952380952,
+        "gpt-oss-20b": 74.33333333333333,
+        "gpt-oss-120b": 73.86904761904762,
+        "qwen3.6": 64.02380952380952,
+        "gemma-4-31b": 70.82142857142857
       },
       "2": {
         "gemini-2.5-flash": 69.41666666666667,
         "gpt-oss-20b": 76.83333333333333,
-        "gpt-oss-120b": 80.20833333333333
+        "gpt-oss-120b": 80.20833333333333,
+        "qwen3.6": 64.79166666666667,
+        "gemma-4-31b": 77.70833333333333
+      },
+      "0": {
+        "gemini-2.5-flash": 78.75,
+        "gpt-oss-20b": 84.20833333333333,
+        "gpt-oss-120b": 85.79166666666667,
+        "qwen3.6": 80.45833333333333,
+        "gemma-4-31b": 89.08333333333333
+      },
+      "4": {
+        "gemini-2.5-flash": 53.625,
+        "gpt-oss-20b": 69.29166666666667,
+        "gpt-oss-120b": 71.0,
+        "qwen3.6": 59.5,
+        "gemma-4-31b": 65.875
+      },
+      "tr4": {
+        "gemini-2.5-flash": 76.48809523809524,
+        "gpt-oss-20b": 77.28571428571429,
+        "gpt-oss-120b": 79.13095238095238,
+        "qwen3.6": 69.30952380952381,
+        "gemma-4-31b": 79.54761904761905
       },
       "3": {
         "gemini-2.5-flash": 61.166666666666664,
         "gpt-oss-20b": 78.875,
-        "gpt-oss-120b": 77.625
+        "gpt-oss-120b": 77.625,
+        "qwen3.6": 61.0,
+        "gemma-4-31b": 72.20833333333333
       }
     },
     "by_temperature": {
       "10": {
         "gemini-2.5-flash": 70.28735632183908,
         "gpt-oss-20b": 77.60919540229885,
-        "gpt-oss-120b": 78.79310344827586
-      },
-      "05": {
-        "gemini-2.5-flash": 69.95402298850574,
-        "gpt-oss-20b": 78.04597701149426,
-        "gpt-oss-120b": 78.32183908045977
+        "gpt-oss-120b": 78.3103448275862,
+        "qwen3.6": 66.58045977011494,
+        "gemma-4-31b": 75.47126436781609
       },
       "20": {
         "gemini-2.5-flash": 71.42647058823529,
         "gpt-oss-20b": 78.73529411764706,
-        "gpt-oss-120b": 79.78921568627452
+        "gpt-oss-120b": 79.78921568627452,
+        "qwen3.6": 69.34803921568627,
+        "gemma-4-31b": 77.92156862745098
+      },
+      "05": {
+        "gemini-2.5-flash": 69.95402298850574,
+        "gpt-oss-20b": 78.04597701149426,
+        "gpt-oss-120b": 78.32183908045977,
+        "qwen3.6": 67.05172413793103,
+        "gemma-4-31b": 76.86781609195403
       },
       "15": {
         "gemini-2.5-flash": 61.416666666666664,
         "gpt-oss-20b": 80.5,
-        "gpt-oss-120b": 78.0
+        "gpt-oss-120b": 78.0,
+        "qwen3.6": 51.0,
+        "gemma-4-31b": 72.41666666666667
       },
       "25": {
         "gemini-2.5-flash": 59.0,
         "gpt-oss-20b": 78.16666666666667,
-        "gpt-oss-120b": 75.25
+        "gpt-oss-120b": 75.25,
+        "qwen3.6": 52.666666666666664,
+        "gemma-4-31b": 71.0
       }
     }
   },
@@ -283,12 +539,6 @@
         "gemini_score": 93,
         "gpt120b_score": 0,
         "diff": 93
-      },
-      {
-        "model": "mixtral-8x7b-tr5-10",
-        "gemini_score": 4,
-        "gpt120b_score": 96,
-        "diff": 92
       },
       {
         "model": "qwen3-30b-tr6-nt-10",
@@ -363,15 +613,15 @@
         "diff": 49
       },
       {
-        "model": "ministral-3-3b-2-10",
-        "gemini_score": 20,
-        "gpt120b_score": 69,
-        "diff": 49
-      },
-      {
         "model": "gemma3n-e4b-1",
         "gemini_score": 17,
         "gpt120b_score": 66,
+        "diff": 49
+      },
+      {
+        "model": "ministral-3-3b-2-10",
+        "gemini_score": 20,
+        "gpt120b_score": 69,
         "diff": 49
       },
       {
@@ -381,15 +631,15 @@
         "diff": 47
       },
       {
-        "model": "command-r7b-tr6-10",
-        "gemini_score": 28,
-        "gpt120b_score": 75,
-        "diff": 47
-      },
-      {
         "model": "qwen3-32b-1-nt-20",
         "gemini_score": 19,
         "gpt120b_score": 66,
+        "diff": 47
+      },
+      {
+        "model": "command-r7b-tr6-10",
+        "gemini_score": 28,
+        "gpt120b_score": 75,
         "diff": 47
       },
       {
@@ -399,22 +649,16 @@
         "diff": 45
       },
       {
-        "model": "phi4-1-10",
-        "gemini_score": 15,
-        "gpt120b_score": 59,
-        "diff": 44
-      },
-      {
         "model": "ministral-3-3b-tr5-20",
         "gemini_score": 34,
         "gpt120b_score": 78,
         "diff": 44
       },
       {
-        "model": "mixtral-8x7b-3",
-        "gemini_score": 23,
-        "gpt120b_score": 66,
-        "diff": 43
+        "model": "phi4-1-10",
+        "gemini_score": 15,
+        "gpt120b_score": 59,
+        "diff": 44
       },
       {
         "model": "ministral-3-3b-2-05",
@@ -429,10 +673,10 @@
         "diff": 43
       },
       {
-        "model": "mixtral-8x7b-1-10",
-        "gemini_score": 16,
-        "gpt120b_score": 58,
-        "diff": 42
+        "model": "mixtral-8x7b-3",
+        "gemini_score": 23,
+        "gpt120b_score": 66,
+        "diff": 43
       },
       {
         "model": "aya-expanse-8b-3",
@@ -441,10 +685,10 @@
         "diff": 42
       },
       {
-        "model": "command-r7b-1-10",
-        "gemini_score": 23,
-        "gpt120b_score": 64,
-        "diff": 41
+        "model": "mixtral-8x7b-1-10",
+        "gemini_score": 16,
+        "gpt120b_score": 58,
+        "diff": 42
       },
       {
         "model": "command-r7b-2-05",
@@ -453,10 +697,22 @@
         "diff": 41
       },
       {
+        "model": "command-r7b-1-10",
+        "gemini_score": 23,
+        "gpt120b_score": 64,
+        "diff": 41
+      },
+      {
         "model": "gemma2-9b-1",
         "gemini_score": 30,
         "gpt120b_score": 71,
         "diff": 41
+      },
+      {
+        "model": "command-r7b-tr6-20",
+        "gemini_score": 25,
+        "gpt120b_score": 65,
+        "diff": 40
       }
     ],
     "zero_scores": [
@@ -539,62 +795,182 @@
       {
         "model": "qwen3-30b-tr6-nt-20",
         "evaluator": "gpt-oss-120b"
-      }
-    ],
-    "reversals": [
-      {
-        "model": "ministral-3-14b-1",
-        "gemini_score": 50,
-        "gpt120b_score": 80,
-        "diff": -30
       },
       {
-        "model": "qwen3-4b-tr4-20",
-        "gemini_score": 42,
-        "gpt120b_score": 81,
-        "diff": -39
+        "model": "ministral-3-14b-4",
+        "evaluator": "qwen3.6"
+      },
+      {
+        "model": "ministral-3-3b-1",
+        "evaluator": "qwen3.6"
+      },
+      {
+        "model": "gemma3-12b-1-05",
+        "evaluator": "qwen3.6"
+      },
+      {
+        "model": "qwen3-30b-tr4-nt-05",
+        "evaluator": "qwen3.6"
       },
       {
         "model": "qwen3-30b-tr4-nt-10",
-        "gemini_score": 84,
-        "gpt120b_score": 0,
-        "diff": 84
+        "evaluator": "qwen3.6"
       },
+      {
+        "model": "qwen3-30b-tr4-nt-20",
+        "evaluator": "qwen3.6"
+      },
+      {
+        "model": "mixtral-8x7b-tr5-05",
+        "evaluator": "qwen3.6"
+      },
+      {
+        "model": "mixtral-8x7b-tr5-10",
+        "evaluator": "qwen3.6"
+      },
+      {
+        "model": "qwen3-30b-tr5-10",
+        "evaluator": "qwen3.6"
+      },
+      {
+        "model": "qwen3-30b-tr5-nt-05",
+        "evaluator": "qwen3.6"
+      },
+      {
+        "model": "qwen3-30b-tr5-nt-10",
+        "evaluator": "qwen3.6"
+      },
+      {
+        "model": "qwen3-30b-tr5-nt-20",
+        "evaluator": "qwen3.6"
+      },
+      {
+        "model": "qwen3-30b-tr6-05",
+        "evaluator": "qwen3.6"
+      },
+      {
+        "model": "qwen3-30b-tr6-20",
+        "evaluator": "qwen3.6"
+      },
+      {
+        "model": "qwen3-30b-tr6-nt-05",
+        "evaluator": "qwen3.6"
+      },
+      {
+        "model": "qwen3-30b-tr6-nt-10",
+        "evaluator": "qwen3.6"
+      },
+      {
+        "model": "qwen3-30b-tr6-nt-20",
+        "evaluator": "qwen3.6"
+      },
+      {
+        "model": "ministral-3-14b-4",
+        "evaluator": "gemma-4-31b"
+      },
+      {
+        "model": "ministral-3-3b-1",
+        "evaluator": "gemma-4-31b"
+      },
+      {
+        "model": "ministral-3-8b-1",
+        "evaluator": "gemma-4-31b"
+      },
+      {
+        "model": "gemma3-12b-1-05",
+        "evaluator": "gemma-4-31b"
+      },
+      {
+        "model": "gemma3-12b-1-10",
+        "evaluator": "gemma-4-31b"
+      },
+      {
+        "model": "gemma3-12b-1-20",
+        "evaluator": "gemma-4-31b"
+      },
+      {
+        "model": "ministral-3-3b-1-05",
+        "evaluator": "gemma-4-31b"
+      },
+      {
+        "model": "ministral-3-3b-1-10",
+        "evaluator": "gemma-4-31b"
+      },
+      {
+        "model": "ministral-3-3b-1-20",
+        "evaluator": "gemma-4-31b"
+      },
+      {
+        "model": "qwen3-30b-tr4-nt-05",
+        "evaluator": "gemma-4-31b"
+      },
+      {
+        "model": "qwen3-30b-tr4-nt-10",
+        "evaluator": "gemma-4-31b"
+      },
+      {
+        "model": "qwen3-30b-tr4-nt-20",
+        "evaluator": "gemma-4-31b"
+      },
+      {
+        "model": "mixtral-8x7b-tr5-10",
+        "evaluator": "gemma-4-31b"
+      },
+      {
+        "model": "qwen3-30b-tr5-05",
+        "evaluator": "gemma-4-31b"
+      },
+      {
+        "model": "qwen3-30b-tr5-10",
+        "evaluator": "gemma-4-31b"
+      },
+      {
+        "model": "qwen3-30b-tr5-20",
+        "evaluator": "gemma-4-31b"
+      },
+      {
+        "model": "qwen3-30b-tr5-nt-05",
+        "evaluator": "gemma-4-31b"
+      },
+      {
+        "model": "qwen3-30b-tr5-nt-10",
+        "evaluator": "gemma-4-31b"
+      },
+      {
+        "model": "qwen3-30b-tr5-nt-20",
+        "evaluator": "gemma-4-31b"
+      },
+      {
+        "model": "mixtral-8x7b-tr6-20",
+        "evaluator": "gemma-4-31b"
+      },
+      {
+        "model": "qwen3-30b-tr6-05",
+        "evaluator": "gemma-4-31b"
+      },
+      {
+        "model": "qwen3-30b-tr6-10",
+        "evaluator": "gemma-4-31b"
+      },
+      {
+        "model": "qwen3-30b-tr6-20",
+        "evaluator": "gemma-4-31b"
+      },
+      {
+        "model": "qwen3-30b-tr6-nt-10",
+        "evaluator": "gemma-4-31b"
+      },
+      {
+        "model": "qwen3-30b-tr6-nt-20",
+        "evaluator": "gemma-4-31b"
+      }
+    ],
+    "reversals": [
       {
         "model": "qwen3-30b-tr6-nt-05",
         "gemini_score": 82,
         "gpt120b_score": 0,
         "diff": 82
-      },
-      {
-        "model": "qwen3-4b-3",
-        "gemini_score": 50,
-        "gpt120b_score": 83,
-        "diff": -33
-      },
-      {
-        "model": "ministral-3-3b-tr6-20",
-        "gemini_score": 49,
-        "gpt120b_score": 85,
-        "diff": -36
-      },
-      {
-        "model": "gemma2-9b-tr6-05",
-        "gemini_score": 48,
-        "gpt120b_score": 80,
-        "diff": -32
-      },
-      {
-        "model": "qwen3-30b-tr6-nt-20",
-        "gemini_score": 80,
-        "gpt120b_score": 0,
-        "diff": 80
-      },
-      {
-        "model": "mixtral-8x7b-tr5-10",
-        "gemini_score": 4,
-        "gpt120b_score": 96,
-        "diff": -92
       },
       {
         "model": "qwen3-4b-1-nt-05",
@@ -603,34 +979,34 @@
         "diff": -31
       },
       {
-        "model": "aya-expanse-8b-tr6-05",
-        "gemini_score": 41,
-        "gpt120b_score": 80,
-        "diff": -39
-      },
-      {
         "model": "qwen3-30b-tr5-nt-20",
         "gemini_score": 81,
         "gpt120b_score": 0,
         "diff": 81
       },
       {
-        "model": "ministral-3-3b-tr5-10",
-        "gemini_score": 48,
-        "gpt120b_score": 80,
-        "diff": -32
+        "model": "qwen3-30b-tr6-nt-20",
+        "gemini_score": 80,
+        "gpt120b_score": 0,
+        "diff": 80
       },
       {
-        "model": "qwen3-4b-1-t-10",
+        "model": "qwen3-30b-tr4-nt-10",
+        "gemini_score": 84,
+        "gpt120b_score": 0,
+        "diff": 84
+      },
+      {
+        "model": "ministral-3-3b-tr6-20",
         "gemini_score": 49,
-        "gpt120b_score": 80,
-        "diff": -31
+        "gpt120b_score": 85,
+        "diff": -36
       },
       {
-        "model": "ministral-3-8b-tr5-05",
-        "gemini_score": 40,
-        "gpt120b_score": 83,
-        "diff": -43
+        "model": "aya-expanse-8b-tr6-05",
+        "gemini_score": 41,
+        "gpt120b_score": 80,
+        "diff": -39
       },
       {
         "model": "qwen3-30b-tr4-nt-05",
@@ -639,16 +1015,22 @@
         "diff": 93
       },
       {
+        "model": "ministral-3-8b-tr5-05",
+        "gemini_score": 40,
+        "gpt120b_score": 83,
+        "diff": -43
+      },
+      {
+        "model": "ministral-3-14b-1",
+        "gemini_score": 50,
+        "gpt120b_score": 80,
+        "diff": -30
+      },
+      {
         "model": "gemma3-4b-tr6-20",
         "gemini_score": 48,
         "gpt120b_score": 85,
         "diff": -37
-      },
-      {
-        "model": "qwen3-30b-tr6-nt-10",
-        "gemini_score": 91,
-        "gpt120b_score": 0,
-        "diff": 91
       },
       {
         "model": "mixtral-8x7b-0-05",
@@ -657,23 +1039,59 @@
         "diff": -33
       },
       {
+        "model": "qwen3-30b-tr6-nt-10",
+        "gemini_score": 91,
+        "gpt120b_score": 0,
+        "diff": 91
+      },
+      {
         "model": "aya-expanse-8b-1",
         "gemini_score": 45,
         "gpt120b_score": 83,
         "diff": -38
+      },
+      {
+        "model": "gemma2-9b-tr6-05",
+        "gemini_score": 48,
+        "gpt120b_score": 80,
+        "diff": -32
+      },
+      {
+        "model": "qwen3-4b-3",
+        "gemini_score": 50,
+        "gpt120b_score": 83,
+        "diff": -33
+      },
+      {
+        "model": "qwen3-4b-1-t-10",
+        "gemini_score": 49,
+        "gpt120b_score": 80,
+        "diff": -31
+      },
+      {
+        "model": "qwen3-4b-tr4-20",
+        "gemini_score": 42,
+        "gpt120b_score": 81,
+        "diff": -39
+      },
+      {
+        "model": "ministral-3-3b-tr5-10",
+        "gemini_score": 48,
+        "gpt120b_score": 80,
+        "diff": -32
       }
     ]
   },
   "migration_decision": {
     "judgment": "impossible",
-    "spearman_correlation": 0.7759791402506881,
-    "top10_agreement": 0.37055837563451777,
-    "within_10pts_rate": 0.5488826815642458,
+    "spearman_correlation": 0.7841409547410948,
+    "top10_agreement": 0.37244897959183676,
+    "within_10pts_rate": 0.5502793296089385,
     "max_family_bias": 25.374999999999993,
     "reasons": [
-      "⚠️ スピアマン順位相関係数: 0.776 (0.70-0.85の範囲)",
-      "❌ 上位10%一致率: 0.371 < 0.60 (不合格)",
-      "❌ ±10点範囲内一致率: 0.549 < 0.60 (不合格)",
+      "⚠️ スピアマン順位相関係数: 0.784 (0.70-0.85の範囲)",
+      "❌ 上位10%一致率: 0.372 < 0.60 (不合格)",
+      "❌ ±10点範囲内一致率: 0.550 < 0.60 (不合格)",
       "⚠️ 最大モデルファミリー別バイアス: 25.4点 (補正が必要)"
     ]
   }
