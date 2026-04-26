@@ -38,7 +38,8 @@ multilingual-reader/
 ├── convert_genspark.py           # GenSpark HTML対話データ抽出
 ├── translate.py                  # 多言語翻訳スクリプト（英語→フランス語・日本語）
 ├── pyproject.toml                # Pythonプロジェクト設定
-└── README.md                     # このファイル
+├── README.md                     # このファイル
+└── MEMO.md                       # プロジェクト全体のメモ（将来の検討事項等）
 ```
 
 ### experimental/ - ローカルLLM翻訳実験とパフォーマンス分析
@@ -298,3 +299,7 @@ uv run split_podcast_data.py momentum.js -o momentum_physics
 - 言語構成の一貫性チェック
 - 各言語のテキストを個別のテキストファイルに抽出
 - UTF-8エンコーディングで多言語対応
+
+## GPT-OSS 120B の評価外活用
+
+翻訳・評価タスクでは天井効果（最高92点）により評価者として不採用だが、高速推論を活かした補助的な用途が考えられる。具体的には用語確認（訳語候補の列挙・妥当性チェック）や背景知識補完（固有名詞・文化的文脈の説明）など、判断力より知識量と速度が求められる場面での活用。
