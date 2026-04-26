@@ -34,6 +34,7 @@ multilingual-reader/
 ├── experimental/                 # ローカルLLM翻訳実験とパフォーマンス分析
 ├── experimental2/                # サマリー圧縮方式翻訳実験
 ├── experimental3/                # ハイブリッドモード翻訳実験（翻訳=CoTなし、要約=CoTあり）
+├── trtools/                      # 全実験共通の翻訳評価ツール（tr-eval / tr-agg）
 ├── split_podcast_data.py         # テキスト分割スクリプト（データセット配列対応）
 ├── merge_podcast_data.py         # テキスト統合スクリプト（nameフィールドなし配列形式）
 ├── convert_genspark.py           # GenSpark HTML対話データ抽出
@@ -42,6 +43,15 @@ multilingual-reader/
 ├── README.md                     # このファイル
 └── MEMO.md                       # プロジェクト全体のメモ（将来の検討事項等）
 ```
+
+### 翻訳評価ツール（trtools/）
+
+全実験で共通して使用する評価ツールをパッケージ化したもの。
+
+| コマンド | スクリプト | 用途 |
+|---------|-----------|------|
+| `uv run tr-eval` | [trtools/evaluate.py](trtools/evaluate.py) | LLMによる翻訳品質評価（5項目×20点、100点満点） |
+| `uv run tr-agg` | [trtools/aggregate.py](trtools/aggregate.py) | 3回評価の中央値集計 |
 
 ### 実験ディレクトリの流れ
 

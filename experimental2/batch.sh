@@ -2,8 +2,6 @@
 set -e
 
 INPUT="../examples/finetuning-fr.txt"
-EVAL_PY="../experimental/evaluate_translation.py"
-AGG_PY="../experimental/aggregate_evaluations.py"
 EVALUATOR="ollama:qwen3.6"
 EVAL_OPT="--original $INPUT -f French -t Spanish -m $EVALUATOR -w 3"
 
@@ -82,7 +80,7 @@ for model in "${MODELS[@]}"; do
             echo "Skipping $eval_out (already exists)"
         else
             echo -e "\nEvaluating $out (run $run)..."
-            uv run $EVAL_PY $EVAL_OPT --translation "$out" -o "$eval_out"
+            uv run tr-eval $EVAL_OPT --translation "$out" -o "$eval_out"
         fi
     done
 done
@@ -91,7 +89,7 @@ done
 jsons=(evals/*.json)
 if [ -e "${jsons[0]}" ]; then
     echo -e "\nAggregating all models ..."
-    uv run $AGG_PY "${jsons[@]}" | tee SCORES.txt
+    uv run tr-agg "${jsons[@]}" | tee SCORES.txt
 else
     echo "No eval files found, skipping aggregation"
 fi
