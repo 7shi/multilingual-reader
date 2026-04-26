@@ -2,8 +2,6 @@
 
 `../experimental/` の翻訳アーキテクチャを「サマリー圧縮方式」に移行する実験ディレクトリです。
 
-> **注記:** スクリプト実行は必ず `uv run` を使うこと（`python` 直接呼び出しは依存関係が解決されない）。
-
 ## 背景と動機
 
 旧アーキテクチャ（`../experimental/translate.py`）はスライディング方式で、毎リクエストに過去の翻訳を文字列として埋め込むため：
@@ -14,6 +12,8 @@
 新アーキテクチャは[参照実装](reference/) をベースに、`system + summary + 直近 N 件` の固定構造を維持し、この2つの問題を解決します。
 
 ## 翻訳システム
+
+スクリプト実行は必ず `uv run` を使うこと（`python` 直接呼び出しは依存関係が解決されない）。
 
 ### translate.py
 
@@ -129,13 +129,6 @@ uv run ../experimental/generate_scores_md.py -1 91 -2 92 SCORES.txt
 
 ---
 
-## デバッグ
-
-- **[`debug1/`](debug1/)**: 方式選定。4モデル（gemma3:27b, gpt-oss:120b, gemma4:31b, qwen3.6）× 4バリアント（none, none-schema, glossary, glossary-schema）を実行。`--schema` は複数モデルで有害（特に gemma4:31b の glossary-schema=62点）、`--summary glossary` は gpt-oss:120b では逆効果、gemma4:31b（no-think）は 1点差（97 vs 98）で他モデルは同等以上。Phase B の方針（glossary・schema なし・Qwen3/Gemma4 は no-think）を確定。
-- **[`debug2/`](debug2/)**: KV キャッシュ調査。`llm7shi` が旧バージョンのままで `generate_with_schema` がロールを保持できていなかった問題を特定し、v0.10.1 へのアップデートと `chat_history` をそのまま渡す修正で解決。`prefill duration` で KV キャッシュ効果を計測し、修正後はサマリー生成後も 0.2s 台を維持することを確認。
-
----
-
 ## 実験結果
 
 ### Phase A: 動作確認（gemma3:27b）
@@ -187,7 +180,7 @@ uv run ../experimental/generate_scores_md.py -1 91 -2 92 SCORES.txt
 | モデル | 理由 |
 |---|---|
 | mixtral-8x7b | 対話的コメントが累積・増幅してエラー |
-| mixtral-8x22b | 読み込み不可（Ollama バージョンの影響？） |
+| mixtral-8x22b | 読み込み不可（メモリ構成の影響？） |
 
 低スコアモデルの原因：
 
@@ -289,3 +282,85 @@ uv run ../experimental/generate_scores_md.py -1 91 -2 92 SCORES.txt
 | ventana de contexto | ventana de contexto | ventana de contexto | ✓ |
 
 術語ブレなし。文体面では新の方がスペイン語として自然な表現（親称統一、主語省略）を採用している箇所が複数あった。`--summary glossary` による用語一貫性は旧アーキテクチャと同等以上。
+
+---
+
+## 96点以上モデルの減点分析
+
+96点以上の上位6モデル（qwen3.6-27b, gemma4-31b, gemma4-26b, llama4-scout, gemma3-27b, aya-expanse-32b）について、3回評価のログから減点内容を精査した。
+
+### スコア安定性
+
+| モデル | 中央値 | 3回スコア | 範囲 |
+|---|:---:|:---:|:---:|
+| gemma4-26b | 97 | 96, 97, 97 | **1** |
+| qwen3.6-27b | 97 | 96, 97, 98 | 2 |
+| gemma3-27b | 97 | 95, 97, 97 | 2 |
+| aya-expanse-32b | 96 | 95, 96, 97 | 2 |
+| gemma4-31b | 97 | 95, 97, 98 | 3 |
+| llama4-scout | 96 | **89**, 96, 97 | **8** |
+
+### 共通パターン
+
+- **readability -1**: 全モデル・全評価でほぼ一律に発生。具体的な問題指摘は少なく、評価基準の天井効果と思われる
+- **fluency -1**: 全モデルでほぼ発生。具体的な問題はモデルごとに異なる（後述）
+
+### モデル別の具体的減点理由
+
+| モデル | 主な減点原因 |
+|---|---|
+| gemma4-26b | `en coulisses`（舞台裏）→ `de forma interna`（慣用句 `entre bastidores` が推奨）|
+| qwen3.6-27b | `Exactamente` の繰り返し（原文 `Exactement` を忠実に訳した結果、語彙多様性が低下）|
+| gemma4-31b | タイポ（アクセント欠落・閉じ引用符欠落）、敬語不一致（大部分 `usted` なのに1箇所 `hablarte` と親称）|
+| gemma3-27b | `antisèche`（カンニングペーパー）→ `memoria auxiliar`（技術用語「補助メモリ」に誤解される。`chuleta` が推奨）|
+| aya-expanse-32b | 全角感嘆符のタイポ、ポッドキャスト名 `Tech Relámpago`（直訳で不自然、`Tech Flash` 推奨）|
+| llama4-scout | `bachoter` → `estudiar superficialmente`（**意味が反転する誤訳**。「一夜漬け」を「浅く勉強する」と訳してしまい eval-2 が 89点に急落）|
+
+### 総評
+
+**gemma4-26b** が最も優れた選択。スコア安定性が最高（範囲1）で、減点がイディオム選択の好みの問題だけ。誤訳・タイポ・文法的欠陥はゼロ。gemma4-31b と同等スコアながらパラメータ数が少ない。
+
+**qwen3.6-27b** は次点だが、評価者が同系モデル（`ollama:qwen3.6`）のため自己評価バイアスに注意。
+
+**llama4-scout** は中央値96点でも `bachoter` 誤訳（89点急落）が再現した場合の信頼性に懸念が残る。
+
+---
+
+## 軽量モデル分析：gemma4-e4b
+
+軽量モデルの中で gemma4-e4b（95点）が突出しており、詳細を分析した。
+
+### 項目別スコア
+
+| 項目 | eval-1 | eval-2 | eval-3 |
+|---|:---:|:---:|:---:|
+| readability | 19 | 19 | 19 |
+| fluency | 19 | 19 | 18 |
+| terminology | **20** | 18 | 18 |
+| contextual_adaptation | 19 | 19 | 19 |
+| **information_completeness** | **20** | **20** | **20** |
+| **合計** | **97** | **95** | **94** |
+
+### 注目点：情報完全性が3回全て満点
+
+`information_completeness` が3評価すべて20/20。上位大型モデルでも評価によって19点になるケースがある中で、情報の欠落・付加・歪曲が一切ないという評価を全回維持している。
+
+### 減点の内容
+
+減点はほぼ術語選択の問題に集中しており、構造的欠陥は皆無：
+
+- **`anclaje`（grounding の訳）**: eval-2,3 で「NLP 専門文献では `fundamentación contextual` か英語維持が多い」と指摘。ただし上位大型モデルでも同じ選択をしているものが多く、評価者の好みの域を出ない
+- **`ajuste fino`（fine-tuning の訳）**: eval-3 で「技術文脈では英語 `fine-tuning` を維持することも多い」と指摘。これも上位モデル全般に共通の選択
+- **fluency -2（eval-3 のみ）**: `*prompt*` のマークアップ残りと上記の件が重なって2点減
+
+### 軽量モデルとしての位置づけ
+
+| モデル | スコア |
+|---|:---:|
+| gemma4-e4b | **95** |
+| gemma3-12b | 95 |
+| gemma4-e2b | 88 |
+| gemma3-4b | 84 |
+| gemma3n-e4b | 78 |
+
+gemma4-e4b は gemma3-12b（数倍のパラメータ）と同点。減点理由の質も大型モデルと変わらず、「軽量モデルの限界」による問題（多言語混入・構造崩壊・情報欠落）が一切出ていない。リソース制約がある環境での第一候補として明確に評価できる。

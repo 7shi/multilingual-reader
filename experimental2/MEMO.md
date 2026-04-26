@@ -1,5 +1,12 @@
 # メモ
 
+## デバッグ記録
+
+- **[`debug1/`](debug1/)**: 方式選定。4モデル（gemma3:27b, gpt-oss:120b, gemma4:31b, qwen3.6）× 4バリアント（none, none-schema, glossary, glossary-schema）を実行。`--schema` は複数モデルで有害（特に gemma4:31b の glossary-schema=62点）、`--summary glossary` は gpt-oss:120b では逆効果、gemma4:31b（no-think）は 1点差（97 vs 98）で他モデルは同等以上。Phase B の方針（glossary・schema なし・Qwen3/Gemma4 は no-think）を確定。
+- **[`debug2/`](debug2/)**: KV キャッシュ調査。`llm7shi` が旧バージョンのままで `generate_with_schema` がロールを保持できていなかった問題を特定し、v0.10.1 へのアップデートと `chat_history` をそのまま渡す修正で解決。`prefill duration` で KV キャッシュ効果を計測し、修正後はサマリー生成後も 0.2s 台を維持することを確認。
+
+---
+
 ## ハイブリッドモード（experimental3 予定）
 
 CoT 対応モデル（Qwen3/Gemma4 系）向けの発展的な方式。`--hybrid` オプションを追加し、翻訳ループは CoT なし、要約生成のみ CoT ありで実行する。
