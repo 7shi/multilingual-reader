@@ -236,8 +236,8 @@ uv run ../experimental/generate_scores_md.py -1 91 -2 92 SCORES.txt
 | qwen3.5-9b | 70 | 系統的な性数一致エラー（`las conocimientos`等）、`ajustamiento fino`（非標準） |
 | ministral-3-3b | 63 | eval-3 が52点急落（fluency=8、`bachotaje` フランス語残り・性数エラー多数） |
 | qwen3-4b | 40 | 能力限界（旧実験最高74点）。多言語混入・訳語不安定 |
-| gemma2-9b | 27 | 翻訳後に `Let me know if you need anything else translated!` を毎行付加。翻訳内容自体は正確 |
-| qwen3-30b | 0 | 構造化出力必須モデル。`--no-think` + 自由記述で CoT 推論テキストを翻訳として出力。旧実験で既知の挙動 |
+| gemma2-9b | 27 | 翻訳自体はできているが、翻訳後に余分なメッセージを毎行付加 |
+| qwen3-30b | 0 | 構造化出力なしの自由記述で CoT 推論テキストを翻訳として出力 |
 | mixtral-8x7b | - | 対話的コメントが累積・増幅してエラー |
 | mixtral-8x22b | - | 読み込み不可（メモリ構成の影響） |
 
