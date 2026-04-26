@@ -1,0 +1,31 @@
+{
+  "original_file": "../examples/finetuning-fr.txt",
+  "translation_file": "tr/qwen3-4b.txt",
+  "source_language": "French",
+  "target_language": "Spanish",
+  "model_used": "ollama:qwen3.6",
+  "evaluation": {
+    "readability": {
+      "reasoning": "La alternancia constante y no señalada entre francés, español e inglés fragmenta las oraciones, haciendo que la lectura sea confusa y cognitivamente exigente. Conceptos técnicos complejos se pierden en la mezcla lingüística, impidiendo que el lector hispanohablante siga el hilo del podcast sin esfuerzo.",
+      "score": 3
+    },
+    "fluency": {
+      "reasoning": "El texto carece por completo de fluidez. Presenta estructuras gramaticales rotas, mezcla de pronombres y conjugaciones de diferentes idiomas en la misma frase (ej. 'Si je veux qu'elle ait...', 'C'est l'apprentissage en contexte en action'), y palabras dejadas literalmente en francés o inglés ('pré-entrenamiento', 'Simply', 'à bientôt'). Esto hace que suene artificial, roto y ajeno a cualquier estándar natural del español.",
+      "score": 2
+    },
+    "terminology": {
+      "reasoning": "La terminología técnica no se adapta correctamente al español. Se mantiene 'pré-entrenamiento' en lugar de 'preentrenamiento' o 'entrenamiento previo', 'afinado' (que en español sugiere instrumentos) en lugar de 'ajuste fino' o 'fine-tuning', y 'desempolvar' (limpiar) se usa erróneamente en lugar de 'desvelar' o 'descubrir'. Además, se mezcla 'grounding' directamente sin adaptación, y hay errores como 'lois du équilibre' (francés) por 'leyes del equilibrio'.",
+      "score": 4
+    },
+    "contextual_adaptation": {
+      "reasoning": "El tono de podcast conversacional se pierde por la falta de homogeneidad lingüística. No se considera al lector hispanohablante, ya que se dejan giros idiomáticos franceses intactos y se producen traducciones literales incorrectas que alteran el significado original (ej. 'buscar apuros' por 'aprender de memoria/repasar'). El propósito divulgativo y claro del audio original no se transmite en esta versión.",
+      "score": 2
+    },
+    "information_completeness": {
+      "reasoning": "Aunque la estructura general del diálogo se mantiene, la información se transmite de manera fragmentada. Numerosas frases o cláusulas enteras quedan en francés/inglés sin traducción, lo que constituye una omisión funcional de información clave para el lector. La redundancia no se elimina, sino que se agrava por la repetición de estructuras mezcladas.",
+      "score": 5
+    },
+    "overall_comment": "La traducción es gravemente defectuosa debido a una mezcla masiva e ininterrumpida de francés, español e inglés a lo largo de todo el texto. Contiene numerosos fragmentos no traducidos, errores tipográficos lingüísticos y varias traducciones incorrectas que distorsionan el significado original. El resultado es un texto fragmentado e incomprensible en muchos pasajes, que no cumple con los estándares mínimos de calidad para una traducción profesional al español. Se requiere una revisión y rehacer completa desde cero para lograr coherencia, precisión terminológica y fluidez natural en el idioma meta.\n{score: 3}\n"
+  },
+  "total_score": 16
+}

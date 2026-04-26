@@ -32,6 +32,7 @@ multilingual-reader/
 ├── onde.js                       # 多言語テキストデータ（波動・量子力学）
 ├── momentum.js                   # 多言語テキストデータ（運動量・測定理論）
 ├── experimental/                 # ローカルLLM翻訳実験とパフォーマンス分析
+├── experimental2/                # サマリー圧縮方式翻訳実験
 ├── split_podcast_data.py         # テキスト分割スクリプト（データセット配列対応）
 ├── merge_podcast_data.py         # テキスト統合スクリプト（nameフィールドなし配列形式）
 ├── convert_genspark.py           # GenSpark HTML対話データ抽出
@@ -47,6 +48,14 @@ multilingual-reader/
 **重要な発見**: 「複雑な推論システム = 高品質翻訳」という従来仮説を客観評価により否定し、「適切なモデル選択 + シンプルな直接出力 = 最高効率」を実証。
 
 詳細は [experimental/README.md](experimental/README.md) を参照してください。
+
+### experimental2/ - サマリー圧縮方式翻訳実験
+
+`experimental/` のスライディング方式を「サマリー圧縮方式」に移行する実験ディレクトリです。旧アーキテクチャでは毎リクエストに過去の翻訳を文字列として埋め込むためKVキャッシュが無効になり、用語ブレも発生していました。新アーキテクチャは `system + summary + 直近 N 件` の固定構造で両問題を解決します。
+
+**重要な発見**: `--schema`（構造化出力）は翻訳タスクで複数モデルに有害（特に gemma4:31b の glossary-schema=62点）。`--no-think`（CoT 無効）は翻訳では原則必須（品質・速度・KVキャッシュの三点で有利）。`--summary glossary` による用語一貫性は旧アーキテクチャと同等以上で、32モデルの本番実験では上位モデルが 95〜97点を達成。
+
+詳細は [experimental2/README.md](experimental2/README.md) を参照してください。
 
 ## 🎓 コンテンツ内容
 

@@ -74,25 +74,27 @@
 
 フェーズ1（実験整理）は完了済み。フェーズ2以降を順次進める。
 
-### フェーズ2：翻訳アーキテクチャの移行
-`translate.py`（スライディング）から `translate-json.py`（サマリー圧縮）への移行。
-- [ ] システムプロンプト固定 + 圧縮による KV キャッシュ有効化を実装・検証
-- [ ] 圧縮タイミング（`--threshold` / `--keep`）・サマリー方式（`--summary`）を実験軸として設定
-- [ ] 継続優先モデルで動作確認：
-  - 最優先6：`gemma3-27b`, `gpt-oss-120b`, `gpt-oss-20b`, `mistral-small3.2`, `qwen3-30b`, `qwen3-32b`
-  - 次点：`aya-expanse-32b`, `command-r-35b`, `ministral-3-8b`, `llama3.3`, `qwen3-14b`
+### フェーズ2：翻訳アーキテクチャの移行（完了）
 
-### フェーズ3：再評価
-新アーキテクチャで翻訳を再実行し、qwen3.6 で採点。
-- [ ] 枝刈り後のモデル・設定で翻訳を再実行（`translate-json.py`）
-- [ ] qwen3.6 で全件採点（3回評価 → 中央値集計）
-- [ ] 現行スコアと比較してアーキテクチャ改善効果（特に用語ブレの解消）を確認
+`experimental2/` にて実装・検証済み。`system + summary + 直近 N 件` の固定構造で KV キャッシュを有効化し、`--threshold` / `--keep` / `--summary glossary` を実験軸として設定。`debug1` で `--schema` 廃止・`--summary glossary` 採用・Qwen3/Gemma4 系は `--no-think` を確定。`debug2` で KV キャッシュ問題（`llm7shi` v0.10.1 アップデート）を解決。34 モデルで動作確認を完了（Phase B）。
 
-### フェーズ4：上位候補の個別確認
-再評価後に上位モデルを個別精査する。
-- [ ] qwen3.6 ランキング上位候補の目視確認
-- [ ] qwen3.6 評価後の再評価推奨モデルを精査：
-  - `qwen3-32b`・`mixtral-8x22b`・`command-r-35b`（軽微な術語揺れがサマリー圧縮で解消したか確認）
+### フェーズ3：再評価（完了）
 
-### 独立タスク（低優先度）
-- [ ] **GPT-OSS 120B の評価外活用方針の策定**: 高速推論を活かした用語確認・背景知識補完などへの活用を検討。
+`experimental2/batch.sh` で 34 モデルを一括実行し 32 モデルの結果を取得（mixtral 系 2 件は実行不可）。qwen3.6 3 回評価 → 中央値集計でスコアを算出。旧アーキテクチャとの比較（Phase C）で、一律の `--summary glossary` 設定でも最適化済みの旧ベストに近い品質を確認。詳細は `../experimental2/README.md` 参照。
+
+### フェーズ4：上位候補の個別確認（完了）
+
+**上位候補の目視確認（97点: qwen3.6-27b, gemma4-31b）:**
+
+両モデルとも高品質。主な差異は `bachoter` の訳で、gemma3-27b の「memorizar para un examen」に対し、qwen3.6-27b は「repasar para un examen」、gemma4-31b は「estudiar a última hora」といずれも適切な意訳を採用。術語（ICL・grounding・aprendizaje por transferencia）は全行で一貫。
+
+**qwen3-32b（95点）の術語ブレ確認:**
+
+`--summary glossary` により文書内一貫性は保たれているが、標準的な術語から逸脱する選択が発生：
+- `fine-tuning` → 「ajuste fino」ではなく「**afinamiento**」で統一
+- `ICL` → 標準略語ではなく独自略語「**AEC**」で統一
+
+旧アーキテクチャでの用語ブレ（行ごとに訳語が揺れる現象）は解消されたが、モデル固有の術語選択の問題は残る。用語集の初期投入や強制的な用語指定が必要な場合はプロンプトレベルでの対策が必要。
+
+`command-r-35b`（新アーキテクチャで72点に大幅低下）・`mixtral-8x22b`（実行不可）は精査対象外。
+
