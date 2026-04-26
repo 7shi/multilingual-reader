@@ -1,10 +1,10 @@
 # サマリー圧縮方式 翻訳実験
 
-`../experimental/` の翻訳アーキテクチャを「サマリー圧縮方式」に移行する実験ディレクトリです。
+[../experimental/](../experimental/) の翻訳アーキテクチャを「サマリー圧縮方式」に移行する実験ディレクトリです。
 
 ## 背景と動機
 
-旧アーキテクチャ（`../experimental/translate.py`）はスライディング方式で、毎リクエストに過去の翻訳を文字列として埋め込むため：
+旧アーキテクチャ（[../experimental/translate.py](../experimental/translate.py)）はスライディング方式で、毎リクエストに過去の翻訳を文字列として埋め込むため：
 
 - **KV キャッシュが無効**：プロンプトの先頭が毎回変化するため、モデルのキャッシュが再利用されない
 - **用語ブレ**：古い履歴がウィンドウ外に押し出されると、固有名詞や術語の訳が変化する
@@ -35,7 +35,7 @@ uv run translate.py <input_file> -f <from_lang> -t <to_lang> -o <output> -m <mod
 
 翻訳時は `--no-think` を原則指定する理由：
 
-- **品質面**: 1行ずつのシンプルな翻訳タスクに CoT での推敲は過剰。以前の実験（`../experimental/README.md`）でも CoT は翻訳に有害との結論。
+- **品質面**: 1行ずつのシンプルな翻訳タスクに CoT での推敲は過剰。以前の実験（[../experimental/README.md](../experimental/README.md)）でも CoT は翻訳に有害との結論。
 - **速度面**: CoT により処理時間が数十倍に膨らむ。
 - **KV キャッシュ面**: CoT トークンはモデルの生成履歴に含まれるため、履歴から CoT を除いて渡すとシーケンスが変わりキャッシュミスが発生する。かといって CoT を履歴に含めると翻訳本文の何十倍もの量が蓄積してしまう。`--no-think` ならこの問題自体が発生しない。
 
@@ -56,7 +56,7 @@ Camille: ¿La diferencia entre estudiar hurriedlyдля an exam and truly master
 **サマリー方式の動作（threshold=15, keep=5 の場合）:**
 
 - 10行ごとにサマリーを生成し、サマリー生成後 5行で `system + 最新サマリー + 直近5件` に圧縮する（圧縮は 15, 25, 35, ... 行目）
-- 10行目にサマリーを生成し、5件の翻訳を挟んで 15行目で圧縮する（圧縮は 15, 25, 35, ... 行目）。サマリー生成後〜圧縮前の 5件は KV キャッシュが有効。圧縮直後のリクエストは prefix が変わるため cold start になり、以降は新しい prefix でキャッシュが再開される（詳細 → [`debug2/README.md`](debug2/README.md)）
+- 10行目にサマリーを生成し、5件の翻訳を挟んで 15行目で圧縮する（圧縮は 15, 25, 35, ... 行目）。サマリー生成後〜圧縮前の 5件は KV キャッシュが有効。圧縮直後のリクエストは prefix が変わるため cold start になり、以降は新しい prefix でキャッシュが再開される（詳細 → [debug2/README.md](debug2/README.md)）
 - 直近 N 件は翻訳スタイルの few-shot として機能する。要約だけでセッションを作り変えると、モデルが要約の文体に引っ張られて翻訳が崩れる可能性があるため、実際の翻訳例を数件残すことでスタイルを安定させる
 
 **実装上の特記事項:**
@@ -64,7 +64,7 @@ Camille: ¿La diferencia entre estudiar hurriedlyдля an exam and truly master
 - 1行ずつ翻訳することで、行の欠落やハルシネーション（翻訳中に作文に転落する現象）を防ぐ
 - `--schema` 指定時のみ構造化出力（`pydantic.BaseModel`）を使用。未指定時は生テキストで受け取る
 - `llm7shi.compat.generate_with_schema` 経由でモデルを呼び出すため、`ollama:`, `openai:`, `google:` プレフィックスによるプロバイダー切り替えが可能
-- `chat_history`（role 付き）をそのまま渡すことで KV キャッシュを有効化（詳細 → [`debug2/README.md`](debug2/README.md)）
+- `chat_history`（role 付き）をそのまま渡すことで KV キャッシュを有効化（詳細 → [debug2/README.md](debug2/README.md)）
 
 **KV キャッシュの懸念点（ハイブリッドモード）:** 要約生成後に要約を履歴から削除して翻訳を継続する設計は、Ollama が前方一致による prefix キャッシュに対応していることを前提とする。要約生成リクエストの後、履歴を巻き戻した状態（`[system, u1..u10, u11]`）を送った場合、Ollama が `[system, u1..u10]` までのキャッシュを再利用できるかは未確認。対応していない場合、要約後の翻訳は毎回キャッシュミスになる。
 
@@ -76,13 +76,13 @@ Camille: ¿La diferencia entre estudiar hurriedlyдля an exam and truly master
 bash batch.sh
 ```
 
-翻訳・評価・集約の3フェーズに分離しており、既存ファイルはスキップされるため途中から再開可能です。翻訳結果は `tr/`、評価結果は `evals/` に出力し、最終的に `SCORES.txt` を生成します。
+翻訳・評価・集約の3フェーズに分離しており、既存ファイルはスキップされるため途中から再開可能です。翻訳結果は [tr/](tr/)、評価結果は [evals/](evals/) に出力し、最終的に [SCORES.txt](SCORES.txt) を生成します。
 
 ---
 
 ## 評価システム
 
-`../experimental/` の評価パイプラインをそのまま使用します。
+[../experimental/](../experimental/) の評価パイプラインをそのまま使用します。
 
 ### 評価基準（5項目 × 20点 = 100点満点）
 
@@ -94,7 +94,7 @@ bash batch.sh
 | **文脈適応性** | 原文の意図が伝わるか。ターゲット文化への配慮があるか。 |
 | **情報の完全性** | 重要な情報の欠落・過剰追加がないか。 |
 
-詳細な採点基準 → [`../experimental/EVAL.md`](../experimental/EVAL.md)
+詳細な採点基準 → [../experimental/EVAL.md](../experimental/EVAL.md)
 
 ### 採点の目安
 
@@ -125,11 +125,11 @@ uv run ../experimental/generate_scores_md.py -1 91 -2 92 SCORES.txt
 **集計:** 3回評価の中央値（評価ブレを排除）  
 **統計:** 中央値・平均値・標準偏差を項目別・総合別に算出
 
-評価者選定の経緯 → [`../experimental/MEMO.md`](../experimental/MEMO.md)
+評価者選定の経緯 → [../experimental/MEMO.md](../experimental/MEMO.md)
 
 ### 参照訳の評価（Gemini 3.0 Pro）
 
-[`../examples/finetuning-es.txt`](../examples/finetuning-es.txt)（Gemini 3.0 Pro による参照訳）を同じパイプライン（3回評価・中央値）で採点した。
+[../examples/finetuning-es.txt](../examples/finetuning-es.txt)（Gemini 3.0 Pro による参照訳）を同じパイプライン（3回評価・中央値）で採点した。
 
 | 項目 | eval-1 | eval-2 | eval-3 | 中央値 |
 |---|:---:|:---:|:---:|:---:|
@@ -160,7 +160,7 @@ uv run ../experimental/generate_scores_md.py -1 91 -2 92 SCORES.txt
 
 ### Phase A: 動作確認（gemma3:27b）
 
-翻訳入力: `../examples/finetuning-fr.txt`（43行、フランス語ポッドキャスト）  
+翻訳入力: [../examples/finetuning-fr.txt](../examples/finetuning-fr.txt)（43行、フランス語ポッドキャスト）
 翻訳先: スペイン語（3回評価の中央値）
 
 | バリアント | 処理時間 | 評価（3回中央値） |
@@ -195,7 +195,7 @@ uv run ../experimental/generate_scores_md.py -1 91 -2 92 SCORES.txt
 
 ### Phase B: 本番実験
 
-`MODELS.txt` 全モデル（34モデル）× `glossary` モード × 3回評価（`SCORES.txt` に集約）
+[MODELS.txt](MODELS.txt) 全モデル（34モデル）× `glossary` モード × 3回評価（[SCORES.txt](SCORES.txt) に集約）
 
 **方針:**
 - 構造化出力（`--schema`）は翻訳直接出力タスクには不要と判断し不使用
@@ -261,7 +261,7 @@ uv run ../experimental/generate_scores_md.py -1 91 -2 92 SCORES.txt
 
 ### Phase C: 旧アーキテクチャとの比較
 
-旧アーキテクチャ（`../experimental/qwen3.6/SCORES.md`）の「モデル別実用設定一覧」から各モデルの上位1スコアと比較（nt の区別なし）。
+旧アーキテクチャ（[../experimental/qwen3.6/SCORES.md](../experimental/qwen3.6/SCORES.md)）の「モデル別実用設定一覧」から各モデルの上位1スコアと比較（nt の区別なし）。
 
 | モデル | 旧ベスト | 新 glossary | 差分 |
 |---|:---:|:---:|:---:|
@@ -300,7 +300,7 @@ uv run ../experimental/generate_scores_md.py -1 91 -2 92 SCORES.txt
 
 **用語ブレの定性チェック（gemma3-27b）:**
 
-旧 `tr-0/gemma3-27b-0-20-a.txt` と新 `tr/gemma3-27b.txt` を比較。
+旧 [tr-0/gemma3-27b-0-20-a.txt](tr-0/gemma3-27b-0-20-a.txt) と新 [tr/gemma3-27b.txt](tr/gemma3-27b.txt) を比較。
 
 | 術語（原文） | 旧 | 新 | 一致 |
 |---|---|---|:---:|
