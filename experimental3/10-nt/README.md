@@ -17,7 +17,7 @@
 | gemma4-26b | 95 | **99** | 96 |
 | gemma4-e4b | 95 | 96 | **84** |
 
-参考: 参照訳（Gemini 3.0 Pro）= 97点（experimental2 で計測済み）
+参考: 参照訳（Gemini 2.5 Pro）= 97点（experimental2 で計測済み）
 
 各 run の評価3回の個別スコア:
 

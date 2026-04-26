@@ -127,9 +127,9 @@ uv run ../experimental/generate_scores_md.py -1 91 -2 92 SCORES.txt
 
 評価者選定の経緯 → [../experimental/MEMO.md](../experimental/MEMO.md)
 
-### 参照訳の評価（Gemini 3.0 Pro）
+### 参照訳の評価（Gemini 2.5 Pro）
 
-[../examples/finetuning-es.txt](../examples/finetuning-es.txt)（Gemini 3.0 Pro による参照訳）を同じパイプライン（3回評価・中央値）で採点した。
+[../examples/finetuning-es.txt](../examples/finetuning-es.txt)（Gemini 2.5 Pro による参照訳）を同じパイプライン（3回評価・中央値）で採点した。
 
 | 項目 | eval-1 | eval-2 | eval-3 | 中央値 |
 |---|:---:|:---:|:---:|:---:|
