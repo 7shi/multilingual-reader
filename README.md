@@ -33,6 +33,7 @@ multilingual-reader/
 ├── momentum.js                   # 多言語テキストデータ（運動量・測定理論）
 ├── experimental/                 # ローカルLLM翻訳実験とパフォーマンス分析
 ├── experimental2/                # サマリー圧縮方式翻訳実験
+├── experimental3/                # ハイブリッドモード翻訳実験（翻訳=CoTなし、要約=CoTあり）
 ├── split_podcast_data.py         # テキスト分割スクリプト（データセット配列対応）
 ├── merge_podcast_data.py         # テキスト統合スクリプト（nameフィールドなし配列形式）
 ├── convert_genspark.py           # GenSpark HTML対話データ抽出
@@ -57,6 +58,12 @@ multilingual-reader/
 **重要な発見**: `--schema`（構造化出力）は翻訳タスクで複数モデルに有害（特に gemma4:31b の glossary-schema=62点）。`--no-think`（CoT 無効）は翻訳では原則必須（品質・速度・KVキャッシュの三点で有利）。`--summary glossary` による用語一貫性は旧アーキテクチャと同等以上で、32モデルの本番実験では上位モデルが 95〜97点を達成。
 
 詳細は [experimental2/README.md](experimental2/README.md) を参照してください。
+
+### experimental3/ - ハイブリッドモード翻訳実験
+
+`experimental2/` のサマリー圧縮方式を発展させ、CoT 対応モデル向けの **ハイブリッドモード** を実装した実験ディレクトリです。翻訳本体は CoT なし（速度・安定性確保）、要約生成のみ CoT あり（精度向上）とし、要約は再編成タイミングまで履歴から除外することで KV キャッシュ効率を維持します。experimental2 の Phase B 結果上位3モデル（qwen3.6-27b、gemma4-26b、gemma4-e4b）に絞り込み、翻訳3回 × 評価3回で翻訳ブレと評価ブレの両軸を測定します。
+
+詳細は [experimental3/README.md](experimental3/README.md) を参照してください。
 
 ## 🎓 コンテンツ内容
 

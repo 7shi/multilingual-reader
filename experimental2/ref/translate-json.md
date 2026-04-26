@@ -47,18 +47,18 @@ python translate-json.py INPUT_FILE -o OUTPUT_FILE -s SOURCE_LANG -t TARGET_LANG
 - 例: `-m gpt-oss:20b`, `-m gemma3`, `-m llama3`
 
 ### `--threshold N`
-履歴圧縮を実行する閾値（メッセージペア数）を指定します。
+要約生成の間隔（翻訳ペア数）を指定します。
 
-- デフォルト: `15`
-- この数に達すると、古い履歴をLLMで要約し圧縮します
-- 例: `--threshold 20` で20ペアまで保持
+- デフォルト: `10`
+- この間隔ごとに翻訳履歴をLLMで要約します
+- 例: `--threshold 20` で20ペアごとに要約
 
 ### `--keep K`
-圧縮後に残す最新メッセージペア数を指定します。
+要約後〜再編成までの翻訳ペア数を指定します。
 
 - デフォルト: `5`
-- 圧縮時に最新K件は完全な形で保持されます（履歴を0にしない）
-- 例: `--keep 8` で最新8ペアを常に保持
+- 要約生成後K件の翻訳を経てから履歴を再編成します（履歴を0にしない）
+- 例: `--keep 8` で要約後8ペア翻訳してから再編成
 
 ### `--summary TYPE`
 サマリー生成方式を指定します。
@@ -96,7 +96,7 @@ python translate-json.py proust-duras.json -o proust-duras-translated.json -s Fr
 - ソース言語: French
 - ターゲット言語: Japanese
 - モデル: `gpt-oss:120b`
-- 圧縮閾値: 15ペア
+- 要約間隔: 10ペア
 - 保持件数: 5ペア
 - サマリー: なし（最速モード）
 
@@ -198,7 +198,7 @@ python translate-json.py proust-duras.json -o output.json -s French -t Japanese 
 
 ### 履歴圧縮の仕組み
 
-**デフォルト設定（threshold=15, keep=5）の場合:**
+**デフォルト設定（threshold=10, keep=5）の場合:**
 
 ```
 翻訳1-15:   履歴が0→15ペアに増加（キャッシュ効率最大）
@@ -289,13 +289,13 @@ python translate-json.py proust-duras.json -o output.json -s French -t Japanese 
 
 #### 動作フロー
 
-**`--summary`指定時（threshold=15, keep=5）の場合:**
+**`--summary`指定時（threshold=10, keep=5）の場合:**
 
 ```
 翻訳1-9:    chat_history = [S, U1, A1, ..., U9, A9]
             translation_messages = [U1, A1, ..., U9, A9]
 
-翻訳10完了後: i % (THRESHOLD - KEEP) == 0  (10 % 10 == 0)
+翻訳10完了後: i % THRESHOLD == 0  (10 % 10 == 0)
             → next_compression = 15 を設定
             → サマリー生成（次の圧縮15まで到達可能なため）
             - サマリーリクエストを chat_history に追加
@@ -313,14 +313,14 @@ python translate-json.py proust-duras.json -o output.json -s French -t Japanese 
             chat_history = [S, U-Sum, A-Sum, U11, A11, ..., U15, A15]
             → U1-10を削除、サマリーは残る（キャッシュ継続！）
 
-            i % (THRESHOLD - KEEP) == 0  (15 % 10 == 0)
+            i % THRESHOLD == 0  (15 % 10 == 0)
             → next_compression = 20 を設定
             → サマリー生成
 
 翻訳16-19:  chat_history = [S, U-Sum, A-Sum, U11, ..., U15, A15, U16, A16, ..., U19, A19]
             → サマリーは既にcontextにあるのでキャッシュ継続
 
-翻訳20完了後: i % (THRESHOLD - KEEP) == 0  (20 % 10 == 0)
+翻訳20完了後: i % THRESHOLD == 0  (20 % 10 == 0)
             → next_compression = 25 を設定
             → サマリー生成（次の圧縮25まで到達可能なため）
             chat_history = [S, U-Sum1, A-Sum1, U11, ..., U20, A20, U-Sum2, A-Sum2]
@@ -333,7 +333,7 @@ python translate-json.py proust-duras.json -o output.json -s French -t Japanese 
             chat_history = [S, U-Sum2, A-Sum2, U16, A16, ..., U25, A25]
             → 最新サマリーのみ保持
 
-            i % (THRESHOLD - KEEP) == 0  (25 % 10 == 0)
+            i % THRESHOLD == 0  (25 % 10 == 0)
             → next_compression = 30 を設定
 
 以降:       10, 20, 30, 40... でサマリー生成
@@ -355,7 +355,7 @@ python translate-json.py proust-duras.json -o output.json -s French -t Japanese 
 ```
 翻訳1-9:    履歴が0→9ペアに増加（キャッシュ効率最大）
 
-翻訳10完了後: i % (THRESHOLD - KEEP) == 0
+翻訳10完了後: i % THRESHOLD == 0
             → next_compression = 15 を設定
             → サマリー生成なし（SUMMARY_TYPE is None）
 
@@ -519,10 +519,10 @@ python translate-json.py proust-duras.json -o output.json -s French -t Japanese 
 
 | 文書の長さ | threshold | keep | 理由 |
 |----------|-----------|------|------|
-| 短い（<50件） | 20 | 8 | 圧縮を最小限に |
-| 中程度（50-200件） | 15 | 5 | デフォルト設定 |
-| 長い（200-500件） | 15 | 5 | キャッシュ効率重視 |
-| 非常に長い（>500件） | 12 | 4 | 圧縮頻度を上げる |
+| 短い（<50件） | 15 | 8 | 要約頻度を下げる |
+| 中程度（50-200件） | 10 | 5 | デフォルト設定 |
+| 長い（200-500件） | 10 | 5 | キャッシュ効率重視 |
+| 非常に長い（>500件） | 8 | 4 | 要約頻度を上げる |
 
 **メモリ使用量:**
 - サマリーなし: 5-15ペア（一定）

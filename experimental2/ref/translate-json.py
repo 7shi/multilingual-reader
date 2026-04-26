@@ -14,10 +14,10 @@ parser.add_argument('-t', '--target-lang', type=str, required=True,
                     help='Target language (required)')
 parser.add_argument('-m', '--model', type=str, default='gpt-oss:120b',
                     help='Model to use for translation (default: gpt-oss:120b)')
-parser.add_argument('--threshold', type=int, default=15,
-                    help='Number of message pairs before compression (default: 15)')
+parser.add_argument('--threshold', type=int, default=10,
+                    help='Number of translation pairs between summaries (default: 10)')
 parser.add_argument('--keep', type=int, default=5,
-                    help='Number of recent message pairs to keep after compression (default: 5)')
+                    help='Number of translation pairs between summary and reorganization (default: 5)')
 parser.add_argument('--summary', type=str, default=None, choices=['patterns', 'summary'],
                     help='Summary generation method: "patterns" extracts translation patterns, "summary" creates English summary. If not specified, no summary is generated (fastest)')
 parser.add_argument('--no-think', action='store_true',
@@ -138,7 +138,7 @@ for i, entry in enumerate(data['transcriptions'], 1):
     #print(f"Translation: {translated_text}")
 
     # Update next_compression timing (after translation 10, 20, 30...)
-    if i % (THRESHOLD - KEEP) == 0:
+    if i % THRESHOLD == 0:
         next_compression = i + KEEP if i + KEEP <= len(data['transcriptions']) else None
 
         # Generate summary only if SUMMARY_TYPE is specified and we'll reach next compression
