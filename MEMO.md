@@ -1,5 +1,34 @@
 # メモ
 
+## examples/ の翻訳言語戦略
+
+`examples/` の多言語参照訳は以下の2段階方式で生成する。LLM の学習データ充実度を考慮し、英語を中継言語として活用することで重訳品質を確保する。
+
+| ルート | 対象言語 | 備考 |
+|---|---|---|
+| FR → EN | English | 直接翻訳 |
+| FR → ES | Spanish | 直接翻訳 |
+| EN → DE | German | 英語からの重訳 |
+| EN → JA | Japanese | 英語からの重訳 |
+| EN → ZH | Chinese | 英語からの重訳 |
+| EN → EO | Esperanto | 英語からの重訳（onde のみ） |
+| EN → HI | Hindi | 英語からの重訳（onde のみ） |
+
+評価は各ルートの原文を基準とする（EN/ES は FR と比較、DE/JA/ZH/EO/HI は EN と比較）。`examples/evals/` の eval ファイル名は `{topic}-{from}-{to}-{run}.json` 形式で言語ルートを明示する。
+
+**共通語彙（`examples/terms/common.tsv`）**: 番組名など全トピック共通の固有名詞はここに記載し、`trtools term translate -c common.tsv` で LLM をスキップして採用する。LLM に任せると run ごとに訳語がブレるため、番組名は必ずここで固定する。
+
+### examples/terms/ の用語TSVは校正が必要
+
+`trtools term extract/translate` でローカル LLM（gemma4:31b）が生成した用語 TSV は、以下のような誤りが含まれるため**校正が必要**。
+
+- **スラッシュ2択**: `refinement/fine-tuning`・`接地/锚定` のように訳語を絞り切れず複数形式で出力する
+- **誤訳**: `balle de baseball` → `baseball`（ball が欠落）など
+- **余分テキスト混入**: ` evanescent waves ( evanescent waves / 消逝波)` のように原語が訳語欄に混入する
+- **誤字**: `ultrastreine`（→ `ultrafeine`）など
+
+---
+
 ## 実験の流れ
 
 ### translate.py: 実験系列の起源
@@ -30,24 +59,6 @@
 - 日本語・中国語・ドイツ語等は参照訳の品質確認には使えるが、評価者（qwen3.6）の得意不得意が結果に影響しやすい
 
 `examples/` の参照訳を評価した結果、英語訳（Gemini 翻訳 + Claude レビュー）は中央値100点を達成。FR→ES（Gemini 2.5 Pro）が97点止まりだったことは、評価者の英語優位バイアスを示すとともに、FR→ES を実験軸に選んだ設計判断の妥当性を裏付けている。
-
-### examples/ の翻訳言語戦略
-
-`examples/` の多言語参照訳は以下の2段階方式で生成する。LLM の学習データ充実度を考慮し、英語を中継言語として活用することで重訳品質を確保する。
-
-| ルート | 対象言語 | 備考 |
-|---|---|---|
-| FR → EN | English | 直接翻訳 |
-| FR → ES | Spanish | 直接翻訳 |
-| EN → DE | German | 英語からの重訳 |
-| EN → JA | Japanese | 英語からの重訳 |
-| EN → ZH | Chinese | 英語からの重訳 |
-| EN → EO | Esperanto | 英語からの重訳（onde のみ） |
-| EN → HI | Hindi | 英語からの重訳（onde のみ） |
-
-評価は各ルートの原文を基準とする（EN/ES は FR と比較、DE/JA/ZH/EO/HI は EN と比較）。`examples/evals/` の eval ファイル名は `{topic}-{from}-{to}-{run}.json` 形式で言語ルートを明示する。
-
-**共通語彙（`examples/terms/common.tsv`）**: 番組名など全トピック共通の固有名詞はここに記載し、`trtools term translate -c common.tsv` で LLM をスキップして採用する。LLM に任せると run ごとに訳語がブレるため、番組名は必ずここで固定する。
 
 ### experimental/: 推論レベル別性能分析
 
@@ -141,7 +152,7 @@
 
 ## 次のステップ
 
-### translate.py の刷新（trtools/ へ統合）
+### TODO: translate.py の刷新（trtools/ へ統合）
 
 experimental/ 〜 experimental3/ の知見を反映した新しい翻訳スクリプトを `trtools/` パッケージとして実装する。
 
