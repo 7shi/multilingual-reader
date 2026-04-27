@@ -1,5 +1,5 @@
 import argparse
-from trtools import evaluate, aggregate
+from trtools import evaluate, aggregate, term
 
 def main():
     parser = argparse.ArgumentParser(
@@ -11,6 +11,7 @@ def main():
 
     evaluate.add_parser(subparsers)
     aggregate.add_parser(subparsers)
+    term.add_parser(subparsers)
 
     args = parser.parse_args()
     args.func(args)

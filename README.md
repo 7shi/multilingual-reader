@@ -37,7 +37,7 @@ multilingual-reader/
 ├── experimental2/                # サマリー圧縮方式翻訳実験
 ├── experimental3/                # ハイブリッドモード翻訳実験（翻訳=CoTなし、要約=CoTあり）
 ├── experimental4/                # 用語事前抽出方式翻訳実験（翻訳前に全文から用語を抽出・確定）
-├── trtools/                      # 全実験共通の翻訳評価ツール（trtools eval / trtools agg）
+├── trtools/                      # 共通の翻訳・評価ツール
 ├── split_podcast_data.py         # テキスト分割スクリプト（データセット配列対応）
 ├── merge_podcast_data.py         # テキスト統合スクリプト（nameフィールドなし配列形式）
 ├── convert_genspark.py           # GenSpark HTML対話データ抽出
@@ -46,6 +46,16 @@ multilingual-reader/
 ├── README.md                     # このファイル
 └── MEMO.md                       # プロジェクト全体のメモ（将来の検討事項等）
 ```
+
+### 翻訳評価ツール（trtools/）
+
+全実験で共通して使用するツールをパッケージ化したもの。
+
+| コマンド | 用途 |
+|---------|------|
+| `uv run trtools eval` | LLMによる翻訳品質評価（5項目×20点、100点満点） |
+| `uv run trtools agg` | 3回評価の中央値集計 |
+| `uv run trtools term` | テキストから用語・固有名詞を抽出し訳語をJSONに保存 |
 
 ### 参照訳と評価結果（examples/）
 
@@ -66,15 +76,6 @@ multilingual-reader/
 | Esperanto | 10.00 |  1 |
 
 英語・日本語・ドイツ語・スペイン語は高品質な参照訳として実験のベースラインに使用できる水準。中国語は `grounding` の未訳など具体的な問題点が指摘されている。エスペラント・ヒンディー語（`onde` トピックのみ）は構造的欠陥レベルのため再翻訳予定。
-
-### 翻訳評価ツール（trtools/）
-
-全実験で共通して使用する評価ツールをパッケージ化したもの。
-
-| コマンド | スクリプト | 用途 |
-|---------|-----------|------|
-| `uv run trtools eval` | [trtools/evaluate.py](trtools/evaluate.py) | LLMによる翻訳品質評価（5項目×20点、100点満点） |
-| `uv run trtools agg` | [trtools/aggregate.py](trtools/aggregate.py) | 3回評価の中央値集計 |
 
 ### 実験ディレクトリの流れ
 
