@@ -1,9 +1,8 @@
-# 用語抽出・翻訳サブコマンド
-# experimental4/translate.py の Phase 0（用語抽出と訳生成）を独立コマンド化
+# 用語抽出・翻訳サブコマンド（term extract / term translate）
 
+import csv
 import json
 import os
-import sys
 from pathlib import Path
 from pydantic import BaseModel, Field
 from .llm import LLMClient, DEFAULT_RETRY_WAIT_SECONDS
@@ -24,27 +23,55 @@ class Glossary(BaseModel):
     glossary: list[TermPair]
 
 
+# ---------------------------------------------------------------------------
+# add_parser
+# ---------------------------------------------------------------------------
+
 def add_parser(subparsers):
-    parser = subparsers.add_parser("term", help="テキストから用語を抽出し訳語を生成してJSONに保存")
+    term_parser = subparsers.add_parser("term", help="用語の抽出・翻訳")
+    term_sub = term_parser.add_subparsers(dest="term_command", metavar="<command>")
+    term_sub.required = True
+    _add_extract_parser(term_sub)
+    _add_translate_parser(term_sub)
+
+
+def _add_extract_parser(subparsers):
+    parser = subparsers.add_parser("extract", help="テキストから用語を抽出してJSONに保存")
     parser.add_argument("input_file", help="翻訳対象のテキストファイル")
     parser.add_argument("-f", "--from", dest="from_lang", required=True,
                         help="原語（例: French, English, Japanese）")
-    parser.add_argument("-t", "--to", dest="to_lang", default=None,
-                        help="翻訳先言語。省略時は用語抽出のみ（-o 不可）")
     parser.add_argument("-m", "--model", required=True, help="使用モデル")
-    parser.add_argument("-o", "--output", dest="output_file", default=None,
-                        help="翻訳ファイル（-t 指定時に使用。省略時は入力ファイルの拡張子を .json に付け替え）")
-    parser.add_argument("--extract", dest="extract_file", required=True,
-                        help="用語抽出ファイルのパス")
+    parser.add_argument("-o", "--output", dest="output_file", required=True,
+                        help="用語抽出ファイル（JSON）")
     parser.add_argument("--keep", type=int, default=5,
                         help="チャンクサイズ（デフォルト: 5）")
     parser.add_argument("-w", "--retry-wait", type=int, default=DEFAULT_RETRY_WAIT_SECONDS,
                         help=f"リトライ時の待機時間（秒）（デフォルト: {DEFAULT_RETRY_WAIT_SECONDS}秒）")
     parser.add_argument("--no-think", action="store_true",
                         help="thinking処理を無効化（Qwen3モデル用）")
-    parser.set_defaults(func=run)
-    return parser
+    parser.set_defaults(func=run_extract)
 
+
+def _add_translate_parser(subparsers):
+    parser = subparsers.add_parser("translate", help="用語JSONをTSVに翻訳（穴埋め方式）")
+    parser.add_argument("extract_file", help="用語抽出ファイル（JSON）")
+    parser.add_argument("-t", "--to", dest="to_langs", action="append", required=True,
+                        metavar="LANG", help="翻訳先言語（複数指定可）")
+    parser.add_argument("-m", "--model", required=True, help="使用モデル")
+    parser.add_argument("-o", "--output", dest="output_file", required=True,
+                        help="出力TSVファイル")
+    parser.add_argument("-c", "--common", dest="common_file", default=None,
+                        help="共通語彙TSVファイル（一致する用語はLLMをスキップして採用）")
+    parser.add_argument("-w", "--retry-wait", type=int, default=DEFAULT_RETRY_WAIT_SECONDS,
+                        help=f"リトライ時の待機時間（秒）（デフォルト: {DEFAULT_RETRY_WAIT_SECONDS}秒）")
+    parser.add_argument("--no-think", action="store_true",
+                        help="thinking処理を無効化（Qwen3モデル用）")
+    parser.set_defaults(func=run_translate)
+
+
+# ---------------------------------------------------------------------------
+# 共通ユーティリティ
+# ---------------------------------------------------------------------------
 
 def load_entries(input_file):
     with open(input_file, "r", encoding="utf-8") as f:
@@ -66,26 +93,6 @@ def chunk_ranges(total, keep):
         start = (cidx - 1) * keep + 1
         end = min(cidx * keep, total)
         yield cidx, start, end
-
-
-def extract_terms(client, from_lang, chunk_text):
-    prompt = (
-        f"Extract proper nouns and domain-specific technical terms from the following "
-        f"{from_lang} text. Return them in the original {from_lang} form (do NOT translate).\n\n"
-        f"Include:\n"
-        f"- Person names, place names, organization names\n"
-        f"- Work titles, product names, brand names\n"
-        f"- Domain-specific technical terms and jargon\n\n"
-        f"Exclude:\n"
-        f"- Common everyday words and general vocabulary\n"
-        f"- Pronouns, articles, conjunctions, prepositions\n"
-        f"- Speaking styles or expressions\n\n"
-        f"Output each term in its base form WITHOUT leading articles "
-        f"(e.g., output 'affinage', not 'l'affinage' or 'le affinage').\n\n"
-        f"Text:\n{chunk_text}"
-    )
-    data = client.call_json([prompt], schema=TermList)
-    return data.get("terms", [])
 
 
 def _call_translate(client, from_lang, to_lang, terms):
@@ -127,91 +134,174 @@ def translate_glossary(client, from_lang, to_lang, originals, max_retries=5):
     return mapping
 
 
-def write_extract_file(path, from_lang, chunk_terms_map):
+# ---------------------------------------------------------------------------
+# term extract
+# ---------------------------------------------------------------------------
+
+def extract_terms(client, from_lang, chunk_text):
+    prompt = (
+        f"Extract proper nouns and domain-specific technical terms from the following "
+        f"{from_lang} text. Return them in the original {from_lang} form (do NOT translate).\n\n"
+        f"Include:\n"
+        f"- Person names, place names, organization names\n"
+        f"- Work titles, product names, brand names\n"
+        f"- Domain-specific technical terms and jargon\n\n"
+        f"Exclude:\n"
+        f"- Common everyday words and general vocabulary\n"
+        f"- Pronouns, articles, conjunctions, prepositions\n"
+        f"- Speaking styles or expressions\n\n"
+        f"Output each term in its base form WITHOUT leading articles "
+        f"(e.g., output 'affinage', not 'l'affinage' or 'le affinage').\n\n"
+        f"Text:\n{chunk_text}"
+    )
+    data = client.call_json([prompt], schema=TermList)
+    return data.get("terms", [])
+
+
+def run_extract(args):
+    if os.path.exists(args.output_file):
+        print(f"用語抽出ファイルが既に存在します（スキップ）: {args.output_file}")
+        return
+
+    entries = load_entries(args.input_file)
+    total = len(entries)
+    client = LLMClient(
+        model=args.model,
+        think=(not args.no_think),
+        retry_wait=args.retry_wait,
+    )
+    chunks = list(chunk_ranges(total, args.keep))
+    print(f"用語抽出を開始: {len(chunks)} チャンク (keep={args.keep})")
+    chunk_terms_map = {}
+    for cidx, start, end in chunks:
+        chunk_text = "\n".join(f"{sp}: {tx}" for sp, tx in entries[start - 1:end])
+        print(f"[Extract chunk {cidx}: lines {start}-{end}]")
+        terms = extract_terms(client, args.from_lang, chunk_text)
+        chunk_terms_map[cidx] = {"start": start, "end": end, "terms": terms}
+
     data = {
-        "from": from_lang,
+        "from": args.from_lang,
         "chunks": [
             {"index": cidx, "start": info["start"], "end": info["end"],
              "terms": info["terms"]}
             for cidx, info in sorted(chunk_terms_map.items())
         ],
     }
-    with open(path, "w", encoding="utf-8") as f:
+    with open(args.output_file, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
+    print(f"用語抽出ファイルを保存: {args.output_file}")
 
 
-def write_trans_file(path, from_lang, to_lang, translations):
-    data = {
-        "from": from_lang,
-        "to": to_lang,
-        "glossary": translations,
-    }
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
+# ---------------------------------------------------------------------------
+# term translate
+# ---------------------------------------------------------------------------
+
+def load_tsv(path):
+    """TSVを読み込み (header, rows) を返す。rows は {lang: value} の辞書リスト。"""
+    with open(path, "r", encoding="utf-8", newline="") as f:
+        reader = csv.reader(f, delimiter="\t")
+        header = next(reader)
+        rows = [dict(zip(header, row)) for row in reader]
+    return header, rows
 
 
-def run(args):
-    if args.output_file and not args.to_lang:
-        print("エラー: -o/--output は -t と併用する必要があります", file=sys.stderr)
-        sys.exit(1)
+def save_tsv(path, header, rows):
+    """(header, rows) を TSV に保存する。"""
+    with open(path, "w", encoding="utf-8", newline="") as f:
+        writer = csv.writer(f, delimiter="\t")
+        writer.writerow(header)
+        for row in rows:
+            writer.writerow([row.get(col, "") for col in header])
 
-    extract_file = args.extract_file
 
-    # -o 省略時は入力ファイルの拡張子を .json に付け替え
-    if args.to_lang:
-        trans_file = args.output_file or str(Path(args.input_file).with_suffix(".json"))
-    else:
-        trans_file = None
+def run_translate(args):
+    # from.json を読み込み
+    with open(args.extract_file, "r", encoding="utf-8") as f:
+        extract_data = json.load(f)
+    from_lang = extract_data["from"]
 
-    # Phase 1: 用語抽出
-    if os.path.exists(extract_file):
-        print(f"用語抽出ファイルが既に存在します（スキップ）: {extract_file}")
-        with open(extract_file, "r", encoding="utf-8") as f:
-            extract_data = json.load(f)
-        chunk_terms_map = {
-            c["index"]: {"start": c["start"], "end": c["end"], "terms": c["terms"]}
-            for c in extract_data.get("chunks", [])
-        }
-    else:
-        entries = load_entries(args.input_file)
-        total = len(entries)
-        client = LLMClient(
-            model=args.model,
-            think=(not args.no_think),
-            retry_wait=args.retry_wait,
-        )
-        chunks = list(chunk_ranges(total, args.keep))
-        print(f"用語抽出を開始: {len(chunks)} チャンク (keep={args.keep})")
-        chunk_terms_map = {}
-        for cidx, start, end in chunks:
-            chunk_text = "\n".join(f"{sp}: {tx}" for sp, tx in entries[start - 1:end])
-            print(f"[Extract chunk {cidx}: lines {start}-{end}]")
-            terms = extract_terms(client, args.from_lang, chunk_text)
-            chunk_terms_map[cidx] = {"start": start, "end": end, "terms": terms}
-        write_extract_file(extract_file, args.from_lang, chunk_terms_map)
-        print(f"用語抽出ファイルを保存: {extract_file}")
-
-    # Phase 2: 訳語生成（-t 指定時のみ）
-    if trans_file is None:
-        return
-    if os.path.exists(trans_file):
-        print(f"翻訳ファイルが既に存在します（スキップ）: {trans_file}")
-        return
-
+    # ユニーク用語リストを順序保持で構築
     seen = set()
     unique_terms = []
-    for cidx in sorted(chunk_terms_map.keys()):
-        for t in chunk_terms_map[cidx]["terms"]:
+    for chunk in extract_data.get("chunks", []):
+        for t in chunk["terms"]:
             if t not in seen:
                 seen.add(t)
                 unique_terms.append(t)
+
+    # TSV を開くか新規作成
+    if os.path.exists(args.output_file):
+        header, rows = load_tsv(args.output_file)
+        # from_lang が一致するか確認
+        if header[0] != from_lang:
+            print(f"WARNING: TSV の原語列 '{header[0]}' が from.json の '{from_lang}' と異なります。")
+        # unique_terms に存在しない行は保持しつつ、新しい用語を末尾に追加
+        existing = {row[from_lang]: row for row in rows if from_lang in row}
+        rows = []
+        for t in unique_terms:
+            rows.append(existing.get(t, {from_lang: t}))
+    else:
+        header = [from_lang]
+        rows = [{from_lang: t} for t in unique_terms]
+
+    # 新しい to_lang 列をヘッダに追加
+    for to_lang in args.to_langs:
+        if to_lang not in header:
+            header.append(to_lang)
+
+    # 共通語彙の読み込み: {term: {lang: translation}}
+    common = {}
+    if args.common_file and os.path.exists(args.common_file):
+        common_header, common_rows = load_tsv(args.common_file)
+        if from_lang not in common_header:
+            print(f"WARNING: 共通語彙に '{from_lang}' 列がありません。スキップします。")
+        else:
+            for row in common_rows:
+                term = row.get(from_lang, "")
+                if term:
+                    common[term] = row
 
     client = LLMClient(
         model=args.model,
         think=(not args.no_think),
         retry_wait=args.retry_wait,
     )
-    print(f"[Translating glossary: {len(unique_terms)} unique terms → {trans_file}]")
-    translations = translate_glossary(client, args.from_lang, args.to_lang, unique_terms)
-    write_trans_file(trans_file, args.from_lang, args.to_lang, translations)
-    print(f"翻訳ファイルを保存: {trans_file}")
+
+    # 言語ごとに穴埋め
+    for to_lang in args.to_langs:
+        missing_terms = [row[from_lang] for row in rows if not row.get(to_lang)]
+        if not missing_terms:
+            print(f"[{to_lang}] 全用語が翻訳済み（スキップ）")
+            continue
+
+        # 共通語彙で先に埋める
+        from_common = []
+        need_llm = []
+        for term in missing_terms:
+            if term in common and common[term].get(to_lang):
+                from_common.append(term)
+            else:
+                need_llm.append(term)
+        if from_common:
+            print(f"  共通語彙から採用: {len(from_common)} 件")
+            for row in rows:
+                if not row.get(to_lang) and row[from_lang] in common:
+                    val = common[row[from_lang]].get(to_lang, "")
+                    if val:
+                        row[to_lang] = val
+
+        if not need_llm:
+            save_tsv(args.output_file, header, rows)
+            print(f"  保存: {args.output_file}")
+            continue
+
+        print(f"[Translating {len(need_llm)} term(s) → {to_lang}]")
+        mapping = translate_glossary(client, from_lang, to_lang, need_llm)
+        for row in rows:
+            if not row.get(to_lang):
+                term = row[from_lang]
+                if term in mapping:
+                    row[to_lang] = mapping[term]
+        # 言語ごとに保存（中断しても再開可能）
+        save_tsv(args.output_file, header, rows)
+        print(f"  保存: {args.output_file}")
