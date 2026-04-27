@@ -31,6 +31,8 @@ multilingual-reader/
 ├── finetuning.js                 # 多言語テキストデータ（ファインチューニング・転移学習）
 ├── onde.js                       # 多言語テキストデータ（波動・量子力学）
 ├── momentum.js                   # 多言語テキストデータ（運動量・測定理論）
+├── examples/                     # 参照訳テキストファイルと評価結果
+│   └── evals/                    # tr-eval による参照訳評価（SCORES.txt・各言語 JSON）
 ├── experimental/                 # ローカルLLM翻訳実験とパフォーマンス分析
 ├── experimental2/                # サマリー圧縮方式翻訳実験
 ├── experimental3/                # ハイブリッドモード翻訳実験（翻訳=CoTなし、要約=CoTあり）
@@ -43,6 +45,24 @@ multilingual-reader/
 ├── README.md                     # このファイル
 └── MEMO.md                       # プロジェクト全体のメモ（将来の検討事項等）
 ```
+
+### 参照訳と評価結果（examples/）
+
+`examples/` には各トピック × 各言語の参照訳テキストファイルが格納されており、Gemini 2.5 Pro による翻訳（一部 Claude によるレビュー）で作成されています。原文はすべてフランス語。
+
+`examples/evals/` には `tr-eval`（評価者: `ollama:qwen3.6`）による3回評価の JSON と集計結果（`SCORES.txt`）が格納されています。再評価・追加評価は `examples/evals/batch.sh` で実行できます。
+
+**finetuning トピックの評価結果（中央値）:**
+
+| 言語 | 中央値 |
+|---|:---:|
+| English | 100 |
+| German | 99 |
+| Spanish | 97 |
+| Japanese | 97 |
+| Chinese | 91 |
+
+英語・ドイツ語・スペイン語・日本語は高品質な参照訳として実験のベースラインに使用できる水準。中国語は `grounding` の未訳など具体的な問題点が指摘されている。エスペラント・ヒンディー語（`onde` トピックのみ）は構造的欠陥レベルのため再翻訳予定。
 
 ### 翻訳評価ツール（trtools/）
 
