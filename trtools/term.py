@@ -3,6 +3,8 @@
 
 import json
 import os
+import sys
+from pathlib import Path
 from pydantic import BaseModel, Field
 from .llm import LLMClient, DEFAULT_RETRY_WAIT_SECONDS
 
@@ -27,11 +29,13 @@ def add_parser(subparsers):
     parser.add_argument("input_file", help="翻訳対象のテキストファイル")
     parser.add_argument("-f", "--from", dest="from_lang", required=True,
                         help="原語（例: French, English, Japanese）")
-    parser.add_argument("-t", "--to", dest="to_lang", required=True,
-                        help="翻訳先言語（例: Spanish, Japanese）")
+    parser.add_argument("-t", "--to", dest="to_lang", default=None,
+                        help="翻訳先言語。省略時は用語抽出のみ（-o 不可）")
     parser.add_argument("-m", "--model", required=True, help="使用モデル")
-    parser.add_argument("-o", "--output", dest="output_file", required=True,
-                        help="出力用語ファイル（JSON）")
+    parser.add_argument("-o", "--output", dest="output_file", default=None,
+                        help="翻訳ファイル（-t 指定時に使用。省略時は入力ファイルの拡張子を .json に付け替え）")
+    parser.add_argument("--extract", dest="extract_file", required=True,
+                        help="用語抽出ファイルのパス")
     parser.add_argument("--keep", type=int, default=5,
                         help="チャンクサイズ（デフォルト: 5）")
     parser.add_argument("-w", "--retry-wait", type=int, default=DEFAULT_RETRY_WAIT_SECONDS,
@@ -84,10 +88,8 @@ def extract_terms(client, from_lang, chunk_text):
     return data.get("terms", [])
 
 
-def translate_glossary(client, from_lang, to_lang, originals):
-    if not originals:
-        return {}
-    listing = "\n".join(f"- {t}" for t in originals)
+def _call_translate(client, from_lang, to_lang, terms):
+    listing = "\n".join(f"- {t}" for t in terms)
     prompt = (
         f"Translate the following {from_lang} terms into {to_lang}. "
         f"Provide a translation for every term. If a term is a proper noun "
@@ -96,23 +98,52 @@ def translate_glossary(client, from_lang, to_lang, originals):
     )
     data = client.call_json([prompt], schema=Glossary)
     pairs = data.get("glossary", [])
-    mapping = {p["original"]: p["translation"] for p in pairs}
-    for orig in originals:
-        if orig not in mapping:
-            print(f"  WARNING: glossary missing translation for '{orig}', using original.")
-            mapping[orig] = orig
+    original_set = set(terms)
+    mapping = {}
+    for p in pairs:
+        orig = p["original"]
+        if orig not in original_set:
+            print(f"  WARNING: unexpected term in glossary response '{orig}', ignoring.")
+            continue
+        mapping[orig] = p["translation"]
     return mapping
 
 
-def write_terms_file(path, from_lang, to_lang, chunk_terms_map, translations):
+def translate_glossary(client, from_lang, to_lang, originals, max_retries=5):
+    if not originals:
+        return {}
+    mapping = _call_translate(client, from_lang, to_lang, originals)
+    missing = [t for t in originals if t not in mapping]
+    for attempt in range(max_retries):
+        if not missing:
+            break
+        print(f"  Retrying {len(missing)} missing term(s) (attempt {attempt + 1}/{max_retries})...")
+        retry_mapping = _call_translate(client, from_lang, to_lang, missing)
+        mapping.update(retry_mapping)
+        missing = [t for t in missing if t not in mapping]
+    for term in missing:
+        print(f"  WARNING: no translation for '{term}' after {max_retries} retries, using empty string.")
+        mapping[term] = ""
+    return mapping
+
+
+def write_extract_file(path, from_lang, chunk_terms_map):
     data = {
         "from": from_lang,
-        "to": to_lang,
         "chunks": [
             {"index": cidx, "start": info["start"], "end": info["end"],
              "terms": info["terms"]}
             for cidx, info in sorted(chunk_terms_map.items())
         ],
+    }
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+
+
+def write_trans_file(path, from_lang, to_lang, translations):
+    data = {
+        "from": from_lang,
+        "to": to_lang,
         "glossary": translations,
     }
     with open(path, "w", encoding="utf-8") as f:
@@ -120,28 +151,52 @@ def write_terms_file(path, from_lang, to_lang, chunk_terms_map, translations):
 
 
 def run(args):
-    if os.path.exists(args.output_file):
-        print(f"出力ファイルが既に存在します: {args.output_file}")
+    if args.output_file and not args.to_lang:
+        print("エラー: -o/--output は -t と併用する必要があります", file=sys.stderr)
+        sys.exit(1)
+
+    extract_file = args.extract_file
+
+    # -o 省略時は入力ファイルの拡張子を .json に付け替え
+    if args.to_lang:
+        trans_file = args.output_file or str(Path(args.input_file).with_suffix(".json"))
+    else:
+        trans_file = None
+
+    # Phase 1: 用語抽出
+    if os.path.exists(extract_file):
+        print(f"用語抽出ファイルが既に存在します（スキップ）: {extract_file}")
+        with open(extract_file, "r", encoding="utf-8") as f:
+            extract_data = json.load(f)
+        chunk_terms_map = {
+            c["index"]: {"start": c["start"], "end": c["end"], "terms": c["terms"]}
+            for c in extract_data.get("chunks", [])
+        }
+    else:
+        entries = load_entries(args.input_file)
+        total = len(entries)
+        client = LLMClient(
+            model=args.model,
+            think=(not args.no_think),
+            retry_wait=args.retry_wait,
+        )
+        chunks = list(chunk_ranges(total, args.keep))
+        print(f"用語抽出を開始: {len(chunks)} チャンク (keep={args.keep})")
+        chunk_terms_map = {}
+        for cidx, start, end in chunks:
+            chunk_text = "\n".join(f"{sp}: {tx}" for sp, tx in entries[start - 1:end])
+            print(f"[Extract chunk {cidx}: lines {start}-{end}]")
+            terms = extract_terms(client, args.from_lang, chunk_text)
+            chunk_terms_map[cidx] = {"start": start, "end": end, "terms": terms}
+        write_extract_file(extract_file, args.from_lang, chunk_terms_map)
+        print(f"用語抽出ファイルを保存: {extract_file}")
+
+    # Phase 2: 訳語生成（-t 指定時のみ）
+    if trans_file is None:
         return
-
-    entries = load_entries(args.input_file)
-    total = len(entries)
-
-    client = LLMClient(
-        model=args.model,
-        think=(not args.no_think),
-        retry_wait=args.retry_wait,
-    )
-
-    chunks = list(chunk_ranges(total, args.keep))
-    print(f"用語抽出を開始: {len(chunks)} チャンク (keep={args.keep})")
-
-    chunk_terms_map = {}
-    for cidx, start, end in chunks:
-        chunk_text = "\n".join(f"{sp}: {tx}" for sp, tx in entries[start - 1:end])
-        print(f"[Extract chunk {cidx}: lines {start}-{end}]")
-        terms = extract_terms(client, args.from_lang, chunk_text)
-        chunk_terms_map[cidx] = {"start": start, "end": end, "terms": terms}
+    if os.path.exists(trans_file):
+        print(f"翻訳ファイルが既に存在します（スキップ）: {trans_file}")
+        return
 
     seen = set()
     unique_terms = []
@@ -151,8 +206,12 @@ def run(args):
                 seen.add(t)
                 unique_terms.append(t)
 
-    print(f"[Translating glossary: {len(unique_terms)} unique terms]")
+    client = LLMClient(
+        model=args.model,
+        think=(not args.no_think),
+        retry_wait=args.retry_wait,
+    )
+    print(f"[Translating glossary: {len(unique_terms)} unique terms → {trans_file}]")
     translations = translate_glossary(client, args.from_lang, args.to_lang, unique_terms)
-
-    write_terms_file(args.output_file, args.from_lang, args.to_lang, chunk_terms_map, translations)
-    print(f"用語ファイルを保存: {args.output_file}")
+    write_trans_file(trans_file, args.from_lang, args.to_lang, translations)
+    print(f"翻訳ファイルを保存: {trans_file}")
