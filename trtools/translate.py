@@ -157,7 +157,7 @@ def run(args):
         translation_messages.extend([user_msg, asst_msg])
         results[orig_idx] = translated
 
-        if i % threshold == 0 and i + keep <= total:
+        if i % threshold == 0 and i + keep < total:
             saved_len = len(chat_history)
             print("[summary] ", end="", flush=True)
             summary_prompt = (
