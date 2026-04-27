@@ -27,6 +27,26 @@
 - **余分テキスト混入**: ` evanescent waves ( evanescent waves / 消逝波)` のように原語が訳語欄に混入する
 - **誤字**: `ultrastreine`（→ `ultrafeine`）など
 
+### examples/tr-fr/: FR→EN・FR→ES 参照訳の再生成
+
+現行の `examples/` 参照訳（英語: Gemini 翻訳＋Claude レビュー、スペイン語: Gemini 2.5 Pro）を gemma4-26b で再生成し、手動添削の上で置き換える。
+
+1回翻訳→添削→置き換えのフローで運用する。`trtools batch` のデフォルト（`--tr-runs 1`）でサフィックスなしのファイル名（`tr/finetuning-en.txt` 等）を生成する。評価は任意（品質確認が必要なときのみ実施）。
+
+- **実行**: `examples/tr-fr/` で `make`（`trtools batch` を呼び出す）
+- **対象**: finetuning・transformer・onde・momentum の4トピック × FR→EN・FR→ES
+- **設定**: gemma4-26b・threshold=10・keep=5・CoT なし・用語ファイル注入（`examples/terms/*-fr.{json,tsv}`）
+
+### examples/tr-en/: EN→DE・EN→JA・EN→ZH 参照訳の再生成
+
+英語版（`*-en.txt`）を中継言語としてドイツ語・日本語・中国語、および onde のみエスペラント・ヒンディー語へ翻訳する。
+
+**tr-fr との依存関係**: 英語ファイルが翻訳・添削・確定済みであることが前提。英語版が置き換わると用語の文脈も変わるため、`examples/terms/batch.sh` で `*-en.{json,tsv}` を再生成・校正してから `examples/tr-en/` に入る。
+
+- **実行**: `examples/tr-en/` で `make`（`trtools batch` を呼び出す）
+- **対象**: finetuning・transformer・momentum × EN→DE・EN→JA・EN→ZH、onde × EN→DE・EN→JA・EN→ZH・EN→EO・EN→HI
+- **設定**: gemma4-26b・threshold=20・keep=5・CoT なし・用語ファイル注入（`examples/terms/*-en.{json,tsv}`）
+
 ---
 
 ## 実験の流れ
@@ -148,6 +168,17 @@
 - **gemma4-26b は安定維持**: 急落なし。run 3 が 96→99 と微改善
 - **一般語の混入**: `mathématiques`・`physicien`・`anglais` など専門用語ではない語が抽出される。プロンプトの改善余地あり
 
+---
+
+## 翻訳の trtools への統合
+
+experimental/ 〜 experimental4/ の知見を反映した翻訳・評価ツールを `trtools` パッケージとして実装・整備した。
+
+- `trtools translate`: experimental3 の推奨設定（threshold=10・CoT なし・サマリー圧縮）をベースに、用語注入・スキップ付き空行保持を実装。構造化出力・スライディング履歴といった旧設計は廃止
+- `trtools term extract/translate`: 用語抽出・訳語確定を翻訳ループから分離。校正済み TSV を全 run で共有することで run 間の用語ブレを排除
+- `trtools eval / agg`: 5項目×20点・3回評価の中央値集計
+- `trtools batch`: 翻訳→評価→集約を一括実行。入力ファイルをオプションなし引数で列挙し、ファイル名から topic・言語コードを自動導出。`examples/tr-fr/Makefile` から呼び出す形で本番運用に移行
+
 ### experimental5/: trtools translate への移行
 
 **目的**: 用語抽出を `trtools term` として分離・校正済みのため、翻訳を `trtools translate` で実行する。全 run が同一の校正済み用語辞書を共有することで、experimental4 で残存していた run 間の用語ブレ（`affinage` → `refinamiento` / `ajuste fino`）を原理的に排除する。
@@ -172,23 +203,19 @@
 - **gemma4-e4b**: run によって発言者ラベル消失・人称不統一といった軽微な構造的問題が出るが、リソース制約環境向けの割り切りモデルとして許容範囲
 - **評価者の検出漏れ**: 発言者消失を 3回中 2回見落とし（93〜94点）。qwen3.6 の検出精度に限界がある
 
+### 評価速度についての所感
+
+翻訳を `--no-think` で最適化した結果、翻訳フェーズよりローカル評価（qwen3.6 × 3evalrun = 72回）がボトルネックになった。以前は翻訳が非効率だったためクラウド（Gemini 2.5 Flash）の評価が相対的に高速だったが、翻訳最適化後はその関係が逆転している。評価の CoT 出力を無効化すれば高速化できるが、減点理由の正確な特定が qwen3.6 の CoT に依存しているため、速度より信頼性を優先してこれ以上の最適化は行わない。
+
 ---
 
 ## 次のステップ
-
-### TODO: translate.py の刷新（trtools/ へ統合）
-
-experimental/ 〜 experimental3/ の知見を反映した新しい翻訳スクリプトを `trtools/` パッケージとして実装する。
-
-- experimental3/ の推奨設定（threshold=10・CoT なし・サマリー圧縮）をベースアーキテクチャとする
-- 構造化出力・スライディング履歴といった旧設計は廃止
-- `trtools eval` / `trtools agg` と同様に CLI コマンドとして提供
 
 ### TODO: examples/ のエスペラント・ヒンディー語訳を再作成
 
 `examples/evals/` の評価結果より、`onde-eo`（中央値10点）・`onde-hi`（中央値13点）は構造的欠陥レベルで参照訳として使用不可。量子力学・近接場顕微鏡などの専門用語をこれらの言語では正確に扱えなかったと推定される。
 
-**対応方針**: `translate.py` の刷新（trtools/ 統合）完了後、新スクリプトで `onde-eo.txt`・`onde-hi.txt` を再翻訳し、`examples/evals/` の該当評価ファイルも再実行する。
+**対応方針**: `trtools batch` で `onde-eo.txt`・`onde-hi.txt` を再翻訳し、`examples/evals/` の該当評価ファイルも再実行する。
 
 ---
 
