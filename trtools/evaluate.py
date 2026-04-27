@@ -1,13 +1,8 @@
 # 翻訳評価スクリプト（SCORE.md基準）
 
-import argparse
 import json
-import time
 from pydantic import BaseModel, Field
-from llm7shi.compat import generate_with_schema
-from llm7shi import create_json_descriptions_prompt
-
-DEFAULT_RETRY_WAIT_SECONDS = 3
+from .llm import LLMClient, DEFAULT_RETRY_WAIT_SECONDS
 
 class ReasoningAndScore(BaseModel):
     reasoning: str = Field(description="Detailed reasoning and consideration for scoring this evaluation criterion")
@@ -74,32 +69,14 @@ Score each criterion from 0-20 points based on the ENTIRE document."""
         f"<original>\n{original_text}\n</original>",
         f"<translation>\n{translated_text}\n</translation>",
         evaluation_prompt,
-        create_json_descriptions_prompt(schema)
     ]
 
-    max_retries = 3
-    for attempt in range(max_retries):
-        try:
-            result = generate_with_schema(
-                prompts,
-                schema=schema,
-                model=args.model,
-                max_length=8192,
-                show_params=False,
-                include_thoughts=(not args.no_think),
-            )
-            evaluation_result = json.loads(result.text)
-            break
-        except json.JSONDecodeError as e:
-            if attempt < max_retries - 1:
-                print(f"JSONデコードエラー（試行{attempt + 1}/{max_retries}）: {e}")
-                for i in range(args.retry_wait, -1, -1):
-                    print(f"\rリトライ待ち... {i}s ", end="", flush=True)
-                    time.sleep(1)
-                print()
-            else:
-                print(f"JSONデコードに{max_retries}回失敗しました。")
-                raise
+    client = LLMClient(
+        model=args.model,
+        think=(not args.no_think),
+        retry_wait=args.retry_wait,
+    )
+    evaluation_result = client.call_json(prompts, schema=schema)
 
     print("=== 翻訳評価結果 ===")
     print(f"1. 読みやすさと理解しやすさ: {evaluation_result['readability']['score']:2d}/20点")
