@@ -36,6 +36,7 @@ multilingual-reader/
 ├── experimental/                 # ローカルLLM翻訳実験とパフォーマンス分析
 ├── experimental2/                # サマリー圧縮方式翻訳実験
 ├── experimental3/                # ハイブリッドモード翻訳実験（翻訳=CoTなし、要約=CoTあり）
+├── experimental4/                # 用語事前抽出方式翻訳実験（翻訳前に全文から用語を抽出・確定）
 ├── trtools/                      # 全実験共通の翻訳評価ツール（tr-eval / tr-agg）
 ├── split_podcast_data.py         # テキスト分割スクリプト（データセット配列対応）
 ├── merge_podcast_data.py         # テキスト統合スクリプト（nameフィールドなし配列形式）
@@ -77,11 +78,12 @@ multilingual-reader/
 
 ### 実験ディレクトリの流れ
 
-3つのディレクトリは連続した実験系列です。詳細は [MEMO.md](MEMO.md) を参照してください。
+4つのディレクトリは連続した実験系列です。詳細は [MEMO.md](MEMO.md) を参照してください。
 
 - **[experimental/](experimental/)**: 推論レベル別性能分析。スライディング方式の用語ブレ・KV キャッシュ問題を発見。レベル0（直接翻訳）が最高効率、CoT は翻訳に有害と結論。
 - **[experimental2/](experimental2/)**: サマリー圧縮方式に移行。`--summary glossary` + `--no-think` + 構造化出力廃止を基本設定とし、用語ブレ・KV キャッシュ問題を解決。32モデルの本番実験で上位モデルが 95〜97点を達成。
 - **[experimental3/](experimental3/)**: ハイブリッドモードを実装。翻訳本体は CoT なし、要約生成のみ CoT ありとし、要約を履歴から除外して KV キャッシュ効率を維持。gemma4-26b が全設定・全 run で安定して最優秀。
+- **[experimental4/](experimental4/)**: 用語事前抽出方式を実装。翻訳開始前に全文から用語・固有名詞を抽出して訳語を確定し、再編成ごとに対象範囲に絞った用語リストを注入する。experimental3 の glossary 初期蓄積のブレ問題の解消を狙う。
 
 ## 🎓 コンテンツ内容
 
