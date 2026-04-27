@@ -40,6 +40,27 @@ jsons=(*.json)
 if [ -e "${jsons[0]}" ]; then
     echo -e "\nAggregating ..."
     uv run tr-agg "${jsons[@]}" | tee SCORES.txt
+
+    echo -e "\n言語別平均値（中央値の平均）:"
+    python3 -c "
+import re
+from collections import defaultdict
+
+scores = defaultdict(list)
+with open('SCORES.txt') as f:
+    for line in f:
+        m = re.match(r'\w+-(\w+)-eval: (\d+)/100点', line)
+        if m:
+            lang, score = m.group(1), int(m.group(2))
+            scores[lang].append(score)
+
+lang_names = {'en':'English','de':'German','es':'Spanish','ja':'Japanese',
+              'zh':'Chinese','eo':'Esperanto','hi':'Hindi'}
+for lang, vals in sorted(scores.items(), key=lambda x: -sum(x[1])/len(x[1])):
+    avg = sum(vals) / len(vals)
+    name = lang_names.get(lang, lang)
+    print(f'  {name}: {avg:.2f} ({len(vals)}トピック)')
+"
 else
     echo "No eval files found, skipping aggregation"
 fi
