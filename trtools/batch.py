@@ -21,7 +21,8 @@ def add_parser(subparsers):
     parser.add_argument("-f", "--from", dest="from_lang", default=None,
                         help="原語（省略時はファイル名の言語コードから自動導出）")
     parser.add_argument("-m", "--model", required=True, help="翻訳モデル")
-    parser.add_argument("--evaluator", required=True, help="評価モデル")
+    parser.add_argument("--evaluator", default=None, help="評価モデル（--translate-only 時は不要）")
+    parser.add_argument("--translate-only", action="store_true", help="翻訳のみ実行（評価・集約をスキップ）")
     parser.add_argument("--terms-dir", default=None,
                         help="用語ファイルのディレクトリ（省略時は用語注入なし）")
     parser.add_argument("--tr-runs", type=int, default=1, help="翻訳回数（デフォルト: 1）")
@@ -61,10 +62,15 @@ def _eval_path(topic, lang, trrun, tr_runs, evrun):
 
 
 def run(args):
+    if not args.translate_only and not args.evaluator:
+        print("エラー: --evaluator が必要です（翻訳のみ実行する場合は --translate-only を指定）")
+        return
+
     terms_dir = Path(args.terms_dir) if args.terms_dir else None
 
     os.makedirs("tr", exist_ok=True)
-    os.makedirs("evals", exist_ok=True)
+    if not args.translate_only:
+        os.makedirs("evals", exist_ok=True)
 
     # ファイルごとに (topic, from_code, from_lang, input_file) を解決
     inputs = []
@@ -106,6 +112,9 @@ def run(args):
                     translate.run(tr_args)
                 except Exception as e:
                     print(f"翻訳エラー ({out}): {e}")
+
+    if args.translate_only:
+        return
 
     # --- 評価フェーズ ---
     for topic, from_code, from_lang, input_file in inputs:

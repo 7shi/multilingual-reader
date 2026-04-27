@@ -31,11 +31,48 @@
 
 現行の `examples/` 参照訳（英語: Gemini 翻訳＋Claude レビュー、スペイン語: Gemini 2.5 Pro）を gemma4-26b で再生成し、手動添削の上で置き換える。
 
-1回翻訳→添削→置き換えのフローで運用する。`trtools batch` のデフォルト（`--tr-runs 1`）でサフィックスなしのファイル名（`tr/finetuning-en.txt` 等）を生成する。評価は任意（品質確認が必要なときのみ実施）。
+**フロー**: `make translate` → 添削 → `make evaluate` → `examples/` 置き換え。初回評価を無駄にしないため、添削後に評価を実施する。`trtools batch` のデフォルト（`--tr-runs 1`）でサフィックスなしのファイル名（`tr/finetuning-en.txt` 等）を生成する。
 
-- **実行**: `examples/tr-fr/` で `make`（`trtools batch` を呼び出す）
+- **翻訳**: `make translate`（`trtools batch --translate-only`、評価・集約なし）
+- **評価**: `make evaluate`（`trtools batch --evaluator ollama:qwen3.6`、翻訳済みファイルをスキップ）
+- **一括**: `make` または `make all`（translate → evaluate の順に実行）
 - **対象**: finetuning・transformer・onde・momentum の4トピック × FR→EN・FR→ES
 - **設定**: gemma4-26b・threshold=10・keep=5・CoT なし・用語ファイル注入（`examples/terms/*-fr.{json,tsv}`）
+
+#### 結果サマリー（初回実施）
+
+**FR→ES は全面差し替え**、**FR→EN は旧訳を維持**。
+
+| トピック | FR→EN | FR→ES |
+|---|:---:|:---:|
+| finetuning | 旧訳維持（100→97） | 差し替え（97→97） |
+| transformer | 旧訳維持（97→97） | 差し替え（94→96） |
+| onde | 旧訳維持（96→97） | 差し替え（97→97） |
+| momentum | 旧訳維持（100→96） | 差し替え（92→97） |
+
+FR→EN は旧訳（Gemini 翻訳＋Claude レビュー）が上質なため維持。主な差異：
+
+- **短縮形の一貫性**: 旧訳は "I'm" / "we're" / "it's" / "you've" を全体で統一。新訳は "I am" / "It is" と短縮形が混在し、ポッドキャストとして不統一
+- **慣用句**: 旧 "pull back the curtain on"（より口語的）vs 新 "lift the veil on"（フランス語 "lever le voile" の直訳感が残る）
+- **相槌**: 旧 "You've got it."（自然な会話調）vs 新 "You have understood it perfectly."（硬い）
+- **比喩表現**: 旧 "the physics of balance"（バイクの例として正確）vs 新 "how to balance"（意訳）
+
+FR→ES は旧訳（Gemini 2.5 Pro）より全体的に同等以上で差し替え。
+
+`examples/` への反映: `*-es.txt`（4ファイル）と `examples/evals/*-fr-es-*.json`（12ファイル）を差し替え済み。
+
+#### 添削所感（初回生成時）
+
+gemma4-26b の生成品質は全体的に高く、構造的欠陥はほぼなし。主な指摘パターン：
+
+- **スピーカータグ欠落**: momentum-es（4箇所）・onde-es（1箇所）。モデルが短い相槌行（"¿Oh?"・"De acuerdo." 等）のタグを落とす傾向あり
+- **フランス語直訳の残留**: momentum-en "angular momentum"（文脈上は linear momentum）・transformer-en "The discussion is open."（→ "The floor is yours."）・momentum-en "calls the world into question"（→ "calls everything into question"）
+- **英語の冗長表現**: momentum-en "baseball ball"（→ "baseball"）・finetuning-en "laws of balance"（→ "how to balance"）
+- **視点の混在**: finetuning-en "before it starts talking to **you**"（→ "**us**"、ES版 "nosotros" と不一致）
+- **用語の不統一**: momentum-es で "momentum"（英語借用）・"momento"・"cantidad de movimiento" が混在（→ "momento" に統一）
+- **専門用語の誤訳**: transformer-es "atención multi-**cabezal**"（→ "multi-**cabeza**"）
+
+EN 訳は概ね高品質だが、フランス語慣用句の直訳が残りやすい。ES 訳はスピーカータグ欠落と用語揺れが課題。いずれも文意は正確で添削コストは低い。
 
 ### examples/tr-en/: EN→DE・EN→JA・EN→ZH 参照訳の再生成
 
@@ -43,7 +80,11 @@
 
 **tr-fr との依存関係**: 英語ファイルが翻訳・添削・確定済みであることが前提。英語版が置き換わると用語の文脈も変わるため、`examples/terms/batch.sh` で `*-en.{json,tsv}` を再生成・校正してから `examples/tr-en/` に入る。
 
-- **実行**: `examples/tr-en/` で `make`（`trtools batch` を呼び出す）
+tr-fr と同じフロー（`make translate` → 添削 → `make evaluate`）。`others`（finetuning・transformer・momentum）と `onde` を別 BATCH_BASE 変数で管理し、`translate`・`evaluate` ターゲットがそれぞれ両方を実行する。
+
+- **翻訳**: `make translate`（`--translate-only`、評価・集約なし）
+- **評価**: `make evaluate`（`--evaluator ollama:qwen3.6`、翻訳済みファイルをスキップ）
+- **一括**: `make` または `make all`（translate → evaluate の順に実行）
 - **対象**: finetuning・transformer・momentum × EN→DE・EN→JA・EN→ZH、onde × EN→DE・EN→JA・EN→ZH・EN→EO・EN→HI
 - **設定**: gemma4-26b・threshold=20・keep=5・CoT なし・用語ファイル注入（`examples/terms/*-en.{json,tsv}`）
 
