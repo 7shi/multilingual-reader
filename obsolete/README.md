@@ -2,6 +2,18 @@
 
 仕様が古くなったスクリプトを格納。
 
+## translate.py / translate.md
+
+`trtools translate` サブコマンドに置き換えられた旧翻訳スクリプト。話者分離・推論レベル別構造化出力・スライディング方式履歴管理を実装していたが、以下の理由で廃止：
+
+- 推論レベルを上げても翻訳品質は改善しない（実験結果より）
+- スライディング方式の履歴管理では用語ブレと KV キャッシュ無効の問題が発生
+- 話者分離は汎用性を損なう
+
+`translate.md` は開発記録（多段階翻訳・多モデル協調の試行の経緯）。
+
+新しい実装は `trtools/translate.py`（`uv run trtools translate`）を参照。
+
 ## convert_genspark.py
 
 Genspark HTMLファイルから話者別対話データを抽出するスクリプト。

@@ -148,6 +148,30 @@
 - **gemma4-26b は安定維持**: 急落なし。run 3 が 96→99 と微改善
 - **一般語の混入**: `mathématiques`・`physicien`・`anglais` など専門用語ではない語が抽出される。プロンプトの改善余地あり
 
+### experimental5/: trtools translate への移行
+
+**目的**: 用語抽出を `trtools term` として分離・校正済みのため、翻訳を `trtools translate` で実行する。全 run が同一の校正済み用語辞書を共有することで、experimental4 で残存していた run 間の用語ブレ（`affinage` → `refinamiento` / `ajuste fino`）を原理的に排除する。
+
+**解決策**:
+- 用語は `examples/terms/finetuning-fr.{json,tsv}` として事前に抽出・校正済みの共有ファイルを使用
+- 翻訳は `uv run trtools translate --terms-json ... --terms-tsv ...` で実行
+- experimental4 と同一設定（threshold=10・keep=5・CoT なし）
+
+**実験設定**: gemma4-26b・gemma4-e4b × 翻訳3回 × 評価3回
+
+**スコア結果**:
+
+| モデル | run 1 | run 2 | run 3 |
+|---|:---:|:---:|:---:|
+| gemma4-26b | 95 | 96 | 97 |
+| gemma4-e4b | 95 | 95 | 94 |
+
+**主な知見**:
+- **gemma4-e4b の急落が解消**: experimental4 の 92点（急落）が消え、94〜95点で安定。共有用語辞書による run 間ブレ排除の効果が確認された
+- **gemma4-26b**: 上限が 99→97 に下がったが 95〜97 の範囲で安定維持。急落なし。減点はほぼ `antisèche` の訳語選択（`acordeón` の地域差）のみで構造的欠陥なし
+- **gemma4-e4b**: run によって発言者ラベル消失・人称不統一といった軽微な構造的問題が出るが、リソース制約環境向けの割り切りモデルとして許容範囲
+- **評価者の検出漏れ**: 発言者消失を 3回中 2回見落とし（93〜94点）。qwen3.6 の検出精度に限界がある
+
 ---
 
 ## 次のステップ
