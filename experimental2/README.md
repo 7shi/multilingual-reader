@@ -109,13 +109,13 @@ bash batch.sh
 
 ```bash
 # 1. 個別評価（1回）
-uv run tr-eval \
+uv run trtools eval \
   --original ../examples/finetuning-fr.txt \
   --translation <translation.txt> \
   -f French -t Spanish -m ollama:qwen3.6 -w 3 -o <output.json>
 
 # 2. 3回評価 → 中央値集計
-uv run tr-agg evals/*.json
+uv run trtools agg evals/*.json
 
 # 3. SCORES.md 生成
 uv run ../experimental/generate_scores_md.py -1 91 -2 92 SCORES.txt

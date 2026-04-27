@@ -32,12 +32,12 @@ multilingual-reader/
 ├── onde.js                       # 多言語テキストデータ（波動・量子力学）
 ├── momentum.js                   # 多言語テキストデータ（運動量・測定理論）
 ├── examples/                     # 参照訳テキストファイルと評価結果
-│   └── evals/                    # tr-eval による参照訳評価（SCORES.txt・各言語 JSON）
+│   └── evals/                    # trtools eval による参照訳評価（SCORES.txt・各言語 JSON）
 ├── experimental/                 # ローカルLLM翻訳実験とパフォーマンス分析
 ├── experimental2/                # サマリー圧縮方式翻訳実験
 ├── experimental3/                # ハイブリッドモード翻訳実験（翻訳=CoTなし、要約=CoTあり）
 ├── experimental4/                # 用語事前抽出方式翻訳実験（翻訳前に全文から用語を抽出・確定）
-├── trtools/                      # 全実験共通の翻訳評価ツール（tr-eval / tr-agg）
+├── trtools/                      # 全実験共通の翻訳評価ツール（trtools eval / trtools agg）
 ├── split_podcast_data.py         # テキスト分割スクリプト（データセット配列対応）
 ├── merge_podcast_data.py         # テキスト統合スクリプト（nameフィールドなし配列形式）
 ├── convert_genspark.py           # GenSpark HTML対話データ抽出
@@ -51,7 +51,7 @@ multilingual-reader/
 
 `examples/` には各トピック × 各言語の参照訳テキストファイルが格納されています。原文はすべてフランス語です。
 
-`examples/evals/` には `tr-eval`（評価者: `ollama:qwen3.6`）による3回評価の JSON と集計結果（`SCORES.txt`）が格納されています。再評価・追加評価は `examples/evals/batch.sh` で実行できます。
+`examples/evals/` には `trtools eval`（評価者: `ollama:qwen3.6`）による3回評価の JSON と集計結果（`SCORES.txt`）が格納されています。再評価・追加評価は `examples/evals/batch.sh` で実行できます。
 
 **全トピックの評価結果（各トピック3回評価の中央値を言語別に平均）:**
 
@@ -73,8 +73,8 @@ multilingual-reader/
 
 | コマンド | スクリプト | 用途 |
 |---------|-----------|------|
-| `uv run tr-eval` | [trtools/evaluate.py](trtools/evaluate.py) | LLMによる翻訳品質評価（5項目×20点、100点満点） |
-| `uv run tr-agg` | [trtools/aggregate.py](trtools/aggregate.py) | 3回評価の中央値集計 |
+| `uv run trtools eval` | [trtools/evaluate.py](trtools/evaluate.py) | LLMによる翻訳品質評価（5項目×20点、100点満点） |
+| `uv run trtools agg` | [trtools/aggregate.py](trtools/aggregate.py) | 3回評価の中央値集計 |
 
 ### 実験ディレクトリの流れ
 

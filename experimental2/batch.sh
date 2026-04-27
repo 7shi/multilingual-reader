@@ -80,7 +80,7 @@ for model in "${MODELS[@]}"; do
             echo "Skipping $eval_out (already exists)"
         else
             echo -e "\nEvaluating $out (run $run)..."
-            uv run tr-eval $EVAL_OPT --translation "$out" -o "$eval_out"
+            uv run trtools eval $EVAL_OPT --translation "$out" -o "$eval_out"
         fi
     done
 done
@@ -89,7 +89,7 @@ done
 jsons=(evals/*.json)
 if [ -e "${jsons[0]}" ]; then
     echo -e "\nAggregating all models ..."
-    uv run tr-agg "${jsons[@]}" | tee SCORES.txt
+    uv run trtools agg "${jsons[@]}" | tee SCORES.txt
 else
     echo "No eval files found, skipping aggregation"
 fi

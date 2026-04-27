@@ -26,7 +26,7 @@ for topic in finetuning transformer onde momentum; do
                 continue
             fi
             echo -e "\nEvaluating $tgt_file (run $run)..."
-            uv run tr-eval \
+            uv run trtools eval \
                 --original "$src_file" --translation "$tgt_file" \
                 -f French -t "${LANG_NAME[$tgt_lang]}" \
                 -m "$EVALUATOR" -w 3 \
@@ -39,7 +39,7 @@ done
 jsons=(*.json)
 if [ -e "${jsons[0]}" ]; then
     echo -e "\nAggregating ..."
-    uv run tr-agg "${jsons[@]}" | tee SCORES.txt
+    uv run trtools agg "${jsons[@]}" | tee SCORES.txt
 
     echo -e "\n言語別平均値（中央値の平均）:"
     python3 -c "

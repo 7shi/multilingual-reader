@@ -44,7 +44,7 @@ for model in "${MODELS[@]}"; do
                 echo "Skipping $eval_out (already exists)"
             else
                 echo -e "\nEvaluating $out (eval run $evrun)..."
-                uv run tr-eval $EVAL_OPT --translation "$out" -o "$eval_out"
+                uv run trtools eval $EVAL_OPT --translation "$out" -o "$eval_out"
             fi
         done
     done
@@ -57,7 +57,7 @@ for model in "${MODELS[@]}"; do
         jsons=(evals/$model-$trrun-eval-*.json)
         if [ -e "${jsons[0]}" ]; then
             echo -e "\n=== $model (translation run $trrun) ===" | tee -a SCORES.txt
-            uv run tr-agg "${jsons[@]}" | tee -a SCORES.txt
+            uv run trtools agg "${jsons[@]}" | tee -a SCORES.txt
         fi
     done
 done

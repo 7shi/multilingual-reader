@@ -108,13 +108,15 @@ def aggregate_evaluations(files):
 
     return results
 
-def main():
-    parser = argparse.ArgumentParser(description="評価結果JSONファイルを読み込み、3回評価の中央値を計算")
+def add_parser(subparsers):
+    parser = subparsers.add_parser("agg", help="評価結果JSONの中央値を集約")
     parser.add_argument("files", nargs="+", help="評価結果JSONファイル（複数指定可能）")
     parser.add_argument("-o", "--output", dest="output_file", help="集約結果をJSONで保存するファイル名")
     parser.add_argument("--verbose", action="store_true", help="詳細な統計情報を表示")
-    args = parser.parse_args()
+    parser.set_defaults(func=run)
+    return parser
 
+def run(args):
     aggregated_results = aggregate_evaluations(args.files)
 
     for base_name, result in aggregated_results.items():
@@ -149,4 +151,9 @@ def main():
         print(f"\n処理完了: {len(aggregated_results)}件のファイルグループを集約しました")
 
 if __name__ == "__main__":
-    main()
+    import argparse
+    parser = argparse.ArgumentParser(description="評価結果JSONの中央値を集約")
+    subparsers = parser.add_subparsers()
+    add_parser(subparsers)
+    args = parser.parse_args(["agg"] + __import__("sys").argv[1:])
+    args.func(args)

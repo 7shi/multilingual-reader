@@ -33,8 +33,8 @@ class TranslationEvaluation(BaseModel):
         description="Overall comprehensive evaluation comment about the translation quality as a whole"
     )
 
-def main():
-    parser = argparse.ArgumentParser(description="翻訳品質を5項目基準で評価")
+def add_parser(subparsers):
+    parser = subparsers.add_parser("eval", help="翻訳品質を5項目基準で評価")
     parser.add_argument("--original", required=True, help="原文ファイル")
     parser.add_argument("--translation", required=True, help="翻訳文ファイル")
     parser.add_argument("-m", "--model", required=True, help="評価に使用するモデル")
@@ -44,8 +44,10 @@ def main():
     parser.add_argument("-w", "--retry-wait", type=int, default=DEFAULT_RETRY_WAIT_SECONDS,
                         help=f"リトライ時の待機時間（秒）（デフォルト: {DEFAULT_RETRY_WAIT_SECONDS}秒）")
     parser.add_argument("--no-think", action="store_true", help="thinking処理を無効化（Qwen3モデル用）")
-    args = parser.parse_args()
+    parser.set_defaults(func=run)
+    return parser
 
+def run(args):
     with open(args.original, "r", encoding="utf-8") as f:
         original_text = f.read().rstrip()
 
@@ -128,4 +130,9 @@ Score each criterion from 0-20 points based on the ENTIRE document."""
         print(f"\n評価結果をJSONで保存しました: {args.output_file}")
 
 if __name__ == "__main__":
-    main()
+    import argparse
+    parser = argparse.ArgumentParser(description="翻訳品質を5項目基準で評価")
+    subparsers = parser.add_subparsers()
+    add_parser(subparsers)
+    args = parser.parse_args(["eval"] + __import__("sys").argv[1:])
+    args.func(args)
