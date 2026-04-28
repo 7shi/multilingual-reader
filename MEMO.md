@@ -4,17 +4,15 @@
 
 `examples/` の多言語参照訳は以下の2段階方式で生成する。LLM の学習データ充実度を考慮し、英語を中継言語として活用することで重訳品質を確保する。
 
-| ルート | 対象言語 | 備考 |
-|---|---|---|
-| FR → EN | English | 直接翻訳 |
-| FR → ES | Spanish | 直接翻訳 |
-| EN → DE | German | 英語からの重訳 |
-| EN → JA | Japanese | 英語からの重訳 |
-| EN → ZH | Chinese | 英語からの重訳 |
-| EN → EO | Esperanto | 英語からの重訳（onde のみ） |
-| EN → HI | Hindi | 英語からの重訳（onde のみ） |
+| ルート | 対象言語 | 備考 | examples/ 収録版 |
+|---|---|---|---|
+| fr→en | English | 直接翻訳 | Gemini 2.5 Pro（旧訳維持） |
+| fr→es | Spanish | 直接翻訳 | gemma4-26b |
+| en→de | German | 英語からの重訳 | gemma4-26b |
+| en→ja | Japanese | 英語からの重訳 | Gemini 2.5 Pro（旧訳維持） |
+| en→zh | Chinese | 英語からの重訳 | gemma4-26b |
 
-評価は各ルートの原文を基準とする（EN/ES は FR と比較、DE/JA/ZH/EO/HI は EN と比較）。`examples/evals/` の eval ファイル名は `{topic}-{from}-{to}-{run}.json` 形式で言語ルートを明示する。
+評価は各ルートの原文を基準とする（en/es は fr、de/ja/zh は en と比較）。`examples/evals/` の eval ファイル名は `{topic}-{from}-{to}-{run}.json` 形式で言語ルートを明示する。
 
 **共通語彙（`examples/terms/common.tsv`）**: 番組名など全トピック共通の固有名詞はここに記載し、`trtools term translate -c common.tsv` で LLM をスキップして採用する。LLM に任せると run ごとに訳語がブレるため、番組名は必ずここで固定する。
 
@@ -27,16 +25,16 @@
 - **余分テキスト混入**: ` evanescent waves ( evanescent waves / 消逝波)` のように原語が訳語欄に混入する
 - **誤字**: `ultrastreine`（→ `ultrafeine`）など
 
-### examples/tr-fr/: FR→EN・FR→ES 参照訳の再生成
+### examples/tr-fr/: fr→(en, es) 翻訳・評価
 
-現行の `examples/` 参照訳（英語: Gemini 翻訳＋Claude レビュー、スペイン語: Gemini 2.5 Pro）を gemma4-26b で再生成し、手動添削の上で置き換える。
+gemma4-26b で翻訳し qwen3.6 で評価した結果を格納する。`examples/terms/` の用語 TSV は校正済みだが、翻訳テキスト自体は添削なしの素の状態。`examples/` への収録は別途判断し、添削した上で品質が向上したと判断したものだけ置き換えた。
 
-**フロー**: `make translate` → 添削 → `make evaluate` → `examples/` 置き換え。初回評価を無駄にしないため、添削後に評価を実施する。`trtools batch` のデフォルト（`--tr-runs 1`）でサフィックスなしのファイル名（`tr/finetuning-en.txt` 等）を生成する。
+**フロー**: `make translate` → `make evaluate`。`trtools batch` のデフォルト（`--tr-runs 1`）でサフィックスなしのファイル名（`tr/finetuning-en.txt` 等）を生成する。
 
 - **翻訳**: `make translate`（`trtools batch --translate-only`、評価・集約なし）
 - **評価**: `make evaluate`（`trtools batch --evaluator ollama:qwen3.6`、翻訳済みファイルをスキップ）
 - **一括**: `make` または `make all`（translate → evaluate の順に実行）
-- **対象**: finetuning・transformer・onde・momentum の4トピック × FR→EN・FR→ES
+- **対象**: finetuning・transformer・onde・momentum の4トピック × fr→(en, es)
 - **設定**: gemma4-26b・threshold=10・keep=5・CoT なし・用語ファイル注入（`examples/terms/*-fr.{json,tsv}`）
 
 #### 添削所感
@@ -46,46 +44,46 @@ gemma4-26b の生成品質は全体的に高く、構造的欠陥はほぼなし
 - **スピーカータグ欠落**: momentum-es（4箇所）・onde-es（1箇所）。モデルが短い相槌行（"¿Oh?"・"De acuerdo." 等）のタグを落とす傾向あり
 - **フランス語直訳の残留**: momentum-en "angular momentum"（文脈上は linear momentum）・transformer-en "The discussion is open."（→ "The floor is yours."）・momentum-en "calls the world into question"（→ "calls everything into question"）
 - **英語の冗長表現**: momentum-en "baseball ball"（→ "baseball"）・finetuning-en "laws of balance"（→ "how to balance"）
-- **視点の混在**: finetuning-en "before it starts talking to **you**"（→ "**us**"、ES版 "nosotros" と不一致）
+- **視点の混在**: finetuning-en "before it starts talking to **you**"（→ "**us**"、es版 "nosotros" と不一致）
 - **用語の不統一**: momentum-es で "momentum"（英語借用）・"momento"・"cantidad de movimiento" が混在（→ "momento" に統一）
 - **専門用語の誤訳**: transformer-es "atención multi-**cabezal**"（→ "multi-**cabeza**"）
 
-EN 訳は概ね高品質だが、フランス語慣用句の直訳が残りやすい。ES 訳はスピーカータグ欠落と用語揺れが課題。いずれも文意は正確で添削コストは低い。
+en 訳は概ね高品質だが、フランス語慣用句の直訳が残りやすい。es 訳はスピーカータグ欠落と用語揺れが課題。いずれも文意は正確で添削コストは低い。
 
 #### 結果サマリー
 
-**FR→ES は全面差し替え**、**FR→EN は旧訳を維持**。
+**fr→es は全面差し替え**、**fr→en は旧訳を維持**。
 
-| トピック | FR→EN | FR→ES |
+| トピック | fr→en | fr→es |
 |---|:---:|:---:|
 | finetuning | 旧訳維持（100→97） | 差し替え（97→97） |
 | transformer | 旧訳維持（97→97） | 差し替え（94→96） |
 | onde | 旧訳維持（96→97） | 差し替え（97→97） |
 | momentum | 旧訳維持（100→96） | 差し替え（92→97） |
 
-FR→EN は旧訳（Gemini 翻訳＋Claude レビュー）が上質なため維持。主な差異：
+fr→en は旧訳（Gemini 翻訳＋Claude レビュー）が上質なため維持。主な差異：
 
 - **短縮形の一貫性**: 旧訳は "I'm" / "we're" / "it's" / "you've" を全体で統一。新訳は "I am" / "It is" と短縮形が混在し、ポッドキャストとして不統一
 - **慣用句**: 旧 "pull back the curtain on"（より口語的）vs 新 "lift the veil on"（フランス語 "lever le voile" の直訳感が残る）
 - **相槌**: 旧 "You've got it."（自然な会話調）vs 新 "You have understood it perfectly."（硬い）
 - **比喩表現**: 旧 "the physics of balance"（バイクの例として正確）vs 新 "how to balance"（意訳）
 
-FR→ES は旧訳（Gemini 2.5 Pro）より全体的に同等以上で差し替え。
+fr→es は旧訳（Gemini 2.5 Pro）より全体的に同等以上で差し替え。
 
 `examples/` への反映: `*-es.txt`（4ファイル）と `examples/evals/*-fr-es-*.json`（12ファイル）を差し替え済み。
 
-### examples/tr-en/: EN→DE・EN→JA・EN→ZH 参照訳の再生成
+### examples/tr-en/: コア言語 en→(de, ja, zh) 翻訳・評価
 
-英語版（`*-en.txt`）を中継言語としてドイツ語・日本語・中国語、および onde のみエスペラント・ヒンディー語へ翻訳する。
+英語版（`*-en.txt`）を中継言語としてドイツ語・日本語・中国語へ翻訳し評価した結果を格納する。tr-fr と同様、翻訳テキストは添削なしの素の状態。`examples/` への収録は別途判断し、添削した上で品質が向上したと判断したものだけ置き換えた。
 
-**tr-fr との依存関係**: 英語ファイルが翻訳・添削・確定済みであることが前提。英語版が置き換わると用語の文脈も変わるため、`examples/terms/batch.sh` で `*-en.{json,tsv}` を再生成・校正してから `examples/tr-en/` に入る。
+**tr-fr との依存関係**: 英語ファイルが確定済みであることが前提。英語版が置き換わると用語の文脈も変わるため、`examples/terms/batch.sh` で `*-en.{json,tsv}` を再生成・校正してから `examples/tr-en/` に入る。
 
-tr-fr と同じフロー（`make translate` → 添削 → `make evaluate`）。`others`（finetuning・transformer・momentum）と `onde` を別 BATCH_BASE 変数で管理し、`translate`・`evaluate` ターゲットがそれぞれ両方を実行する。
+`others`（finetuning・transformer・momentum）と `onde` を別 BATCH_BASE 変数で管理し、`translate`・`evaluate` ターゲットがそれぞれ両方を実行する。
 
 - **翻訳**: `make translate`（`--translate-only`、評価・集約なし）
 - **評価**: `make evaluate`（`--evaluator ollama:qwen3.6`、翻訳済みファイルをスキップ）
 - **一括**: `make` または `make all`（translate → evaluate の順に実行）
-- **対象**: finetuning・transformer・momentum × EN→DE・EN→JA・EN→ZH、onde × EN→DE・EN→JA・EN→ZH・EN→EO・EN→HI
+- **対象**: finetuning・transformer・momentum × en→(de, ja, zh)、onde × en→(de, ja, zh)
 - **設定**: gemma4-26b・threshold=20・keep=5・CoT なし・用語ファイル注入（`examples/terms/*-en.{json,tsv}`）
 
 #### 添削所感
@@ -99,40 +97,44 @@ gemma4-26b の生成品質は全体的に高く、文意の誤りはほぼなし
 
 DE・JA・ZH はいずれも文意が正確で構造的欠陥はなし。添削コストは低い。
 
-**エスペラント（onde-eo）の品質**: 他言語と比較して著しく低く、15箇所を修正。主な誤りパターン：
-- **語彙の誤り**: `riĉo`（富）→ `ondeto`（波紋）、`radiumo`（ラジウム元素）→ `fasko`（ビーム）、`Nevoltebla` → `Nekredebla`（信じられない）
-- **語形・時制の誤り**: `eblebloj` → `eblecoj`（可能性）、`Ĉiujn rimojn` → `Ĉiam`（常に）、`atenu` → `atenuiĝas`（現在直説法）
-- **他言語の混入**: `another`（英語）→ `alia`、`impose`（仏語）→ `trudas`、`Absolutte`（スペルミス）→ `Absolute`
-- **テキスト破損**: `mat<' materia` → `materia`
+#### 結果サマリー
 
-**ヒンディー語（onde-hi）**: 問題なし。旧版（中央値13点）とは異なり、今回は gemma4-26b＋用語注入により品質が確保された。
+**en→ja は旧訳維持**、**en→de・en→zh は全面差し替え**。
+
+| トピック | en→de | en→ja | en→zh |
+|---|:---:|:---:|:---:|
+| finetuning | 96 | 95 | 95 |
+| transformer | 99 | 97 | 97 |
+| momentum | 88 | 95 | 96 |
+| onde | 94 | 97 | 96 |
+
+en→ja は旧訳（Gemini 2.5 Pro ベース）が既に高品質のため維持。
+
+en→zh は全トピックで高スコアで全面差し替え。
+
+en→de は全体的に高品質だが momentum が88点とやや低め。スピーカータグ欠落の添削後に差し替え。
+
+`examples/` への反映: `*-de.txt`・`*-zh.txt`（計8ファイル）と `examples/evals/` の対応 JSON（計24ファイル）を差し替え済み。
+
+### examples/tr-en/: onde 追加言語 en→(eo, hi, te, kn, tr, et, sr)
+
+onde のみを対象とした追加言語の翻訳・評価。gemma4-26b の素の能力確認として実施した。同じ Makefile の `onde` ターゲットで実行する。
 
 #### 結果サマリー
 
-**EN→JA は旧訳維持**、**EN→DE・EN→ZH・EN→EO・EN→HI は全面差し替え**。
+添削なしの素の状態で評価のみ実施（qwen3.6 の te・kn 評価はスコアのばらつきが大きく信頼性に懸念あり）：
 
-| トピック | EN→DE | EN→JA | EN→ZH |
-|---|:---:|:---:|:---:|
-| finetuning | 差し替え（96→95） | 旧訳維持（99→98） | 差し替え（90→95） |
-| transformer | 差し替え（96→96） | 旧訳維持（95→96） | 差し替え（87→97） |
-| momentum | 差し替え（94→97） | 旧訳維持（97→96） | 差し替え（96→96） |
-| onde | 差し替え（92→97） | 旧訳維持（97→97） | 差し替え（91→98） |
+| ルート | スコア（中央値） | 評価信頼性 |
+|---|:---:|---|
+| en→sr | 93 | ○ |
+| en→tr | 91 | ○ |
+| en→hi | 75 | ○ |
+| en→te | 64 | △（run 間ばらつき大） |
+| en→kn | 50 | △（run 間ばらつき大） |
+| en→eo | 31 | ○ |
+| en→et | 22 | ○ |
 
-onde のみ対象の言語：
-
-| トピック | EN→EO | EN→HI |
-|---|:---:|:---:|
-| onde | 差し替え（11→43） | 差し替え（29→70） |
-
-EN→JA は旧訳（Gemini 2.5 Pro ベース）が既に高品質のため維持。
-
-EN→ZH は transformer（87→97）・onde（91→98）で大幅改善。全トピックで新訳が上回り全面差し替え。
-
-EN→DE は全体的に同等で onde・momentum でやや改善（92→97・94→97）。スピーカータグ欠落の添削後に差し替え。
-
-EN→EO・EN→HI は大幅改善（EO: 11→43、HI: 29→70）。ただし EO は gemma4-26b の語彙誤りが多く、中央値 43 に留まる。
-
-`examples/` への反映: `*-de.txt`・`*-zh.txt`・`onde-eo.txt`・`onde-hi.txt`（計10ファイル）と `examples/evals/` の対応 JSON（計30ファイル）を差し替え済み。
+80点以上を校正による実用化の目安とすると、sr・tr が候補となる。eo は語彙誤り・語形ミス・他言語混入が多く中央値 31 に留まる。
 
 ---
 
@@ -159,13 +161,13 @@ EN→EO・EN→HI は大幅改善（EO: 11→43、HI: 29→70）。ただし EO 
 
 ### 評価言語ペアの選定方針
 
-実験全体を通じて翻訳タスクは**フランス語→スペイン語**（FR→ES）を基準軸に採用している。
+実験全体を通じて翻訳タスクは**フランス語→スペイン語**（fr→es）を基準軸に採用している。
 
 - **英語↔西欧語**は LLM の学習データが最も充実しており最高精度が「当たり前」のため、モデル間差異が出にくく評価軸として不適切
-- **ロマンス語間**（FR↔ES）は言語距離が適度に近く、術語・慣用表現・文化的ローカライズで差が出やすい。97〜100点帯での細かい差別化が可能
+- **ロマンス語間**（fr↔es）は言語距離が適度に近く、術語・慣用表現・文化的ローカライズで差が出やすい。97〜100点帯での細かい差別化が可能
 - 日本語・中国語・ドイツ語等は参照訳の品質確認には使えるが、評価者（qwen3.6）の得意不得意が結果に影響しやすい
 
-`examples/` の参照訳を評価した結果、英語訳（Gemini 翻訳 + Claude レビュー）は中央値100点を達成。FR→ES（Gemini 2.5 Pro）が97点止まりだったことは、評価者の英語優位バイアスを示すとともに、FR→ES を実験軸に選んだ設計判断の妥当性を裏付けている。
+`examples/` の参照訳を評価した結果、英語訳（Gemini 翻訳 + Claude レビュー）は中央値100点を達成。fr→es（Gemini 2.5 Pro）が97点止まりだったことは、評価者の英語優位バイアスを示すとともに、fr→es を実験軸に選んだ設計判断の妥当性を裏付けている。
 
 ### experimental/: 推論レベル別性能分析
 

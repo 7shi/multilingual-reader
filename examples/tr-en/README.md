@@ -26,9 +26,8 @@ make
 - 既存ファイルはスキップされるため途中再開可能
 - threshold=20 は 26B モデルで問題ないことを確認済み（tr-fr の threshold=10 より広いコンテキストを保持）
 
-| ターゲット | 対象トピック | 翻訳先言語 |
-|---|---|---|
-| `others` | finetuning・transformer・momentum | DE・JA・ZH |
-| `onde` | onde | DE・JA・ZH・EO・HI |
+ベース言語は ドイツ語 (de), 日本語 (ja) , 中国語 (zh)。onde のみ以下の言語が追加:
+
+- エスペラント (eo), ヒンディー語 (hi), テルグ語 (te), カンナダ語 (kn), トルコ語 (tr), エストニア語 (et), セルビア語 (sr)
 
 個別に実行する場合は `make others` または `make onde`。
