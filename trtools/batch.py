@@ -28,6 +28,8 @@ def add_parser(subparsers):
                         help="圧縮後に保持する翻訳ペア数（デフォルト: 5）")
     parser.add_argument("--no-think", action="store_true", help="CoT 無効化")
     parser.add_argument("--no-agg", action="store_true", help="集約をスキップ（SCORES.txt を生成しない）")
+    parser.add_argument("--tr-dir", default="tr", help="翻訳出力ディレクトリ（デフォルト: tr）")
+    parser.add_argument("--eval-dir", default="evals", help="評価出力ディレクトリ（デフォルト: evals）")
     parser.add_argument("-w", "--retry-wait", type=int, default=3,
                         help="リトライ待機秒数（デフォルト: 3）")
     parser.set_defaults(func=run)
@@ -43,18 +45,18 @@ def _parse_input_file(file_path):
     return topic, from_code
 
 
-def _tr_path(topic, lang, trrun, tr_runs):
+def _tr_path(topic, lang, trrun, tr_runs, tr_dir="tr"):
     """翻訳出力ファイルパスを返す。tr_runs==1 のときはサフィックスなし。"""
     if tr_runs == 1:
-        return f"tr/{topic}-{lang}.txt"
-    return f"tr/{topic}-{lang}-{trrun}.txt"
+        return f"{tr_dir}/{topic}-{lang}.txt"
+    return f"{tr_dir}/{topic}-{lang}-{trrun}.txt"
 
 
-def _eval_path(topic, lang, trrun, tr_runs, evrun):
+def _eval_path(topic, lang, trrun, tr_runs, evrun, eval_dir="evals"):
     """評価出力ファイルパスを返す。tr_runs==1 のときは trrun 部分を省略。"""
     if tr_runs == 1:
-        return f"evals/{topic}-{lang}-{evrun}.json"
-    return f"evals/{topic}-{lang}-{trrun}-{evrun}.json"
+        return f"{eval_dir}/{topic}-{lang}-{evrun}.json"
+    return f"{eval_dir}/{topic}-{lang}-{trrun}-{evrun}.json"
 
 
 def run(args):
@@ -64,9 +66,9 @@ def run(args):
 
     terms_dir = Path(args.terms_dir) if args.terms_dir else None
 
-    os.makedirs("tr", exist_ok=True)
+    os.makedirs(args.tr_dir, exist_ok=True)
     if not args.translate_only:
-        os.makedirs("evals", exist_ok=True)
+        os.makedirs(args.eval_dir, exist_ok=True)
 
     # ファイルごとに (topic, from_code, from_lang, input_file) を解決
     inputs = []
@@ -86,7 +88,7 @@ def run(args):
         for lang in args.langs:
             lang_name = LANG_NAMES.get(lang, lang.capitalize())
             for trrun in range(1, args.tr_runs + 1):
-                out = _tr_path(topic, lang, trrun, args.tr_runs)
+                out = _tr_path(topic, lang, trrun, args.tr_runs, args.tr_dir)
                 if os.path.exists(out):
                     print(f"Skipping {out} (already exists)")
                     continue
@@ -117,12 +119,12 @@ def run(args):
         for lang in args.langs:
             lang_name = LANG_NAMES.get(lang, lang.capitalize())
             for trrun in range(1, args.tr_runs + 1):
-                tr_file = _tr_path(topic, lang, trrun, args.tr_runs)
+                tr_file = _tr_path(topic, lang, trrun, args.tr_runs, args.tr_dir)
                 if not os.path.exists(tr_file):
                     print(f"Skipping {tr_file} evaluation (translation not available)")
                     continue
                 for evrun in range(1, args.eval_runs + 1):
-                    eval_out = _eval_path(topic, lang, trrun, args.tr_runs, evrun)
+                    eval_out = _eval_path(topic, lang, trrun, args.tr_runs, evrun, args.eval_dir)
                     if os.path.exists(eval_out):
                         print(f"Skipping {eval_out} (already exists)")
                         continue
@@ -152,9 +154,9 @@ def run(args):
             for lang in args.langs:
                 for trrun in range(1, args.tr_runs + 1):
                     jsons = [
-                        _eval_path(topic, lang, trrun, args.tr_runs, evrun)
+                        _eval_path(topic, lang, trrun, args.tr_runs, evrun, args.eval_dir)
                         for evrun in range(1, args.eval_runs + 1)
-                        if os.path.exists(_eval_path(topic, lang, trrun, args.tr_runs, evrun))
+                        if os.path.exists(_eval_path(topic, lang, trrun, args.tr_runs, evrun, args.eval_dir))
                     ]
                     if not jsons:
                         continue

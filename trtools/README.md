@@ -320,7 +320,7 @@ uv run trtools term set terms/onde-en.tsv -k "physics" -l Japanese -v "物理学
 
 ## batch
 
-翻訳→評価→集約を一括実行する。ファイル名の言語コード（例: `finetuning-fr.txt` → `fr`）から原語を自動導出し、`tr/` と `evals/` ディレクトリに出力を整理する。既存ファイルはスキップする。
+翻訳→評価→集約を一括実行する。ファイル名の言語コード（例: `finetuning-fr.txt` → `fr`）から原語を自動導出し、`--tr-dir` と `--eval-dir` で指定したディレクトリに出力を整理する。既存ファイルはスキップする。
 
 ```
 uv run trtools batch <files...> --langs <lang...> -m <model> [options]
@@ -348,6 +348,8 @@ uv run trtools batch <files...> --langs <lang...> -m <model> [options]
 | `--threshold` | `10` | 要約生成の間隔（行数） |
 | `--keep` | `5` | 圧縮後に保持する翻訳ペア数 |
 | `--no-think` | false | CoT無効化 |
+| `--tr-dir` | `tr` | 翻訳出力ディレクトリ |
+| `--eval-dir` | `evals` | 評価出力ディレクトリ |
 | `-w`, `--retry-wait` | `3` | リトライ待機秒数 |
 
 ### 出力ファイル構成
@@ -355,16 +357,16 @@ uv run trtools batch <files...> --langs <lang...> -m <model> [options]
 `--tr-runs 1`（デフォルト）の場合:
 
 ```
-tr/
+<tr-dir>/
   <topic>-<lang>.txt          # 翻訳結果
-evals/
+<eval-dir>/
   <topic>-<lang>-1.json  # 評価結果（eval-runごと）
   <topic>-<lang>-2.json
   <topic>-<lang>-3.json
 SCORES.txt                    # 集約スコア
 ```
 
-`--tr-runs 3` の場合はサフィックス付き（例: `tr/finetuning-de-1.txt`, `evals/finetuning-de-1-1.json`）。
+`--tr-runs 3` の場合はサフィックス付き（例: `<tr-dir>/finetuning-de-1.txt`, `<eval-dir>/finetuning-de-1-1.json`）。
 
 ### 対応言語コード
 
