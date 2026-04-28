@@ -48,7 +48,7 @@ multilingual-reader/
 
 ### 翻訳評価ツール（trtools/）
 
-全実験で共通して使用するツールをパッケージ化したもの。
+全実験で共通して使用するツールをパッケージ化したもの。詳細は [trtools/README.md](trtools/README.md) を参照。
 
 | コマンド | 用途 |
 |---------|------|
@@ -56,6 +56,7 @@ multilingual-reader/
 | `uv run trtools eval` | LLMによる翻訳品質評価（5項目×20点、100点満点） |
 | `uv run trtools agg` | 3回評価の中央値集計 |
 | `uv run trtools term` | テキストから用語・固有名詞を抽出し訳語をTSVに保存 |
+| `uv run trtools batch` | 翻訳→評価→集約を一括実行 |
 
 ### 参照訳と評価結果（examples/）
 
@@ -223,37 +224,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 ### 多言語翻訳
-`trtools translate` で行単位翻訳（空行保持、用語注入・サマリー圧縮方式）：
+
+`trtools translate` で行単位翻訳（空行保持、用語注入・サマリー圧縮方式）。オプション詳細は [trtools/README.md](trtools/README.md) を参照。
 
 ```bash
 # 基本使用
-uv run trtools translate input.txt -f French -t Spanish -o output.txt -m ollama:gemma4:12b
+uv run trtools translate input.txt -f French -t Spanish -o output.txt -m ollama:gemma4:26b --no-think
 
 # 用語ファイルを指定（用語の一貫性を確保）
 uv run trtools translate input.txt -f French -t Spanish -o output.txt \
-  -m ollama:gemma4:12b \
-  --terms-json terms.json \
-  --terms-tsv terms.tsv
+  -m ollama:gemma4:26b --no-think \
+  --terms-json terms.json --terms-tsv terms.tsv
 ```
-
-**必須オプション**：
-- `-f/--from`: 原語（完全な言語名: French, English, Japanese 等）
-- `-t/--to`: 翻訳先言語（完全な言語名: Spanish, Japanese 等）
-- `-o/--output`: 出力ファイル名
-- `-m/--model`: 翻訳モデル
-
-**オプション**：
-- `--terms-json`: `trtools term extract` の出力 JSON（用語チャンクマップ）
-- `--terms-tsv`: `trtools term translate` の出力 TSV（用語訳語対応表）
-- `--threshold`: 要約生成の間隔（デフォルト: 10行）
-- `--keep`: 圧縮後に保持する翻訳ペア数（デフォルト: 5）
-- `--no-think`: CoT 無効化（Qwen3 モデル用）
-- `-w/--retry-wait`: リトライ待機秒数
-
-**動作**：
-- 空行は翻訳せずそのまま出力
-- THRESHOLD 行ごとにサマリー圧縮で文脈を維持
-- `--terms-json`・`--terms-tsv` 両方指定時のみ用語注入を実施
 
 ### テキスト統合・分割
 
