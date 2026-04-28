@@ -32,6 +32,7 @@ def add_parser(subparsers):
     parser.add_argument("--keep", type=int, default=5,
                         help="圧縮後に保持する翻訳ペア数（デフォルト: 5）")
     parser.add_argument("--no-think", action="store_true", help="CoT 無効化")
+    parser.add_argument("--no-agg", action="store_true", help="集約をスキップ（SCORES.txt を生成しない）")
     parser.add_argument("-w", "--retry-wait", type=int, default=3,
                         help="リトライ待機秒数（デフォルト: 3）")
     parser.set_defaults(func=run)
@@ -145,6 +146,9 @@ def run(args):
                         evaluate.run(eval_args)
                     except Exception as e:
                         print(f"評価エラー ({eval_out}): {e}")
+
+    if args.no_agg:
+        return
 
     # --- 集約フェーズ ---
     with open("SCORES.txt", "w", encoding="utf-8") as scores_f:
