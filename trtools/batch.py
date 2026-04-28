@@ -53,8 +53,8 @@ def _tr_path(topic, lang, trrun, tr_runs):
 def _eval_path(topic, lang, trrun, tr_runs, evrun):
     """評価出力ファイルパスを返す。tr_runs==1 のときは trrun 部分を省略。"""
     if tr_runs == 1:
-        return f"evals/{topic}-{lang}-eval-{evrun}.json"
-    return f"evals/{topic}-{lang}-{trrun}-eval-{evrun}.json"
+        return f"evals/{topic}-{lang}-{evrun}.json"
+    return f"evals/{topic}-{lang}-{trrun}-{evrun}.json"
 
 
 def run(args):

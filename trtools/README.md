@@ -141,7 +141,7 @@ uv run trtools eval \
   --translation finetuning-es.txt \
   -f French -t Spanish \
   -m ollama:qwen3.6 -w 3 \
-  -o evals/finetuning-es-eval-1.json
+  -o evals/finetuning-es-1.json
 ```
 
 ---
@@ -358,13 +358,13 @@ uv run trtools batch <files...> --langs <lang...> -m <model> [options]
 tr/
   <topic>-<lang>.txt          # 翻訳結果
 evals/
-  <topic>-<lang>-eval-1.json  # 評価結果（eval-runごと）
-  <topic>-<lang>-eval-2.json
-  <topic>-<lang>-eval-3.json
+  <topic>-<lang>-1.json  # 評価結果（eval-runごと）
+  <topic>-<lang>-2.json
+  <topic>-<lang>-3.json
 SCORES.txt                    # 集約スコア
 ```
 
-`--tr-runs 3` の場合はサフィックス付き（例: `tr/finetuning-de-1.txt`, `evals/finetuning-de-1-eval-1.json`）。
+`--tr-runs 3` の場合はサフィックス付き（例: `tr/finetuning-de-1.txt`, `evals/finetuning-de-1-1.json`）。
 
 ### 対応言語コード
 
@@ -450,9 +450,9 @@ for run in 1 2 3; do
     --original topic-fr.txt --translation tr/topic-en.txt \
     -f French -t English \
     -m ollama:qwen3.6 -w 3 \
-    -o evals/topic-en-eval-$run.json
+    -o evals/topic-en-$run.json
 done
 
 # 集約
-uv run trtools agg evals/topic-en-eval-*.json | tee SCORES.txt
+uv run trtools agg evals/topic-en-*.json | tee SCORES.txt
 ```
