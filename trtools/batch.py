@@ -4,12 +4,7 @@ import os
 from argparse import Namespace
 from pathlib import Path
 from . import translate, evaluate, aggregate
-
-LANG_NAMES = {
-    "en": "English", "es": "Spanish", "de": "German",
-    "ja": "Japanese", "zh": "Chinese", "fr": "French",
-    "eo": "Esperanto", "hi": "Hindi",
-}
+from .language import LANG_NAMES
 
 
 def add_parser(subparsers):

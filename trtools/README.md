@@ -308,16 +308,11 @@ SCORES.txt                    # 集約スコア
 
 ### 対応言語コード
 
-| コード | 言語 |
-|---|---|
-| `en` | English |
-| `fr` | French |
-| `es` | Spanish |
-| `de` | German |
-| `ja` | Japanese |
-| `zh` | Chinese |
-| `eo` | Esperanto |
-| `hi` | Hindi |
+[trtools/language.py](language.py) を参照。登録されていない言語コードは言語名として大文字化して渡される（例: `xx` → `Xx`）。
+
+一定の品質が確認されている言語（全4トピック・gemma4-26b、[examples/](../examples/) 参照訳として採用済み）: `en` English, `ja` Japanese, `es` Spanish, `zh` Chinese, `de` German
+
+上記以外の言語の品質は未確認。生成結果は必ず確認・校正すること。
 
 ### 使用例
 
