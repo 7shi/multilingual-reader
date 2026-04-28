@@ -3,6 +3,7 @@
 import csv
 import json
 import os
+import sys
 from pathlib import Path
 from pydantic import BaseModel, Field
 from .llm import LLMClient, DEFAULT_RETRY_WAIT_SECONDS
@@ -33,6 +34,27 @@ def add_parser(subparsers):
     term_sub.required = True
     _add_extract_parser(term_sub)
     _add_translate_parser(term_sub)
+    _add_show_parser(term_sub)
+    _add_set_parser(term_sub)
+
+
+def _add_show_parser(subparsers):
+    parser = subparsers.add_parser("show", help="TSVの列・行を絞り込んで表示")
+    parser.add_argument("input_file", metavar="FILE", help="対象TSVファイル")
+    parser.add_argument("-l", "--lang", action="append", metavar="LANG",
+                        help="表示する言語列（複数指定可、省略時は全列）")
+    parser.add_argument("-k", "--key", action="append", metavar="KEY",
+                        help="表示するキー（第1列の値、複数指定可、省略時は全行）")
+    parser.set_defaults(func=run_show)
+
+
+def _add_set_parser(subparsers):
+    parser = subparsers.add_parser("set", help="TSVの特定セルを更新")
+    parser.add_argument("input_file", metavar="FILE", help="対象TSVファイル")
+    parser.add_argument("-k", "--key", required=True, help="変更するキー（第1列の値）")
+    parser.add_argument("-l", "--lang", required=True, help="変更する言語列名")
+    parser.add_argument("-v", "--value", required=True, help="新しい値")
+    parser.set_defaults(func=run_set)
 
 
 def _add_extract_parser(subparsers):
@@ -305,3 +327,54 @@ def run_translate(args):
         # 言語ごとに保存（中断しても再開可能）
         save_tsv(args.output_file, header, rows)
         print(f"  保存: {args.output_file}")
+
+
+# ---------------------------------------------------------------------------
+# term show / term set
+# ---------------------------------------------------------------------------
+
+def run_show(args):
+    header, rows = load_tsv(args.input_file)
+    key_col = header[0]
+
+    if args.lang:
+        cols = [key_col]
+        for lang in args.lang:
+            if lang not in header:
+                print(f"警告: '{lang}' 列が見つかりません", file=sys.stderr)
+            else:
+                cols.append(lang)
+    else:
+        cols = header
+
+    if args.key:
+        key_set = set(args.key)
+        rows = [r for r in rows if r.get(key_col) in key_set]
+
+    writer = csv.writer(sys.stdout, delimiter="\t")
+    writer.writerow(cols)
+    for row in rows:
+        writer.writerow([row.get(c, "") for c in cols])
+
+
+def run_set(args):
+    header, rows = load_tsv(args.input_file)
+    key_col = header[0]
+
+    if args.lang not in header:
+        print(f"エラー: '{args.lang}' 列が見つかりません", file=sys.stderr)
+        sys.exit(1)
+
+    updated = False
+    for row in rows:
+        if row.get(key_col) == args.key:
+            row[args.lang] = args.value
+            updated = True
+            break
+
+    if not updated:
+        print(f"エラー: キー '{args.key}' が見つかりません", file=sys.stderr)
+        sys.exit(1)
+
+    save_tsv(args.input_file, header, rows)
+    print(f"更新しました: {args.key!r} [{args.lang}] = {args.value!r}")

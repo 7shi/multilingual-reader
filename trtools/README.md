@@ -47,6 +47,8 @@ uv run trtools <command> [options]
 | [`agg`](#agg) | 評価結果JSONを集約（中央値） |
 | [`term extract`](#term-extract) | テキストから専門用語を抽出 |
 | [`term translate`](#term-translate) | 抽出用語をTSVに翻訳 |
+| [`term show`](#term-show) | 用語TSVを言語・キーで絞り込んで表示 |
+| [`term set`](#term-set) | 用語TSVの特定セルを更新 |
 | [`batch`](#batch) | 翻訳→評価→集約を一括実行 |
 
 ---
@@ -254,6 +256,64 @@ uv run trtools term translate terms/finetuning-en.json \
   -m ollama:gemma4:31b --no-think \
   -c terms/common.tsv \
   -o terms/finetuning-en.tsv
+```
+
+---
+
+## term show
+
+用語TSVを言語列・キーで絞り込んで標準出力に表示する。列数が多いTSVをLLMに渡す際の前処理や、校正対象の確認に使用する。
+
+```
+uv run trtools term show <tsv_file> [-l <lang> ...] [-k <key> ...]
+```
+
+### 引数
+
+| 引数 | 説明 |
+|---|---|
+| `tsv_file` | 対象TSVファイル |
+| `-l`, `--lang` | 表示する言語列（複数指定可、省略時は全列） |
+| `-k`, `--key` | 表示するキー・第1列の値（複数指定可、省略時は全行） |
+
+キー列（第1列）は `-l` の指定に関わらず常に先頭に出力される。
+
+### 使用例
+
+```bash
+# 日本語列のみ全行表示
+uv run trtools term show terms/onde-en.tsv -l Japanese
+
+# 日本語・ドイツ語を2列表示
+uv run trtools term show terms/onde-en.tsv -l Japanese -l German
+
+# キーで絞り込み
+uv run trtools term show terms/onde-en.tsv -l Japanese -k physics -k waves
+```
+
+---
+
+## term set
+
+用語TSVの特定セルを上書きして保存する。LLMによる自動翻訳後の個別校正に使用する。
+
+```
+uv run trtools term set <tsv_file> -k <key> -l <lang> -v <value>
+```
+
+### 必須引数
+
+| 引数 | 説明 |
+|---|---|
+| `tsv_file` | 対象TSVファイル |
+| `-k`, `--key` | 変更するキー（第1列の値） |
+| `-l`, `--lang` | 変更する言語列名 |
+| `-v`, `--value` | 新しい値 |
+
+### 使用例
+
+```bash
+uv run trtools term set terms/onde-en.tsv -k "physics" -l Japanese -v "物理学"
 ```
 
 ---
