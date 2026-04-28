@@ -4,6 +4,7 @@ MODEL="ollama:gemma4:31b"
 #MODEL="google:gemma-4-31b-it"
 #MODEL="openrouter:google/gemma-4-31b-it:free"
 KEEP=5
+ADDITIONAL_LANGUAGES="-t Esperanto -t Hindi -t Telugu -t Kannada -t Turkish -t Estonian -t Serbian"
 
 for topic in finetuning transformer onde momentum; do
     # FR → EN, ES（直接翻訳）
@@ -27,7 +28,7 @@ for topic in finetuning transformer onde momentum; do
         -f English -m "$MODEL" --keep $KEEP --no-think \
         -o "$topic-en.json"
     en_langs="-t German -t Japanese -t Chinese"
-    [ "$topic" = "onde" ] && en_langs="$en_langs -t Esperanto -t Hindi"
+    [ "$topic" = "onde" ] && en_langs="$en_langs $ADDITIONAL_LANGUAGES"
     echo -e "\n[Translate] $topic (English -> DE/JA/ZH...)..."
     uv run trtools term translate "$topic-en.json" \
         $en_langs -m "$MODEL" --no-think \
