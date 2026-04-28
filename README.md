@@ -70,13 +70,11 @@ multilingual-reader/
 |-----------|------:|---:|---|
 | English   | 98.25 |  4 | French |
 | Japanese  | 97.00 |  4 | English |
-| Spanish   | 95.00 |  4 | French |
-| German    | 94.50 |  4 | English |
-| Chinese   | 91.00 |  4 | English |
-| Hindi     | 29.00 |  1 | English |
-| Esperanto | 11.00 |  1 | English |
+| Spanish   | 96.75 |  4 | French |
+| Chinese   | 96.50 |  4 | English |
+| German    | 96.25 |  4 | English |
 
-英語・日本語・スペイン語・ドイツ語は高品質な参照訳として実験のベースラインに使用できる水準。中国語は課題が残る。エスペラント・ヒンディー語（`onde` トピックのみ）は構造的欠陥レベルのため再翻訳予定。
+全言語とも高品質な参照訳として実験のベースラインに使用できる水準。
 
 ### 実験ディレクトリの流れ
 
