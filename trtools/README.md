@@ -66,8 +66,8 @@ uv run trtools translate <input_file> -f <from_lang> -t <to_lang> -o <output> -m
 | 引数 | 説明 |
 |---|---|
 | `input_file` | 翻訳対象のテキストファイル |
-| `-f`, `--from` | 原語（例: `French`, `English`） |
-| `-t`, `--to` | 翻訳先言語（例: `Spanish`, `Japanese`） |
+| `-f`, `--from` | 原語。言語名（`French`）または言語コード（`fr`） |
+| `-t`, `--to` | 翻訳先言語。言語名（`Spanish`）または言語コード（`es`） |
 | `-o`, `--output` | 出力ファイル名 |
 | `-m`, `--model` | 翻訳モデル（例: `ollama:gemma4:26b`） |
 
@@ -86,11 +86,11 @@ uv run trtools translate <input_file> -f <from_lang> -t <to_lang> -o <output> -m
 
 ```bash
 # 基本的な翻訳
-uv run trtools translate finetuning-fr.txt -f French -t Spanish \
+uv run trtools translate finetuning-fr.txt -f fr -t es \
   -o finetuning-es.txt -m ollama:gemma4:26b --no-think
 
 # 用語注入あり
-uv run trtools translate finetuning-fr.txt -f French -t Spanish \
+uv run trtools translate finetuning-fr.txt -f fr -t es \
   -o finetuning-es.txt -m ollama:gemma4:26b \
   --threshold 10 --keep 5 --no-think \
   --terms-json terms/finetuning-fr.json \
@@ -113,8 +113,8 @@ uv run trtools eval --original <orig> --translation <tr> -f <from> -t <to> -m <m
 |---|---|
 | `--original` | 原文ファイル |
 | `--translation` | 翻訳文ファイル |
-| `-f`, `--from` | 原語（例: `French`） |
-| `-t`, `--to` | 翻訳先言語（例: `Spanish`） |
+| `-f`, `--from` | 原語。言語名または言語コード |
+| `-t`, `--to` | 翻訳先言語。言語名または言語コード |
 | `-m`, `--model` | 評価モデル（例: `ollama:qwen3.6`） |
 
 ### オプション
@@ -139,7 +139,7 @@ uv run trtools eval --original <orig> --translation <tr> -f <from> -t <to> -m <m
 uv run trtools eval \
   --original finetuning-fr.txt \
   --translation finetuning-es.txt \
-  -f French -t Spanish \
+  -f fr -t es \
   -m ollama:qwen3.6 -w 3 \
   -o evals/finetuning-es-1.json
 ```
@@ -192,7 +192,7 @@ uv run trtools term extract <input_file> -f <from_lang> -m <model> -o <output.js
 | 引数 | 説明 |
 |---|---|
 | `input_file` | 用語を抽出するテキストファイル |
-| `-f`, `--from` | 原語（例: `French`, `English`） |
+| `-f`, `--from` | 原語。言語名または言語コード |
 | `-m`, `--model` | 使用モデル |
 | `-o`, `--output` | 出力JSONファイル名 |
 
@@ -208,7 +208,7 @@ uv run trtools term extract <input_file> -f <from_lang> -m <model> -o <output.js
 
 ```bash
 uv run trtools term extract finetuning-fr.txt \
-  -f French -m ollama:gemma4:31b \
+  -f fr -m ollama:gemma4:31b \
   --keep 5 --no-think \
   -o terms/finetuning-fr.json
 ```
@@ -228,7 +228,7 @@ uv run trtools term translate <extract.json> -t <lang> [-t <lang> ...] -m <model
 | 引数 | 説明 |
 |---|---|
 | `extract_file` | `term extract` の出力JSON |
-| `-t`, `--to` | 翻訳先言語（複数指定可） |
+| `-t`, `--to` | 翻訳先言語。言語名または言語コード（複数指定可） |
 | `-m`, `--model` | 使用モデル |
 | `-o`, `--output` | 出力TSVファイル名 |
 
@@ -245,14 +245,14 @@ uv run trtools term translate <extract.json> -t <lang> [-t <lang> ...] -m <model
 ```bash
 # フランス語 → 英語・スペイン語
 uv run trtools term translate terms/finetuning-fr.json \
-  -t English -t Spanish \
+  -t en -t es \
   -m ollama:gemma4:31b --no-think \
   -c terms/common.tsv \
   -o terms/finetuning-fr.tsv
 
 # 英語 → ドイツ語・日本語・中国語
 uv run trtools term translate terms/finetuning-en.json \
-  -t German -t Japanese -t Chinese \
+  -t de -t ja -t zh \
   -m ollama:gemma4:31b --no-think \
   -c terms/common.tsv \
   -o terms/finetuning-en.tsv
@@ -273,7 +273,7 @@ uv run trtools term show <tsv_file> [-l <lang> ...] [-k <key> ...]
 | 引数 | 説明 |
 |---|---|
 | `tsv_file` | 対象TSVファイル |
-| `-l`, `--lang` | 表示する言語列（複数指定可、省略時は全列） |
+| `-l`, `--lang` | 表示する言語列。言語名または言語コード（複数指定可、省略時は全列） |
 | `-k`, `--key` | 表示するキー・第1列の値（複数指定可、省略時は全行） |
 
 キー列（第1列）は `-l` の指定に関わらず常に先頭に出力される。
@@ -282,13 +282,13 @@ uv run trtools term show <tsv_file> [-l <lang> ...] [-k <key> ...]
 
 ```bash
 # 日本語列のみ全行表示
-uv run trtools term show terms/onde-en.tsv -l Japanese
+uv run trtools term show terms/onde-en.tsv -l ja
 
 # 日本語・ドイツ語を2列表示
-uv run trtools term show terms/onde-en.tsv -l Japanese -l German
+uv run trtools term show terms/onde-en.tsv -l ja -l de
 
 # キーで絞り込み
-uv run trtools term show terms/onde-en.tsv -l Japanese -k physics -k waves
+uv run trtools term show terms/onde-en.tsv -l ja -k physics -k waves
 ```
 
 ---
@@ -307,13 +307,13 @@ uv run trtools term set <tsv_file> -k <key> -l <lang> -v <value>
 |---|---|
 | `tsv_file` | 対象TSVファイル |
 | `-k`, `--key` | 変更するキー（第1列の値） |
-| `-l`, `--lang` | 変更する言語列名 |
+| `-l`, `--lang` | 変更する言語列名。言語名または言語コード |
 | `-v`, `--value` | 新しい値 |
 
 ### 使用例
 
 ```bash
-uv run trtools term set terms/onde-en.tsv -k "physics" -l Japanese -v "物理学"
+uv run trtools term set terms/onde-en.tsv -k "physics" -l ja -v "物理学"
 ```
 
 ---
@@ -418,12 +418,12 @@ uv run trtools agg evals/*.json | tee SCORES.txt
 ```bash
 # 用語抽出
 uv run trtools term extract topic-fr.txt \
-  -f French -m ollama:gemma4:31b --keep 5 --no-think \
+  -f fr -m ollama:gemma4:31b --keep 5 --no-think \
   -o terms/topic-fr.json
 
 # 用語翻訳
 uv run trtools term translate terms/topic-fr.json \
-  -t English -t Spanish \
+  -t en -t es \
   -m ollama:gemma4:31b --no-think \
   -c terms/common.tsv -o terms/topic-fr.tsv
 ```
@@ -443,7 +443,7 @@ uv run trtools batch topic-fr.txt \
 
 ```bash
 # 翻訳
-uv run trtools translate topic-fr.txt -f French -t English \
+uv run trtools translate topic-fr.txt -f fr -t en \
   -o tr/topic-en.txt -m ollama:gemma4:26b --no-think \
   --terms-json terms/topic-fr.json --terms-tsv terms/topic-fr.tsv
 
@@ -451,7 +451,7 @@ uv run trtools translate topic-fr.txt -f French -t English \
 for run in 1 2 3; do
   uv run trtools eval \
     --original topic-fr.txt --translation tr/topic-en.txt \
-    -f French -t English \
+    -f fr -t en \
     -m ollama:qwen3.6 -w 3 \
     -o evals/topic-en-$run.json
 done

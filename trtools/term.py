@@ -7,6 +7,7 @@ import sys
 from pathlib import Path
 from pydantic import BaseModel, Field
 from .llm import LLMClient, DEFAULT_RETRY_WAIT_SECONDS
+from .language import resolve_lang, resolve_langs
 
 
 class TermList(BaseModel):
@@ -181,6 +182,7 @@ def extract_terms(client, from_lang, chunk_text):
 
 
 def run_extract(args):
+    args.from_lang = resolve_lang(args.from_lang)
     if os.path.exists(args.output_file):
         print(f"用語抽出ファイルが既に存在します（スキップ）: {args.output_file}")
         return
@@ -237,6 +239,7 @@ def save_tsv(path, header, rows):
 
 
 def run_translate(args):
+    args.to_langs = resolve_langs(args.to_langs)
     # from.json を読み込み
     with open(args.extract_file, "r", encoding="utf-8") as f:
         extract_data = json.load(f)
@@ -334,6 +337,8 @@ def run_translate(args):
 # ---------------------------------------------------------------------------
 
 def run_show(args):
+    if args.lang:
+        args.lang = resolve_langs(args.lang)
     header, rows = load_tsv(args.input_file)
     key_col = header[0]
 
@@ -358,6 +363,7 @@ def run_show(args):
 
 
 def run_set(args):
+    args.lang = resolve_lang(args.lang)
     header, rows = load_tsv(args.input_file)
     key_col = header[0]
 

@@ -51,3 +51,11 @@ LANG_NAMES = {
     "vi": "Vietnamese",
     "zh": "Chinese",
 }
+
+
+def resolve_lang(lang):
+    return LANG_NAMES.get(lang, lang)
+
+
+def resolve_langs(langs):
+    return [resolve_lang(l) for l in langs]

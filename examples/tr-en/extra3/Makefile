@@ -1,7 +1,7 @@
 .PHONY: all translate evaluate scores
 
 DIR = ../..
-include $(DIR)/tr-en/common.mk
+include $(DIR)/terms/common.mk
 
 TRANSLATOR = ollama:qwen3.6
 EVALUATOR1 = ollama:qwen3.6

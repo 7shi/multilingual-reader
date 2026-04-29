@@ -1,7 +1,7 @@
 .PHONY: all translate evaluate scores
 
 DIR = ../..
-include $(DIR)/tr-en/common.mk
+include $(DIR)/terms/common.mk
 
 TRANSLATOR1 = ollama:gpt-oss:120b
 TRANSLATOR2 = openrouter:openai/gpt-oss-120b:free
