@@ -15,9 +15,10 @@ def add_parser(subparsers):
                         help="翻訳先言語コードリスト（例: en es）")
     parser.add_argument("-f", "--from", dest="from_lang", default=None,
                         help="原語（省略時はファイル名の言語コードから自動導出）")
-    parser.add_argument("-m", "--model", required=True, help="翻訳モデル")
+    parser.add_argument("-m", "--model", default=None, help="翻訳モデル（--eval-only 時は不要）")
     parser.add_argument("--evaluator", default=None, help="評価モデル（--translate-only 時は不要）")
     parser.add_argument("--translate-only", action="store_true", help="翻訳のみ実行（評価・集約をスキップ）")
+    parser.add_argument("--eval-only", action="store_true", help="評価のみ実行（翻訳・集約をスキップ）")
     parser.add_argument("--terms-dir", default=None,
                         help="用語ファイルのディレクトリ（省略時は用語注入なし）")
     parser.add_argument("--tr-runs", type=int, default=1, help="翻訳回数（デフォルト: 1）")
@@ -60,13 +61,20 @@ def _eval_path(topic, lang, trrun, tr_runs, evrun, eval_dir="evals"):
 
 
 def run(args):
+    if args.translate_only and args.eval_only:
+        print("エラー: --translate-only と --eval-only は同時に指定できません")
+        return
+    if not args.eval_only and not args.model:
+        print("エラー: -m/--model が必要です（評価のみ実行する場合は --eval-only を指定）")
+        return
     if not args.translate_only and not args.evaluator:
         print("エラー: --evaluator が必要です（翻訳のみ実行する場合は --translate-only を指定）")
         return
 
     terms_dir = Path(args.terms_dir) if args.terms_dir else None
 
-    os.makedirs(args.tr_dir, exist_ok=True)
+    if not args.eval_only:
+        os.makedirs(args.tr_dir, exist_ok=True)
     if not args.translate_only:
         os.makedirs(args.eval_dir, exist_ok=True)
 
@@ -82,34 +90,35 @@ def run(args):
         inputs.append((topic, from_code, from_lang, p))
 
     # --- 翻訳フェーズ ---
-    for topic, from_code, from_lang, input_file in inputs:
-        terms_json = str(terms_dir / f"{topic}-{from_code}.json") if terms_dir else None
-        terms_tsv = str(terms_dir / f"{topic}-{from_code}.tsv") if terms_dir else None
-        for lang in args.langs:
-            lang_name = LANG_NAMES.get(lang, lang.capitalize())
-            for trrun in range(1, args.tr_runs + 1):
-                out = _tr_path(topic, lang, trrun, args.tr_runs, args.tr_dir)
-                if os.path.exists(out):
-                    print(f"Skipping {out} (already exists)")
-                    continue
-                print(f"\nTranslating {out} ...")
-                tr_args = Namespace(
-                    input_file=str(input_file),
-                    from_lang=from_lang,
-                    to_lang=lang_name,
-                    output_file=out,
-                    model=args.model,
-                    threshold=args.threshold,
-                    keep=args.keep,
-                    terms_json=terms_json,
-                    terms_tsv=terms_tsv,
-                    no_think=args.no_think,
-                    retry_wait=args.retry_wait,
-                )
-                try:
-                    translate.run(tr_args)
-                except Exception as e:
-                    print(f"翻訳エラー ({out}): {e}")
+    if not args.eval_only:
+        for topic, from_code, from_lang, input_file in inputs:
+            terms_json = str(terms_dir / f"{topic}-{from_code}.json") if terms_dir else None
+            terms_tsv = str(terms_dir / f"{topic}-{from_code}.tsv") if terms_dir else None
+            for lang in args.langs:
+                lang_name = LANG_NAMES.get(lang, lang.capitalize())
+                for trrun in range(1, args.tr_runs + 1):
+                    out = _tr_path(topic, lang, trrun, args.tr_runs, args.tr_dir)
+                    if os.path.exists(out):
+                        print(f"Skipping {out} (already exists)")
+                        continue
+                    print(f"\nTranslating {out} ...")
+                    tr_args = Namespace(
+                        input_file=str(input_file),
+                        from_lang=from_lang,
+                        to_lang=lang_name,
+                        output_file=out,
+                        model=args.model,
+                        threshold=args.threshold,
+                        keep=args.keep,
+                        terms_json=terms_json,
+                        terms_tsv=terms_tsv,
+                        no_think=args.no_think,
+                        retry_wait=args.retry_wait,
+                    )
+                    try:
+                        translate.run(tr_args)
+                    except Exception as e:
+                        print(f"翻訳エラー ({out}): {e}")
 
     if args.translate_only:
         return
@@ -144,7 +153,7 @@ def run(args):
                     except Exception as e:
                         print(f"評価エラー ({eval_out}): {e}")
 
-    if args.no_agg:
+    if args.eval_only or args.no_agg:
         return
 
     # --- 集約フェーズ ---

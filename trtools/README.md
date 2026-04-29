@@ -332,7 +332,7 @@ uv run trtools batch <files...> --langs <lang...> -m <model> [options]
 |---|---|
 | `files` | 入力テキストファイル（例: `../finetuning-fr.txt`）。ファイル名末尾の `-XX` が原語コードとして使われる |
 | `--langs` | 翻訳先言語コードリスト（例: `en es de`） |
-| `-m`, `--model` | 翻訳モデル |
+| `-m`, `--model` | 翻訳モデル（`--eval-only` 時は不要） |
 
 ### オプション
 
@@ -340,6 +340,7 @@ uv run trtools batch <files...> --langs <lang...> -m <model> [options]
 |---|---|---|
 | `--evaluator` | なし | 評価モデル（`--translate-only` 時は不要） |
 | `--translate-only` | false | 翻訳のみ実行（評価・集約をスキップ） |
+| `--eval-only` | false | 評価のみ実行（翻訳・集約をスキップ） |
 | `--no-agg` | false | 集約のみスキップ（`SCORES.txt` を生成しない） |
 | `-f`, `--from` | ファイル名から自動導出 | 原語（手動指定する場合） |
 | `--terms-dir` | なし | 用語ファイルのディレクトリ（`<topic>-<from>.json/tsv` を自動検索） |
@@ -397,12 +398,12 @@ uv run trtools batch \
   --terms-dir ../terms \
   --no-think
 
-# 評価・集約のみ（翻訳済みファイルを前提に、評価だけ再実行）
+# 評価のみ（翻訳済みファイルを前提に、評価だけ再実行）
 uv run trtools batch \
   ../finetuning-en.txt \
   --langs de ja zh \
-  -m ollama:gemma4:26b \
-  --evaluator ollama:qwen3.6 --no-agg
+  --evaluator ollama:qwen3.6 \
+  --eval-only
 
 # 集約は別途実行
 uv run trtools agg evals/*.json | tee SCORES.txt
