@@ -338,8 +338,8 @@ uv run trtools batch <files...> --langs <lang...> -m <model> [options]
 
 | オプション | デフォルト | 説明 |
 |---|---|---|
-| `--evaluator` | なし | 評価モデル（`--translate-only` 時は不要） |
-| `--translate-only` | false | 翻訳のみ実行（評価・集約をスキップ） |
+| `--evaluator` | なし | 評価モデル（`--tr-only` 時は不要） |
+| `--tr-only` | false | 翻訳のみ実行（評価・集約をスキップ） |
 | `--eval-only` | false | 評価のみ実行（翻訳・集約をスキップ） |
 | `--no-agg` | false | 集約のみスキップ（`SCORES.txt` を生成しない） |
 | `-f`, `--from` | ファイル名から自動導出 | 原語（手動指定する場合） |
@@ -387,7 +387,7 @@ uv run trtools batch \
   -m ollama:gemma4:26b \
   --terms-dir ../terms \
   --threshold 20 --no-think \
-  --translate-only
+  --tr-only
 
 # 翻訳 + 評価 + 集約
 uv run trtools batch \
