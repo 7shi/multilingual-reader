@@ -6,14 +6,12 @@
 
 | ファイル | 内容 |
 |---|---|
+| `common.mk` | `onde-en.tsv` の追加言語 `EXTRA_LANGS` を定義 |
 | `common.tsv` | 全トピック共通の固有名詞（番組名など）。LLM をスキップして訳語を固定する |
 | `{topic}-fr.json` | フランス語原文から抽出した用語チャンクマップ（FR→EN, FR→ES 翻訳用） |
 | `{topic}-fr.tsv` | フランス語用語の English・Spanish 訳語対応表 |
 | `{topic}-en.json` | 英語原文から抽出した用語チャンクマップ（EN→DE, EN→JA, EN→ZH 翻訳用） |
 | `{topic}-en.tsv` | 英語用語の German, Japanese, Chinese 訳語対応表 |
-
-`onde-en.tsv` のみ追加言語の訳語を含む:
-Esperanto, Hindi, Telugu, Kannada, Turkish, Estonian, Serbian
 
 ## 生成・更新
 
