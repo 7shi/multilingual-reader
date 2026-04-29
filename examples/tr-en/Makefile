@@ -1,33 +1,15 @@
-.PHONY: all translate evaluate scores
+.PHONY: all core extra1 extra2 extra3
 
-DIR = ..
-TRANSLATOR = ollama:gemma4:26b
-EVALUATOR = ollama:qwen3.6
+all: core extra1 extra2 extra3
 
+core:
+	$(MAKE) -C core
 
-BATCH = uv run trtools batch \
-	-m $(TRANSLATOR) \
-	--terms-dir $(DIR)/terms \
-	--threshold 20 \
-	--no-think
+extra1:
+	$(MAKE) -C extra1
 
-CORE_BASE = $(BATCH) \
-	$(DIR)/finetuning-en.txt $(DIR)/transformer-en.txt $(DIR)/momentum-en.txt $(DIR)/onde-en.txt \
-	--langs de ja zh
+extra2:
+	$(MAKE) -C extra2
 
-EXTRA_BASE = $(BATCH) \
-	$(DIR)/onde-en.txt \
-	--langs eo hi te kn tr et sr
-
-all: translate evaluate scores
-
-translate:
-	$(CORE_BASE) --translate-only
-	$(EXTRA_BASE) --translate-only
-
-evaluate:
-	$(CORE_BASE) --evaluator $(EVALUATOR) --no-agg
-	$(EXTRA_BASE) --evaluator $(EVALUATOR) --no-agg
-
-scores:
-	uv run trtools agg evals/*.json | tee SCORES.txt
+extra3:
+	$(MAKE) -C extra3
