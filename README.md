@@ -43,7 +43,8 @@ multilingual-reader/
 ├── merge_podcast_data.py         # テキスト統合スクリプト（nameフィールドなし配列形式）
 ├── pyproject.toml                # Pythonプロジェクト設定
 ├── README.md                     # このファイル
-└── MEMO.md                       # プロジェクト全体のメモ（将来の検討事項等）
+├── MEMO.md                       # プロジェクト全体のメモ（将来の検討事項等）
+└── EXPERIMENTAL.md               # 実験系列（experimental/〜5/）の検証記録
 ```
 
 ### 翻訳評価ツール（trtools/）
@@ -78,7 +79,7 @@ multilingual-reader/
 
 ### 実験ディレクトリの流れ
 
-`trtools` は5つの実験で得られた成果を統合したものです。詳細は [MEMO.md](MEMO.md) を参照してください。
+`trtools` は5つの実験で得られた成果を統合したものです。詳細は [EXPERIMENTAL.md](EXPERIMENTAL.md) を参照してください。
 
 - **[experimental/](experimental/)**: 推論レベル別性能分析。スライディング方式の用語ブレ・KV キャッシュ問題を発見。レベル0（直接翻訳）が最高効率、CoT は翻訳に有害と結論。
 - **[experimental2/](experimental2/)**: サマリー圧縮方式に移行。`--summary glossary` + `--no-think` + 構造化出力廃止を基本設定とし、用語ブレ・KV キャッシュ問題を解決。32モデルの本番実験で上位モデルが 95〜97点を達成。
