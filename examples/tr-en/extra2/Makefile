@@ -19,12 +19,12 @@ all: translate evaluate scores
 
 translate:
 	$(TRANSLATE) --tr-only -m $(TRANSLATOR1)
-	$(TRANSLATE) --tr-only -m $(TRANSLATOR2) --tr-dir tr-openrouter
+	#$(TRANSLATE) --tr-only -m $(TRANSLATOR2) --tr-dir openrouter/tr
 
 evaluate:
 	$(TRANSLATE) --eval-only --evaluator $(EVALUATOR1)
-	$(TRANSLATE) --eval-only --evaluator $(EVALUATOR2) --eval-dir evals-openrouter
+	#$(TRANSLATE) --eval-only --evaluator $(EVALUATOR2) --eval-dir openrouter/evals
 
 scores:
 	uv run trtools agg evals/*.json | tee SCORES.txt
-	uv run trtools agg evals-openrouter/*.json | tee SCORES-openrouter.txt
+	#uv run trtools agg evals-openrouter/*.json | tee openrouter/SCORES.txt
