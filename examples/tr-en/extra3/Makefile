@@ -25,4 +25,4 @@ evaluate:
 
 scores:
 	uv run trtools agg evals/*.json | tee SCORES.txt
-	#uv run trtools agg evals-gpt-oss-120b/*.json | tee gpt-oss-120b/SCORES.txt
+	#uv run trtools agg gpt-oss-120b/evals/*.json | tee gpt-oss-120b/SCORES.txt
