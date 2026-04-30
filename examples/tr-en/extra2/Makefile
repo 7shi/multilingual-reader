@@ -23,8 +23,10 @@ translate:
 
 evaluate:
 	$(TRANSLATE) --eval-only --evaluator $(EVALUATOR1)
+	#$(TRANSLATE) --eval-only --evaluator $(EVALUATOR1) --tr-dir openrouter/tr --eval-dir openrouter/evals-ollama
 	#$(TRANSLATE) --eval-only --evaluator $(EVALUATOR2) --tr-dir openrouter/tr --eval-dir openrouter/evals
 
 scores:
 	uv run trtools agg evals/*.json | tee SCORES.txt
+	#uv run trtools agg openrouter/evals-ollama/*.json | tee openrouter/SCORES-ollama.txt
 	#uv run trtools agg openrouter/evals/*.json | tee openrouter/SCORES.txt
