@@ -21,8 +21,8 @@ translate:
 
 evaluate:
 	$(TRANSLATE) --eval-only --evaluator $(EVALUATOR1)
-	$(TRANSLATE) --eval-only --evaluator $(EVALUATOR2) --eval-dir evals-gpt-oss-120b
+	#$(TRANSLATE) --eval-only --evaluator $(EVALUATOR2) --eval-dir gpt-oss-120b/evals
 
 scores:
 	uv run trtools agg evals/*.json | tee SCORES.txt
-	uv run trtools agg evals-gpt-oss-120b/*.json | tee SCORES-gpt-oss-120b.txt
+	#uv run trtools agg evals-gpt-oss-120b/*.json | tee gpt-oss-120b/SCORES.txt
