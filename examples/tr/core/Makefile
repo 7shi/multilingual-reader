@@ -1,15 +1,17 @@
 .PHONY: all translate evaluate scores
 
 DIR = ../..
+include ../common.mk
+
 TRANSLATOR = ollama:gemma4:26b
 EVALUATOR = ollama:qwen3.6
 
 TRANSLATE = uv run trtools batch \
-	--terms-dir $(DIR)/terms \
+	--terms-dir ../terms \
 	--threshold 20 \
 	--no-think \
-	$(DIR)/finetuning-en.txt $(DIR)/transformer-en.txt $(DIR)/momentum-en.txt $(DIR)/onde-en.txt \
-	--langs de ja zh
+	$(DIR)/finetuning-en.txt $(DIR)/transformer-en.txt $(DIR)/momentum-en.txt \
+	--langs $(CORE_LANGS)
 
 all: translate evaluate scores
 

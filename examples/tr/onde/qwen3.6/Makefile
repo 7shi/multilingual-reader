@@ -1,18 +1,18 @@
 .PHONY: all translate evaluate scores
 
-DIR = ../..
-include $(DIR)/terms/common.mk
+DIR = ../../..
+include ../../common.mk
 
 TRANSLATOR = ollama:qwen3.6
 EVALUATOR1 = ollama:qwen3.6
 EVALUATOR2 = ollama:gpt-oss:120b
 
 TRANSLATE = uv run trtools batch \
-	--terms-dir $(DIR)/terms \
+	--terms-dir ../../terms \
 	--threshold 20 \
 	--no-think \
 	$(DIR)/onde-en.txt \
-	--langs $(EXTRA_LANGS)
+	--langs $(CORE_LANGS) $(EXTRA_LANGS)
 
 all: translate evaluate scores
 
