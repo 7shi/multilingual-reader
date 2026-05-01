@@ -38,6 +38,7 @@ def add_parser(subparsers):
     _add_show_parser(term_sub)
     _add_set_parser(term_sub)
     _add_reorder_parser(term_sub)
+    _add_merge_parser(term_sub)
 
 
 def _add_show_parser(subparsers):
@@ -394,6 +395,40 @@ def run_set(args):
 
     save_tsv(args.input_file, header, rows)
     print(f"更新しました: {args.key!r} [{args.lang}] = {args.value!r}")
+
+
+def _add_merge_parser(subparsers):
+    parser = subparsers.add_parser("merge", help="複数TSVを列結合（後ファイルがセル単位で上書き）")
+    parser.add_argument("input_files", metavar="FILE", nargs="+", help="入力TSVファイル（複数）")
+    parser.add_argument("-o", "--output", required=True, help="出力TSVファイル")
+    parser.set_defaults(func=run_merge)
+
+
+def run_merge(args):
+    header = []
+    rows = {}  # key -> {col: value}
+    key_order = []
+
+    for path in args.input_files:
+        file_header, file_rows = load_tsv(path)
+        if not file_header:
+            continue
+        key_col = file_header[0]
+        for col in file_header:
+            if col not in header:
+                header.append(col)
+        for row in file_rows:
+            key = row.get(key_col, "")
+            if key not in rows:
+                rows[key] = {}
+                key_order.append(key)
+            for col, val in row.items():
+                if val:
+                    rows[key][col] = val
+
+    merged_rows = [rows[k] for k in key_order]
+    save_tsv(args.output, header, merged_rows)
+    print(f"保存: {args.output} ({len(merged_rows)} 行, {len(header)} 列)")
 
 
 def run_reorder(args):

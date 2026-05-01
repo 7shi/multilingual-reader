@@ -50,6 +50,7 @@ uv run trtools <command> [options]
 | [`term show`](#term-show) | 用語TSVを言語・キーで絞り込んで表示 |
 | [`term set`](#term-set) | 用語TSVの特定セルを更新 |
 | [`term reorder`](#term-reorder) | 用語TSVの列を指定順に並べ替えて出力 |
+| [`term merge`](#term-merge) | 複数の用語TSVを列結合して出力 |
 | [`batch`](#batch) | 翻訳→評価→集約を一括実行 |
 
 ---
@@ -341,6 +342,31 @@ uv run trtools term reorder <tsv_file> -c <lang> [...] -o <output.tsv>
 uv run trtools term reorder terms/finetuning-en.tsv \
   -c en -c fr -c es -c de -c ja -c zh \
   -o terms/finetuning-en-reordered.tsv
+```
+
+---
+
+## term merge
+
+複数の用語TSVを列結合して出力する。キー列（第1列）が共通の場合はキー値でマッチし、キー列がない場合は行位置でマッチする。同じ列名が複数ファイルに存在する場合、後のファイルの非空値がセル単位で上書きする。
+
+```
+uv run trtools term merge <file1> <file2> [...] -o <output.tsv>
+```
+
+### 必須引数
+
+| 引数 | 説明 |
+|---|---|
+| `FILE...` | 入力TSVファイル（複数） |
+| `-o`, `--output` | 出力TSVファイル |
+
+### 使用例
+
+```bash
+# 既存TSVに別ファイルの言語列を追加
+uv run trtools term merge terms/finetuning-en.tsv extra-langs.tsv \
+  -o terms/finetuning-en-full.tsv
 ```
 
 ---
