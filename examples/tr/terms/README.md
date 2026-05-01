@@ -1,4 +1,4 @@
-# examples/terms/
+# examples/tr/terms/
 
 `examples/` の翻訳で使用する用語ファイル（JSON・TSV）を格納するディレクトリ。`trtools term extract/translate` で生成し、校正済みのものを保管する。
 

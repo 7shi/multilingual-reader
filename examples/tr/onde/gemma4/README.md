@@ -1,8 +1,8 @@
-# examples/tr-en/extra1/
+# examples/tr/onde/gemma4/
 
-onde テキストを対象とした追加言語の翻訳・評価を行います。
+onde テキストを対象とした追加言語を含む翻訳・評価を行います。
 
-対象言語: エスペラント (eo), ヒンディー語 (hi), テルグ語 (te), カンナダ語 (kn), トルコ語 (tr), エストニア語 (et), セルビア語 (sr), 朝鮮語 (ko), フィンランド語 (fi), ハンガリー語 (hu), ブルガリア語 (bg), アラビア語 (ar), インドネシア語 (id), タミル語 (ta)
+対象言語: [common.mk](../../common.mk) で定義された `CORE_LANGS` + `EXTRA_LANGS`
 
 ## 実行
 

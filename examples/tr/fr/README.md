@@ -1,4 +1,4 @@
-# examples/tr-fr/
+# examples/tr/fr/
 
 フランス語原文から英語・スペイン語への翻訳を行い、`examples/` の参照訳を更新するためのディレクトリ。
 

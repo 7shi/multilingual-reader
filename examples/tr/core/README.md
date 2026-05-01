@@ -1,4 +1,4 @@
-# examples/tr-en/core/
+# examples/tr/core/
 
 英語原文からコア言語（ドイツ語、日本語、中国語）への翻訳・評価を行います。
 
