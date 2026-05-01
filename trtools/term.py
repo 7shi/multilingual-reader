@@ -37,6 +37,7 @@ def add_parser(subparsers):
     _add_translate_parser(term_sub)
     _add_show_parser(term_sub)
     _add_set_parser(term_sub)
+    _add_reorder_parser(term_sub)
 
 
 def _add_show_parser(subparsers):
@@ -47,6 +48,15 @@ def _add_show_parser(subparsers):
     parser.add_argument("-k", "--key", action="append", metavar="KEY",
                         help="表示するキー（第1列の値、複数指定可、省略時は全行）")
     parser.set_defaults(func=run_show)
+
+
+def _add_reorder_parser(subparsers):
+    parser = subparsers.add_parser("reorder", help="TSVの列を指定順に並べ替えて出力")
+    parser.add_argument("input_file", metavar="FILE", help="対象TSVファイル")
+    parser.add_argument("-c", "--col", action="append", required=True, metavar="LANG",
+                        help="出力する列名（複数指定、言語名または言語コード）")
+    parser.add_argument("-o", "--output", required=True, help="出力TSVファイル")
+    parser.set_defaults(func=run_reorder)
 
 
 def _add_set_parser(subparsers):
@@ -384,3 +394,13 @@ def run_set(args):
 
     save_tsv(args.input_file, header, rows)
     print(f"更新しました: {args.key!r} [{args.lang}] = {args.value!r}")
+
+
+def run_reorder(args):
+    args.col = resolve_langs(args.col)
+    header, rows = load_tsv(args.input_file)
+    for col in args.col:
+        if col not in header:
+            print(f"警告: '{col}' 列が入力ファイルに存在しません（空列として追加）", file=sys.stderr)
+    save_tsv(args.output, args.col, rows)
+    print(f"保存: {args.output}")

@@ -49,6 +49,7 @@ uv run trtools <command> [options]
 | [`term translate`](#term-translate) | 抽出用語をTSVに翻訳 |
 | [`term show`](#term-show) | 用語TSVを言語・キーで絞り込んで表示 |
 | [`term set`](#term-set) | 用語TSVの特定セルを更新 |
+| [`term reorder`](#term-reorder) | 用語TSVの列を指定順に並べ替えて出力 |
 | [`batch`](#batch) | 翻訳→評価→集約を一括実行 |
 
 ---
@@ -314,6 +315,32 @@ uv run trtools term set <tsv_file> -k <key> -l <lang> -v <value>
 
 ```bash
 uv run trtools term set terms/onde-en.tsv -k "physics" -l ja -v "物理学"
+```
+
+---
+
+## term reorder
+
+用語TSVの列を指定した順序に並べ替えて出力する。存在しない列は空列として追加される。
+
+```
+uv run trtools term reorder <tsv_file> -c <lang> [...] -o <output.tsv>
+```
+
+### 必須引数
+
+| 引数 | 説明 |
+|---|---|
+| `tsv_file` | 対象TSVファイル |
+| `-c`, `--col` | 出力する列名。言語名または言語コード（複数指定） |
+| `-o`, `--output` | 出力TSVファイル |
+
+### 使用例
+
+```bash
+uv run trtools term reorder terms/finetuning-en.tsv \
+  -c en -c fr -c es -c de -c ja -c zh \
+  -o terms/finetuning-en-reordered.tsv
 ```
 
 ---
