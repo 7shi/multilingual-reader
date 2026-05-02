@@ -1,8 +1,8 @@
 #!/bin/bash
 set -e
 
-INPUT="../../examples/finetuning-fr.txt"
-TRANSLATE_PY="../../experimental2/translate.py"
+INPUT="../../../examples/finetuning-fr.txt"
+TRANSLATE_PY="../../02/translate.py"
 EVALUATOR="ollama:qwen3.6"
 EVAL_OPT="--original $INPUT -f French -t Spanish -m $EVALUATOR -w 3"
 

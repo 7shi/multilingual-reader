@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-INPUT="../examples/finetuning-fr.txt"
+INPUT="../../examples/finetuning-fr.txt"
 EVALUATOR="ollama:qwen3.6"
 EVAL_OPT="--original $INPUT -f French -t Spanish -m $EVALUATOR -w 3"
 

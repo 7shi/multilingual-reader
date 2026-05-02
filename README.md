@@ -32,24 +32,20 @@ multilingual-reader/
 ├── onde.js                       # 多言語テキストデータ（波動・量子力学）
 ├── momentum.js                   # 多言語テキストデータ（運動量・測定理論）
 ├── examples/                     # 参照訳テキストファイルと評価結果
-│   └── evals/                    # trtools eval による参照訳評価（SCORES.txt・各言語 JSON）
-├── experimental/                 # ローカルLLM翻訳実験とパフォーマンス分析
-├── experimental2/                # サマリー圧縮方式翻訳実験
-├── experimental3/                # ハイブリッドモード翻訳実験（翻訳=CoTなし、要約=CoTあり）
-├── experimental4/                # 用語事前抽出方式翻訳実験（翻訳前に全文から用語を抽出・確定）
-├── experimental5/                # trtools translate 移行後の翻訳実験（校正済み共有用語辞書を使用）
+│   ├── evals/                    # trtools eval による参照訳評価（SCORES.txt・各言語 JSON）
+│   └── tr/                       # trtools translate によるローカルLLM翻訳・評価
+├── experimental/                 # ローカルLLM翻訳実験とパフォーマンス分析の実験系列
 ├── trtools/                      # 共通の翻訳・評価ツール
 ├── split_podcast_data.py         # テキスト分割スクリプト（データセット配列対応）
 ├── merge_podcast_data.py         # テキスト統合スクリプト（nameフィールドなし配列形式）
 ├── pyproject.toml                # Pythonプロジェクト設定
 ├── README.md                     # このファイル
-├── MEMO.md                       # プロジェクト全体のメモ（将来の検討事項等）
-└── EXPERIMENTAL.md               # 実験系列（experimental/〜5/）の検証記録
+└── MEMO.md                       # プロジェクト全体のメモ（将来の検討事項等）
 ```
 
 ### 翻訳評価ツール（trtools/）
 
-全実験で共通して使用するツールをパッケージ化したもの。詳細は [trtools/README.md](trtools/README.md) を参照。
+全実験で共通して使用するツールをパッケージ化したものです。詳細は [trtools/README.md](trtools/README.md) を参照してください。
 
 | コマンド | 用途 |
 |---------|------|
@@ -59,11 +55,13 @@ multilingual-reader/
 | `uv run trtools term` | テキストから用語・固有名詞を抽出し訳語をTSVに保存 |
 | `uv run trtools batch` | 翻訳→評価→集約を一括実行 |
 
+`trtools` は5つの実験で得られた成果を統合したものです。詳細は [experimental/README.md](experimental/README.md) を参照してください。
+
 ### 参照訳と評価結果（examples/）
 
-`examples/` には各トピック × 各言語の参照訳テキストファイルが格納されています。原文はすべてフランス語です。
+[examples/](examples/) には各トピック × 各言語の参照訳テキストファイルが格納されています。原文はフランス語で、ドイツ語・日本語・中国語は英語からの重訳です。
 
-`examples/evals/` には `trtools eval`（評価者: `ollama:qwen3.6`）による3回評価の JSON と集計結果（`SCORES.txt`）が格納されています。再評価・追加評価は `examples/evals/batch.sh` で実行できます。
+[examples/evals/](examples/evals/) には `trtools eval`（評価者: `ollama:qwen3.6`）による3回評価の JSON と集計結果（[SCORES.txt](examples/evals/SCORES.txt)）が格納されています。再評価・追加評価は [examples/evals/batch.sh](examples/evals/batch.sh) で実行できます。
 
 **全トピックの評価結果（各トピック3回評価の中央値を言語別に平均）:**
 
@@ -75,17 +73,7 @@ multilingual-reader/
 | Chinese   | 96.50 |  4 | English |
 | German    | 96.25 |  4 | English |
 
-全言語とも高品質な参照訳として実験のベースラインに使用できる水準。
-
-### 実験ディレクトリの流れ
-
-`trtools` は5つの実験で得られた成果を統合したものです。詳細は [EXPERIMENTAL.md](EXPERIMENTAL.md) を参照してください。
-
-- **[experimental/](experimental/)**: 推論レベル別性能分析。スライディング方式の用語ブレ・KV キャッシュ問題を発見。レベル0（直接翻訳）が最高効率、CoT は翻訳に有害と結論。
-- **[experimental2/](experimental2/)**: サマリー圧縮方式に移行。`--summary glossary` + `--no-think` + 構造化出力廃止を基本設定とし、用語ブレ・KV キャッシュ問題を解決。32モデルの本番実験で上位モデルが 95〜97点を達成。
-- **[experimental3/](experimental3/)**: ハイブリッドモードを実装。翻訳本体は CoT なし、要約生成のみ CoT ありとし、要約を履歴から除外して KV キャッシュ効率を維持。gemma4-26b が全設定・全 run で安定して最優秀。
-- **[experimental4/](experimental4/)**: 用語事前抽出方式を実装。翻訳開始前に全文から用語・固有名詞を抽出して訳語を確定し、再編成ごとに対象範囲に絞った用語リストを注入する。experimental3 の glossary 初期蓄積のブレ問題の解消を狙う。
-- **[experimental5/](experimental5/)**: `trtools translate` へ移行。用語抽出を `trtools term` で分離・校正し、全 run が共有用語辞書を参照することで run 間の用語ブレを排除する。
+全言語とも高品質な参照訳として実験のベースラインに使用できる水準です。
 
 ## 🎓 コンテンツ内容
 

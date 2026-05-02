@@ -1,5 +1,5 @@
 # 対話テキスト翻訳（ハイブリッドモード）
-# experimental2/translate.py をベースに、以下を固定化：
+# experimental/02/translate.py をベースに、以下を固定化：
 # - 翻訳本体は CoT なし
 # - 要約生成は CoT あり（--no-think で CoT なしに切り替え可）
 # - サマリー方式は glossary 固定

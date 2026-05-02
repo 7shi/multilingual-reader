@@ -111,7 +111,7 @@ python analyze_eval_variance.py [評価者ID ...]
 
 ```bash
 # ディレクトリに移動
-cd experimental/evaluator_comparison
+cd experimental/01/evaluator_comparison
 
 # 依存ライブラリのインストール
 uv add numpy scipy
@@ -261,6 +261,6 @@ uv add numpy scipy
 ### エラー: FileNotFoundError (SCORES.txt)
 ```bash
 # 解決策: 正しいディレクトリで実行
-cd experimental/evaluator_comparison
+cd experimental/01/evaluator_comparison
 uv run compare_evaluators.py
 ```

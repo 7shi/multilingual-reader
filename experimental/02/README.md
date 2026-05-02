@@ -1,10 +1,10 @@
 # サマリー圧縮方式 翻訳実験
 
-[../experimental/](../experimental/) の翻訳アーキテクチャを「サマリー圧縮方式」に移行する実験ディレクトリです。
+[experimental/01](../01/) の翻訳アーキテクチャを「サマリー圧縮方式」に移行する実験ディレクトリです。
 
 ## 背景と動機
 
-旧アーキテクチャ（[../experimental/translate.py](../experimental/translate.py)）はスライディング方式で、毎リクエストに過去の翻訳を文字列として埋め込むため：
+旧アーキテクチャ（[experimental/01/translate.py](../01/translate.py)）はスライディング方式で、毎リクエストに過去の翻訳を文字列として埋め込むため：
 
 - **KV キャッシュが無効**：プロンプトの先頭が毎回変化するため、モデルのキャッシュが再利用されない
 - **用語ブレ**：古い履歴がウィンドウ外に押し出されると、固有名詞や術語の訳が変化する
@@ -35,7 +35,7 @@ uv run translate.py <input_file> -f <from_lang> -t <to_lang> -o <output> -m <mod
 
 翻訳時は `--no-think` を原則指定する理由：
 
-- **品質面**: 1行ずつのシンプルな翻訳タスクに CoT での推敲は過剰。以前の実験（[../experimental/README.md](../experimental/README.md)）でも CoT は翻訳に有害との結論。
+- **品質面**: 1行ずつのシンプルな翻訳タスクに CoT での推敲は過剰。以前の実験（[experimental/01/README.md](../01/README.md)）でも CoT は翻訳に有害との結論。
 - **速度面**: CoT により処理時間が数十倍に膨らむ。
 - **KV キャッシュ面**: CoT トークンはモデルの生成履歴に含まれるため、履歴から CoT を除いて渡すとシーケンスが変わりキャッシュミスが発生する。かといって CoT を履歴に含めると翻訳本文の何十倍もの量が蓄積してしまう。`--no-think` ならこの問題自体が発生しない。
 
@@ -82,7 +82,7 @@ bash batch.sh
 
 ## 評価システム
 
-[../experimental/](../experimental/) の評価パイプラインをそのまま使用します。
+[experimental/01](../01/) の評価パイプラインをそのまま使用します。
 
 ### 評価基準（5項目 × 20点 = 100点満点）
 
@@ -94,7 +94,7 @@ bash batch.sh
 | **文脈適応性** | 原文の意図が伝わるか。ターゲット文化への配慮があるか。 |
 | **情報の完全性** | 重要な情報の欠落・過剰追加がないか。 |
 
-詳細な採点基準 → [../experimental/EVAL.md](../experimental/EVAL.md)
+詳細な採点基準 → [experimental/01/EVAL.md](../01/EVAL.md)
 
 ### 採点の目安
 
@@ -110,7 +110,7 @@ bash batch.sh
 ```bash
 # 1. 個別評価（1回）
 uv run trtools eval \
-  --original ../examples/finetuning-fr.txt \
+  --original ../../examples/finetuning-fr.txt \
   --translation <translation.txt> \
   -f French -t Spanish -m ollama:qwen3.6 -w 3 -o <output.json>
 
@@ -118,18 +118,18 @@ uv run trtools eval \
 uv run trtools agg evals/*.json
 
 # 3. SCORES.md 生成
-uv run ../experimental/generate_scores_md.py -1 91 -2 92 SCORES.txt
+uv run ../01/generate_scores_md.py -1 91 -2 92 SCORES.txt
 ```
 
 **評価者:** `qwen3.6`（CoT による論理的検証で技術的欠陥を正確に特定）  
 **集計:** 3回評価の中央値（評価ブレを排除）  
 **統計:** 中央値・平均値・標準偏差を項目別・総合別に算出
 
-評価者選定の経緯 → [../experimental/MEMO.md](../experimental/MEMO.md)
+評価者選定の経緯 → [experimental/01/MEMO.md](../01/MEMO.md)
 
 ### 参照訳の評価（Gemini 2.5 Pro）
 
-[../examples/finetuning-es.txt](../examples/finetuning-es.txt)（Gemini 2.5 Pro による参照訳）を同じパイプライン（3回評価・中央値）で採点した。
+[examples/finetuning-es.txt](../../examples/finetuning-es.txt)（Gemini 2.5 Pro による参照訳）を同じパイプライン（3回評価・中央値）で採点した。
 
 | 項目 | eval-1 | eval-2 | eval-3 | 中央値 |
 |---|:---:|:---:|:---:|:---:|
@@ -160,7 +160,7 @@ uv run ../experimental/generate_scores_md.py -1 91 -2 92 SCORES.txt
 
 ### Phase A: 動作確認（gemma3:27b）
 
-翻訳入力: [../examples/finetuning-fr.txt](../examples/finetuning-fr.txt)（43行、フランス語ポッドキャスト）
+翻訳入力: [examples/finetuning-fr.txt](../../examples/finetuning-fr.txt)（43行、フランス語ポッドキャスト）
 翻訳先: スペイン語（3回評価の中央値）
 
 | バリアント | 処理時間 | 評価（3回中央値） |
@@ -261,7 +261,7 @@ uv run ../experimental/generate_scores_md.py -1 91 -2 92 SCORES.txt
 
 ### Phase C: 旧アーキテクチャとの比較
 
-旧アーキテクチャ（[../experimental/qwen3.6/SCORES.md](../experimental/qwen3.6/SCORES.md)）の「モデル別実用設定一覧」から各モデルの上位1スコアと比較（nt の区別なし）。
+旧アーキテクチャ（[experimental/01/qwen3.6/SCORES.md](../01/qwen3.6/SCORES.md)）の「モデル別実用設定一覧」から各モデルの上位1スコアと比較（nt の区別なし）。
 
 | モデル | 旧ベスト | 新 glossary | 差分 |
 |---|:---:|:---:|:---:|

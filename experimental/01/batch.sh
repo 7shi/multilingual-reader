@@ -36,7 +36,7 @@ THRESHOLD2=92
 # THRESHOLD1=91
 # THRESHOLD2=92
 
-EVAL_CMD="uv run trtools eval --original ../examples/finetuning-fr.txt -f French -t Spanish -m $EVALUATOR -w $RETRY_WAIT"
+EVAL_CMD="uv run trtools eval --original ../../examples/finetuning-fr.txt -f French -t Spanish -m $EVALUATOR -w $RETRY_WAIT"
 
 process_translation() {
     local command=$1
@@ -64,10 +64,10 @@ process_translation() {
     done
 }
 
-CMD="uv run translate.py -f French -t Spanish ../examples/finetuning-fr.txt"
-CMD4="uv run translate4.py -f French -t Spanish ../examples/finetuning-fr.txt"
-CMD5="uv run translate5.py -f French -t Spanish ../examples/finetuning-fr.txt"
-CMD6="uv run translate6.py -f French -t Spanish ../examples/finetuning-fr.txt"
+CMD="uv run translate.py -f French -t Spanish ../../examples/finetuning-fr.txt"
+CMD4="uv run translate4.py -f French -t Spanish ../../examples/finetuning-fr.txt"
+CMD5="uv run translate5.py -f French -t Spanish ../../examples/finetuning-fr.txt"
+CMD6="uv run translate6.py -f French -t Spanish ../../examples/finetuning-fr.txt"
 
 mkdir -p tr-cmp tr-0 tr-1 tr-2 tr4 tr5 tr6 $EVAL_DIR/{tr-cmp,tr-0,tr-1,tr-2,tr4,tr5,tr6}
 #process_translation "$CMD -r 0" tr-cmp/gpt-oss-20b-0.txt ollama:hf.co/unsloth/gpt-oss-20b-GGUF

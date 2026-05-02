@@ -1,9 +1,9 @@
 #!/bin/bash
 set -e
 
-INPUT="../examples/finetuning-fr.txt"
-TERMS_JSON="../examples/terms/finetuning-fr.json"
-TERMS_TSV="../examples/terms/finetuning-fr.tsv"
+INPUT="../../examples/finetuning-fr.txt"
+TERMS_JSON="../../examples/tr/terms/finetuning-fr.json"
+TERMS_TSV="../../examples/tr/terms/finetuning-fr.tsv"
 EVALUATOR="ollama:qwen3.6"
 EVAL_OPT="--original $INPUT -f French -t Spanish -m $EVALUATOR -w 3"
 

@@ -6,7 +6,7 @@
 
 ## 実験結果
 
-翻訳入力: [../../examples/finetuning-fr.txt](../../examples/finetuning-fr.txt)（43行、フランス語ポッドキャスト）
+翻訳入力: [examples/finetuning-fr.txt](../../../examples/finetuning-fr.txt)（43行、フランス語ポッドキャスト）
 翻訳先: スペイン語（翻訳3回 × 評価3回、各 run の中央値）
 
 ### スコア一覧
@@ -17,7 +17,7 @@
 | gemma4-26b | **97** | 94 | **97** |
 | gemma4-e4b | 88 | 87 | 92 |
 
-参考: 参照訳（Gemini 2.5 Pro）= 97点（experimental2 で計測済み）
+参考: 参照訳（Gemini 2.5 Pro）= 97点（experimental/02 で計測済み）
 
 各 run の評価3回の個別スコア:
 

@@ -1,16 +1,16 @@
 # trtools translate を用いた翻訳実験
 
-[../experimental4/](../experimental4/) の用語事前抽出方式を踏襲しつつ、翻訳スクリプトを `trtools translate` に移行した実験ディレクトリです。
+[experimental/04](../04/) の用語事前抽出方式を踏襲しつつ、翻訳スクリプトを `trtools translate` に移行した実験ディレクトリです。
 
 ## 背景と動機
 
-experimental4 では用語抽出・訳語確定・翻訳が一体化したスクリプトでしたが、用語 TSV の校正ワークフロー（抽出 → 人手確認・編集 → 翻訳）を確立するため `trtools term extract/translate` として分離しました。
+experimental/04 では用語抽出・訳語確定・翻訳が一体化したスクリプトでしたが、用語 TSV の校正ワークフロー（抽出 → 人手確認・編集 → 翻訳）を確立するため `trtools term extract/translate` として分離しました。
 
-experimental5 では:
+experimental/05 では:
 
 - **用語は事前に `trtools term` で抽出・校正済み**（`examples/terms/finetuning-fr.tsv`）
 - **翻訳は `trtools translate` で実行**（共有用語ファイルを参照）
-- experimental4 と同一の threshold=10・keep=5・CoT なし設定
+- experimental/04 と同一の threshold=10・keep=5・CoT なし設定
 
 これにより、複数の翻訳 run が同じ校正済み用語辞書を共有するため、run 間の用語ブレ（`affinage` → `refinamiento` / `ajuste fino` のような揺れ）を原理的に排除できます。
 
@@ -58,20 +58,20 @@ tr/<model>-<trrun>.txt              例: tr/gemma4-26b-1.txt
 evals/<model>-<trrun>-eval-<evrun>.json
 ```
 
-experimental4 と異なり、tr/ に `-terms.json` ファイルは生成されません（用語は共有ファイルを使用）。
+experimental/04 と異なり、tr/ に `-terms.json` ファイルは生成されません（用語は共有ファイルを使用）。
 
 ## 対象モデル
 
-experimental3/4 と同じ2モデル。
+experimental/03 や experimental/04 と同じ2モデル。
 
-| モデル | experimental4 スコア | 選定理由 |
+| モデル | experimental/04 スコア | 選定理由 |
 |---|:---:|---|
 | gemma4-26b | 96 / 96 / 99 | 全 run で急落なし、最安定 |
 | gemma4-e4b | 95 / 96 / 92 | リソース制約がある場合の代替 |
 
 ## 評価システム
 
-experimental4 と同じパイプライン。
+experimental/04 と同じパイプライン。
 
 - 評価者: `ollama:qwen3.6`
 - 5項目 × 20点 = 100点満点
@@ -85,9 +85,9 @@ experimental4 と同じパイプライン。
 
 ## 比較結果
 
-experimental4（run ごとに用語抽出）との比較（差分: 用語辞書の共有有無のみ）:
+experimental/04（run ごとに用語抽出）との比較（差分: 用語辞書の共有有無のみ）:
 
-| モデル | experimental4 | experimental5 |
+| モデル | experimental/04 | experimental/05 |
 |---|:---:|:---:|
 | gemma4-26b run 1 | 96 | 95 |
 | gemma4-26b run 2 | 96 | 96 |

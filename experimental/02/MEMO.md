@@ -7,7 +7,7 @@
 
 ---
 
-## ハイブリッドモード（experimental3 予定）
+## ハイブリッドモード（experimental/03 予定）
 
 CoT 対応モデル（Qwen3/Gemma4 系）向けの発展的な方式。`--hybrid` オプションを追加し、翻訳ループは CoT なし、要約生成のみ CoT ありで実行する。
 

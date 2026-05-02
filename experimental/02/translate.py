@@ -1,6 +1,6 @@
 # 対話テキスト翻訳（サマリー圧縮方式）
-# experimental/translate.py（スライディング）の入出力互換を保ちつつ、
-# experimental/translate-json.py のサマリー圧縮アーキテクチャを踏襲する。
+# experimental/01/translate.py（スライディング）の入出力互換を保ちつつ、
+# experimental/01/translate-json.py のサマリー圧縮アーキテクチャを踏襲する。
 # chat_history を system + summary + 直近 KEEP ペア の固定構造に維持することで
 # KV キャッシュを有効化する。
 

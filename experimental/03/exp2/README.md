@@ -1,10 +1,10 @@
-# experimental2 設定による比較試行
+# experimental/02 設定による比較試行
 
-[../../experimental2/](../../experimental2/) と同じ設定（`--summary glossary --no-think`・threshold=10・keep=5）を使い、翻訳3回 × 評価3回で実施した試行です。experimental3 の各試行との対等な比較を目的としています。
+[experimental/02](../../02/) と同じ設定（`--summary glossary --no-think`・threshold=10・keep=5）を使い、翻訳3回 × 評価3回で実施した試行です。experimental/03 の各試行との対等な比較を目的としています。
 
 ## 実験結果
 
-翻訳入力: [../../examples/finetuning-fr.txt](../../examples/finetuning-fr.txt)（43行、フランス語ポッドキャスト）
+翻訳入力: [examples/finetuning-fr.txt](../../../examples/finetuning-fr.txt)（43行、フランス語ポッドキャスト）
 翻訳先: スペイン語（翻訳3回 × 評価3回、各 run の中央値）
 
 ### スコア一覧
@@ -15,7 +15,7 @@
 | gemma4-26b | 96 | **98** | 96 |
 | gemma4-e4b | 95 | **83** | 94 |
 
-参考: 参照訳（Gemini 2.5 Pro）= 97点（experimental2 で計測済み）
+参考: 参照訳（Gemini 2.5 Pro）= 97点（experimental/02 で計測済み）
 
 各 run の評価3回の個別スコア:
 
@@ -39,8 +39,8 @@ readability=16、fluency=15、terminology=17 と複数項目で減点。tr-2・t
 
 **gemma4-e4b-2: 83点急落**
 
-eval-1 が 68点（experimental3/20/ の tr-2 急落と同スコア）を含み、標準偏差が 5.80 と全試行中最大。terminology=15（11・15・18 と評価ブレも大きい）が主な減点要因。threshold=15 でも threshold=20 と同様の急落が発生しており、閾値の違いよりも glossary 初期蓄積の確率的なブレが支配的と考えられる。
+eval-1 が 68点（experimental/03/20/ の tr-2 急落と同スコア）を含み、標準偏差が 5.80 と全試行中最大。terminology=15（11・15・18 と評価ブレも大きい）が主な減点要因。threshold=15 でも threshold=20 と同様の急落が発生しており、閾値の違いよりも glossary 初期蓄積の確率的なブレが支配的と考えられる。
 
 **gemma4-26b: 全 run で安定**
 
-96・98・96 点と急落なし。experimental3 の各試行と同水準を維持しており、設定の違いに関係なく安定した品質を示している。
+96・98・96 点と急落なし。experimental/03 の各試行と同水準を維持しており、設定の違いに関係なく安定した品質を示している。

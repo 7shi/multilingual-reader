@@ -1,6 +1,6 @@
-INPUT    := ../../examples/finetuning-fr.txt
-EVAL_PY  := ../../experimental/evaluate_translation.py
-AGG_PY   := ../../experimental/aggregate_evaluations.py
+INPUT    := ../../../examples/finetuning-fr.txt
+EVAL_PY  := ../../01/evaluate_translation.py
+AGG_PY   := ../../01/aggregate_evaluations.py
 MODEL    := ollama:gemma3:27b
 EVALUATOR:= ollama:qwen3.6
 OPTS     := -f French -t Spanish -m $(MODEL) --summary glossary
