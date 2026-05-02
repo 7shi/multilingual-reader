@@ -6,7 +6,7 @@
 - **gpt-oss**: GPT-OSS 120B-A5.1B
 - **qwen3.6**: Qwen 3.6 35B-A3B
 
-前提として [terms/](terms]) 内の用語ファイル `*.{json,tsv}` に対象言語の用語を追加して校正する必要があります。
+前提として [terms/](terms/) 内の用語ファイル `*.{json,tsv}` に対象言語の用語を追加して校正する必要があります。特に `trtools term extract/translate` が生成する TSV は、スラッシュ区切りの候補併記、誤訳、原語混入、誤字が残ることがあるため、そのまま使わず見直します。全トピック共通の固有名詞は [terms/common.tsv](terms/common.tsv) に固定します。
 
 - [terms/](terms/): 用語の翻訳
 

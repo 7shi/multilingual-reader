@@ -59,7 +59,17 @@ multilingual-reader/
 
 ### 参照訳と評価結果（examples/）
 
-[examples/](examples/) には各トピック × 各言語の参照訳テキストファイルが格納されています。原文はフランス語で、ドイツ語・日本語・中国語は英語からの重訳です。
+[examples/](examples/) には各トピック × 各言語の参照訳テキストファイルが格納されています。参照訳は、言語ごとの品質を安定させるためにルートを分けて作成しています。
+
+| ルート | 対象言語 | 備考 |
+|---|---|---|
+| fr→en | English | 直接翻訳 |
+| fr→es | Spanish | 直接翻訳 |
+| en→de | German | 英語からの重訳 |
+| en→ja | Japanese | 英語からの重訳 |
+| en→zh | Chinese | 英語からの重訳 |
+
+全トピック共通の固有名詞や番組名は [examples/tr/terms/common.tsv](examples/tr/terms/common.tsv) で固定しています。run ごとの訳語ブレを避けるためです。
 
 [examples/evals/](examples/evals/) には `trtools eval`（評価者: `ollama:qwen3.6`）による3回評価の JSON と集計結果（[SCORES.txt](examples/evals/SCORES.txt)）が格納されています。再評価・追加評価は [examples/evals/batch.sh](examples/evals/batch.sh) で実行できます。
 
@@ -278,4 +288,3 @@ uv run split_podcast_data.py momentum.js -o momentum_physics
 - 言語構成の一貫性チェック
 - 各言語のテキストを個別のテキストファイルに抽出
 - UTF-8エンコーディングで多言語対応
-
