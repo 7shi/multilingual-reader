@@ -23,30 +23,31 @@ bash batch.sh
 
 ## TSV の校正手順
 
-列数が多いため、言語を1つずつ絞り込んで確認・修正する。
+列数が多いため、**必ず言語を1つずつ独立したタスクとして分けて**確認・修正すること。
+
+`common.tsv` を校正する場合の追加事項：
+- タイトル "Tech Flash", "Bridges in Physics" は翻訳対象とする。
+- 人名 "Camille", "Luc" は固有文字を使用する言語では転写する。
 
 ### 1. 言語を絞り込んで表示
 
 ```bash
 # 特定言語列のみ表示（LLM にペーストして確認する場合にも有用）
-uv run trtools term show onde-en.tsv -l Japanese
-
-# 複数言語を並べて比較
-uv run trtools term show onde-en.tsv -l Japanese -l German
+uv run trtools term show onde-en.tsv -l ja
 ```
 
 ### 2. 問題のあるセルを修正
 
 ```bash
-uv run trtools term set onde-en.tsv -k "physics" -l Japanese -v "物理学"
+uv run trtools term set onde-en.tsv -k "physics" -l ja -v "物理学"
 ```
 
-`-k` はキー（第1列の値）、`-l` は言語列名、`-v` は修正後の値を指定する。
+`-k` はキー（第1列の値）、`-l` は言語コード（例: `ja`）、`-v` は修正後の値を指定する。
 
 ### 3. 修正結果を確認
 
 ```bash
-uv run trtools term show onde-en.tsv -l Japanese -k physics
+uv run trtools term show onde-en.tsv -l ja -k physics
 ```
 
 ## 翻訳での使用
