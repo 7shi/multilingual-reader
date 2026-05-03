@@ -6,4 +6,5 @@ EXTRA_LANGS = eo hi \
 			  ta id ar \
 			  fa ur he \
 			  it pt ru uk pl cs nl sv ia \
-			  el ca ro vi lv lt ml
+			  el ca ro vi lv lt ml \
+			  bn th ms da no is hr sk sl
