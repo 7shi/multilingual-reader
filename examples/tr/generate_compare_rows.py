@@ -138,22 +138,32 @@ TIERS = [
 ]
 
 
-def render_classify_rows() -> list[str]:
+def render_classify_rows(overall: bool = False) -> list[str]:
     rows = load_compare_rows()
 
     lines = [f"{len(rows)} languages total", ""]
-    for i, model in enumerate(ONDE_MODELS):
-        lines.append(f"**{model}**:")
-        model_rows = sorted(rows, key=lambda r, i=i: -r.scores[i])
+
+    if overall:
+        lines.append("**overall**:")
+        all_rows = sorted(rows, key=lambda r: -max(r.scores))
         for label, lo, hi in TIERS:
-            tier_rows = [r for r in model_rows if lo <= r.scores[i] < hi]
+            tier_rows = [r for r in all_rows if lo <= max(r.scores) < hi]
             if tier_rows:
-                names = ", ".join(
-                    f"**{r.display_name}**" if r.scores[i] == max(r.scores) else r.display_name
-                    for r in tier_rows
-                )
+                names = ", ".join(r.display_name for r in tier_rows)
                 lines.append(f"- {label}: {names}")
-        lines.append("")
+    else:
+        for i, model in enumerate(ONDE_MODELS):
+            lines.append(f"**{model}**:")
+            model_rows = sorted(rows, key=lambda r, i=i: -r.scores[i])
+            for label, lo, hi in TIERS:
+                tier_rows = [r for r in model_rows if lo <= r.scores[i] < hi]
+                if tier_rows:
+                    names = ", ".join(
+                        f"**{r.display_name}**" if r.scores[i] == max(r.scores) else r.display_name
+                        for r in tier_rows
+                    )
+                    lines.append(f"- {label}: {names}")
+            lines.append("")
 
     bottom = sorted(
         [r for r in rows if max(r.scores) < 60],
@@ -177,6 +187,11 @@ def build_parser() -> argparse.ArgumentParser:
         default="compare",
         help="which rows to output (default: compare)",
     )
+    parser.add_argument(
+        "--overall",
+        action="store_true",
+        help="for classify: show overall best-score classification instead of per-model",
+    )
     return parser
 
 
@@ -189,7 +204,7 @@ def main() -> int:
         elif args.section == "core":
             lines = render_core_rows()
         elif args.section == "classify":
-            lines = render_classify_rows()
+            lines = render_classify_rows(overall=args.overall)
         else:
             lines = [
                 "<!-- compare -->",
