@@ -141,7 +141,7 @@ TIERS = [
 def render_classify_rows() -> list[str]:
     rows = load_compare_rows()
 
-    lines = []
+    lines = [f"{len(rows)} languages total", ""]
     for i, model in enumerate(ONDE_MODELS):
         lines.append(f"**{model}**:")
         model_rows = sorted(rows, key=lambda r, i=i: -r.scores[i])
