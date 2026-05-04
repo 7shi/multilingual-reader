@@ -131,6 +131,38 @@ def render_core_rows() -> list[str]:
     return rendered
 
 
+TIERS = [
+    ("高品質（90点以上）", 90, 101),
+    ("実用範囲（80〜89点）", 80, 90),
+    ("中品質（60〜79点）", 60, 80),
+]
+
+
+def render_classify_rows() -> list[str]:
+    rows = load_compare_rows()
+
+    lines = []
+    for i, model in enumerate(ONDE_MODELS):
+        lines.append(f"**{model}**:")
+        model_rows = sorted(rows, key=lambda r, i=i: -r.scores[i])
+        for label, lo, hi in TIERS:
+            tier_rows = [r for r in model_rows if lo <= r.scores[i] < hi]
+            if tier_rows:
+                names = ", ".join(r.display_name for r in tier_rows)
+                lines.append(f"- {label}: {names}")
+        lines.append("")
+
+    bottom = sorted(
+        [r for r in rows if max(r.scores) < 60],
+        key=lambda r: -max(r.scores),
+    )
+    if bottom:
+        names = ", ".join(r.display_name for r in bottom)
+        lines.append(f"- 致命的な欠陥（60点未満）: {names}")
+
+    return lines
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Generate README rows for examples/tr score tables."
@@ -138,7 +170,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "section",
         nargs="?",
-        choices=("compare", "core", "all"),
+        choices=("compare", "core", "all", "classify"),
         default="compare",
         help="which rows to output (default: compare)",
     )
@@ -153,6 +185,8 @@ def main() -> int:
             lines = render_compare_rows()
         elif args.section == "core":
             lines = render_core_rows()
+        elif args.section == "classify":
+            lines = render_classify_rows()
         else:
             lines = [
                 "<!-- compare -->",
