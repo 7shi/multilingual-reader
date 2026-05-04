@@ -148,7 +148,10 @@ def render_classify_rows() -> list[str]:
         for label, lo, hi in TIERS:
             tier_rows = [r for r in model_rows if lo <= r.scores[i] < hi]
             if tier_rows:
-                names = ", ".join(r.display_name for r in tier_rows)
+                names = ", ".join(
+                    f"**{r.display_name}**" if r.scores[i] == max(r.scores) else r.display_name
+                    for r in tier_rows
+                )
                 lines.append(f"- {label}: {names}")
         lines.append("")
 
