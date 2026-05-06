@@ -33,7 +33,8 @@ while IFS=$'\t' read -r CODE _SCORE TR_BASE LANG_NAME; do
             -m "${REVIEWER}" \
             --no-think \
             --lang-index "${LANG_INDEX}" \
-            --lang-total "${LANG_TOTAL}"
+            --lang-total "${LANG_TOTAL}" \
+            --terms "examples/tr/terms/common.tsv"
     else
         echo "Review output already exists, skipping."
     fi

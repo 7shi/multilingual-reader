@@ -1,4 +1,5 @@
 import argparse
+import csv
 import io
 from rich.console import Console
 from rich.panel import Panel
@@ -18,6 +19,7 @@ parser.add_argument("--history", type=int, default=10, help="コンテキスト�
 parser.add_argument("--no-think", action="store_true", help="thinking処理を無効化")
 parser.add_argument("--lang-index", type=int, default=0, help="言語の通し番号（batch.shから渡す）")
 parser.add_argument("--lang-total", type=int, default=0, help="言語の総数（batch.shから渡す）")
+parser.add_argument("--terms", help="用語対訳TSVファイル（話者名の変換に使用）")
 args = parser.parse_args()
 
 with open(args.original, "r", encoding="utf-8") as f:
@@ -27,6 +29,21 @@ with open(args.translation, "r", encoding="utf-8") as f:
 
 if len(orig_lines) != len(tr_lines):
     print("Warning: The number of lines in original and translation files do not match.")
+
+terms_dict = {}
+if args.terms:
+    with open(args.terms, "r", encoding="utf-8") as f:
+        rows = list(csv.reader(f, delimiter="\t"))
+    if rows:
+        headers = rows[0]
+        try:
+            from_col = headers.index(args.from_lang)
+            to_col = headers.index(args.to_lang)
+            for row in rows[1:]:
+                if len(row) > max(from_col, to_col) and row[from_col]:
+                    terms_dict[row[from_col]] = row[to_col]
+        except ValueError as e:
+            print(f"Warning: {e} in terms TSV")
 
 client = LLMClient(model=args.model, think=(not args.no_think))
 console = Console()
@@ -106,6 +123,7 @@ with Progress(
         speaker, text = orig_line.split(":", 1)
         speaker = speaker.strip()
         text = text.strip()
+        translated_speaker = terms_dict.get(speaker, speaker)
 
         if ":" in tr_line:
             tr_speaker, tr_text = tr_line.split(":", 1)
@@ -154,12 +172,12 @@ with Progress(
             if improved_tr.startswith('"') and improved_tr.endswith('"'):
                 improved_tr = improved_tr[1:-1].strip()
 
-        console.print(Panel(f"{speaker}: {improved_tr}", title="Refined", border_style="cyan"))
+        console.print(Panel(f"{translated_speaker}: {improved_tr}", title="Refined", border_style="cyan"))
 
-        results.append(f"{speaker}: {improved_tr}")
+        results.append(f"{translated_speaker}: {improved_tr}")
         context_history.append({
             "original": orig_line,
-            "translation": f"{speaker}: {improved_tr}",
+            "translation": f"{translated_speaker}: {improved_tr}",
         })
 
     progress.update(task, completed=len(orig_lines), description=desc())
