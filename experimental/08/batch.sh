@@ -5,7 +5,7 @@ set -e
 cd "$(dirname "$0")"/../..
 BASE_DIR="experimental/08"
 
-mkdir -p "${BASE_DIR}/tr" "${BASE_DIR}/evals" "${BASE_DIR}/tr-fb" "${BASE_DIR}/evals-fb"
+mkdir -p "${BASE_DIR}/tr" "${BASE_DIR}/evals" "${BASE_DIR}/tr-fb" "${BASE_DIR}/evals-fb" "${BASE_DIR}/tr-nt" "${BASE_DIR}/evals-nt"
 
 REVIEWER="ollama:qwen3.6"
 EVALUATOR="ollama:qwen3.6"
@@ -54,6 +54,45 @@ for LANG_INFO in "${LANGS[@]}"; do
 done
 
 echo ""
+echo "=== Reviewing (1-step no-think) ==="
+for LANG_INFO in "${LANGS[@]}"; do
+    CODE="${LANG_INFO%%:*}"
+    LANG_NAME="${LANG_INFO##*:}"
+
+    TR_BASE="examples/tr/onde/gemma4/tr/onde-${CODE}.txt"
+    NT_FILE="${BASE_DIR}/tr-nt/onde-${CODE}-reviewed.txt"
+
+    echo "--- ${LANG_NAME} ---"
+    if [ ! -f "${NT_FILE}" ]; then
+        uv run "${BASE_DIR}/review.py" \
+            --original "${ORIGINAL_FILE}" \
+            --translation "${TR_BASE}" \
+            -f English -t "${LANG_NAME}" \
+            -o "${NT_FILE}" \
+            -m "${REVIEWER}" \
+            --no-think
+    else
+        echo "Review output already exists, skipping."
+    fi
+
+    echo "=== Evaluating ${LANG_NAME} (no-think) ==="
+    for i in 1 2 3; do
+        EVAL_FILE="${BASE_DIR}/evals-nt/onde-${CODE}-reviewed-${i}.json"
+        if [ ! -f "${EVAL_FILE}" ]; then
+            echo -e "\nEvaluating ${NT_FILE} (run ${i})..."
+            uv run trtools eval \
+                --original "${ORIGINAL_FILE}" \
+                --translation "${NT_FILE}" \
+                -m "${EVALUATOR}" \
+                -f English -t "${LANG_NAME}" \
+                -o "${EVAL_FILE}"
+        else
+            echo "Evaluation ${i} already exists, skipping."
+        fi
+    done
+done
+
+echo ""
 echo "=== Applying Fallback ==="
 for LANG_INFO in "${LANGS[@]}"; do
     CODE="${LANG_INFO%%:*}"
@@ -90,6 +129,13 @@ done
 
 echo "=== Aggregating Scores ==="
 uv run trtools agg "${BASE_DIR}"/evals/*.json | tee "${BASE_DIR}"/SCORES.txt
+
+NT_EVALS=("${BASE_DIR}"/evals-nt/*.json)
+if [ -f "${NT_EVALS[0]}" ]; then
+    echo ""
+    echo "=== Aggregating No-think Scores ==="
+    uv run trtools agg "${BASE_DIR}"/evals-nt/*.json | tee "${BASE_DIR}"/SCORES-nt.txt
+fi
 
 FB_EVALS=("${BASE_DIR}"/evals-fb/*.json)
 if [ -f "${FB_EVALS[0]}" ]; then

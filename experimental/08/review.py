@@ -11,6 +11,7 @@ parser.add_argument("-t", "--to", dest="to_lang", required=True, help="翻訳先
 parser.add_argument("-o", "--output", required=True, help="推敲後出力ファイル名")
 parser.add_argument("-m", "--model", required=True, help="推敲に使用するモデル")
 parser.add_argument("--history", type=int, default=10, help="コンテキスト履歴数")
+parser.add_argument("--no-think", action="store_true", help="CoTを無効化する")
 args = parser.parse_args()
 
 with open(args.original, "r", encoding="utf-8") as f:
@@ -21,8 +22,7 @@ with open(args.translation, "r", encoding="utf-8") as f:
 if len(orig_lines) != len(tr_lines):
     print("Warning: The number of lines in original and translation files do not match.")
 
-# CoTを有効化
-client = LLMClient(model=args.model, think=True)
+client = LLMClient(model=args.model, think=not args.no_think)
 
 context_history = []
 results = []
