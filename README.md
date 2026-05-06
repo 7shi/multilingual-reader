@@ -55,7 +55,7 @@ multilingual-reader/
 | `uv run trtools term` | テキストから用語・固有名詞を抽出し訳語をTSVに保存 |
 | `uv run trtools batch` | 翻訳→評価→集約を一括実行 |
 
-`trtools` は5つの実験で得られた成果を統合したものです。詳細は [experimental/README.md](experimental/README.md) を参照してください。
+`trtools` は実験01〜05で得られた成果を統合したものです。実験06〜09では中リソース言語への展開と他者評価による推敲プロセスを確立しています。詳細は [experimental/README.md](experimental/README.md) を参照してください。
 
 ### 参照訳と評価結果（examples/）
 
