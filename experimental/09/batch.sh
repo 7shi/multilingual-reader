@@ -28,7 +28,7 @@ while IFS=$'\t' read -r CODE _SCORE TR_BASE LANG_NAME; do
         uv run "${BASE_DIR}/review.py" \
             --original "${ORIGINAL_FILE}" \
             --translation "${TR_BASE}" \
-            -f English -t "${LANG_NAME}" \
+            -f en -t "${CODE}" \
             -o "${OUTPUT_FILE}" \
             -m "${REVIEWER}" \
             --no-think \

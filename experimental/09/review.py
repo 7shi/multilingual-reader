@@ -6,6 +6,7 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.progress import Progress, ProgressColumn, SpinnerColumn, TextColumn, BarColumn, TaskProgressColumn, TimeElapsedColumn
 from rich.text import Text
+from trtools.language import LANG_NAMES
 from trtools.llm import LLMClient
 
 parser = argparse.ArgumentParser(description="他者評価による翻訳推敲スクリプト")
@@ -21,6 +22,15 @@ parser.add_argument("--lang-index", type=int, default=0, help="言語の通し�
 parser.add_argument("--lang-total", type=int, default=0, help="言語の総数（batch.shから渡す）")
 parser.add_argument("--terms", help="用語対訳TSVファイル（話者名の変換に使用）")
 args = parser.parse_args()
+
+if args.from_lang not in LANG_NAMES:
+    parser.error(f"Unknown language code: {args.from_lang}")
+if args.to_lang not in LANG_NAMES:
+    parser.error(f"Unknown language code: {args.to_lang}")
+from_code = args.from_lang
+to_code   = args.to_lang
+args.from_lang = LANG_NAMES[args.from_lang]
+args.to_lang   = LANG_NAMES[args.to_lang]
 
 with open(args.original, "r", encoding="utf-8") as f:
     orig_lines = f.readlines()
@@ -88,12 +98,13 @@ class MofNParenColumn(ProgressColumn):
 
 def desc() -> str:
     lang_progress = f" ({args.lang_index}/{args.lang_total})" if args.lang_total else ""
-    return f"{args.to_lang}{lang_progress}"
+    return f"{to_code}: {args.to_lang}{lang_progress}"
 
 
 with Progress(
     SpinnerColumn(),
     TextColumn("[bold cyan]{task.description}"),
+    TextColumn("|"),
     BarColumn(),
     TaskProgressColumn(),
     MofNParenColumn(),
