@@ -18,6 +18,7 @@ echo "Generated: ${TSV_FILE}"
 
 LANG_TOTAL=$(wc -l < "${TSV_FILE}")
 LANG_INDEX=0
+BATCH_START=$(date +%s.%N)
 
 while IFS=$'\t' read -r CODE _SCORE TR_BASE LANG_NAME; do
     LANG_INDEX=$((LANG_INDEX + 1))
@@ -34,6 +35,7 @@ while IFS=$'\t' read -r CODE _SCORE TR_BASE LANG_NAME; do
             --no-think \
             --lang-index "${LANG_INDEX}" \
             --lang-total "${LANG_TOTAL}" \
+            --batch-start "${BATCH_START}" \
             --terms "examples/tr/terms/common.tsv"
     else
         echo "Review output already exists, skipping."

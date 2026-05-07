@@ -1,6 +1,7 @@
 import argparse
 import csv
 import io
+import time
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
@@ -20,6 +21,7 @@ parser.add_argument("--history", type=int, default=10, help="コンテキスト�
 parser.add_argument("--no-think", action="store_true", help="thinking処理を無効化")
 parser.add_argument("--lang-index", type=int, default=0, help="言語の通し番号（batch.shから渡す）")
 parser.add_argument("--lang-total", type=int, default=0, help="言語の総数（batch.shから渡す）")
+parser.add_argument("--batch-start", type=float, default=0.0, help="バッチ開始時刻（Unixタイムスタンプ）")
 parser.add_argument("--terms", help="用語対訳TSVファイル（話者名の変換に使用）")
 args = parser.parse_args()
 
@@ -87,6 +89,13 @@ context_history = []
 results = []
 
 
+def _fmt_elapsed(seconds: float) -> str:
+    s = int(seconds)
+    h, rem = divmod(s, 3600)
+    m, sec = divmod(rem, 60)
+    return f"{h}:{m:02d}:{sec:02d}"
+
+
 class MofNParenColumn(ProgressColumn):
     """行進捗を (xx/xx) 形式で表示するカラム。"""
 
@@ -96,14 +105,33 @@ class MofNParenColumn(ProgressColumn):
         return Text(f"({completed}/{total})", style="progress.download")
 
 
+class LangMofNColumn(ProgressColumn):
+    """言語進捗を (xx/xx) 形式で表示するカラム。"""
+
+    def render(self, task) -> Text:
+        if not args.lang_total:
+            return Text("")
+        return Text(f"({args.lang_index}/{args.lang_total})", style="progress.download")
+
+
+class BatchTimeColumn(ProgressColumn):
+    """バッチ総経過時間を表示するカラム。"""
+
+    def render(self, task) -> Text:
+        if not args.batch_start:
+            return Text(_fmt_elapsed(task.elapsed or 0), style="progress.elapsed")
+        return Text(_fmt_elapsed(time.time() - args.batch_start), style="progress.elapsed")
+
+
 def desc() -> str:
-    lang_progress = f" ({args.lang_index}/{args.lang_total})" if args.lang_total else ""
-    return f"{to_code}: {args.to_lang}{lang_progress}"
+    return f"{to_code}: {args.to_lang}"
 
 
 with Progress(
     SpinnerColumn(),
     TextColumn("[bold cyan]{task.description}"),
+    LangMofNColumn(),
+    BatchTimeColumn(),
     TextColumn("|"),
     BarColumn(),
     TaskProgressColumn(),
