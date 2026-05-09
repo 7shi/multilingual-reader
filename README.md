@@ -30,12 +30,15 @@ multilingual-reader/
 ├── build.py                       # 静的サイトビルダー（uv run build.py）
 ├── deploy.sh                      # gh-pages ブランチへの push スクリプト
 ├── Makefile                       # build / clean / serve / deploy ターゲット
+├── DEPLOY.md                      # ビルド・実行時・デプロイのアーキテクチャ詳細
 ├── templates/
 │   ├── page.html                  # 単一言語ページのテンプレート
+│   ├── multi.html                 # 多言語並列ページのテンプレート
 │   ├── index.html                 # ランディングのテンプレート
 │   └── static/
-│       ├── reader.js              # Web Speech API ロジック（単一言語）
-│       └── reader.css             # スタイルシート
+│       ├── reader.js              # 単一言語ページ用 JS
+│       ├── reader-multi.js        # 多言語並列ページ用 JS
+│       └── reader.css             # 共通 CSS
 ├── examples/                      # 真実の源となる多言語テキスト・参照訳評価
 │   ├── {topic}-{lang}.txt         # 4トピック × 6言語 = 24 ファイル
 │   ├── evals/                     # trtools eval による参照訳評価
@@ -47,6 +50,8 @@ multilingual-reader/
 ```
 
 ## 🚀 ビルドとデプロイ
+
+ビルドパイプライン・実行時 JS・デプロイの設計詳細は [DEPLOY.md](DEPLOY.md) を参照。
 
 ### 前提
 - `uv`（Python パッケージマネージャー）
