@@ -1,13 +1,13 @@
-DATASETS = transformer finetuning onde momentum
+.PHONY: build clean serve deploy
 
-all:
+build:
+	uv run build.py
 
-split:
-	for ds in $(DATASETS); do uv run split_podcast_data.py -o examples/$$ds $$ds.js; done
+clean:
+	rm -rf dist
 
-merge:
-	for ds in $(DATASETS); do uv run merge_podcast_data.py -o $$ds.js examples/$$ds-{fr,de,en,zh,ja,es}.txt; done
+serve:
+	cd dist && uv run python -m http.server 8000
 
-stash:
-	rm modified_files.tar.gz
-	git status --porcelain | grep '^ M' | cut -c 4- | xargs tar -czvf modified_files.tar.gz
+deploy: build
+	bash deploy.sh

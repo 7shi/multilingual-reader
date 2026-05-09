@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multilingual Podcast Reader</title>
+    <link rel="stylesheet" href="assets/reader.css">
+</head>
+<body class="index-page">
+    <div class="container">
+        <h1>🎧 Multilingual Podcast Reader</h1>
+        <p class="lead">トピック × 言語の組み合わせを選択してください。</p>
+        <table class="index-matrix">
+            <thead>
+                <tr>
+                    <th>Topic</th>
+                    {% for lang in langs %}
+                    <th>{{ lang.name }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for topic in topics %}
+                <tr>
+                    <th class="topic-cell">{{ topic.label }}</th>
+                    {% for lang in langs %}
+                    <td><a href="{{ topic.id }}-{{ lang.id }}.html">{{ lang.id|upper }}</a></td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

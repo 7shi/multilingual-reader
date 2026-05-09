@@ -46,3 +46,7 @@ Gensparkで生成した場合：
 ```bash
 uv run convert_genspark.py genspark_output.html -o base_dialogue.txt --speaker Camille,Luc
 ```
+
+### 入力サンプル: genspark/
+
+`obsolete/genspark/` 配下に当時の Genspark 出力スナップショット 3 ファイル（transformer.html / onde.html / momentum.html）を保管している。これらは現在の `examples/{topic}-{lang}.txt` 系列の起点となったフランス語原文の元データで、Genspark の DOM をコピーして保存したもの。convert_genspark.py の入力フォーマット例として参照可能。
