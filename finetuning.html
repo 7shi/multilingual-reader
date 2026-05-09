@@ -1,0 +1,2399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎯 Fine-tuning (All languages) - Multilingual Podcast Reader</title>
+    <link rel="stylesheet" href="assets/reader.css">
+</head>
+<body class="multi-page">
+    <div class="container">
+        <header class="page-header">
+            <a href="index.html" class="back-link">← Index</a>
+            <h1>🎯 Fine-tuning</h1>
+            <nav class="lang-nav">
+                
+                <span class="lang-current" title="All languages">All</span>
+                
+                <a href="finetuning-fr.html" title="Français">FR</a>
+                
+                <a href="finetuning-en.html" title="English">EN</a>
+                
+                <a href="finetuning-es.html" title="Español">ES</a>
+                
+                <a href="finetuning-de.html" title="Deutsch">DE</a>
+                
+                <a href="finetuning-ja.html" title="日本語">JA</a>
+                
+                <a href="finetuning-zh.html" title="中文">ZH</a>
+                
+            </nav>
+        </header>
+
+        <div class="controls">
+            <div class="speech-controls">
+                <button id="playPauseBtn" class="play-pause-btn">▶️ Play</button>
+                <button id="stopBtn" class="stop-btn">⏹️ Stop</button>
+            </div>
+        </div>
+
+        <div id="speakerVoices" class="speaker-voices" style="display: none;">
+            <div class="collapsible-header" onclick="toggleSpeakerVoices()">
+                <h3>🎭 Voice Assignment & Language Speeds</h3>
+                <span id="toggleIcon" class="toggle-icon">▼</span>
+            </div>
+            <div id="voiceAssignmentContainer" class="voice-assignment collapsed">
+                <div class="global-speed-control">
+                    <label for="rate">Global Speed:</label>
+                    <input type="range" id="rate" min="0.5" max="2" step="0.1" value="1.0">
+                    <span id="rateValue">1.0x</span>
+                </div>
+                <div id="languageControlsContainer" class="language-controls-container">
+                    <!-- 言語別 speed + speaker voice select は JS で生成 -->
+                </div>
+            </div>
+        </div>
+
+        <div id="textContent" class="text-content multi-content">
+            
+            <div class="translation-group" data-group-index="0">
+                
+                
+                <div class="translation-line speaker-0 lang-fr" data-line-index="0" data-lang="fr">
+                    <div class="language-flag enabled">FR</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">Bonjour et bienvenue dans « Tech Éclair », le podcast où nous décryptons la technologie qui façonne notre monde. Je suis Camille.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-en" data-line-index="0" data-lang="en">
+                    <div class="language-flag enabled">EN</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">Hello and welcome back to &#34;Tech Flash,&#34; the podcast where we make sense of the technology shaping our world. I&#39;m Camille.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-es" data-line-index="0" data-lang="es">
+                    <div class="language-flag enabled">ES</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">Hola y bienvenidos a «Tech Relámpago», el podcast donde desciframos la tecnología que da forma a nuestro mundo. Soy Camille.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-de" data-line-index="0" data-lang="de">
+                    <div class="language-flag enabled">DE</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">Hallo und willkommen zurück bei „Tech-Blitz“, dem Podcast, in dem wir die Technologien verstehen, die unsere Welt prägen. Ich bin Camille.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-ja" data-line-index="0" data-lang="ja">
+                    <div class="language-flag enabled">JA</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">皆さん、こんにちは。「テックフラッシュ」へようこそ。私たちの世界を形作るテクノロジーを分かりやすく解説するポッドキャストです。私はカミーユです。</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-zh" data-line-index="0" data-lang="zh">
+                    <div class="language-flag enabled">ZH</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">卡米尔:</span>
+                        <span class="line-text">大家好，欢迎回到《科技快报》。在这里，我们一起解读正在塑造世界的各项技术。我是卡米尔。</span>
+                    </div>
+                </div>
+                
+            </div>
+            
+            <div class="translation-group" data-group-index="1">
+                
+                
+                <div class="translation-line speaker-1 lang-fr" data-line-index="1" data-lang="fr">
+                    <div class="language-flag enabled">FR</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">Et je suis Luc. Aujourd&#39;hui, nous allons lever le voile sur la façon dont les modèles d&#39;IA que nous utilisons au quotidien apprennent et deviennent si intelligents.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-en" data-line-index="1" data-lang="en">
+                    <div class="language-flag enabled">EN</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">And I&#39;m Luc. Today, we&#39;re going to pull back the curtain on how the AI models we use every day actually learn and get so smart.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-es" data-line-index="1" data-lang="es">
+                    <div class="language-flag enabled">ES</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">Y yo soy Luc. Hoy vamos a desvelar cómo los modelos de IA que utilizamos a diario aprenden y se vuelven tan inteligentes.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-de" data-line-index="1" data-lang="de">
+                    <div class="language-flag enabled">DE</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">Und ich bin Luc. Heute werden wir die Geheimnisse lüften, wie die KI-Modelle, die wir jeden Tag nutzen, tatsächlich lernen und so intelligent werden.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-ja" data-line-index="1" data-lang="ja">
+                    <div class="language-flag enabled">JA</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">そして僕、リュックです。今日は、私たちが日々使っているAIモデルが、どうやって学習して賢くなるのか、その舞台裏を覗いてみましょう。</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-zh" data-line-index="1" data-lang="zh">
+                    <div class="language-flag enabled">ZH</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">卢克:</span>
+                        <span class="line-text">我是卢克。今天，我们要揭开幕布，带大家了解我们每天都在使用的 AI 模型究竟是如何学习并变得如此聪明的。</span>
+                    </div>
+                </div>
+                
+            </div>
+            
+            <div class="translation-group" data-group-index="2">
+                
+                
+                <div class="translation-line speaker-0 lang-fr" data-line-index="2" data-lang="fr">
+                    <div class="language-flag enabled">FR</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">C&#39;est un sujet fascinant. On perçoit souvent ces IA comme des boîtes noires, mais leur apprentissage suit un processus bien réel.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-en" data-line-index="2" data-lang="en">
+                    <div class="language-flag enabled">EN</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">It&#39;s a fascinating topic. We often see these AIs as a kind of black box, but there&#39;s a real process to their education.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-es" data-line-index="2" data-lang="es">
+                    <div class="language-flag enabled">ES</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">Es un tema fascinante. A menudo percibimos estas IA como cajas negras, pero su aprendizaje sigue un proceso muy real.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-de" data-line-index="2" data-lang="de">
+                    <div class="language-flag enabled">DE</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">Es ist ein faszinierendes Thema. Wir betrachten diese KI oft als eine Art Blackbox, aber ihre Ausbildung folgt einem echten Prozess.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-ja" data-line-index="2" data-lang="ja">
+                    <div class="language-flag enabled">JA</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">面白いテーマね。AIってブラックボックスみたいに見られがちだけど、ちゃんと教育のプロセスがあるのよね。</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-zh" data-line-index="2" data-lang="zh">
+                    <div class="language-flag enabled">ZH</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">卡米尔:</span>
+                        <span class="line-text">这是一个迷人的话题。我们经常将这些人工智能视为一种黑盒，但它们的学习过程其实是非常严谨的。</span>
+                    </div>
+                </div>
+                
+            </div>
+            
+            <div class="translation-group" data-group-index="3">
+                
+                
+                <div class="translation-line speaker-1 lang-fr" data-line-index="3" data-lang="fr">
+                    <div class="language-flag enabled">FR</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">Exactement. Et cet apprentissage commence par un processus appelé le « pré-entraînement ».</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-en" data-line-index="3" data-lang="en">
+                    <div class="language-flag enabled">EN</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">Exactly. And that education starts with a process called &#34;pre-training.&#34;</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-es" data-line-index="3" data-lang="es">
+                    <div class="language-flag enabled">ES</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">Exactamente. Y este aprendizaje comienza con un proceso llamado «preentrenamiento».</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-de" data-line-index="3" data-lang="de">
+                    <div class="language-flag enabled">DE</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">Genau. Und diese Ausbildung beginnt mit einem Prozess, den man „Pre-Training“ nennt.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-ja" data-line-index="3" data-lang="ja">
+                    <div class="language-flag enabled">JA</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">その通り。その教育は「事前学習」っていうプロセスから始まるんだ。</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-zh" data-line-index="3" data-lang="zh">
+                    <div class="language-flag enabled">ZH</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">卢克:</span>
+                        <span class="line-text">没错。而这种教育始于一个被称为“预训练”的过程。</span>
+                    </div>
+                </div>
+                
+            </div>
+            
+            <div class="translation-group" data-group-index="4">
+                
+                
+                <div class="translation-line speaker-0 lang-fr" data-line-index="4" data-lang="fr">
+                    <div class="language-flag enabled">FR</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">Le pré-entraînement.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-en" data-line-index="4" data-lang="en">
+                    <div class="language-flag enabled">EN</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">Pre-training.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-es" data-line-index="4" data-lang="es">
+                    <div class="language-flag enabled">ES</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">El preentrenamiento.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-de" data-line-index="4" data-lang="de">
+                    <div class="language-flag enabled">DE</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">Pre-Training.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-ja" data-line-index="4" data-lang="ja">
+                    <div class="language-flag enabled">JA</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">事前学習。</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-zh" data-line-index="4" data-lang="zh">
+                    <div class="language-flag enabled">ZH</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">卡米尔:</span>
+                        <span class="line-text">预训练。</span>
+                    </div>
+                </div>
+                
+            </div>
+            
+            <div class="translation-group" data-group-index="5">
+                
+                
+                <div class="translation-line speaker-1 lang-fr" data-line-index="5" data-lang="fr">
+                    <div class="language-flag enabled">FR</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">Imaginez que l&#39;on envoie une toute nouvelle IA à l&#39;école pour lui donner une culture générale. Elle lit une quantité massive de données sur Internet pour apprendre les fondements du langage, du raisonnement et du fonctionnement du monde en général.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-en" data-line-index="5" data-lang="en">
+                    <div class="language-flag enabled">EN</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">Think of it as sending a brand-new AI to school for a general education. It reads a massive portion of the internet to learn the fundamentals of language, reasoning, and how the world generally works.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-es" data-line-index="5" data-lang="es">
+                    <div class="language-flag enabled">ES</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">Imaginen que enviamos una IA totalmente nueva a la escuela para darle una cultura general. Lee una cantidad masiva de datos en Internet para aprender los fundamentos del lenguaje, del razonamiento y del funcionamiento del mundo en general.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-de" data-line-index="5" data-lang="de">
+                    <div class="language-flag enabled">DE</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">Stellen Sie sich das so vor, als würde man eine brandneue KI für eine allgemeine Ausbildung zur Schule schicken. Sie liest einen gewaltigen Teil des Internets, um die Grundlagen von Sprache, Logik und die allgemeine Funktionsweise der Welt zu erlernen.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-ja" data-line-index="5" data-lang="ja">
+                    <div class="language-flag enabled">JA</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">新品のAIを学校に入れて一般教養を学ばせる、みたいなものですね。言語の基礎や推論、そして世の中の仕組みといった基本を学ぶために、インターネットの膨大な情報を読み込むんです。</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-zh" data-line-index="5" data-lang="zh">
+                    <div class="language-flag enabled">ZH</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">卢克:</span>
+                        <span class="line-text">你可以把它想象成让一个全新的 AI 去学校接受通识教育。它会阅读互联网上海量的内容，以学习语言、推理以及世界运作的基本常识。</span>
+                    </div>
+                </div>
+                
+            </div>
+            
+            <div class="translation-group" data-group-index="6">
+                
+                
+                <div class="translation-line speaker-0 lang-fr" data-line-index="6" data-lang="fr">
+                    <div class="language-flag enabled">FR</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">Donc, après le pré-entraînement, l&#39;IA est comme un jeune diplômé de l&#39;université : intelligente et compétente, mais sans expérience professionnelle spécifique.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-en" data-line-index="6" data-lang="en">
+                    <div class="language-flag enabled">EN</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">So after pre-training, the AI is like a university graduate: smart and capable, but with no specific job experience.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-es" data-line-index="6" data-lang="es">
+                    <div class="language-flag enabled">ES</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">Así que, tras el preentrenamiento, la IA es como un recién graduado de la universidad: inteligente y competente, pero sin experiencia profesional específica.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-de" data-line-index="6" data-lang="de">
+                    <div class="language-flag enabled">DE</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">Nach dem Pre-Training ist die KI also wie ein Universitätsabsolvent: klug und fähig, aber ohne spezifische Berufserfahrung.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-ja" data-line-index="6" data-lang="ja">
+                    <div class="language-flag enabled">JA</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">じゃあ、事前学習が終わったAIは、大学の新卒みたいなものね。頭はいいけど、実務経験はない、みたいな。</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-zh" data-line-index="6" data-lang="zh">
+                    <div class="language-flag enabled">ZH</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">卡米尔:</span>
+                        <span class="line-text">所以，预训练之后的 AI 就像是一名大学毕业生：聪明且有能力，但没有任何具体的工作经验。</span>
+                    </div>
+                </div>
+                
+            </div>
+            
+            <div class="translation-group" data-group-index="7">
+                
+                
+                <div class="translation-line speaker-1 lang-fr" data-line-index="7" data-lang="fr">
+                    <div class="language-flag enabled">FR</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">Précisément. Et pendant longtemps, l&#39;étape suivante a été « l&#39;affinage » (fine-tuning). C&#39;est comme envoyer ce diplômé suivre une spécialisation.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-en" data-line-index="7" data-lang="en">
+                    <div class="language-flag enabled">EN</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">Precisely. And for a long time, the next step was &#34;fine-tuning.&#34; This is like sending that graduate to get a specialist degree.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-es" data-line-index="7" data-lang="es">
+                    <div class="language-flag enabled">ES</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">Precisamente. Y durante mucho tiempo, el siguiente paso ha sido el «ajuste fino» (fine-tuning). Es como enviar a ese graduado a realizar una especialización.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-de" data-line-index="7" data-lang="de">
+                    <div class="language-flag enabled">DE</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">Ganz genau. Und lange Zeit war der nächste Schritt das „Fine-Tuning“. Das ist so, als würde man diesen Absolventen zu einem Spezialstudium schicken.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-ja" data-line-index="7" data-lang="ja">
+                    <div class="language-flag enabled">JA</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">その通り。で、長い間、次のステップは「ファインチューニング」でした。これは、その新卒に専門学位を取らせるようなものですね。</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-zh" data-line-index="7" data-lang="zh">
+                    <div class="language-flag enabled">ZH</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">卢克:</span>
+                        <span class="line-text">正是如此。而在很长一段时间里，下一步就是“微调”。这就像是让那位毕业生去攻读一个专业的学位。</span>
+                    </div>
+                </div>
+                
+            </div>
+            
+            <div class="translation-group" data-group-index="8">
+                
+                
+                <div class="translation-line speaker-0 lang-fr" data-line-index="8" data-lang="fr">
+                    <div class="language-flag enabled">FR</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">L&#39;affinage... c&#39;est là qu&#39;intervient « l&#39;apprentissage par transfert » ? J&#39;ai déjà entendu ce terme.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-en" data-line-index="8" data-lang="en">
+                    <div class="language-flag enabled">EN</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">Fine-tuning... is that where &#34;transfer learning&#34; comes into play? I&#39;ve heard that term before.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-es" data-line-index="8" data-lang="es">
+                    <div class="language-flag enabled">ES</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">El ajuste fino... ¿ahí es donde interviene el «aprendizaje por transferencia»? Ya he oído ese término.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-de" data-line-index="8" data-lang="de">
+                    <div class="language-flag enabled">DE</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">Fine-Tuning ... ist das der Punkt, an dem „Transfer Learning“ ins Spiel kommt? Ich habe diesen Begriff schon einmal gehört.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-ja" data-line-index="8" data-lang="ja">
+                    <div class="language-flag enabled">JA</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">ファインチューニング…そこで「転移学習」が出てくるのね？その言葉、聞いたことあるわ。</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-zh" data-line-index="8" data-lang="zh">
+                    <div class="language-flag enabled">ZH</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">卡米尔:</span>
+                        <span class="line-text">微调……这其中是否涉及到了“迁移学习”？我以前听过这个术语。</span>
+                    </div>
+                </div>
+                
+            </div>
+            
+            <div class="translation-group" data-group-index="9">
+                
+                
+                <div class="translation-line speaker-1 lang-fr" data-line-index="9" data-lang="fr">
+                    <div class="language-flag enabled">FR</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">Exactement. L&#39;apprentissage par transfert est la clé. Voyez plutôt : vous n&#39;enseigneriez pas les mathématiques de base à un brillant physicien avant qu&#39;il ne s&#39;attaque à la mécanique quantique. Il transfère ses compétences mathématiques existantes. L&#39;IA fait de même. Les langues en sont un excellent exemple.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-en" data-line-index="9" data-lang="en">
+                    <div class="language-flag enabled">EN</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">Exactly. Transfer learning is the key. Think of it this way: you wouldn&#39;t teach a brilliant physicist basic math before they tackle quantum mechanics. They transfer their existing math skills. The AI does the same. A great example is with languages.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-es" data-line-index="9" data-lang="es">
+                    <div class="language-flag enabled">ES</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">Exactamente. El aprendizaje por transferencia es la clave. Véanlo así: no le enseñarían matemáticas básicas a un brillante físico antes de que se enfrente a la mecánica cuántica. Él transfiere sus competencias matemáticas existentes. La IA hace lo mismo. Los idiomas son un excelente ejemplo.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-de" data-line-index="9" data-lang="de">
+                    <div class="language-flag enabled">DE</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">Genau. Transfer Learning ist der Schlüssel. Denken Sie es sich so: Man würde einem brillanten Physiker keine grundlegende Mathematik beibringen, bevor er sich mit Quantenmechanik befasst. Er überträgt seine bereits vorhandenen mathematischen Fähigkeiten. Die KI macht dasselbe. Ein großartiges Beispiel ist bei Sprachen.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-ja" data-line-index="9" data-lang="ja">
+                    <div class="language-flag enabled">JA</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">その通り。転移学習が鍵なんだ。例えば、優秀な物理学者に量子力学を教える前に、わざわざ基礎的な数学から教え直したりはしないよね？彼らは既存の数学スキルを応用する。AIも同じことをするんだ。言語が良い例だよ。</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-zh" data-line-index="9" data-lang="zh">
+                    <div class="language-flag enabled">ZH</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">卢克:</span>
+                        <span class="line-text">没错。迁移学习正是其中的关键。你可以这样理解：在让一位才华横溢的物理学家去研究量子力学之前，你不会先教他基础数学。他会迁移自己已有的数学技能。AI 也是如此。语言就是一个绝佳的例子。</span>
+                    </div>
+                </div>
+                
+            </div>
+            
+            <div class="translation-group" data-group-index="10">
+                
+                
+                <div class="translation-line speaker-0 lang-fr" data-line-index="10" data-lang="fr">
+                    <div class="language-flag enabled">FR</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">C&#39;est-à-dire ?</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-en" data-line-index="10" data-lang="en">
+                    <div class="language-flag enabled">EN</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">How so?</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-es" data-line-index="10" data-lang="es">
+                    <div class="language-flag enabled">ES</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">¿A qué te refieres?</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-de" data-line-index="10" data-lang="de">
+                    <div class="language-flag enabled">DE</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">Wie meinen Sie das?</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-ja" data-line-index="10" data-lang="ja">
+                    <div class="language-flag enabled">JA</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">というと？</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-zh" data-line-index="10" data-lang="zh">
+                    <div class="language-flag enabled">ZH</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">卡米尔:</span>
+                        <span class="line-text">怎么说？</span>
+                    </div>
+                </div>
+                
+            </div>
+            
+            <div class="translation-group" data-group-index="11">
+                
+                
+                <div class="translation-line speaker-1 lang-fr" data-line-index="11" data-lang="fr">
+                    <div class="language-flag enabled">FR</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">Vous pouvez prendre un modèle expert en anglais, puis lui présenter une quantité bien moindre de texte en français. Il apprendra le français à une vitesse incroyable.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-en" data-line-index="11" data-lang="en">
+                    <div class="language-flag enabled">EN</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">You can take a model that&#39;s an expert in English, and then show it a much smaller amount of French text. It will learn French incredibly fast.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-es" data-line-index="11" data-lang="es">
+                    <div class="language-flag enabled">ES</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">Puedes tomar un modelo experto en inglés y luego presentarle una cantidad mucho menor de texto en francés. Aprenderá francés a una velocidad increíble.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-de" data-line-index="11" data-lang="de">
+                    <div class="language-flag enabled">DE</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">Man kann ein Modell nehmen, das ein Experte in Englisch ist, und ihm dann eine viel kleinere Menge an französischem Text zeigen. Es wird Französisch unglaublich schnell lernen.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-ja" data-line-index="11" data-lang="ja">
+                    <div class="language-flag enabled">JA</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">英語のエキスパートであるモデルに、ほんの少しのフランス語のテキストを見せるだけで、信じられないくらい速くフランス語を覚えるんだ。</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-zh" data-line-index="11" data-lang="zh">
+                    <div class="language-flag enabled">ZH</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">卢克:</span>
+                        <span class="line-text">你可以拿一个精通英语的模型，然后让它看少得多的法语文本。它会以惊人的速度学会法语。</span>
+                    </div>
+                </div>
+                
+            </div>
+            
+            <div class="translation-group" data-group-index="12">
+                
+                
+                <div class="translation-line speaker-0 lang-fr" data-line-index="12" data-lang="fr">
+                    <div class="language-flag enabled">FR</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">Parce qu&#39;il comprend déjà les concepts généraux de grammaire, de syntaxe et de structure de phrase grâce à l&#39;anglais ?</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-en" data-line-index="12" data-lang="en">
+                    <div class="language-flag enabled">EN</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">Because it already understands the general concepts of grammar, syntax, and sentence structure from English?</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-es" data-line-index="12" data-lang="es">
+                    <div class="language-flag enabled">ES</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">¿Porque ya comprende los conceptos generales de gramática, de sintaxis y de estructura de la frase gracias al inglés?</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-de" data-line-index="12" data-lang="de">
+                    <div class="language-flag enabled">DE</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">Weil es die allgemeinen Konzepte von Grammatik, Syntax und Satzstruktur bereits aus dem Englischen versteht?</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-ja" data-line-index="12" data-lang="ja">
+                    <div class="language-flag enabled">JA</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">英語から文法とか構文、文の構造みたいな一般的な概念をすでに理解しているから？</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-zh" data-line-index="12" data-lang="zh">
+                    <div class="language-flag enabled">ZH</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">卡米尔:</span>
+                        <span class="line-text">是因为它已经从英语中理解了语法、句法和句子结构的基本概念吗？</span>
+                    </div>
+                </div>
+                
+            </div>
+            
+            <div class="translation-group" data-group-index="13">
+                
+                
+                <div class="translation-line speaker-1 lang-fr" data-line-index="13" data-lang="fr">
+                    <div class="language-flag enabled">FR</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">Exactement. Il n&#39;a pas besoin de réapprendre ce qu&#39;est un verbe. Il apprend simplement les mots et les règles du français, en transférant les concepts sous-jacents. C&#39;est toute la puissance de cette approche.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-en" data-line-index="13" data-lang="en">
+                    <div class="language-flag enabled">EN</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">Precisely. It doesn&#39;t need to learn what a verb is all over again. It just learns the French words and rules, transferring the underlying concepts. That&#39;s the power of it.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-es" data-line-index="13" data-lang="es">
+                    <div class="language-flag enabled">ES</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">Exactamente. No necesita volver a aprender lo que es un verbo. Simplemente aprende las palabras y las reglas del francés, transfiriendo los conceptos subyacentes. Ahí reside toda la potencia de este enfoque.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-de" data-line-index="13" data-lang="de">
+                    <div class="language-flag enabled">DE</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">Ganz genau. Es muss nicht noch einmal neu lernen, was ein Verb ist. Es lernt einfach die französischen Wörter und Regeln und überträgt dabei die zugrunde liegenden Konzepte. Das ist die eigentliche Stärke dahinter.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-ja" data-line-index="13" data-lang="ja">
+                    <div class="language-flag enabled">JA</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">その通り。動詞とは何か、みたいなことを一から学び直す必要はないんだ。フランス語の単語とルールを学ぶだけで、根底にある概念は応用できる。それが強みなんだよ。</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-zh" data-line-index="13" data-lang="zh">
+                    <div class="language-flag enabled">ZH</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">卢克:</span>
+                        <span class="line-text">正是如此。它不需要重新学习什么是动词。它只需要学习法语的词汇和规则，从而迁移底层的概念。这就是它的强大之处。</span>
+                    </div>
+                </div>
+                
+            </div>
+            
+            <div class="translation-group" data-group-index="14">
+                
+                
+                <div class="translation-line speaker-0 lang-fr" data-line-index="14" data-lang="fr">
+                    <div class="language-flag enabled">FR</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">Donc, il transfère ses immenses connaissances générales issues du pré-entraînement à la nouvelle tâche spécifique.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-en" data-line-index="14" data-lang="en">
+                    <div class="language-flag enabled">EN</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">So it transfers its huge general knowledge from pre-training to the new, specific task.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-es" data-line-index="14" data-lang="es">
+                    <div class="language-flag enabled">ES</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">Así que transfiere sus inmensos conocimientos generales derivados del preentrenamiento a la nueva tarea específica.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-de" data-line-index="14" data-lang="de">
+                    <div class="language-flag enabled">DE</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">Es überträgt also sein enormes Allgemeinwissen aus dem Pre-Training auf die neue, spezifische Aufgabe.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-ja" data-line-index="14" data-lang="ja">
+                    <div class="language-flag enabled">JA</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">つまり、事前学習で得た膨大な一般知識を、新しい特定のタスクに応用してるってことね。</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-zh" data-line-index="14" data-lang="zh">
+                    <div class="language-flag enabled">ZH</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">卡米尔:</span>
+                        <span class="line-text">所以，它将预训练中积累的海量通识知识，迁移到了新的特定任务中。</span>
+                    </div>
+                </div>
+                
+            </div>
+            
+            <div class="translation-group" data-group-index="15">
+                
+                
+                <div class="translation-line speaker-1 lang-fr" data-line-index="15" data-lang="fr">
+                    <div class="language-flag enabled">FR</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">C&#39;est tout à fait ça. C&#39;est pourquoi il peut devenir un expert de vos données avec étonnamment peu d&#39;informations nouvelles. Il ne part pas de zéro ; il s&#39;appuie sur des fondations extrêmement solides.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-en" data-line-index="15" data-lang="en">
+                    <div class="language-flag enabled">EN</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">You&#39;ve got it. That&#39;s why it can become an expert on your data with surprisingly little new information. It&#39;s not starting from zero; it&#39;s building on a massive foundation.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-es" data-line-index="15" data-lang="es">
+                    <div class="language-flag enabled">ES</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">Exactamente. Es por eso que puede convertirse en un experto en tus datos con una cantidad asombrosamente pequeña de información nueva. No parte de cero; se apoya en unos cimientos extremadamente sólidos.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-de" data-line-index="15" data-lang="de">
+                    <div class="language-flag enabled">DE</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">Ganz genau. Deshalb kann es mit überraschend wenig neuen Informationen zu einem Experten für Ihre Daten werden. Es beginnt nicht bei Null, sondern baut auf einem gewaltigen Fundament auf.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-ja" data-line-index="15" data-lang="ja">
+                    <div class="language-flag enabled">JA</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">そういうこと。だから、驚くほど少ない新しい情報で、特定のデータに関する専門家になれるんです。ゼロから始めるんじゃなくて、巨大な土台の上に築き上げているからね。</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-zh" data-line-index="15" data-lang="zh">
+                    <div class="language-flag enabled">ZH</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">卢克:</span>
+                        <span class="line-text">你理解得没错。这就是为什么只需极少的新信息，它就能成为你数据的专家。它并不是从零开始，而是在一个庞大的基础上进行构建。</span>
+                    </div>
+                </div>
+                
+            </div>
+            
+            <div class="translation-group" data-group-index="16">
+                
+                
+                <div class="translation-line speaker-0 lang-fr" data-line-index="16" data-lang="fr">
+                    <div class="language-flag enabled">FR</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">C&#39;est logique. Mais comme nous en avons discuté dans notre dernier épisode sur les Transformers, une nouvelle approche plus flexible est en train d&#39;émerger, n&#39;est-ce pas ?</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-en" data-line-index="16" data-lang="en">
+                    <div class="language-flag enabled">EN</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">That makes sense. But as we discussed in our last episode on Transformers, a new, more flexible approach is emerging, right?</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-es" data-line-index="16" data-lang="es">
+                    <div class="language-flag enabled">ES</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">Es lógico. Pero como hemos discutido en nuestro último episodio sobre los Transformers, está surgiendo un nuevo enfoque más flexible, ¿verdad?</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-de" data-line-index="16" data-lang="de">
+                    <div class="language-flag enabled">DE</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">Das ergibt Sinn. Aber wie wir in unserer letzten Folge über Transformers besprochen haben, zeichnet sich ein neuer, flexiblerer Ansatz ab, oder?</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-ja" data-line-index="16" data-lang="ja">
+                    <div class="language-flag enabled">JA</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">なるほどね。でも、前回のTransformerのエピソードで話したみたいに、もっと柔軟な新しいアプローチが出てきてるんでしょ？</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-zh" data-line-index="16" data-lang="zh">
+                    <div class="language-flag enabled">ZH</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">卡米尔:</span>
+                        <span class="line-text">这很有道理。但正如我们在上一集关于 Transformers 的讨论中所提到的，一种更灵活的新方法正在出现，对吗？</span>
+                    </div>
+                </div>
+                
+            </div>
+            
+            <div class="translation-group" data-group-index="17">
+                
+                
+                <div class="translation-line speaker-1 lang-fr" data-line-index="17" data-lang="fr">
+                    <div class="language-flag enabled">FR</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">Oui, et elle est rendue possible par l&#39;expansion massive de la mémoire à court terme de l&#39;IA, ou « fenêtre de contexte ». Cette approche s&#39;appelle l&#39;apprentissage en contexte, ou ICL (In-Context Learning).</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-en" data-line-index="17" data-lang="en">
+                    <div class="language-flag enabled">EN</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">Yes, and it&#39;s driven by the massive expansion of the AI&#39;s short-term memory, or &#34;context window.&#34; This approach is called In-Context Learning, or ICL.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-es" data-line-index="17" data-lang="es">
+                    <div class="language-flag enabled">ES</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">Sí, y es posible gracias a la expansión masiva de la memoria a corto plazo de la IA, o «ventana de contexto». Este enfoque se llama aprendizaje en contexto, o ICL (In-Context Learning).</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-de" data-line-index="17" data-lang="de">
+                    <div class="language-flag enabled">DE</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">Ja, und es wird durch die massive Erweiterung des Kurzzeitgedächtnisses der KI, also des „Kontextfensters“, vorangetrieben. Dieser Ansatz wird In-Context Learning oder ICL genannt.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-ja" data-line-index="17" data-lang="ja">
+                    <div class="language-flag enabled">JA</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">うん。それはAIの短期記憶、つまり「コンテキストウィンドウ」がすごく大きくなったおかげなんだ。このアプローチは、インコンテキスト・ラーニング、略してICLと呼ばれているよ。</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-zh" data-line-index="17" data-lang="zh">
+                    <div class="language-flag enabled">ZH</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">卢克:</span>
+                        <span class="line-text">是的，这得益于 AI 短期记忆，也就是“上下文窗口”的大幅扩展。这种方法被称为上下文学习，或者叫 ICL。</span>
+                    </div>
+                </div>
+                
+            </div>
+            
+            <div class="translation-group" data-group-index="18">
+                
+                
+                <div class="translation-line speaker-0 lang-fr" data-line-index="18" data-lang="fr">
+                    <div class="language-flag enabled">FR</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">Donc, au lieu de ré-entraîner l&#39;IA pour en faire une spécialiste, on lui donne simplement les informations dont elle a besoin pour la tâche à accomplir.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-en" data-line-index="18" data-lang="en">
+                    <div class="language-flag enabled">EN</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">So instead of retraining the AI to be a specialist, you just give it the information it needs for the task at hand.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-es" data-line-index="18" data-lang="es">
+                    <div class="language-flag enabled">ES</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">Entonces, en lugar de reentrenar la IA para convertirla en una especialista, simplemente le damos la información que necesita para la tarea a realizar.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-de" data-line-index="18" data-lang="de">
+                    <div class="language-flag enabled">DE</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">Anstatt die KI also neu zu trainieren, um sie zu einem Spezialisten zu machen, gibt man ihr einfach die Informationen, die sie für die anstehende Aufgabe benötigt.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-ja" data-line-index="18" data-lang="ja">
+                    <div class="language-flag enabled">JA</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">じゃあ、AIを専門家として再教育するんじゃなくて、目の前のタスクに必要な情報をその場で与えるだけってことね。</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-zh" data-line-index="18" data-lang="zh">
+                    <div class="language-flag enabled">ZH</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">卡米尔:</span>
+                        <span class="line-text">所以，你不再需要通过重新训练让 AI 成为专家，而是直接向它提供当前任务所需的信息。</span>
+                    </div>
+                </div>
+                
+            </div>
+            
+            <div class="translation-group" data-group-index="19">
+                
+                
+                <div class="translation-line speaker-1 lang-fr" data-line-index="19" data-lang="fr">
+                    <div class="language-flag enabled">FR</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">Vous avez tout compris. C&#39;est comme engager un consultant brillant et, au lieu de l&#39;envoyer suivre un programme de formation de plusieurs années, lui fournir simplement les documents d&#39;information exacts dont il a besoin pour le projet en cours.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-en" data-line-index="19" data-lang="en">
+                    <div class="language-flag enabled">EN</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">You&#39;ve got it. It&#39;s like hiring a brilliant consultant and instead of sending them to a multi-year training program, you just give them the exact briefing documents they need for the current project.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-es" data-line-index="19" data-lang="es">
+                    <div class="language-flag enabled">ES</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">Lo has entendido perfectamente. Es como contratar a un consultor brillante y, en lugar de enviarlo a realizar un programa de formación de varios años, proporcionarle simplemente los documentos de información exactos que necesita para el proyecto en curso.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-de" data-line-index="19" data-lang="de">
+                    <div class="language-flag enabled">DE</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">Ganz genau. Es ist so, als würde man einen brillanten Berater einstellen und, anstatt ihn zu einem mehrjährigen Trainingsprogramm zu schicken, ihm einfach genau die Briefing-Dokumente geben, die er für das aktuelle Projekt benötigt.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-ja" data-line-index="19" data-lang="ja">
+                    <div class="language-flag enabled">JA</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">その通り。優秀なコンサルタントを雇うのに似てるね。何年もかかる研修に行かせる代わりに、今のプロジェクトに必要な資料を渡すだけ、みたいな。</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-zh" data-line-index="19" data-lang="zh">
+                    <div class="language-flag enabled">ZH</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">卢克:</span>
+                        <span class="line-text">你理解得没错。这就像聘请了一位才华横溢的顾问，你不需要送他们去参加为期数年的培训计划，而只是向他们提供当前项目所需的准确简报文件。</span>
+                    </div>
+                </div>
+                
+            </div>
+            
+            <div class="translation-group" data-group-index="20">
+                
+                
+                <div class="translation-line speaker-0 lang-fr" data-line-index="20" data-lang="fr">
+                    <div class="language-flag enabled">FR</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">C&#39;est là qu&#39;intervient le concept d&#39;« ancrage » (grounding), qui consiste à lier les réponses de l&#39;IA aux informations spécifiques que vous fournissez.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-en" data-line-index="20" data-lang="en">
+                    <div class="language-flag enabled">EN</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">This is where the concept of &#34;grounding&#34; comes in, tying the AI&#39;s answers to the specific information you provide.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-es" data-line-index="20" data-lang="es">
+                    <div class="language-flag enabled">ES</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">Ahí es donde entra el concepto de «grounding» (anclaje), que consiste en vincular las respuestas de la IA a la información específica que tú proporcionas.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-de" data-line-index="20" data-lang="de">
+                    <div class="language-flag enabled">DE</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">Hier kommt das Konzept des „Grounding“ ins Spiel, indem die Antworten der KI an die spezifischen Informationen gebunden werden, die Sie bereitstellen.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-ja" data-line-index="20" data-lang="ja">
+                    <div class="language-flag enabled">JA</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">そこで「グラウンディング」の考え方が登場するわけね。AIの答えを、与えられた特定の情報に結びつけるっていう。</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-zh" data-line-index="20" data-lang="zh">
+                    <div class="language-flag enabled">ZH</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">卡米尔:</span>
+                        <span class="line-text">这正是“接地”概念发挥作用的地方，它将 AI 的回答与你提供的特定信息紧密联系在一起。</span>
+                    </div>
+                </div>
+                
+            </div>
+            
+            <div class="translation-group" data-group-index="21">
+                
+                
+                <div class="translation-line speaker-1 lang-fr" data-line-index="21" data-lang="fr">
+                    <div class="language-flag enabled">FR</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">Exactement. Mais cela nous amène à un point crucial qui est souvent mal compris : la manière dont l&#39;IA « se souvient » de ces informations. C&#39;est la différence entre une connaissance temporaire et une compétence permanente.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-en" data-line-index="21" data-lang="en">
+                    <div class="language-flag enabled">EN</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">Exactly. But this brings us to a crucial point that is often misunderstood, and it&#39;s about how the AI &#34;remembers&#34; this information. It&#39;s the difference between temporary knowledge and permanent skill.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-es" data-line-index="21" data-lang="es">
+                    <div class="language-flag enabled">ES</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">Exactamente. Pero esto nos lleva a un punto crucial que a menudo se malinterpreta: la manera en que la IA «recuerda» esta información. Es la diferencia entre un conocimiento temporal y una competencia permanente.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-de" data-line-index="21" data-lang="de">
+                    <div class="language-flag enabled">DE</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">Genau. Aber das führt uns zu einem entscheidenden Punkt, der oft missverstanden wird, und zwar dazu, wie die KI sich diese Informationen „merkt“. Es ist der Unterschied zwischen temporärem Wissen und dauerhaften Fähigkeiten.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-ja" data-line-index="21" data-lang="ja">
+                    <div class="language-flag enabled">JA</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">その通り。でも、ここがよく誤解される重要なポイントなんだけど、それはAIがこの情報をどう「記憶」するかということ。一時的な知識と、永続的なスキルの違いなんだ。</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-zh" data-line-index="21" data-lang="zh">
+                    <div class="language-flag enabled">ZH</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">卢克:</span>
+                        <span class="line-text">没错。但这也将我们带到了一个经常被误解的关键点，那就是关于 AI 如何“记住”这些信息的问题。这是临时性知识与永久性技能之间的区别。</span>
+                    </div>
+                </div>
+                
+            </div>
+            
+            <div class="translation-group" data-group-index="22">
+                
+                
+                <div class="translation-line speaker-0 lang-fr" data-line-index="22" data-lang="fr">
+                    <div class="language-flag enabled">FR</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">La différence entre bachoter pour un examen et maîtriser réellement un sujet ?</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-en" data-line-index="22" data-lang="en">
+                    <div class="language-flag enabled">EN</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">The difference between cramming for a test and truly mastering a subject?</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-es" data-line-index="22" data-lang="es">
+                    <div class="language-flag enabled">ES</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">¿La diferencia entre estudiar a última hora para un examen y dominar realmente un tema?</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-de" data-line-index="22" data-lang="de">
+                    <div class="language-flag enabled">DE</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">Der Unterschied zwischen dem Auswendiglernen für eine Prüfung und dem echten Beherrschen eines Fachgebiets?</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-ja" data-line-index="22" data-lang="ja">
+                    <div class="language-flag enabled">JA</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">テストのために一夜漬けするのと、本当に科目をマスターするのとの違い、みたいな感じ？</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-zh" data-line-index="22" data-lang="zh">
+                    <div class="language-flag enabled">ZH</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">卡米尔:</span>
+                        <span class="line-text">就像是临考前的临时抱佛脚与真正掌握一门学科之间的区别？</span>
+                    </div>
+                </div>
+                
+            </div>
+            
+            <div class="translation-group" data-group-index="23">
+                
+                
+                <div class="translation-line speaker-1 lang-fr" data-line-index="23" data-lang="fr">
+                    <div class="language-flag enabled">FR</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">Une analogie parfaite ! L&#39;apprentissage en contexte, c&#39;est du bachotage. Les connaissances que vous fournissez dans le prompt sont temporaires. L&#39;IA les utilise pour cette unique conversation, mais une fois la conversation terminée, ces connaissances disparaissent.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-en" data-line-index="23" data-lang="en">
+                    <div class="language-flag enabled">EN</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">A perfect analogy! In-Context Learning is the &#34;cramming.&#34; The knowledge you provide in the prompt is temporary. The AI uses it for that single conversation, but once the conversation is over, that knowledge is gone.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-es" data-line-index="23" data-lang="es">
+                    <div class="language-flag enabled">ES</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">¡Una analogía perfecta! El aprendizaje en contexto es como estudiar a última hora. Los conocimientos que proporcionas en el prompt son temporales. La IA los utiliza para esa única conversación, pero una vez que la conversación termina, esos conocimientos desaparecen.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-de" data-line-index="23" data-lang="de">
+                    <div class="language-flag enabled">DE</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">Eine perfekte Analogie! In-Context Learning ist das „Auswendiglernen“. Das Wissen, das Sie im Prompt bereitstellen, ist temporär. Die KI nutzt es für dieses eine Gespräch, aber sobald das Gespräch beendet ist, ist dieses Wissen wieder weg.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-ja" data-line-index="23" data-lang="ja">
+                    <div class="language-flag enabled">JA</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">完璧な例えだね！インコンテキスト・ラーニングは、まさに「一夜漬け」。プロンプトで与えた知識は一時的なものなんだ。AIはその一回の会話のためだけにそれを使うけど、会話が終われば、その知識は消えてしまう。</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-zh" data-line-index="23" data-lang="zh">
+                    <div class="language-flag enabled">ZH</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">卢克:</span>
+                        <span class="line-text">完美的类比！上下文学习就是“临时抱佛脚”。你在提示词中提供的知识是临时的。AI 在那次对话中使用它，但一旦对话结束，这些知识就会消失。</span>
+                    </div>
+                </div>
+                
+            </div>
+            
+            <div class="translation-group" data-group-index="24">
+                
+                
+                <div class="translation-line speaker-0 lang-fr" data-line-index="24" data-lang="fr">
+                    <div class="language-flag enabled">FR</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">Elle oublie tout.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-en" data-line-index="24" data-lang="en">
+                    <div class="language-flag enabled">EN</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">It completely forgets.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-es" data-line-index="24" data-lang="es">
+                    <div class="language-flag enabled">ES</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">Lo olvida todo.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-de" data-line-index="24" data-lang="de">
+                    <div class="language-flag enabled">DE</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">Sie vergisst es komplett.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-ja" data-line-index="24" data-lang="ja">
+                    <div class="language-flag enabled">JA</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">完全に忘れちゃうんだ。</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-zh" data-line-index="24" data-lang="zh">
+                    <div class="language-flag enabled">ZH</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">卡米尔:</span>
+                        <span class="line-text">它会完全忘记。</span>
+                    </div>
+                </div>
+                
+            </div>
+            
+            <div class="translation-group" data-group-index="25">
+                
+                
+                <div class="translation-line speaker-1 lang-fr" data-line-index="25" data-lang="fr">
+                    <div class="language-flag enabled">FR</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">Elle oublie tout. C&#39;est donc une mémoire à usage unique. Si je veux qu&#39;elle ait connaissance des mêmes informations demain, je dois lui fournir à nouveau les documents.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-en" data-line-index="25" data-lang="en">
+                    <div class="language-flag enabled">EN</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">It completely forgets. So it&#39;s a one-shot memory. If I want it to know the same information tomorrow, I have to provide the documents all over again.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-es" data-line-index="25" data-lang="es">
+                    <div class="language-flag enabled">ES</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">Lo olvida todo. Es, por lo tanto, una memoria de un solo uso. Si quiero que tenga conocimiento de la misma información mañana, debo proporcionarle los documentos de nuevo.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-de" data-line-index="25" data-lang="de">
+                    <div class="language-flag enabled">DE</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">Sie vergisst es komplett. Es handelt sich also um ein One-Shot-Memory. Wenn ich möchte, dass sie dieselben Informationen morgen wieder weiß, muss ich die Dokumente erneut bereitstellen.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-ja" data-line-index="25" data-lang="ja">
+                    <div class="language-flag enabled">JA</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">完全に忘れる。だから、一回きりの記憶なんだ。明日も同じことを知っていてほしければ、また一から資料を渡さないといけない。</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-zh" data-line-index="25" data-lang="zh">
+                    <div class="language-flag enabled">ZH</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">卢克:</span>
+                        <span class="line-text">它会完全忘记。所以这是一种单次记忆。如果我想让它明天知道同样的信息，我必须重新提供一遍这些文档。</span>
+                    </div>
+                </div>
+                
+            </div>
+            
+            <div class="translation-group" data-group-index="26">
+                
+                
+                <div class="translation-line speaker-0 lang-fr" data-line-index="26" data-lang="fr">
+                    <div class="language-flag enabled">FR</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">D&#39;accord.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-en" data-line-index="26" data-lang="en">
+                    <div class="language-flag enabled">EN</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">Right.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-es" data-line-index="26" data-lang="es">
+                    <div class="language-flag enabled">ES</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">De acuerdo.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-de" data-line-index="26" data-lang="de">
+                    <div class="language-flag enabled">DE</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">Richtig.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-ja" data-line-index="26" data-lang="ja">
+                    <div class="language-flag enabled">JA</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">なるほどね。</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-zh" data-line-index="26" data-lang="zh">
+                    <div class="language-flag enabled">ZH</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">卡米尔:</span>
+                        <span class="line-text">没错。</span>
+                    </div>
+                </div>
+                
+            </div>
+            
+            <div class="translation-group" data-group-index="27">
+                
+                
+                <div class="translation-line speaker-1 lang-fr" data-line-index="27" data-lang="fr">
+                    <div class="language-flag enabled">FR</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">Telle est la réalité de l&#39;ICL. C&#39;est incroyablement flexible, mais basé sur une mémoire à court terme. L&#39;affinage, en revanche, vise à créer une compétence permanente. Lorsque vous affinez un modèle, vous modifiez fondamentalement sa structure interne. Les nouvelles connaissances deviennent partie intégrante de son identité.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-en" data-line-index="27" data-lang="en">
+                    <div class="language-flag enabled">EN</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">That&#39;s the reality of ICL. It&#39;s incredibly flexible, but it&#39;s based on short-term memory. Fine-tuning, on the other hand, is about creating a permanent skill. When you fine-tune a model, you are fundamentally changing its internal structure. The new knowledge becomes part of its core identity.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-es" data-line-index="27" data-lang="es">
+                    <div class="language-flag enabled">ES</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">Esa es la realidad del ICL. Es increíblemente flexible, pero se basa en una memoria a corto plazo. El ajuste fino, en cambio, tiene como objetivo crear una competencia permanente. Cuando realizas el ajuste fino de un modelo, modificas fundamentalmente su estructura interna. Los nuevos conocimientos pasan a formar parte integrante de su identidad.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-de" data-line-index="27" data-lang="de">
+                    <div class="language-flag enabled">DE</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">Das ist die Realität von ICL. Es ist unglaublich flexibel, aber es basiert auf dem Kurzzeitgedächtnis. Fine-Tuning hingegen geht darum, eine dauerhafte Fähigkeit zu erschaffen. Wenn man ein Modell feinabstimmt, verändert man grundlegend dessen interne Struktur. Das neue Wissen wird Teil seiner Kernidentität.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-ja" data-line-index="27" data-lang="ja">
+                    <div class="language-flag enabled">JA</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">それがICLの現実なんです。すごく柔軟だけど、短期記憶に基づいている。一方、ファインチューニングは、永続的なスキルを身につけさせることです。モデルをファインチューニングすると、その内部構造が根本的に変わります。新しい知識が、モデルの核となるアイデンティティの一部になるんです。</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-zh" data-line-index="27" data-lang="zh">
+                    <div class="language-flag enabled">ZH</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">卢克:</span>
+                        <span class="line-text">这就是 ICL 的现状。它极其灵活，但它是基于短期记忆的。相比之下，微调则是为了创造一种永久性的技能。当你对模型进行微调时，你从根本上改变了它的内部结构。新的知识会成为其核心身份的一部分。</span>
+                    </div>
+                </div>
+                
+            </div>
+            
+            <div class="translation-group" data-group-index="28">
+                
+                
+                <div class="translation-line speaker-0 lang-fr" data-line-index="28" data-lang="fr">
+                    <div class="language-flag enabled">FR</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">Donc, les connaissances issues de l&#39;affinage persistent dans toutes les conversations, pour toujours ?</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-en" data-line-index="28" data-lang="en">
+                    <div class="language-flag enabled">EN</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">So the fine-tuned knowledge persists across all conversations, forever?</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-es" data-line-index="28" data-lang="es">
+                    <div class="language-flag enabled">ES</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">¿Entonces, los conocimientos derivados del ajuste fino persisten en todas las conversaciones, para siempre?</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-de" data-line-index="28" data-lang="de">
+                    <div class="language-flag enabled">DE</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">Das bedeutet also, dass das feinabgestimmte Wissen über alle Gespräche hinweg bestehen bleibt, für immer?</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-ja" data-line-index="28" data-lang="ja">
+                    <div class="language-flag enabled">JA</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">じゃあ、ファインチューニングで得た知識は、会話をまたいでもずっと残るってこと？</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-zh" data-line-index="28" data-lang="zh">
+                    <div class="language-flag enabled">ZH</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">卡米尔:</span>
+                        <span class="line-text">这么说，经过微调后的知识会在所有的对话中持久存在，直到永远吗？</span>
+                    </div>
+                </div>
+                
+            </div>
+            
+            <div class="translation-group" data-group-index="29">
+                
+                
+                <div class="translation-line speaker-1 lang-fr" data-line-index="29" data-lang="fr">
+                    <div class="language-flag enabled">FR</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">Oui. C&#39;est comme apprendre à faire du vélo. La compétence est ancrée. Vous n&#39;avez pas besoin qu&#39;on vous rappelle les lois de l&#39;équilibre à chaque fois que vous montez en selle.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-en" data-line-index="29" data-lang="en">
+                    <div class="language-flag enabled">EN</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">Yes. It&#39;s like learning to ride a bike. The skill is ingrained. You don&#39;t need to be reminded of the physics of balance every time you get on.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-es" data-line-index="29" data-lang="es">
+                    <div class="language-flag enabled">ES</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">Sí. Es como aprender a montar en bicicleta. La competencia está arraigada. No necesitas que te recuerden las leyes del equilibrio cada vez que te subes al sillín.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-de" data-line-index="29" data-lang="de">
+                    <div class="language-flag enabled">DE</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">Ja. Es ist wie das Fahrradfahren lernen. Die Fähigkeit ist tief verankert. Man muss nicht jedes Mal an die Physik des Gleichgewichts erinnert werden, wenn man aufsteigt.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-ja" data-line-index="29" data-lang="ja">
+                    <div class="language-flag enabled">JA</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">そう。自転車の乗り方を覚えるのと同じだね。一度身についたら、体に染み付いている。乗るたびにバランスの取り方を思い出す必要はないでしょ。</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-zh" data-line-index="29" data-lang="zh">
+                    <div class="language-flag enabled">ZH</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">卢克:</span>
+                        <span class="line-text">是的。这就像学习骑自行车。这项技能已经根深蒂固了。你不需要每次骑上去时，都得有人提醒你关于平衡的物理原理。</span>
+                    </div>
+                </div>
+                
+            </div>
+            
+            <div class="translation-group" data-group-index="30">
+                
+                
+                <div class="translation-line speaker-0 lang-fr" data-line-index="30" data-lang="fr">
+                    <div class="language-flag enabled">FR</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">Luc, cela explique une expérience très courante avec les chatbots. On peut avoir une conversation longue et détaillée, mais si on ouvre une nouvelle fenêtre de discussion, l&#39;IA n&#39;a aucune idée de ce qui a été dit auparavant.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-en" data-line-index="30" data-lang="en">
+                    <div class="language-flag enabled">EN</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">Luc, this actually explains a very common experience people have with chatbots. You can have a long, detailed conversation, but if you start a new chat window, the AI has no idea what you talked about before.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-es" data-line-index="30" data-lang="es">
+                    <div class="language-flag enabled">ES</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">Luc, eso explica una experiencia muy común con los chatbots. Podemos tener una conversación larga y detallada, pero si abrimos una nueva ventana de chat, la IA no tiene idea de lo que se dijo anteriormente.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-de" data-line-index="30" data-lang="de">
+                    <div class="language-flag enabled">DE</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">Luc, das erklärt eigentlich eine sehr verbreitete Erfahrung, die Menschen mit Chatbots machen. Man kann eine lange, detaillierte Unterhaltung führen, aber wenn man ein neues Chatfenster öffnet, hat die KI keine Ahnung, worüber man zuvor gesprochen hat.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-ja" data-line-index="30" data-lang="ja">
+                    <div class="language-flag enabled">JA</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">リュック、それって、みんながチャットボットでよく経験することの説明になるわね。長くて詳しい話をした後でも、新しいチャットウィンドウを開いたら、AIは前の会話のことなんて全然覚えてないもん。</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-zh" data-line-index="30" data-lang="zh">
+                    <div class="language-flag enabled">ZH</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">卡米尔:</span>
+                        <span class="line-text">卢克，这实际上解释了人们在使用聊天机器人时一种非常普遍的体验。你可以进行一段很长、很详尽的对话，但如果你开启一个新的聊天窗口，AI 根本不知道你们之前聊了什么。</span>
+                    </div>
+                </div>
+                
+            </div>
+            
+            <div class="translation-group" data-group-index="31">
+                
+                
+                <div class="translation-line speaker-1 lang-fr" data-line-index="31" data-lang="fr">
+                    <div class="language-flag enabled">FR</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">Exactement ! C&#39;est l&#39;apprentissage en contexte en action. L&#39;intégralité de l&#39;historique de votre discussion dans cette session constitue le contexte.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-en" data-line-index="31" data-lang="en">
+                    <div class="language-flag enabled">EN</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">Exactly! That is In-Context Learning in action. Your entire chat history in that session is the context.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-es" data-line-index="31" data-lang="es">
+                    <div class="language-flag enabled">ES</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">¡Exactamente! Es el aprendizaje en contexto en acción. La totalidad del historial de su discusión en esta sesión constituye el contexto.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-de" data-line-index="31" data-lang="de">
+                    <div class="language-flag enabled">DE</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">Genau! Das ist In-Context Learning in Aktion. Ihr gesamter Chatverlauf in dieser Sitzung ist der Kontext.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-ja" data-line-index="31" data-lang="ja">
+                    <div class="language-flag enabled">JA</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">その通り！それがまさにインコンテキスト・ラーニングが機能している証拠だよ。そのセッションでのチャット履歴の全てが、コンテキストそのものなんだ。</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-zh" data-line-index="31" data-lang="zh">
+                    <div class="language-flag enabled">ZH</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">卢克:</span>
+                        <span class="line-text">没错！这就是上下文学习的实际运作方式。你在该会话中的整个聊天记录就是上下文。</span>
+                    </div>
+                </div>
+                
+            </div>
+            
+            <div class="translation-group" data-group-index="32">
+                
+                
+                <div class="translation-line speaker-0 lang-fr" data-line-index="32" data-lang="fr">
+                    <div class="language-flag enabled">FR</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">Je vois.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-en" data-line-index="32" data-lang="en">
+                    <div class="language-flag enabled">EN</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">I see.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-es" data-line-index="32" data-lang="es">
+                    <div class="language-flag enabled">ES</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">Ya veo.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-de" data-line-index="32" data-lang="de">
+                    <div class="language-flag enabled">DE</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">Ich verstehe.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-ja" data-line-index="32" data-lang="ja">
+                    <div class="language-flag enabled">JA</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">なるほど。</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-zh" data-line-index="32" data-lang="zh">
+                    <div class="language-flag enabled">ZH</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">卡米尔:</span>
+                        <span class="line-text">我明白了。</span>
+                    </div>
+                </div>
+                
+            </div>
+            
+            <div class="translation-group" data-group-index="33">
+                
+                
+                <div class="translation-line speaker-1 lang-fr" data-line-index="33" data-lang="fr">
+                    <div class="language-flag enabled">FR</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">Quand vous ouvrez une nouvelle fenêtre, vous partez d&#39;un contexte vide. L&#39;IA n&#39;a pas « oublié » au sens humain du terme ; son espace de travail temporaire a simplement été vidé.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-en" data-line-index="33" data-lang="en">
+                    <div class="language-flag enabled">EN</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">When you open a new window, you start with a blank context. The AI hasn&#39;t &#34;forgotten&#34; in a human sense; its temporary workspace has just been cleared.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-es" data-line-index="33" data-lang="es">
+                    <div class="language-flag enabled">ES</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">Cuando abres una nueva ventana, partes de un contexto vacío. La IA no ha «olvidado» en el sentido humano del término; su espacio de trabajo temporal simplemente ha sido vaciado.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-de" data-line-index="33" data-lang="de">
+                    <div class="language-flag enabled">DE</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">Wenn Sie ein neues Fenster öffnen, beginnen Sie mit einem leeren Kontext. Die KI hat nicht im menschlichen Sinne „vergessen“; ihr temporärer Arbeitsbereich wurde lediglich geleert.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-ja" data-line-index="33" data-lang="ja">
+                    <div class="language-flag enabled">JA</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">新しいウィンドウを開くと、コンテキストは空っぽの状態から始まります。AIが人間みたいに「忘れた」わけじゃなくて、一時的な作業スペースがクリアされただけなんです。</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-zh" data-line-index="33" data-lang="zh">
+                    <div class="language-flag enabled">ZH</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">卢克:</span>
+                        <span class="line-text">当你开启一个新窗口时，你面对的是一个空白的上下文。AI 并没有像人类那样“忘记”；只是它的临时工作区被清空了。</span>
+                    </div>
+                </div>
+                
+            </div>
+            
+            <div class="translation-group" data-group-index="34">
+                
+                
+                <div class="translation-line speaker-0 lang-fr" data-line-index="34" data-lang="fr">
+                    <div class="language-flag enabled">FR</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">Mais qu&#39;en est-il des nouvelles fonctionnalités comme la « Mémoire » que certaines IA commencent à intégrer ? On a l&#39;impression qu&#39;elles commencent vraiment à se souvenir des choses d&#39;une session à l&#39;autre.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-en" data-line-index="34" data-lang="en">
+                    <div class="language-flag enabled">EN</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">But what about new features like &#34;Memory&#34; that some AIs are introducing? It feels like they are starting to remember things between sessions.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-es" data-line-index="34" data-lang="es">
+                    <div class="language-flag enabled">ES</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">Pero ¿qué pasa con las nuevas funcionalidades como la «Memoria» que algunas IA están empezando a integrar? Da la impresión de que realmente están empezando a recordar las cosas de una sesión a otra.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-de" data-line-index="34" data-lang="de">
+                    <div class="language-flag enabled">DE</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">Aber was ist mit neuen Funktionen wie „Memory“, die einige KIs einführen? Es fühlt sich so an, als würden sie anfangen, sich Dinge über verschiedene Sitzungen hinweg zu merken.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-ja" data-line-index="34" data-lang="ja">
+                    <div class="language-flag enabled">JA</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">でも、一部のAIが導入している「記憶」みたいな新機能はどうなの？あれって、セッションをまたいで記憶してるように感じるけど。</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-zh" data-line-index="34" data-lang="zh">
+                    <div class="language-flag enabled">ZH</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">卡米尔:</span>
+                        <span class="line-text">但有些人工智能正在引入像“记忆”这样的新功能呢？感觉它们已经开始能在不同会话之间记住事情了。</span>
+                    </div>
+                </div>
+                
+            </div>
+            
+            <div class="translation-group" data-group-index="35">
+                
+                
+                <div class="translation-line speaker-1 lang-fr" data-line-index="35" data-lang="fr">
+                    <div class="language-flag enabled">FR</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">C&#39;est une excellente remarque, et il est crucial de comprendre comment cela fonctionne. L&#39;IA n&#39;est pas constamment affinée par vos conversations. Ce serait incroyablement inefficace.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-en" data-line-index="35" data-lang="en">
+                    <div class="language-flag enabled">EN</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">That&#39;s a fantastic point, and it&#39;s crucial to understand how that works. The AI isn&#39;t being constantly fine-tuned with your conversations. That would be incredibly inefficient.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-es" data-line-index="35" data-lang="es">
+                    <div class="language-flag enabled">ES</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">¡Es una excelente observación, y es crucial entender cómo funciona eso! La IA no está siendo sometida a un ajuste fino constante a través de sus conversaciones. Eso sería increíblemente ineficiente.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-de" data-line-index="35" data-lang="de">
+                    <div class="language-flag enabled">DE</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">Das ist ein fantastischer Punkt, und es ist entscheidend zu verstehen, wie das funktioniert. Die KI wird nicht ständig mit Ihren Gesprächen feinabgestimmt. Das wäre unglaublich ineffizient.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-ja" data-line-index="35" data-lang="ja">
+                    <div class="language-flag enabled">JA</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">いいところに気づいたね。それがどう機能しているかを理解するのは、すごく重要なんだ。AIは君との会話で常にファインチューニングされているわけじゃない。そんなことしたら、ものすごく非効率だからね。</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-zh" data-line-index="35" data-lang="zh">
+                    <div class="language-flag enabled">ZH</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">卢克:</span>
+                        <span class="line-text">这是一个非常棒的切入点，理解其运作方式至关重要。人工智能并不会通过你的对话进行持续的微调。那样做效率会极低。</span>
+                    </div>
+                </div>
+                
+            </div>
+            
+            <div class="translation-group" data-group-index="36">
+                
+                
+                <div class="translation-line speaker-0 lang-fr" data-line-index="36" data-lang="fr">
+                    <div class="language-flag enabled">FR</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">C&#39;est donc une astuce ?</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-en" data-line-index="36" data-lang="en">
+                    <div class="language-flag enabled">EN</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">So it&#39;s a workaround?</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-es" data-line-index="36" data-lang="es">
+                    <div class="language-flag enabled">ES</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">¿Entonces es un truco?</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-de" data-line-index="36" data-lang="de">
+                    <div class="language-flag enabled">DE</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">Es ist also eine Umgehungslösung?</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-ja" data-line-index="36" data-lang="ja">
+                    <div class="language-flag enabled">JA</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">じゃあ、一種の裏技みたいなもの？</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-zh" data-line-index="36" data-lang="zh">
+                    <div class="language-flag enabled">ZH</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">卡米尔:</span>
+                        <span class="line-text">所以这是一种变通方法？</span>
+                    </div>
+                </div>
+                
+            </div>
+            
+            <div class="translation-group" data-group-index="37">
+                
+                
+                <div class="translation-line speaker-1 lang-fr" data-line-index="37" data-lang="fr">
+                    <div class="language-flag enabled">FR</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">On peut dire ça. Ces fonctions de mémorisation sont une forme astucieuse d&#39;apprentissage en contexte automatisé. Quand vous commencez une nouvelle conversation, le système recherche rapidement dans vos anciens échanges les informations qui semblent pertinentes pour votre nouvelle requête. Ensuite, il insère automatiquement ces extraits dans le prompt, en coulisses.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-en" data-line-index="37" data-lang="en">
+                    <div class="language-flag enabled">EN</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">You could say that. These memory features are a clever form of automated In-Context Learning. When you start a new conversation, the system quickly searches your past chats for information that seems relevant to your new query. It then automatically stuffs those snippets into the prompt, behind the scenes.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-es" data-line-index="37" data-lang="es">
+                    <div class="language-flag enabled">ES</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">Se puede decir eso. Estas funciones de memorización son una forma astuciosa de aprendizaje en contexto automatizado. Cuando comienzas una nueva conversación, el sistema busca rápidamente en tus intercambios anteriores la información que parece relevante para tu nueva consulta. Luego, inserta automáticamente esos fragmentos en el prompt, tras bambalinas.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-de" data-line-index="37" data-lang="de">
+                    <div class="language-flag enabled">DE</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">Man könnte so sagen. Diese Memory-Funktionen sind eine clevere Form von automatisiertem In-Context Learning. Wenn Sie ein neues Gespräch beginnen, durchsucht das System schnell Ihre vergangenen Chats nach Informationen, die für Ihre neue Anfrage relevant erscheinen. Im Hintergrund werden diese Schnipsel dann automatisch in den Prompt eingefügt.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-ja" data-line-index="37" data-lang="ja">
+                    <div class="language-flag enabled">JA</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">まあ、そう言えるかな。ああいう記憶機能は、インコンテキスト・ラーニングを賢く自動化したものなんだ。新しい会話を始めると、システムが過去のチャットから関連しそうな情報を素早く探し出して、それを裏側で自動的にプロンプトに詰め込んでるんだよ。</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-zh" data-line-index="37" data-lang="zh">
+                    <div class="language-flag enabled">ZH</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">卢克:</span>
+                        <span class="line-text">可以这么说。这些记忆功能是一种巧妙的自动化上下文学习形式。当你开始一段新对话时，系统会快速搜索你过去的聊天记录，寻找与你新查询相关的信息。然后，它会在后台自动将这些片段填充到提示词中。</span>
+                    </div>
+                </div>
+                
+            </div>
+            
+            <div class="translation-group" data-group-index="38">
+                
+                
+                <div class="translation-line speaker-0 lang-fr" data-line-index="38" data-lang="fr">
+                    <div class="language-flag enabled">FR</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">Donc, on a l&#39;impression que l&#39;IA se souvient des détails de mon projet, mais en réalité, on lui a juste fourni une antisèche juste avant qu&#39;elle ne commence à vous parler.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-en" data-line-index="38" data-lang="en">
+                    <div class="language-flag enabled">EN</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">So it looks like the AI remembers my project details, but it&#39;s just been handed a cheat sheet right before it started talking to you.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-es" data-line-index="38" data-lang="es">
+                    <div class="language-flag enabled">ES</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">Entonces, tenemos la impresión de que la IA recuerda los detalles de mi proyecto, pero en realidad, solo le hemos proporcionado un apunte justo antes de que empiece a hablar con nosotros.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-de" data-line-index="38" data-lang="de">
+                    <div class="language-flag enabled">DE</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">Es sieht also so aus, als ob die KI meine Projektdetails erinnert, aber in Wirklichkeit wurde ihr kurz vor dem Gespräch einfach ein Spickzettel übergeben.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-ja" data-line-index="38" data-lang="ja">
+                    <div class="language-flag enabled">JA</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">じゃあ、AIが私のプロジェクトの詳細を覚えてるように見えるけど、実際は話しかける直前にカンペを渡されてるだけってことね。</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-zh" data-line-index="38" data-lang="zh">
+                    <div class="language-flag enabled">ZH</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">卡米尔:</span>
+                        <span class="line-text">所以看起来像是 AI 记住了我的项目细节，但实际上它只是在开始和你交谈之前，刚刚拿到了一份“小抄”。</span>
+                    </div>
+                </div>
+                
+            </div>
+            
+            <div class="translation-group" data-group-index="39">
+                
+                
+                <div class="translation-line speaker-1 lang-fr" data-line-index="39" data-lang="fr">
+                    <div class="language-flag enabled">FR</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">Précisément. Le modèle lui-même n&#39;apprend pas et n&#39;évolue pas à partir de vos discussions. Il utilise simplement un système plus intelligent pour rappeler le contexte passé.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-en" data-line-index="39" data-lang="en">
+                    <div class="language-flag enabled">EN</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">Precisely. The model itself isn&#39;t learning or evolving from your chats. It&#39;s just using a smarter system to recall past context.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-es" data-line-index="39" data-lang="es">
+                    <div class="language-flag enabled">ES</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">Precisamente. El modelo en sí mismo no aprende ni evoluciona a partir de sus discusiones. Simplemente utiliza un sistema más inteligente para recordar el contexto pasado.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-de" data-line-index="39" data-lang="de">
+                    <div class="language-flag enabled">DE</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">Ganz genau. Das Modell selbst lernt oder entwickelt sich nicht aus Ihren Chats weiter. Es nutzt lediglich ein intelligenteres System, um vergangenen Kontext abzurufen.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-ja" data-line-index="39" data-lang="ja">
+                    <div class="language-flag enabled">JA</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">その通り。モデル自体が君との会話から学習したり進化したりしてるわけじゃない。過去のコンテキストを思い出すために、賢いシステムを使ってるだけなんだ。</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-zh" data-line-index="39" data-lang="zh">
+                    <div class="language-flag enabled">ZH</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">卢克:</span>
+                        <span class="line-text">正是如此。模型本身并没有从你的对话中学习或进化。它只是在利用一个更智能的系统来召回过去的上下文。</span>
+                    </div>
+                </div>
+                
+            </div>
+            
+            <div class="translation-group" data-group-index="40">
+                
+                
+                <div class="translation-line speaker-0 lang-fr" data-line-index="40" data-lang="fr">
+                    <div class="language-flag enabled">FR</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">Donc, la grande question pour quiconque utilise ces outils est : « Ai-je besoin d&#39;un consultant temporaire ou d&#39;un expert permanent ? »</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-en" data-line-index="40" data-lang="en">
+                    <div class="language-flag enabled">EN</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">So the big question for anyone using these tools is, &#34;Do I need a temporary consultant, or a permanent expert?&#34;</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-es" data-line-index="40" data-lang="es">
+                    <div class="language-flag enabled">ES</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">Por lo tanto, la gran pregunta para cualquiera que utilice estas herramientas es: «¿Necesito un consultor temporal o un experto permanente?».</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-de" data-line-index="40" data-lang="de">
+                    <div class="language-flag enabled">DE</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">Die große Frage für jeden, der diese Tools nutzt, lautet also: „Brauche ich einen temporären Berater oder einen dauerhaften Experten?“</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-ja" data-line-index="40" data-lang="ja">
+                    <div class="language-flag enabled">JA</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">ということは、これらのツールを使う人にとって一番大事な問いは、「一時的なコンサルタントが必要ですか、それとも常駐の専門家が必要ですか？」ということになりますね。</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-zh" data-line-index="40" data-lang="zh">
+                    <div class="language-flag enabled">ZH</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">卡米尔:</span>
+                        <span class="line-text">所以对于任何使用这些工具的人来说，核心问题就在于：“我需要的是一位临时顾问，还是一个永久专家？”</span>
+                    </div>
+                </div>
+                
+            </div>
+            
+            <div class="translation-group" data-group-index="41">
+                
+                
+                <div class="translation-line speaker-1 lang-fr" data-line-index="41" data-lang="fr">
+                    <div class="language-flag enabled">FR</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">C&#39;est la manière idéale de poser le problème. Et sur cette réflexion, il est temps de conclure.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-en" data-line-index="41" data-lang="en">
+                    <div class="language-flag enabled">EN</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">That&#39;s the perfect way to frame it. And on that thought, it&#39;s about time to wrap up.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-es" data-line-index="41" data-lang="es">
+                    <div class="language-flag enabled">ES</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">Es la manera ideal de plantear el problema. Y sobre esta reflexión, es hora de concluir.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-de" data-line-index="41" data-lang="de">
+                    <div class="language-flag enabled">DE</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">Das ist die perfekte Art, es auszudrücken. Und mit diesem Gedanken ist es an der Zeit, zum Ende zu kommen.</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-ja" data-line-index="41" data-lang="ja">
+                    <div class="language-flag enabled">JA</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Luc:</span>
+                        <span class="line-text">完璧なまとめ方だね。じゃあ、その辺りでそろそろ締めようか。</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-1 lang-zh" data-line-index="41" data-lang="zh">
+                    <div class="language-flag enabled">ZH</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">卢克:</span>
+                        <span class="line-text">这个总结非常到位。顺着这个思路，我们也该结束今天的节目了。</span>
+                    </div>
+                </div>
+                
+            </div>
+            
+            <div class="translation-group" data-group-index="42">
+                
+                
+                <div class="translation-line speaker-0 lang-fr" data-line-index="42" data-lang="fr">
+                    <div class="language-flag enabled">FR</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">Merci de nous avoir écoutés, et à bientôt pour le prochain épisode de « Tech Éclair » !</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-en" data-line-index="42" data-lang="en">
+                    <div class="language-flag enabled">EN</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">Thanks for listening, and see you in the next episode of &#34;Tech Flash&#34;!</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-es" data-line-index="42" data-lang="es">
+                    <div class="language-flag enabled">ES</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">¡Gracias por escucharnos, y hasta pronto para el próximo episodio de «Tech Relámpago»!</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-de" data-line-index="42" data-lang="de">
+                    <div class="language-flag enabled">DE</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">Vielen Dank fürs Zuhören und bis zur nächsten Folge von „Tech-Blitz“!</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-ja" data-line-index="42" data-lang="ja">
+                    <div class="language-flag enabled">JA</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">Camille:</span>
+                        <span class="line-text">ご清聴ありがとうございました。次回の「テックフラッシュ」でお会いしましょう！</span>
+                    </div>
+                </div>
+                
+                <div class="translation-line speaker-0 lang-zh" data-line-index="42" data-lang="zh">
+                    <div class="language-flag enabled">ZH</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">卡米尔:</span>
+                        <span class="line-text">感谢收听，我们下期《科技快报》再见！</span>
+                    </div>
+                </div>
+                
+            </div>
+            
+        </div>
+
+        <div id="status" class="status stopped">Ready to play</div>
+    </div>
+
+    <script id="page-config" type="application/json">
+{
+  "topic": "finetuning",
+  "languages": [
+    {
+      "code": "fr",
+      "name": "Français",
+      "lang_code": "fr-FR",
+      "default_rate": 1.0
+    },
+    {
+      "code": "en",
+      "name": "English",
+      "lang_code": "en-US",
+      "default_rate": 1.0
+    },
+    {
+      "code": "es",
+      "name": "Español",
+      "lang_code": "es-ES",
+      "default_rate": 1.0
+    },
+    {
+      "code": "de",
+      "name": "Deutsch",
+      "lang_code": "de-DE",
+      "default_rate": 1.0
+    },
+    {
+      "code": "ja",
+      "name": "日本語",
+      "lang_code": "ja-JP",
+      "default_rate": 1.4
+    },
+    {
+      "code": "zh",
+      "name": "中文",
+      "lang_code": "zh-CN",
+      "default_rate": 1.0,
+      "font_family": [
+        "Noto Sans SC",
+        "Microsoft YaHei",
+        "PingFang SC",
+        "Hiragino Sans GB",
+        "sans-serif"
+      ]
+    }
+  ],
+  "speakers": [
+    "Camille",
+    "Luc"
+  ]
+}
+    </script>
+    <script src="assets/reader-multi.js"></script>
+</body>
+</html>

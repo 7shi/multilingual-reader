@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎯 Fine-tuning (日本語) - Multilingual Podcast Reader</title>
+    <link rel="stylesheet" href="assets/reader.css">
+</head>
+<body class="lang-ja">
+    <div class="container">
+        <header class="page-header">
+            <a href="index.html" class="back-link">← Index</a>
+            <h1>🎯 Fine-tuning</h1>
+            <nav class="lang-nav">
+                
+                <a href="finetuning.html" title="All languages">All</a>
+                
+                <a href="finetuning-fr.html" title="Français">FR</a>
+                
+                <a href="finetuning-en.html" title="English">EN</a>
+                
+                <a href="finetuning-es.html" title="Español">ES</a>
+                
+                <a href="finetuning-de.html" title="Deutsch">DE</a>
+                
+                <span class="lang-current" title="日本語">JA</span>
+                
+                <a href="finetuning-zh.html" title="中文">ZH</a>
+                
+            </nav>
+        </header>
+
+        <div class="controls">
+            <div class="speech-controls">
+                <button id="playPauseBtn" class="play-pause-btn">▶️ Play</button>
+                <button id="stopBtn" class="stop-btn">⏹️ Stop</button>
+            </div>
+        </div>
+
+        <div id="speakerVoices" class="speaker-voices" style="display: none;">
+            <div class="collapsible-header" onclick="toggleSpeakerVoices()">
+                <h3>🎭 Speaker Voice Assignment & Speed</h3>
+                <span id="toggleIcon" class="toggle-icon">▼</span>
+            </div>
+            <div id="voiceAssignmentContainer" class="voice-assignment collapsed">
+                <div class="global-speed-control">
+                    <label for="rate">Speed:</label>
+                    <input type="range" id="rate" min="0.5" max="2" step="0.1" value="1.4">
+                    <span id="rateValue">1.4x</span>
+                </div>
+                <div id="speakerControlsContainer" class="speaker-controls-container">
+                    <!-- 話者別音声選択は JS で生成 -->
+                </div>
+            </div>
+        </div>
+
+        <div id="textContent" class="text-content">
+            
+            <div class="line speaker-0" data-index="0" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">皆さん、こんにちは。「テックフラッシュ」へようこそ。私たちの世界を形作るテクノロジーを分かりやすく解説するポッドキャストです。私はカミーユです。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="1" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">そして僕、リュックです。今日は、私たちが日々使っているAIモデルが、どうやって学習して賢くなるのか、その舞台裏を覗いてみましょう。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="2" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">面白いテーマね。AIってブラックボックスみたいに見られがちだけど、ちゃんと教育のプロセスがあるのよね。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="3" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">その通り。その教育は「事前学習」っていうプロセスから始まるんだ。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="4" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">事前学習。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="5" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">新品のAIを学校に入れて一般教養を学ばせる、みたいなものですね。言語の基礎や推論、そして世の中の仕組みといった基本を学ぶために、インターネットの膨大な情報を読み込むんです。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="6" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">じゃあ、事前学習が終わったAIは、大学の新卒みたいなものね。頭はいいけど、実務経験はない、みたいな。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="7" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">その通り。で、長い間、次のステップは「ファインチューニング」でした。これは、その新卒に専門学位を取らせるようなものですね。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="8" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">ファインチューニング…そこで「転移学習」が出てくるのね？その言葉、聞いたことあるわ。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="9" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">その通り。転移学習が鍵なんだ。例えば、優秀な物理学者に量子力学を教える前に、わざわざ基礎的な数学から教え直したりはしないよね？彼らは既存の数学スキルを応用する。AIも同じことをするんだ。言語が良い例だよ。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="10" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">というと？</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="11" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">英語のエキスパートであるモデルに、ほんの少しのフランス語のテキストを見せるだけで、信じられないくらい速くフランス語を覚えるんだ。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="12" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">英語から文法とか構文、文の構造みたいな一般的な概念をすでに理解しているから？</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="13" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">その通り。動詞とは何か、みたいなことを一から学び直す必要はないんだ。フランス語の単語とルールを学ぶだけで、根底にある概念は応用できる。それが強みなんだよ。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="14" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">つまり、事前学習で得た膨大な一般知識を、新しい特定のタスクに応用してるってことね。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="15" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">そういうこと。だから、驚くほど少ない新しい情報で、特定のデータに関する専門家になれるんです。ゼロから始めるんじゃなくて、巨大な土台の上に築き上げているからね。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="16" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">なるほどね。でも、前回のTransformerのエピソードで話したみたいに、もっと柔軟な新しいアプローチが出てきてるんでしょ？</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="17" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">うん。それはAIの短期記憶、つまり「コンテキストウィンドウ」がすごく大きくなったおかげなんだ。このアプローチは、インコンテキスト・ラーニング、略してICLと呼ばれているよ。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="18" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">じゃあ、AIを専門家として再教育するんじゃなくて、目の前のタスクに必要な情報をその場で与えるだけってことね。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="19" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">その通り。優秀なコンサルタントを雇うのに似てるね。何年もかかる研修に行かせる代わりに、今のプロジェクトに必要な資料を渡すだけ、みたいな。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="20" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">そこで「グラウンディング」の考え方が登場するわけね。AIの答えを、与えられた特定の情報に結びつけるっていう。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="21" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">その通り。でも、ここがよく誤解される重要なポイントなんだけど、それはAIがこの情報をどう「記憶」するかということ。一時的な知識と、永続的なスキルの違いなんだ。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="22" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">テストのために一夜漬けするのと、本当に科目をマスターするのとの違い、みたいな感じ？</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="23" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">完璧な例えだね！インコンテキスト・ラーニングは、まさに「一夜漬け」。プロンプトで与えた知識は一時的なものなんだ。AIはその一回の会話のためだけにそれを使うけど、会話が終われば、その知識は消えてしまう。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="24" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">完全に忘れちゃうんだ。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="25" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">完全に忘れる。だから、一回きりの記憶なんだ。明日も同じことを知っていてほしければ、また一から資料を渡さないといけない。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="26" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">なるほどね。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="27" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">それがICLの現実なんです。すごく柔軟だけど、短期記憶に基づいている。一方、ファインチューニングは、永続的なスキルを身につけさせることです。モデルをファインチューニングすると、その内部構造が根本的に変わります。新しい知識が、モデルの核となるアイデンティティの一部になるんです。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="28" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">じゃあ、ファインチューニングで得た知識は、会話をまたいでもずっと残るってこと？</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="29" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">そう。自転車の乗り方を覚えるのと同じだね。一度身についたら、体に染み付いている。乗るたびにバランスの取り方を思い出す必要はないでしょ。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="30" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">リュック、それって、みんながチャットボットでよく経験することの説明になるわね。長くて詳しい話をした後でも、新しいチャットウィンドウを開いたら、AIは前の会話のことなんて全然覚えてないもん。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="31" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">その通り！それがまさにインコンテキスト・ラーニングが機能している証拠だよ。そのセッションでのチャット履歴の全てが、コンテキストそのものなんだ。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="32" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">なるほど。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="33" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">新しいウィンドウを開くと、コンテキストは空っぽの状態から始まります。AIが人間みたいに「忘れた」わけじゃなくて、一時的な作業スペースがクリアされただけなんです。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="34" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">でも、一部のAIが導入している「記憶」みたいな新機能はどうなの？あれって、セッションをまたいで記憶してるように感じるけど。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="35" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">いいところに気づいたね。それがどう機能しているかを理解するのは、すごく重要なんだ。AIは君との会話で常にファインチューニングされているわけじゃない。そんなことしたら、ものすごく非効率だからね。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="36" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">じゃあ、一種の裏技みたいなもの？</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="37" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">まあ、そう言えるかな。ああいう記憶機能は、インコンテキスト・ラーニングを賢く自動化したものなんだ。新しい会話を始めると、システムが過去のチャットから関連しそうな情報を素早く探し出して、それを裏側で自動的にプロンプトに詰め込んでるんだよ。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="38" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">じゃあ、AIが私のプロジェクトの詳細を覚えてるように見えるけど、実際は話しかける直前にカンペを渡されてるだけってことね。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="39" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">その通り。モデル自体が君との会話から学習したり進化したりしてるわけじゃない。過去のコンテキストを思い出すために、賢いシステムを使ってるだけなんだ。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="40" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">ということは、これらのツールを使う人にとって一番大事な問いは、「一時的なコンサルタントが必要ですか、それとも常駐の専門家が必要ですか？」ということになりますね。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="41" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">完璧なまとめ方だね。じゃあ、その辺りでそろそろ締めようか。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="42" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">ご清聴ありがとうございました。次回の「テックフラッシュ」でお会いしましょう！</span>
+            </div>
+            
+        </div>
+
+        <div id="status" class="status stopped">Ready to play</div>
+    </div>
+
+    <script id="page-config" type="application/json">
+{
+  "topic": "finetuning",
+  "lang": "ja",
+  "lang_code": "ja-JP",
+  "lang_name": "日本語",
+  "default_rate": 1.4,
+  "font_family": null,
+  "speakers": [
+    "Camille",
+    "Luc"
+  ]
+}
+    </script>
+    <script src="assets/reader.js"></script>
+</body>
+</html>

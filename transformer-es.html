@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="es-ES">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🤖 Transformer (Español) - Multilingual Podcast Reader</title>
+    <link rel="stylesheet" href="assets/reader.css">
+</head>
+<body class="lang-es">
+    <div class="container">
+        <header class="page-header">
+            <a href="index.html" class="back-link">← Index</a>
+            <h1>🤖 Transformer</h1>
+            <nav class="lang-nav">
+                
+                <a href="transformer.html" title="All languages">All</a>
+                
+                <a href="transformer-fr.html" title="Français">FR</a>
+                
+                <a href="transformer-en.html" title="English">EN</a>
+                
+                <span class="lang-current" title="Español">ES</span>
+                
+                <a href="transformer-de.html" title="Deutsch">DE</a>
+                
+                <a href="transformer-ja.html" title="日本語">JA</a>
+                
+                <a href="transformer-zh.html" title="中文">ZH</a>
+                
+            </nav>
+        </header>
+
+        <div class="controls">
+            <div class="speech-controls">
+                <button id="playPauseBtn" class="play-pause-btn">▶️ Play</button>
+                <button id="stopBtn" class="stop-btn">⏹️ Stop</button>
+            </div>
+        </div>
+
+        <div id="speakerVoices" class="speaker-voices" style="display: none;">
+            <div class="collapsible-header" onclick="toggleSpeakerVoices()">
+                <h3>🎭 Speaker Voice Assignment & Speed</h3>
+                <span id="toggleIcon" class="toggle-icon">▼</span>
+            </div>
+            <div id="voiceAssignmentContainer" class="voice-assignment collapsed">
+                <div class="global-speed-control">
+                    <label for="rate">Speed:</label>
+                    <input type="range" id="rate" min="0.5" max="2" step="0.1" value="1.0">
+                    <span id="rateValue">1.0x</span>
+                </div>
+                <div id="speakerControlsContainer" class="speaker-controls-container">
+                    <!-- 話者別音声選択は JS で生成 -->
+                </div>
+            </div>
+        </div>
+
+        <div id="textContent" class="text-content">
+            
+            <div class="line speaker-0" data-index="0" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Hola y bienvenidos a «Tech Relámpago», el podcast que descifra las tecnologías que moldean nuestro futuro. Soy Camille.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="1" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Y yo soy Luc. Hoy nos sumergimos en el corazón de la inteligencia artificial para hablar de una arquitectura que provocó un verdadero... eh, un «Big Bang»: el Transformer.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="2" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">¡Ah, sí!</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="3" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Es el motor secreto que impulsa herramientas que todos conocen, como ChatGPT, DALL-E o... o los traductores automáticos modernos.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="4" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Exactamente. El nombre apareció en 2017 con una publicación científica con un título, hay que decirlo, bastante audaz: «Attention is All You Need».</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="5" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Hmm, la atención es todo lo que necesitas.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="6" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Y ese título, de hecho, lo resume todo. Antes, las IA leían una frase palabra tras palabra, de forma secuencial.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="7" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Sí, es cierto.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="8" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Era un poco laborioso y... tendían a olvidar el principio de un párrafo largo incluso antes de llegar al final.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="9" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Era el límite de los antiguos modelos, los RNNs. El Transformer, en cambio, aborda la lectura de una manera radicalmente nueva.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="10" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Hmm.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="11" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Y, por cierto, Camille, me gusta mucho tu analogía del libro para eso.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="12" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">¡Ah, sí, la imagen es muy esclarecedora! Imaginen: las antiguas IA leían un libro... página por página.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="13" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">De acuerdo.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="14" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">El Transformer, en cambio, es como si tuviera todas las páginas del libro extendidas ante él, al mismo tiempo. Puede ver instantáneamente cómo una palabra del primer capítulo se conecta con una idea del capítulo veinte.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="15" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Guau.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="16" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Capta la visión de conjunto, el contexto global, de un solo vistazo.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="17" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Y ese &#34;ojo&#34; mágico es, por lo tanto, el famoso mecanismo de atención.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="18" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Así es.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="19" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Camille, explícanos simplemente cómo funciona.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="20" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Entonces, la analogía más sencilla es la de la conversación. Imaginen que están en una habitación... muy ruidosa.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="21" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Ok.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="22" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Para entender lo que digo, su cerebro va, instintivamente, a concentrarse en mi voz y a filtrar todos los ruidos de fondo.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="23" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">De acuerdo, lógico.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="24" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Pues la atención, para la IA, es lo mismo. Ante una frase, el modelo va, para cada palabra, a evaluar la importancia de todas las demás palabras para captar su sentido preciso.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="25" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Es fascinante. En una frase como «Dejé el coche en el taller porque &#39;él&#39; se había averiado».</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="26" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">¿Sí?</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="27" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">el modelo sabrá que «él» se refiere al «coche» y no al «taller», simplemente porque habrá prestado más atención a esa palabra.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="28" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Exactamente.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="29" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Y lo que es revolucionario es que realiza todos estos cálculos de relevancia... para toda la frase al mismo tiempo.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="30" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Es el procesamiento en paralelo, y es el gran cambio. Al dejar de procesar palabra por palabra,</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="31" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Hmm.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="32" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">hemos podido utilizar toda la potencia de las tarjetas gráficas para entrenar estos modelos con volúmenes de datos... astronómicos, y mucho más rápido que antes.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="33" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Ah, sí, de acuerdo.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="34" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Eso es realmente lo que abrió la puerta a los «Grandes Modelos de Lenguaje», los famosos LLMs, con sus miles de millones de parámetros.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="35" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Y para obtener una comprensión aún más precisa, el Transformer no se conforma con una sola «lectura atencional».</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="36" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">No, no.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="37" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Realiza varias a la vez. Es el principio de la atención «multi-cabeza». Podemos imaginarlo como un equipo de expertos que leen el mismo texto al mismo tiempo.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="38" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Es una imagen excelente.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="39" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Uno se concentrará en las relaciones gramaticales, otro en los temas, un tercero en el estilo...</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="40" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Hmm.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="41" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Y al fusionar todos sus análisis, el modelo obtiene una comprensión de una riqueza inigualable.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="42" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Una comprensión tan rica que, de hecho, ha superado el simple marco del lenguaje.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="43" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Así es.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="44" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Y es ahí donde se vuelve... realmente vertiginoso. Los investigadores tuvieron la idea de dividir una imagen en un mosaico de pequeños cuadrados, y entregárselos al Transformer como si fueran palabras.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="45" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Increíble.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="46" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">¡Y funcionó! Así es como nacieron los «Vision Transformers», estas IA que sobresalen en el reconocimiento de imágenes.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="47" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Y la aventura no termina ahí. En biología, modelos como AlphaFold, que se basan en la misma arquitectura,</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="48" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Sí.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="49" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">son capaces de predecir la compleja estructura 3D de una proteína a partir de su simple secuencia genética. Es una revolución para la investigación médica, para el descubrimiento de fármacos.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="50" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Una verdadera revolución, sí.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="51" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Es un poco como si el Transformer hubiera descubierto una especie de «gramática universal», capaz de descifrar no solo nuestro lenguaje, sino también el lenguaje visual, e incluso el lenguaje de la vida.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="52" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Vemos su impacto absolutamente en todas partes: desde la generación de código hasta la composición musical, pasando por la creación de imágenes bajo demanda.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="53" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Sí.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="54" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Y otra fuerza del Transformer es que ha hecho que la IA de vanguardia sea mucho más accesible gracias al «aprendizaje por transferencia».</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="55" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Ah, es un punto crucial. La idea es simple: en lugar de tener que construir y entrenar un modelo gigantesco desde cero, lo cual es horriblemente costoso,</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="56" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Está claro.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="57" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">una empresa puede tomar un modelo base, que ya está preentrenado, que tiene un conocimiento general del mundo,</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="58" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">De acuerdo.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="59" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">y simplemente afinarlo, especializarlo con sus propios datos. Es un ahorro de tiempo y de medios... considerable.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="60" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Así que si tuviéramos que resumir, eh... el impacto del Transformer en dos puntos clave,</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="61" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">¿Sí?</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="62" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">sería: en primer lugar, el mecanismo de atención, que le otorga esa comprensión profunda del contexto.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="63" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">De acuerdo.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="64" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Y en segundo lugar, su naturaleza paralela, que ha permitido construir modelos de un tamaño y una versatilidad que nunca habíamos visto.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="65" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Exactamente. Hemos pasado de una IA que ejecutaba instrucciones a una IA que... que comprende la intención.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="66" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Es exactamente así.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="67" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Y el tiempo vuela, ya es hora de concluir.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="68" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Lo que hay que recordar es que el Transformer no es solo una pequeña mejora técnica.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="69" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">No.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="70" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Es un verdadero cambio de paradigma que redefine completamente las fronteras de lo que pensábamos que era posible con una máquina.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="71" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Y eso nos lleva a la pregunta sobre la cual queríamos dejarles reflexionando. Ahora que la IA puede no solo comprender el lenguaje con una gran finura,</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="72" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Hmm.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="73" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">sino también generar textos, imágenes e ideas que parecen creativas... he aquí la pregunta que les planteamos: ¿cómo creen que esto va a transformar la naturaleza misma de la creatividad humana y nuestra colaboración con la máquina?</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="74" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">El debate está abierto. ¡Gracias por habernos escuchado, y nos vemos en el próximo episodio de «Tech Relámpago»!</span>
+            </div>
+            
+        </div>
+
+        <div id="status" class="status stopped">Ready to play</div>
+    </div>
+
+    <script id="page-config" type="application/json">
+{
+  "topic": "transformer",
+  "lang": "es",
+  "lang_code": "es-ES",
+  "lang_name": "Español",
+  "default_rate": 1.0,
+  "font_family": null,
+  "speakers": [
+    "Camille",
+    "Luc"
+  ]
+}
+    </script>
+    <script src="assets/reader.js"></script>
+</body>
+</html>

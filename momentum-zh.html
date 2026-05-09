@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚡ Momentum (中文) - Multilingual Podcast Reader</title>
+    <link rel="stylesheet" href="assets/reader.css">
+</head>
+<body class="lang-zh">
+    <div class="container">
+        <header class="page-header">
+            <a href="index.html" class="back-link">← Index</a>
+            <h1>⚡ Momentum</h1>
+            <nav class="lang-nav">
+                
+                <a href="momentum.html" title="All languages">All</a>
+                
+                <a href="momentum-fr.html" title="Français">FR</a>
+                
+                <a href="momentum-en.html" title="English">EN</a>
+                
+                <a href="momentum-es.html" title="Español">ES</a>
+                
+                <a href="momentum-de.html" title="Deutsch">DE</a>
+                
+                <a href="momentum-ja.html" title="日本語">JA</a>
+                
+                <span class="lang-current" title="中文">ZH</span>
+                
+            </nav>
+        </header>
+
+        <div class="controls">
+            <div class="speech-controls">
+                <button id="playPauseBtn" class="play-pause-btn">▶️ Play</button>
+                <button id="stopBtn" class="stop-btn">⏹️ Stop</button>
+            </div>
+        </div>
+
+        <div id="speakerVoices" class="speaker-voices" style="display: none;">
+            <div class="collapsible-header" onclick="toggleSpeakerVoices()">
+                <h3>🎭 Speaker Voice Assignment & Speed</h3>
+                <span id="toggleIcon" class="toggle-icon">▼</span>
+            </div>
+            <div id="voiceAssignmentContainer" class="voice-assignment collapsed">
+                <div class="global-speed-control">
+                    <label for="rate">Speed:</label>
+                    <input type="range" id="rate" min="0.5" max="2" step="0.1" value="1.0">
+                    <span id="rateValue">1.0x</span>
+                </div>
+                <div id="speakerControlsContainer" class="speaker-controls-container">
+                    <!-- 話者別音声選択は JS で生成 -->
+                </div>
+            </div>
+        </div>
+
+        <div id="textContent" class="text-content">
+            
+            <div class="line speaker-0" data-index="0" data-speaker="卡米尔">
+                <span class="speaker-label">卡米尔</span>
+                <span class="line-text">欢迎来到《物理学之桥》，这是一个通过逐一解开谜题来理解宇宙的节目。我是卡米尔。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="1" data-speaker="卢克">
+                <span class="speaker-label">卢克</span>
+                <span class="line-text">我是卢克。很高兴来到这里。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="2" data-speaker="卡米尔">
+                <span class="speaker-label">卡米尔</span>
+                <span class="line-text">卢克，今天我们收到了一位听众的问题，简直是……太棒了。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="3" data-speaker="卢克">
+                <span class="speaker-label">卢克</span>
+                <span class="line-text">哦？</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="4" data-speaker="卡米尔">
+                <span class="speaker-label">卡米尔</span>
+                <span class="line-text">它直指量子力学之所以如此……嗯，如此诡异的核心所在。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="5" data-speaker="卢克">
+                <span class="speaker-label">卢克</span>
+                <span class="line-text">我最喜欢这类问题了。是什么呢？</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="6" data-speaker="卡米尔">
+                <span class="speaker-label">卡米尔</span>
+                <span class="line-text">他们问，呃，”在量子力学中，你从一种被称为’算符’的东西中获得动量。”</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="7" data-speaker="卢克">
+                <span class="speaker-label">卢克</span>
+                <span class="line-text">好的。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="8" data-speaker="卡米尔">
+                <span class="speaker-label">卡米尔</span>
+                <span class="line-text">“但在我的认知里，动量是通过观察物体的运动——通过位置的变化而产生的。它怎么能是一个可以独立测量出来的东西呢？”</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="9" data-speaker="卢克">
+                <span class="speaker-label">卢克</span>
+                <span class="line-text">这真是一个非常精彩的问题。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="10" data-speaker="卡米尔">
+                <span class="speaker-label">卡米尔</span>
+                <span class="line-text">对吧？</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="11" data-speaker="卢克">
+                <span class="speaker-label">卢克</span>
+                <span class="line-text">它完美地捕捉到了我们必须实现的那种从日常经典直觉向量子现实的跨越。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="12" data-speaker="卡米尔">
+                <span class="speaker-label">卡米尔</span>
+                <span class="line-text">没错。对于棒球来说，我会追踪它从投手丘到本垒的过程。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="13" data-speaker="卢克">
+                <span class="speaker-label">卢克</span>
+                <span class="line-text">当然。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="14" data-speaker="卡米尔">
+                <span class="speaker-label">卡米尔</span>
+                <span class="line-text">我能看到它的位置发生变化。很简单。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="15" data-speaker="卢克">
+                <span class="speaker-label">卢克</span>
+                <span class="line-text">而这正是我们必须，你知道，重塑大脑思维的地方。对于电子来说，规则书是完全不同的。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="16" data-speaker="卡米尔">
+                <span class="speaker-label">卡米尔</span>
+                <span class="line-text">好的。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="17" data-speaker="卢克">
+                <span class="speaker-label">卢克</span>
+                <span class="line-text">关键在于，电子不仅仅是一个微小的球体；它也是一种波……一种波。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="18" data-speaker="卡米尔">
+                <span class="speaker-label">卡米尔</span>
+                <span class="line-text">波粒二象性。没错。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="19" data-speaker="卢克">
+                <span class="speaker-label">卢克</span>
+                <span class="line-text">而且它的动量并不是我们计算出的一个速度，而是……这种波的一种基本属性。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="20" data-speaker="卡米尔">
+                <span class="speaker-label">卡米尔</span>
+                <span class="line-text">嗯。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="21" data-speaker="卢克">
+                <span class="speaker-label">卢克</span>
+                <span class="line-text">想象一下池塘上的涟漪。量子粒子的动量就像是它在空间中波的“波动性”——即波峰之间的间距有多紧密。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="22" data-speaker="卡米尔">
+                <span class="speaker-label">卡米尔</span>
+                <span class="line-text">所以，波纹非常密集、剧烈波动的波，意味着高动量？</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="23" data-speaker="卢克">
+                <span class="speaker-label">卢克</span>
+                <span class="line-text">完全正确。而“动量算符”简单来说就是一个向波提出问题的数学工具：“你有多大的波动性？”</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="24" data-speaker="卡米尔">
+                <span class="speaker-label">卡米尔</span>
+                <span class="line-text">没错。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="25" data-speaker="卢克">
+                <span class="speaker-label">卢克</span>
+                <span class="line-text">它测量的是波形状的变化率。我们并不是在追踪一个移动的点；我们是在分析波本身的内在形态。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="26" data-speaker="卡米尔">
+                <span class="speaker-label">卡米尔</span>
+                <span class="line-text">啊，我明白了！所以它并不依赖于位置的变化，因为它是在单个瞬间波的特征。但是等等……如果位置和动量只是同一波的两个不同方面……</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="27" data-speaker="卢克">
+                <span class="speaker-label">卢克</span>
+                <span class="line-text">没错……</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="28" data-speaker="卡米尔">
+                <span class="speaker-label">卡米尔</span>
+                <span class="line-text">……它们必须以某种方式联系在一起。这……这感觉正引导我们走向某个非常著名的结论。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="29" data-speaker="卢克">
+                <span class="speaker-label">卢克</span>
+                <span class="line-text">这就是通往海森堡不确定性原理的直接路径。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="30" data-speaker="卡米尔">
+                <span class="speaker-label">卡米尔</span>
+                <span class="line-text">啊。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="31" data-speaker="卢克">
+                <span class="speaker-label">卢克</span>
+                <span class="line-text">仔细思考一下。要拥有一个定义明确的动量，你需要一个完美的、均匀的波——就像一个纯净的音符——它在空间中无限延伸。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="32" data-speaker="卡米尔">
+                <span class="speaker-label">卡米尔</span>
+                <span class="line-text">好的，一个极其规律的波。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="33" data-speaker="卢克">
+                <span class="speaker-label">卢克</span>
+                <span class="line-text">但如果你的波延伸到了每一个角落，横跨整个宇宙……</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="34" data-speaker="卡米尔">
+                <span class="speaker-label">卡米尔</span>
+                <span class="line-text">然后呢？</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="35" data-speaker="卢克">
+                <span class="speaker-label">卢克</span>
+                <span class="line-text">……那么粒子在哪里呢？</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="36" data-speaker="卡米尔">
+                <span class="speaker-label">卡米尔</span>
+                <span class="line-text">你根本无从得知。它的位置是完全不确定的。而且……让我猜猜……如果你想完美地确定它的位置……</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="37" data-speaker="卢克">
+                <span class="speaker-label">卢克</span>
+                <span class="line-text">请继续。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="38" data-speaker="卡米尔">
+                <span class="speaker-label">卡米尔</span>
+                <span class="line-text">……那么这个波必须是一个单一、尖锐的脉冲。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="39" data-speaker="卢克">
+                <span class="speaker-label">卢克</span>
+                <span class="line-text">完全正确。但一个脉冲是没有确定的波长的。它仅仅是……一个脉冲。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="40" data-speaker="卡米尔">
+                <span class="speaker-label">卡米尔</span>
+                <span class="line-text">没错。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="41" data-speaker="卢克">
+                <span class="speaker-label">卢克</span>
+                <span class="line-text">因此它的“波动性”，也就是它的动量，变得完全不可知。而这并非我们测量工具的极限；这是深植于现实之中的一种根本性的权衡。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="42" data-speaker="卡米尔">
+                <span class="speaker-label">卡米尔</span>
+                <span class="line-text">这太令人震撼了。但是，既然如此，实验物理学家又是如何进行的呢？</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="43" data-speaker="卢克">
+                <span class="speaker-label">卢克</span>
+                <span class="line-text">啊！</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="44" data-speaker="卡米尔">
+                <span class="speaker-label">卡米尔</span>
+                <span class="line-text">在现实世界中，他们是如何获得精确的动量测量结果的呢？</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="45" data-speaker="卢克">
+                <span class="speaker-label">卢克</span>
+                <span class="line-text">这正是现代物理学展现其卓越智慧的地方。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="46" data-speaker="卡米尔">
+                <span class="speaker-label">卡米尔</span>
+                <span class="line-text">好吧……</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="47" data-speaker="卢克">
+                <span class="speaker-label">卢克</span>
+                <span class="line-text">他们采用了一些巧妙的间接策略。我最喜欢的例子就是让一个电子置于一个磁场中。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="48" data-speaker="卡米尔">
+                <span class="speaker-label">卡米尔</span>
+                <span class="line-text">好吧，所以它会开始做圆周运动。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="49" data-speaker="卢克">
+                <span class="speaker-label">卢克</span>
+                <span class="line-text">没错。现在，让它恰好完成半个圆周运动。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="50" data-speaker="卡米尔">
+                <span class="speaker-label">卡米尔</span>
+                <span class="line-text">好的。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="51" data-speaker="卢克">
+                <span class="speaker-label">卢克</span>
+                <span class="line-text">就在那个精确的时刻，你去测量它的位置。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="52" data-speaker="卡米尔">
+                <span class="speaker-label">卡米尔</span>
+                <span class="line-text">你测量它的位置。然后……这能告诉你什么呢？</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="53" data-speaker="卢克">
+                <span class="speaker-label">卢克</span>
+                <span class="line-text">奇迹就在这里。对它最终位置的这一次测量，就能以令人难以置信的精度，告诉你它最初的动量是多少……</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="54" data-speaker="卡米尔">
+                <span class="speaker-label">卡米尔</span>
+                <span class="line-text">哇。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="55" data-speaker="卢克">
+                <span class="speaker-label">卢克</span>
+                <span class="line-text">……直接追溯回了起点。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="56" data-speaker="卡米尔">
+                <span class="speaker-label">卡米尔</span>
+                <span class="line-text">等等，你的意思是，测量它现在的位置，就能告诉你它当时的运动状态？</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="57" data-speaker="卢克">
+                <span class="speaker-label">卢克</span>
+                <span class="line-text">是的。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="58" data-speaker="卡米尔">
+                <span class="speaker-label">卡米尔</span>
+                <span class="line-text">这听起来是不可能的。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="59" data-speaker="卢克">
+                <span class="speaker-label">卢克</span>
+                <span class="line-text">这是一个被称为“广义测量”的美妙概念。与其试图直接测量动量，你……你让系统以一种方式演化，从而将你想要的信息——即动量——整齐地转化为另一种更易于测量的信息，比如位置。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="60" data-speaker="卡米尔">
+                <span class="speaker-label">卡米尔</span>
+                <span class="line-text">所以，测量并不仅仅是一种被动的观察。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="61" data-speaker="卢克">
+                <span class="speaker-label">卢克</span>
+                <span class="line-text">不是的。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="62" data-speaker="卡米尔">
+                <span class="speaker-label">卡米尔</span>
+                <span class="line-text">这是一个主动的过程，一种策略。你是在操控系统，让它向你透露它的秘密。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="63" data-speaker="卢克">
+                <span class="speaker-label">卢克</span>
+                <span class="line-text">你总结得非常完美。在量子世界中，一个物理量并不是一个等待被读取的静态属性。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="64" data-speaker="卡米尔">
+                <span class="speaker-label">卡米尔</span>
+                <span class="line-text">嗯。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="65" data-speaker="卢克">
+                <span class="speaker-label">卢克</span>
+                <span class="line-text">它是你对系统执行动态操作后的结果。那位听众的问题，确实揭示了那场彻底的思维变革。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="66" data-speaker="卡米尔">
+                <span class="speaker-label">卡米尔</span>
+                <span class="line-text">这完全重塑了我们对世界的认知。卢克，谢谢你。讲得非常透彻。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="67" data-speaker="卢克">
+                <span class="speaker-label">卢克</span>
+                <span class="line-text">这是我的荣幸，卡米尔。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="68" data-speaker="卡米尔">
+                <span class="speaker-label">卡米尔</span>
+                <span class="line-text">现在，这里有一个我们想请你思考的问题。如果大自然迫使你做出选择，你更想以绝对、完美的确定性去了解哪一个：此刻你确切所处的位置……</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="69" data-speaker="卢克">
+                <span class="speaker-label">卢克</span>
+                <span class="line-text">嗯。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="70" data-speaker="卡米尔">
+                <span class="speaker-label">卡米尔</span>
+                <span class="line-text">……还是你前进时的确切方向和动量？</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="71" data-speaker="卢克">
+                <span class="speaker-label">卢克</span>
+                <span class="line-text">而这一选择又将如何改变你对自身存在的看法？</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="72" data-speaker="卡米尔">
+                <span class="speaker-label">卡米尔</span>
+                <span class="line-text">在下一期的《物理学之桥》中再见，请保持好奇心。</span>
+            </div>
+            
+        </div>
+
+        <div id="status" class="status stopped">Ready to play</div>
+    </div>
+
+    <script id="page-config" type="application/json">
+{
+  "topic": "momentum",
+  "lang": "zh",
+  "lang_code": "zh-CN",
+  "lang_name": "中文",
+  "default_rate": 1.0,
+  "font_family": [
+    "Noto Sans SC",
+    "Microsoft YaHei",
+    "PingFang SC",
+    "Hiragino Sans GB",
+    "sans-serif"
+  ],
+  "speakers": [
+    "卡米尔",
+    "卢克"
+  ]
+}
+    </script>
+    <script src="assets/reader.js"></script>
+</body>
+</html>

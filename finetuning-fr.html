@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="fr-FR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎯 Fine-tuning (Français) - Multilingual Podcast Reader</title>
+    <link rel="stylesheet" href="assets/reader.css">
+</head>
+<body class="lang-fr">
+    <div class="container">
+        <header class="page-header">
+            <a href="index.html" class="back-link">← Index</a>
+            <h1>🎯 Fine-tuning</h1>
+            <nav class="lang-nav">
+                
+                <a href="finetuning.html" title="All languages">All</a>
+                
+                <span class="lang-current" title="Français">FR</span>
+                
+                <a href="finetuning-en.html" title="English">EN</a>
+                
+                <a href="finetuning-es.html" title="Español">ES</a>
+                
+                <a href="finetuning-de.html" title="Deutsch">DE</a>
+                
+                <a href="finetuning-ja.html" title="日本語">JA</a>
+                
+                <a href="finetuning-zh.html" title="中文">ZH</a>
+                
+            </nav>
+        </header>
+
+        <div class="controls">
+            <div class="speech-controls">
+                <button id="playPauseBtn" class="play-pause-btn">▶️ Play</button>
+                <button id="stopBtn" class="stop-btn">⏹️ Stop</button>
+            </div>
+        </div>
+
+        <div id="speakerVoices" class="speaker-voices" style="display: none;">
+            <div class="collapsible-header" onclick="toggleSpeakerVoices()">
+                <h3>🎭 Speaker Voice Assignment & Speed</h3>
+                <span id="toggleIcon" class="toggle-icon">▼</span>
+            </div>
+            <div id="voiceAssignmentContainer" class="voice-assignment collapsed">
+                <div class="global-speed-control">
+                    <label for="rate">Speed:</label>
+                    <input type="range" id="rate" min="0.5" max="2" step="0.1" value="1.0">
+                    <span id="rateValue">1.0x</span>
+                </div>
+                <div id="speakerControlsContainer" class="speaker-controls-container">
+                    <!-- 話者別音声選択は JS で生成 -->
+                </div>
+            </div>
+        </div>
+
+        <div id="textContent" class="text-content">
+            
+            <div class="line speaker-0" data-index="0" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Bonjour et bienvenue dans « Tech Éclair », le podcast où nous décryptons la technologie qui façonne notre monde. Je suis Camille.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="1" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Et je suis Luc. Aujourd&#39;hui, nous allons lever le voile sur la façon dont les modèles d&#39;IA que nous utilisons au quotidien apprennent et deviennent si intelligents.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="2" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">C&#39;est un sujet fascinant. On perçoit souvent ces IA comme des boîtes noires, mais leur apprentissage suit un processus bien réel.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="3" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Exactement. Et cet apprentissage commence par un processus appelé le « pré-entraînement ».</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="4" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Le pré-entraînement.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="5" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Imaginez que l&#39;on envoie une toute nouvelle IA à l&#39;école pour lui donner une culture générale. Elle lit une quantité massive de données sur Internet pour apprendre les fondements du langage, du raisonnement et du fonctionnement du monde en général.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="6" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Donc, après le pré-entraînement, l&#39;IA est comme un jeune diplômé de l&#39;université : intelligente et compétente, mais sans expérience professionnelle spécifique.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="7" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Précisément. Et pendant longtemps, l&#39;étape suivante a été « l&#39;affinage » (fine-tuning). C&#39;est comme envoyer ce diplômé suivre une spécialisation.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="8" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">L&#39;affinage... c&#39;est là qu&#39;intervient « l&#39;apprentissage par transfert » ? J&#39;ai déjà entendu ce terme.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="9" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Exactement. L&#39;apprentissage par transfert est la clé. Voyez plutôt : vous n&#39;enseigneriez pas les mathématiques de base à un brillant physicien avant qu&#39;il ne s&#39;attaque à la mécanique quantique. Il transfère ses compétences mathématiques existantes. L&#39;IA fait de même. Les langues en sont un excellent exemple.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="10" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">C&#39;est-à-dire ?</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="11" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Vous pouvez prendre un modèle expert en anglais, puis lui présenter une quantité bien moindre de texte en français. Il apprendra le français à une vitesse incroyable.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="12" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Parce qu&#39;il comprend déjà les concepts généraux de grammaire, de syntaxe et de structure de phrase grâce à l&#39;anglais ?</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="13" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Exactement. Il n&#39;a pas besoin de réapprendre ce qu&#39;est un verbe. Il apprend simplement les mots et les règles du français, en transférant les concepts sous-jacents. C&#39;est toute la puissance de cette approche.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="14" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Donc, il transfère ses immenses connaissances générales issues du pré-entraînement à la nouvelle tâche spécifique.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="15" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">C&#39;est tout à fait ça. C&#39;est pourquoi il peut devenir un expert de vos données avec étonnamment peu d&#39;informations nouvelles. Il ne part pas de zéro ; il s&#39;appuie sur des fondations extrêmement solides.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="16" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">C&#39;est logique. Mais comme nous en avons discuté dans notre dernier épisode sur les Transformers, une nouvelle approche plus flexible est en train d&#39;émerger, n&#39;est-ce pas ?</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="17" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Oui, et elle est rendue possible par l&#39;expansion massive de la mémoire à court terme de l&#39;IA, ou « fenêtre de contexte ». Cette approche s&#39;appelle l&#39;apprentissage en contexte, ou ICL (In-Context Learning).</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="18" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Donc, au lieu de ré-entraîner l&#39;IA pour en faire une spécialiste, on lui donne simplement les informations dont elle a besoin pour la tâche à accomplir.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="19" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Vous avez tout compris. C&#39;est comme engager un consultant brillant et, au lieu de l&#39;envoyer suivre un programme de formation de plusieurs années, lui fournir simplement les documents d&#39;information exacts dont il a besoin pour le projet en cours.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="20" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">C&#39;est là qu&#39;intervient le concept d&#39;« ancrage » (grounding), qui consiste à lier les réponses de l&#39;IA aux informations spécifiques que vous fournissez.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="21" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Exactement. Mais cela nous amène à un point crucial qui est souvent mal compris : la manière dont l&#39;IA « se souvient » de ces informations. C&#39;est la différence entre une connaissance temporaire et une compétence permanente.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="22" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">La différence entre bachoter pour un examen et maîtriser réellement un sujet ?</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="23" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Une analogie parfaite ! L&#39;apprentissage en contexte, c&#39;est du bachotage. Les connaissances que vous fournissez dans le prompt sont temporaires. L&#39;IA les utilise pour cette unique conversation, mais une fois la conversation terminée, ces connaissances disparaissent.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="24" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Elle oublie tout.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="25" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Elle oublie tout. C&#39;est donc une mémoire à usage unique. Si je veux qu&#39;elle ait connaissance des mêmes informations demain, je dois lui fournir à nouveau les documents.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="26" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">D&#39;accord.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="27" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Telle est la réalité de l&#39;ICL. C&#39;est incroyablement flexible, mais basé sur une mémoire à court terme. L&#39;affinage, en revanche, vise à créer une compétence permanente. Lorsque vous affinez un modèle, vous modifiez fondamentalement sa structure interne. Les nouvelles connaissances deviennent partie intégrante de son identité.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="28" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Donc, les connaissances issues de l&#39;affinage persistent dans toutes les conversations, pour toujours ?</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="29" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Oui. C&#39;est comme apprendre à faire du vélo. La compétence est ancrée. Vous n&#39;avez pas besoin qu&#39;on vous rappelle les lois de l&#39;équilibre à chaque fois que vous montez en selle.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="30" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Luc, cela explique une expérience très courante avec les chatbots. On peut avoir une conversation longue et détaillée, mais si on ouvre une nouvelle fenêtre de discussion, l&#39;IA n&#39;a aucune idée de ce qui a été dit auparavant.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="31" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Exactement ! C&#39;est l&#39;apprentissage en contexte en action. L&#39;intégralité de l&#39;historique de votre discussion dans cette session constitue le contexte.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="32" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Je vois.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="33" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Quand vous ouvrez une nouvelle fenêtre, vous partez d&#39;un contexte vide. L&#39;IA n&#39;a pas « oublié » au sens humain du terme ; son espace de travail temporaire a simplement été vidé.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="34" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Mais qu&#39;en est-il des nouvelles fonctionnalités comme la « Mémoire » que certaines IA commencent à intégrer ? On a l&#39;impression qu&#39;elles commencent vraiment à se souvenir des choses d&#39;une session à l&#39;autre.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="35" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">C&#39;est une excellente remarque, et il est crucial de comprendre comment cela fonctionne. L&#39;IA n&#39;est pas constamment affinée par vos conversations. Ce serait incroyablement inefficace.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="36" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">C&#39;est donc une astuce ?</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="37" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">On peut dire ça. Ces fonctions de mémorisation sont une forme astucieuse d&#39;apprentissage en contexte automatisé. Quand vous commencez une nouvelle conversation, le système recherche rapidement dans vos anciens échanges les informations qui semblent pertinentes pour votre nouvelle requête. Ensuite, il insère automatiquement ces extraits dans le prompt, en coulisses.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="38" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Donc, on a l&#39;impression que l&#39;IA se souvient des détails de mon projet, mais en réalité, on lui a juste fourni une antisèche juste avant qu&#39;elle ne commence à vous parler.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="39" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Précisément. Le modèle lui-même n&#39;apprend pas et n&#39;évolue pas à partir de vos discussions. Il utilise simplement un système plus intelligent pour rappeler le contexte passé.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="40" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Donc, la grande question pour quiconque utilise ces outils est : « Ai-je besoin d&#39;un consultant temporaire ou d&#39;un expert permanent ? »</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="41" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">C&#39;est la manière idéale de poser le problème. Et sur cette réflexion, il est temps de conclure.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="42" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Merci de nous avoir écoutés, et à bientôt pour le prochain épisode de « Tech Éclair » !</span>
+            </div>
+            
+        </div>
+
+        <div id="status" class="status stopped">Ready to play</div>
+    </div>
+
+    <script id="page-config" type="application/json">
+{
+  "topic": "finetuning",
+  "lang": "fr",
+  "lang_code": "fr-FR",
+  "lang_name": "Français",
+  "default_rate": 1.0,
+  "font_family": null,
+  "speakers": [
+    "Camille",
+    "Luc"
+  ]
+}
+    </script>
+    <script src="assets/reader.js"></script>
+</body>
+</html>

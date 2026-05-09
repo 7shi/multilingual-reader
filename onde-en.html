@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌊 Onde (Waves) (English) - Multilingual Podcast Reader</title>
+    <link rel="stylesheet" href="assets/reader.css">
+</head>
+<body class="lang-en">
+    <div class="container">
+        <header class="page-header">
+            <a href="index.html" class="back-link">← Index</a>
+            <h1>🌊 Onde (Waves)</h1>
+            <nav class="lang-nav">
+                
+                <a href="onde.html" title="All languages">All</a>
+                
+                <a href="onde-fr.html" title="Français">FR</a>
+                
+                <span class="lang-current" title="English">EN</span>
+                
+                <a href="onde-es.html" title="Español">ES</a>
+                
+                <a href="onde-de.html" title="Deutsch">DE</a>
+                
+                <a href="onde-ja.html" title="日本語">JA</a>
+                
+                <a href="onde-zh.html" title="中文">ZH</a>
+                
+            </nav>
+        </header>
+
+        <div class="controls">
+            <div class="speech-controls">
+                <button id="playPauseBtn" class="play-pause-btn">▶️ Play</button>
+                <button id="stopBtn" class="stop-btn">⏹️ Stop</button>
+            </div>
+        </div>
+
+        <div id="speakerVoices" class="speaker-voices" style="display: none;">
+            <div class="collapsible-header" onclick="toggleSpeakerVoices()">
+                <h3>🎭 Speaker Voice Assignment & Speed</h3>
+                <span id="toggleIcon" class="toggle-icon">▼</span>
+            </div>
+            <div id="voiceAssignmentContainer" class="voice-assignment collapsed">
+                <div class="global-speed-control">
+                    <label for="rate">Speed:</label>
+                    <input type="range" id="rate" min="0.5" max="2" step="0.1" value="1.0">
+                    <span id="rateValue">1.0x</span>
+                </div>
+                <div id="speakerControlsContainer" class="speaker-controls-container">
+                    <!-- 話者別音声選択は JS で生成 -->
+                </div>
+            </div>
+        </div>
+
+        <div id="textContent" class="text-content">
+            
+            <div class="line speaker-0" data-index="0" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Hello everyone, and welcome to &#34;Bridges in Physics&#34;. The podcast where, well, we build a bridge between the mysteries of the quantum world and the physics of our everyday lives.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="1" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">That&#39;s exactly right! Hello everyone.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="2" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">I&#39;m Camille, a theoretical physicist.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="3" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">And I&#39;m Luc, an experimental physicist. Camille, to start, I&#39;d like to dive right into an image that... that everyone knows, in fact.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="4" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Yes?</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="5" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">We&#39;re constantly told that particles, like electrons, behave like waves. But... does that mean there&#39;s a real little material wave that undulates in space? A bit like a ripple on the surface of water?</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="6" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">It&#39;s an absolutely fundamental question, Luc, because it touches on our deepest intuition.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="7" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Yes.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="8" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">And the answer, which took a century to become established, is both simple and... perplexing: no. No, this wave, which physicists call the wave function, psi... is not a wave of matter.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="9" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">I see...</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="10" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">It&#39;s a wave of... possibilities.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="11" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">A wave of possibilities... Do you mean it doesn&#39;t describe a real object, but rather the... the probability of finding the object somewhere?</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="12" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Exactly. And to be perfectly precise, it&#39;s not the wave itself that is the probability.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="13" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Okay.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="14" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">It&#39;s the square of its amplitude. Or its &#34;height&#34;, if you prefer.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="15" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Ah yes.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="16" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">We denote that as psi squared. That&#39;s the famous Born rule, one of the pillars of quantum mechanics.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="17" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Ah, that&#39;s a phenomenon I see every day in the lab!</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="18" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Ah yes?</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="19" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">When we perform the double-slit experiment by sending electrons one by one, each electron leaves a single impact on the screen, like a particle.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="20" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Yes...</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="21" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">But... after sending thousands of them, you see this pattern emerge with fringes... an interference pattern.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="22" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Hmm.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="23" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">And this distribution, it&#39;s magnificent, it perfectly follows the law of psi squared.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="24" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">That&#39;s the irrefutable experimental proof. But that brings us to the question... why the square?</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="25" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Yes!</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="26" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Why did nature choose this complexity? A direct probability, just linked to psi, would seem so much simpler, wouldn&#39;t it?</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="27" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Exactly! Why this extra step?</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="28" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">So, there&#39;s a mathematical reason, uh... implacable: conservation.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="29" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">I understand.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="30" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">The total probability of finding the particle somewhere in the universe must always be 100%.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="31" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Always.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="32" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">It cannot appear or disappear. And it happens that only the form psi squared guarantees that this rule is respected. All the time.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="33" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Okay.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="34" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">But... there&#39;s an even more beautiful reason. A reason that connects to your field, Luc.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="35" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Ah? Which one?</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="36" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">In classical optics, the energy of a light wave, which gives it its brilliance, is also proportional to the square of the amplitude of the electric field. E squared.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="37" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Wow.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="38" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">That&#39;s an absolutely stunning parallel.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="39" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Wait. So the &#39;probability of presence&#39; of a quantum particle... is calculated in the same way as &#39;the energy&#39; of a classical light wave.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="40" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Yes.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="41" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">It&#39;s the same mathematical law for two such different worlds. It&#39;s not a coincidence.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="42" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">No. It&#39;s one of the most beautiful examples of the unity of physics. And that leads us to another intuition to question.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="43" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Ah?</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="44" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Let&#39;s talk about the amplitude and spatial width of a wave. Is a very &#39;high&#39; wave necessarily very &#39;wide&#39;?</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="45" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">My first reflex would be to say yes. But... when I think about my lab laser...</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="46" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Yes...</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="47" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">I can easily increase its power, so the amplitude, while maintaining an extremely thin beam.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="48" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Okay.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="49" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">So no. In fact, no, these two parameters, amplitude and width, seem independent.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="50" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">You are absolutely right. These are two independent parameters.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="51" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Hmm.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="52" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">But what if we take the logic to the extreme, and try to make the width... infinitely small?</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="53" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Yes?</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="54" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Of concentrating the entire wave into a single, unique point?</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="55" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Ah, there, nature says stop. It&#39;s the famous Heisenberg uncertainty principle.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="56" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Exactly.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="57" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">When trying to localize a wave with extreme precision, i.e., a small width delta x, we lose all information about its direction. We have a large delta p.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="58" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Yes.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="59" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Concretely, an ultra-thin beam diverges enormously, right after its focal point.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="60" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">And this phenomenon of divergence, in optics, it has a name that everyone knows.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="61" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Yes...</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="62" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Diffraction. It&#39;s diffraction that imposes a fundamental limit on the resolution of our microscopes.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="63" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">The famous Abbe limit!</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="64" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Exactly!</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="65" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">We are taught that with light of wavelength lambda, it is impossible to see details smaller than... roughly half of that wavelength, lambda over two.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="66" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Hmm hmm.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="67" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">But... but be careful about what that really means...</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="68" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Go on, explain that nuance to us, it&#39;s crucial.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="69" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">This limit doesn&#39;t mean that we can&#39;t create a light spot smaller than lambda over two.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="70" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Ah!</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="71" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">That means that information about finer details is transported by very special waves, &#39;the evanescent waves&#39;.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="72" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Okay.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="73" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">And these waves, they don&#39;t propagate, they attenuate so quickly that they never reach the microscope lens. The information is there, but... inaccessible. Unless you&#39;re clever.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="74" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">And that&#39;s where the ingenuity of physicists comes in!</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="75" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Yes!</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="76" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">With techniques like the near-field microscope, the NSOM, where we directly detect the field with an ultra-fine tip, directly on the object.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="77" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Exactly! We&#39;re not violating any laws, we&#39;re just looking for the information where it exists, before it disappears.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="78" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">That&#39;s it.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="79" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Super-resolution isn&#39;t magic. It&#39;s just a deep understanding of the nature of waves.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="80" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">So, to summarize our little journey: the quantum wave function isn&#39;t a real wave, but a probability wave.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="81" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Yes.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="82" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Probability is given by its square amplitude... a perfect echo of the law on the energy of classical waves.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="83" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Incredible.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="84" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Amplitude and width are independent, but width is linked to resolution by the uncertainty principle, which manifests through diffraction.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="85" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Hmm hmm.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="86" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">And this resolution limit can be circumvented by clever techniques.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="87" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">It&#39;s fascinating to see how all these concepts, from the nature of quantum reality to the limits of a microscope, are all woven together by the same laws of waves.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="88" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Hmm.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="89" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">The world is really... coherent.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="90" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Absolutely. And that leaves us with a final question. A question for you who are listening to us.</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="91" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Oh?</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="92" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">If the &#39;probability of presence&#39; in quantum mechanics and &#39;the energy&#39; in classical mechanics both follow the same rule of the square of the amplitude…</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="93" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">…does that mean that probability is not just a simple calculating tool?</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="94" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Yes...</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="95" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Could it be that probability is, in a certain way, a physical quantity as real... as fundamental as energy itself?</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="96" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">It&#39;s a dizzying thought. What do you think?</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="97" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">Hmm.</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="98" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">Thank you for listening to us, and see you soon on &#34;Bridges in Physics&#34;.</span>
+            </div>
+            
+        </div>
+
+        <div id="status" class="status stopped">Ready to play</div>
+    </div>
+
+    <script id="page-config" type="application/json">
+{
+  "topic": "onde",
+  "lang": "en",
+  "lang_code": "en-US",
+  "lang_name": "English",
+  "default_rate": 1.0,
+  "font_family": null,
+  "speakers": [
+    "Camille",
+    "Luc"
+  ]
+}
+    </script>
+    <script src="assets/reader.js"></script>
+</body>
+</html>

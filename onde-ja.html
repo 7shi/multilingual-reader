@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="ja-JP">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌊 Onde (Waves) (日本語) - Multilingual Podcast Reader</title>
+    <link rel="stylesheet" href="assets/reader.css">
+</head>
+<body class="lang-ja">
+    <div class="container">
+        <header class="page-header">
+            <a href="index.html" class="back-link">← Index</a>
+            <h1>🌊 Onde (Waves)</h1>
+            <nav class="lang-nav">
+                
+                <a href="onde.html" title="All languages">All</a>
+                
+                <a href="onde-fr.html" title="Français">FR</a>
+                
+                <a href="onde-en.html" title="English">EN</a>
+                
+                <a href="onde-es.html" title="Español">ES</a>
+                
+                <a href="onde-de.html" title="Deutsch">DE</a>
+                
+                <span class="lang-current" title="日本語">JA</span>
+                
+                <a href="onde-zh.html" title="中文">ZH</a>
+                
+            </nav>
+        </header>
+
+        <div class="controls">
+            <div class="speech-controls">
+                <button id="playPauseBtn" class="play-pause-btn">▶️ Play</button>
+                <button id="stopBtn" class="stop-btn">⏹️ Stop</button>
+            </div>
+        </div>
+
+        <div id="speakerVoices" class="speaker-voices" style="display: none;">
+            <div class="collapsible-header" onclick="toggleSpeakerVoices()">
+                <h3>🎭 Speaker Voice Assignment & Speed</h3>
+                <span id="toggleIcon" class="toggle-icon">▼</span>
+            </div>
+            <div id="voiceAssignmentContainer" class="voice-assignment collapsed">
+                <div class="global-speed-control">
+                    <label for="rate">Speed:</label>
+                    <input type="range" id="rate" min="0.5" max="2" step="0.1" value="1.4">
+                    <span id="rateValue">1.4x</span>
+                </div>
+                <div id="speakerControlsContainer" class="speaker-controls-container">
+                    <!-- 話者別音声選択は JS で生成 -->
+                </div>
+            </div>
+        </div>
+
+        <div id="textContent" class="text-content">
+            
+            <div class="line speaker-0" data-index="0" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">皆さん、こんにちは。「物理の架け橋」へようこそ。量子世界の神秘と、私たちの日常生活に潜む物理学の間に橋を架けるポッドキャストです。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="1" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">その通りだね！皆さん、こんにちは。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="2" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">私はカミーユ、理論物理学者です。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="3" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">そして僕はリュック、実験物理学者だ。カミーユ、まず、誰もが知っているイメージから話を始めたいんだ。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="4" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">なあに？</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="5" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">電子のような粒子は波のように振る舞うと、よく言われるよね。でも…それって、空間を実際にうねって進む、物質の小さな波が本当にあるっていうことなのかな？水面に広がる波紋みたいにさ。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="6" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">それはとても根源的な問いね、リュック。だって、私たちの最も深い直感に触れる問題だから。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="7" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">うん。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="8" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">そして、定着するのに1世紀もかかったその答えは、単純でありながら…人を惑わせるものでもあるの。答えは「ノー」。物理学者が波動関数、プサイと呼ぶこの波は、物質の波ではないのよ。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="9" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">なるほど…</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="10" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">それは…可能性の波。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="11" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">可能性の波…つまり、それは実在する物体を記述しているんじゃなくて、その物体がどこかで見つかる…確率を表しているということかい？</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="12" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">その通り。でも正確に言うと、確率そのものが波というわけではないの。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="13" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">わかった。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="14" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">その振幅の2乗よ。あるいは、分かりやすく言えばその「高さ」の2乗ね。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="15" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">ああ、なるほど。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="16" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">それをプサイの2乗と書くの。これが有名なボルンの規則で、量子力学の根幹を成す考え方の一つよ。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="17" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">ああ、それは僕がラボで毎日目にしている現象だよ！</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="18" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">あら、そうなの？</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="19" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">ヤングの二重スリット実験で電子を一つずつ撃つと、個々の電子は粒子みたいに、スクリーンに一つの点としてぶつかる。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="20" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">ええ…</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="21" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">でも…何千個も撃った後には、縞模様が…干渉縞が現れるんだ。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="22" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">ふむ。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="23" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">そして、この分布は見事なまでに、プサイの2乗 の法則にぴったり一致するんだ。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="24" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">これが反論のしようがない実験的な証拠ね。でも、ここから次の疑問が生まれる…なぜ2乗なのか？</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="25" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">そうだ！</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="26" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">なぜ自然はこんなに複雑な仕組みを選んだのかしら？単にプサイに比例する確率のほうが、ずっと単純でしょう？</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="27" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">まったくその通りだ！ なぜ、わざわざ一手間加える必要があるんだろう？</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="28" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">それには、数学的な、ええと…動かしがたい理由があるの。それは「保存」よ。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="29" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">なるほど。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="30" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">宇宙のどこかである粒子を見つける確率の合計は、常に100%でなければならない。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="31" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">いつでも。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="32" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">勝手に現れたり消えたりはできない。そして、プサイの2乗という形だけが、このルールが常に守られることを保証してくれるのよ。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="33" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">なるほど。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="34" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">でも…もっと美しい理由もあるの。あなたの専門分野につながる理由がね、リュック。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="35" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">え？どんな？</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="36" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">古典光学では、光波のエネルギー、つまりその明るさは、同じく電場の振幅の2乗に比例するの。Eの2乗にね。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="37" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">へえ。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="38" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">これは本当に驚くべき類似点だわ。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="39" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">待ってくれ。ということは、量子的な粒子の「存在確率」は…古典的な光の波の「エネルギー」と、まったく同じ方法で計算されるということかい？</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="40" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">ええ。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="41" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">こんなに違う2つの世界で、同じ数学法則が成り立っているなんて。これは偶然じゃないはずだ。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="42" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">ええ。物理学の統一性を示す、最も美しい例の1つよ。そして、ここからまた別の直感に疑問を投げかけることになるわ。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="43" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">ほう？</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="44" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">波の振幅と空間的な幅について話しましょうか。とても「高い」波は、必ずしも「広い」波なのかな？</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="45" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">直感的には「はい」と言いたいところだけど…でも、研究室のレーザーを考えると…</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="46" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">うん…</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="47" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">ビームを極細に保ったまま、パワー、つまり振幅だけを簡単に上げることができる。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="48" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">なるほど。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="49" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">ということは、違う。実際、振幅と幅というこの2つのパラメータは、独立しているように思える。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="50" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">まったくその通り。その2つは独立したパラメータよ。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="51" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">ふむ。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="52" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">でも、この考えを突き詰めて、幅を…無限に小さくしようとしたらどうなるかしら？</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="53" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">というと？</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="54" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">波全体を、たった一つの点に集中させるの？</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="55" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">ああ、そこで自然が「ストップ」をかける。かの有名なハイゼンベルクの不確定性原理だ。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="56" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">その通り。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="57" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">波の位置を極めて正確に、つまり幅（Δx）を小さく特定しようとすると、その運動量（Δp）に関する情報が全く分からなくなってしまうんだ。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="58" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">ええ。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="59" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">具体的には、極細のビームは焦点の直後で、ものすごく広がってしまう。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="60" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">そして光学の分野では、この発散という現象に、誰もが知っている名前がついているのよ。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="61" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">うん…</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="62" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">回折よ。顕微鏡の分解能に根本的な限界を与えているのは、この回折という現象なの。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="63" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">あの有名なアッベの限界だね！</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="64" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">その通り！</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="65" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">波長ラムダの光では、その波長の約半分、2分のラムダより小さいものは見ることができない、と習うよね。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="66" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">ええ、そうね。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="67" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">でも…それが本当は何を意味しているのか、注意が必要だ…</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="68" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">ええ、お願い。そのニュアンスを説明してくれる？とても重要なことよ。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="69" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">この限界は、2分のラムダより小さい光のスポットを作れない、という意味じゃないんだ。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="70" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">あら！</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="71" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">もっと細かい部分の情報は、「エバネッセント波」っていう特殊な波が運んでいる、ということなんだ。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="72" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">なるほど。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="73" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">そして、この波は伝播せず、あまりに速く減衰してしまうので、顕微鏡のレンズまで届かないんだ。情報はそこにあるのに…アクセスできない。よほど上手くやらない限りはね。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="74" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">そこに物理学者の創意工夫が光るわけね！</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="75" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">そう！</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="76" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">近接場顕微鏡（NSOM）のような技術を使って、超極細の探針で、対象のすぐそばの場を直接検出するの。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="77" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">その通り！法則を破るんじゃなくて、情報が消える前に、その場所まで迎えに行くだけさ。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="78" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">そういうことね。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="79" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">超解像は魔法じゃない。波の性質を深く理解した結果なんだ。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="80" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">というわけで、今回の小さな旅をまとめると、量子的な波動関数は、現実の波ではなく、確率の波だということ。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="81" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">うん。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="82" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">確率は振幅の2乗で与えられ…これは古典的な波のエネルギーに関する法則を、完璧に反映している。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="83" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">すごいな。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="84" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">振幅と幅は独立しているけれど、幅は不確定性原理によって解像度と結びついていて、それが回折という形で現れるの。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="85" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">ふむふむ。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="86" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">そして、この解像度の限界も、賢い技術で乗り越えることができる。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="87" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">量子という現実の性質から、顕微鏡の限界に至るまで、これらすべての概念が、同じ波の法則によって一つに織りなされているのを見るのは、本当に興味深いね。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="88" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">ええ。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="89" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">この世界は本当に…うまくできている。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="90" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">本当にそうね。そして、最後に一つ質問が残るわ。聴いている皆さんへの質問よ。</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="91" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">お？</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="92" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">量子力学の「存在確率」と、古典力学の「エネルギー」が、どちらも振幅の2乗という同じ法則に従うのなら…</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="93" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">…それは、確率が単なる計算の道具ではない、ということなのだろうか？</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="94" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">そう…</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="95" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">もしかしたら確率って、ある意味、エネルギーそのものと同じくらいリアルで…根本的な物理量だったりするんだろうか？</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="96" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">気が遠くなるような話ね。皆さんはどう思いますか？</span>
+            </div>
+            
+            <div class="line speaker-1" data-index="97" data-speaker="Luc">
+                <span class="speaker-label">Luc</span>
+                <span class="line-text">ふむ。</span>
+            </div>
+            
+            <div class="line speaker-0" data-index="98" data-speaker="Camille">
+                <span class="speaker-label">Camille</span>
+                <span class="line-text">ご清聴ありがとうございました。また「物理の架け橋」でお会いしましょう。</span>
+            </div>
+            
+        </div>
+
+        <div id="status" class="status stopped">Ready to play</div>
+    </div>
+
+    <script id="page-config" type="application/json">
+{
+  "topic": "onde",
+  "lang": "ja",
+  "lang_code": "ja-JP",
+  "lang_name": "日本語",
+  "default_rate": 1.4,
+  "font_family": null,
+  "speakers": [
+    "Camille",
+    "Luc"
+  ]
+}
+    </script>
+    <script src="assets/reader.js"></script>
+</body>
+</html>
