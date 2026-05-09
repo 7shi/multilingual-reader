@@ -3,8 +3,21 @@
 翻訳・評価・用語管理を一括で行うコマンドラインツール集。
 
 ```
-uv run trtools <command> [options]
+uv run trtools [--label LABEL] [--start START] <command> [options]
 ```
+
+---
+
+## メインオプション
+
+どのサブコマンドでも共通して使用できるオプション。プログレスバーの表示制御に使う。
+
+| オプション | 説明 |
+|---|---|
+| `--label LABEL` | プログレスバーに表示するラベル文字列（例: `bg: Bulgarian (2/10)`）。指定しなければ非表示 |
+| `--start START` | バッチ開始時刻（Unixタイムスタンプ）。指定するとバッチ全体の経過時間を表示 |
+
+`--label` と `--start` がどちらも未指定の場合、プログレスバーのセパレータ `|` も非表示になる。
 
 ---
 
@@ -43,6 +56,7 @@ uv run trtools <command> [options]
 | コマンド | 概要 |
 |---|---|
 | [`translate`](#translate) | テキストを行単位で翻訳 |
+| [`review`](#review) | 他者評価による翻訳推敲 |
 | [`eval`](#eval) | 翻訳品質を5項目で評価 |
 | [`agg`](#agg) | 評価結果JSONを集約（中央値） |
 | [`term extract`](#term-extract) | テキストから専門用語を抽出 |
@@ -101,6 +115,53 @@ uv run trtools translate finetuning-fr.txt -f fr -t es \
 
 ---
 
+## review
+
+翻訳ファイルをLLMによる他者評価で推敲する。話者名付き行（`話者: テキスト` 形式）を対象に、分析→改善の2段階プロンプトで翻訳品質を向上させる。
+
+```
+uv run trtools review --original <orig> --translation <tr> -f <from> -t <to> -o <output> -m <model> [options]
+```
+
+### 必須引数
+
+| 引数 | 説明 |
+|---|---|
+| `--original` | 原文ファイル |
+| `--translation` | 推敲対象の翻訳ファイル |
+| `-f`, `--from` | 原語コード（例: `en`） |
+| `-t`, `--to` | 翻訳先言語コード（例: `nl`） |
+| `-o`, `--output` | 推敲後の出力ファイル名 |
+| `-m`, `--model` | 推敲に使用するモデル |
+
+### オプション
+
+| オプション | デフォルト | 説明 |
+|---|---|---|
+| `--history` | `10` | コンテキストとして参照する直前の推敲済み行数 |
+| `--no-think` | false | thinking処理を無効化 |
+| `--terms` | なし | 用語対訳TSVファイル（話者名の変換に使用） |
+
+### 動作
+
+- 話者名付き行（`話者: テキスト`）のみ推敲対象とし、空行・話者名なし行はそのまま出力する
+- 推敲は2段階：① 翻訳の問題点を分析（`No issues` なら改善スキップ）→ ② 改善訳を生成
+- `--terms` で渡したTSVの話者名列を参照し、出力の話者名を対象言語に変換する
+
+### 使用例
+
+```bash
+uv run trtools review \
+  --original finetuning-en.txt \
+  --translation tr/finetuning-nl.txt \
+  -f en -t nl \
+  -o reviewed/finetuning-nl.txt \
+  -m ollama:gemma4:26b \
+  --terms terms/finetuning-en.tsv
+```
+
+---
+
 ## eval
 
 翻訳品質を5項目（各20点、合計100点）で評価する。評価結果をJSONファイルに保存できる。
@@ -126,6 +187,8 @@ uv run trtools eval --original <orig> --translation <tr> -f <from> -t <to> -m <m
 | `-o`, `--output` | なし | 評価結果JSONの保存先 |
 | `-w`, `--retry-wait` | 3 | リトライ待機秒数 |
 | `--no-think` | false | thinking処理を無効化 |
+| `--run` | `1` | 現在の評価回数（プログレスバーの表示に使用） |
+| `--runs` | `1` | 評価の総回数（プログレスバーの表示に使用） |
 
 ### 評価項目
 
@@ -138,12 +201,24 @@ uv run trtools eval --original <orig> --translation <tr> -f <from> -t <to> -m <m
 ### 使用例
 
 ```bash
+# 1回評価
 uv run trtools eval \
   --original finetuning-fr.txt \
   --translation finetuning-es.txt \
   -f fr -t es \
   -m ollama:qwen3.6 -w 3 \
   -o evals/finetuning-es-1.json
+
+# 3回評価（プログレスバーに x/3 を表示）
+for run in 1 2 3; do
+  uv run trtools eval \
+    --original finetuning-fr.txt \
+    --translation finetuning-es.txt \
+    -f fr -t es \
+    -m ollama:qwen3.6 -w 3 \
+    --run $run --runs 3 \
+    -o evals/finetuning-es-$run.json
+done
 ```
 
 ---
@@ -506,6 +581,7 @@ for run in 1 2 3; do
     --original topic-fr.txt --translation tr/topic-en.txt \
     -f fr -t en \
     -m ollama:qwen3.6 -w 3 \
+    --run $run --runs 3 \
     -o evals/topic-en-$run.json
 done
 

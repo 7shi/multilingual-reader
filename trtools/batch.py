@@ -147,6 +147,8 @@ def run(args):
                         output_file=eval_out,
                         retry_wait=args.retry_wait,
                         no_think=False,
+                        run=evrun,
+                        runs=args.eval_runs,
                     )
                     try:
                         evaluate.run(eval_args)

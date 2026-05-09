@@ -6,6 +6,7 @@ import csv
 import json
 import time
 from .llm import LLMClient, DEFAULT_RETRY_WAIT_SECONDS
+from .statusline import StatusLine
 
 
 def add_parser(subparsers):
@@ -33,13 +34,16 @@ def add_parser(subparsers):
     parser.set_defaults(func=run)
 
 
-def _load_terms(terms_json, terms_tsv, from_lang, to_lang):
+def _load_terms(terms_json, terms_tsv, from_lang, to_lang, write=None):
     """JSON と TSV から chunk_data と glossary を構築する。"""
+    if write is None:
+        write = lambda text: print(text, end="")
+
     with open(terms_json, "r", encoding="utf-8") as f:
         json_data = json.load(f)
 
     if json_data.get("from") != from_lang:
-        print(f"WARNING: 用語JSONの原語 '{json_data.get('from')}' が指定言語 '{from_lang}' と異なります。")
+        write(f"WARNING: 用語JSONの原語 '{json_data.get('from')}' が指定言語 '{from_lang}' と異なります。\n")
 
     chunk_data = json_data.get("chunks", [])
 
@@ -48,10 +52,10 @@ def _load_terms(terms_json, terms_tsv, from_lang, to_lang):
         reader = csv.reader(f, delimiter="\t")
         header = next(reader)
         if from_lang not in header:
-            print(f"WARNING: TSV に '{from_lang}' 列がありません。用語注入をスキップします。")
+            write(f"WARNING: TSV に '{from_lang}' 列がありません。用語注入をスキップします。\n")
             return chunk_data, glossary
         if to_lang not in header:
-            print(f"WARNING: TSV に '{to_lang}' 列がありません。用語注入をスキップします。")
+            write(f"WARNING: TSV に '{to_lang}' 列がありません。用語注入をスキップします。\n")
             return chunk_data, glossary
         from_idx = header.index(from_lang)
         to_idx = header.index(to_lang)
@@ -108,10 +112,15 @@ def run(args):
     content_lines = [(i, line.rstrip("\n")) for i, line in enumerate(all_lines) if line.strip()]
     total = len(content_lines)
 
+    ui = StatusLine(
+        label=getattr(args, 'label', None),
+        start=getattr(args, 'start', None),
+    )
+
     chunk_data = []
     glossary = {}
     if args.terms_json and args.terms_tsv:
-        chunk_data, glossary = _load_terms(args.terms_json, args.terms_tsv, from_lang, to_lang)
+        chunk_data, glossary = _load_terms(args.terms_json, args.terms_tsv, from_lang, to_lang, ui.write)
 
     client = LLMClient(
         model=args.model,
@@ -140,50 +149,52 @@ def run(args):
     next_compression = None
     results = {}
 
-    def call_llm(prompt):
+    def call_llm(prompt, stream=True):
         user_msg = {"role": "user", "content": prompt}
         chat_history.append(user_msg)
-        translated = client.call(chat_history)
+        translated = client.call(chat_history, file=ui.stream if stream else None)
+        ui.stream.end()
         asst_msg = {"role": "assistant", "content": translated}
         chat_history.append(asst_msg)
         return translated, user_msg, asst_msg
 
     start_time = time.time()
 
-    for i, (orig_idx, line) in enumerate(content_lines, 1):
-        print(f"[{i}/{total}] ", end="", flush=True)
-        prompt = f"Translate the following {from_lang} line into {to_lang}.\n{line}"
-        translated, user_msg, asst_msg = call_llm(prompt)
-        translation_messages.extend([user_msg, asst_msg])
-        results[orig_idx] = translated
+    with ui.progress(total) as prog:
+        for i, (orig_idx, line) in enumerate(content_lines, 1):
+            prompt = f"Translate the following {from_lang} line into {to_lang}.\n{line}"
+            translated, user_msg, asst_msg = call_llm(prompt)
+            translation_messages.extend([user_msg, asst_msg])
+            results[orig_idx] = translated
+            prog.update(i)
 
-        if i % threshold == 0 and i + keep < total:
-            saved_len = len(chat_history)
-            print("[summary] ", end="", flush=True)
-            summary_prompt = (
-                "Please summarize the translation history above in 2-3 sentences (in English). "
-                "Focus on topics and narrative context. "
-                "If a previous summary exists, integrate the new content with it rather "
-                "than starting over."
-            )
-            _, sum_req, sum_res = call_llm(summary_prompt)
-            del chat_history[saved_len:]
-            summary_messages.extend([sum_req, sum_res])
-            next_compression = i + keep
+            if i % threshold == 0 and i + keep < total:
+                saved_len = len(chat_history)
+                summary_prompt = (
+                    "Please summarize the translation history above in 2-3 sentences (in English). "
+                    "Focus on topics and narrative context. "
+                    "If a previous summary exists, integrate the new content with it rather "
+                    "than starting over."
+                )
+                summary_text, sum_req, sum_res = call_llm(summary_prompt, stream=False)
+                ui.show_panel(summary_text, title="Summary")
+                del chat_history[saved_len:]
+                summary_messages.extend([sum_req, sum_res])
+                next_compression = i + keep
 
-        if next_compression is not None and i == next_compression:
-            next_start = i + 1
-            next_end = min(i + threshold + keep, total)
-            terms_msgs = _build_terms_messages(
-                next_start, next_end, chunk_data, glossary, from_lang, to_lang
-            )
-            chat_history = (
-                [system_message]
-                + terms_msgs
-                + summary_messages[-2:]
-                + translation_messages[-keep * 2:]
-            )
-            next_compression = None
+            if next_compression is not None and i == next_compression:
+                next_start = i + 1
+                next_end = min(i + threshold + keep, total)
+                terms_msgs = _build_terms_messages(
+                    next_start, next_end, chunk_data, glossary, from_lang, to_lang
+                )
+                chat_history = (
+                    [system_message]
+                    + terms_msgs
+                    + summary_messages[-2:]
+                    + translation_messages[-keep * 2:]
+                )
+                next_compression = None
 
     elapsed = time.time() - start_time
 
@@ -194,5 +205,5 @@ def run(args):
             else:
                 f.write(line)
 
-    print(f"\n翻訳完了: {from_lang} → {to_lang} ({args.output_file})")
-    print(f"処理時間: {elapsed:.1f}秒 ({elapsed/60:.1f}分)")
+    ui.write(f"\n翻訳完了: {from_lang} → {to_lang} ({args.output_file})\n")
+    ui.write(f"処理時間: {elapsed:.1f}秒 ({elapsed/60:.1f}分)\n")

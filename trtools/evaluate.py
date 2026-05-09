@@ -3,6 +3,7 @@
 import json
 from pydantic import BaseModel, Field
 from .llm import LLMClient, DEFAULT_RETRY_WAIT_SECONDS
+from .statusline import StatusLine
 
 class ReasoningAndScore(BaseModel):
     reasoning: str = Field(description="Detailed reasoning and consideration for scoring this evaluation criterion")
@@ -39,10 +40,17 @@ def add_parser(subparsers):
     parser.add_argument("-w", "--retry-wait", type=int, default=DEFAULT_RETRY_WAIT_SECONDS,
                         help=f"リトライ時の待機時間（秒）（デフォルト: {DEFAULT_RETRY_WAIT_SECONDS}秒）")
     parser.add_argument("--no-think", action="store_true", help="thinking処理を無効化（Qwen3モデル用）")
+    parser.add_argument("--run", type=int, default=1, help="現在の評価回数（デフォルト: 1）")
+    parser.add_argument("--runs", type=int, default=1, help="評価の総回数（デフォルト: 1）")
     parser.set_defaults(func=run)
     return parser
 
 def run(args):
+    ui = StatusLine(
+        label=getattr(args, 'label', None),
+        start=getattr(args, 'start', None),
+    )
+
     with open(args.original, "r", encoding="utf-8") as f:
         original_text = f.read().rstrip()
 
@@ -61,9 +69,6 @@ def run(args):
 
 Score each criterion from 0-20 points based on the ENTIRE document."""
 
-    print("翻訳評価を実行中...")
-    print()
-
     schema = TranslationEvaluation
     prompts = [
         f"<original>\n{original_text}\n</original>",
@@ -76,21 +81,27 @@ Score each criterion from 0-20 points based on the ENTIRE document."""
         think=(not args.no_think),
         retry_wait=args.retry_wait,
     )
-    evaluation_result = client.call_json(prompts, schema=schema)
 
-    print("=== 翻訳評価結果 ===")
-    print(f"1. 読みやすさと理解しやすさ: {evaluation_result['readability']['score']:2d}/20点")
-    print(f"2. 流暢さと自然さ          : {evaluation_result['fluency']['score']:2d}/20点")
-    print(f"3. 専門用語の適切性        : {evaluation_result['terminology']['score']:2d}/20点")
-    print(f"4. 文脈適応性              : {evaluation_result['contextual_adaptation']['score']:2d}/20点")
-    print(f"5. 情報の完全性            : {evaluation_result['information_completeness']['score']:2d}/20点")
+    run = getattr(args, 'run', 1)
+    runs = getattr(args, 'runs', 1)
+    with ui.progress(runs, start=run - 1) as prog:
+        evaluation_result = client.call_json(prompts, schema=schema, file=ui.stream)
+        ui.stream.end()
+        prog.update(run)
+
+    ui.write("=== 翻訳評価結果 ===\n")
+    ui.write(f"1. 読みやすさと理解しやすさ: {evaluation_result['readability']['score']:2d}/20点\n")
+    ui.write(f"2. 流暢さと自然さ          : {evaluation_result['fluency']['score']:2d}/20点\n")
+    ui.write(f"3. 専門用語の適切性        : {evaluation_result['terminology']['score']:2d}/20点\n")
+    ui.write(f"4. 文脈適応性              : {evaluation_result['contextual_adaptation']['score']:2d}/20点\n")
+    ui.write(f"5. 情報の完全性            : {evaluation_result['information_completeness']['score']:2d}/20点\n")
 
     total_score = (evaluation_result['readability']['score'] +
                    evaluation_result['fluency']['score'] +
                    evaluation_result['terminology']['score'] +
                    evaluation_result['contextual_adaptation']['score'] +
                    evaluation_result['information_completeness']['score'])
-    print(f"総合得点: {total_score}/100点")
+    ui.write(f"総合得点: {total_score}/100点\n")
 
     if args.output_file:
         output_data = {
@@ -104,7 +115,7 @@ Score each criterion from 0-20 points based on the ENTIRE document."""
         }
         with open(args.output_file, "w", encoding="utf-8") as f:
             json.dump(output_data, f, ensure_ascii=False, indent=2)
-        print(f"\n評価結果をJSONで保存しました: {args.output_file}")
+        ui.write(f"\n評価結果をJSONで保存しました: {args.output_file}\n")
 
 if __name__ == "__main__":
     import argparse
