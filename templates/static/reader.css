@@ -55,13 +55,40 @@ body.lang-ja {
     color: white;
 }
 
-.lang-badge {
-    padding: 6px 12px;
-    background: #f8f9fa;
+.lang-nav {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.lang-nav a,
+.lang-nav .lang-current {
+    display: inline-block;
+    padding: 4px 10px;
     border-radius: 4px;
     font-weight: bold;
-    color: #555;
-    font-size: 14px;
+    font-size: 13px;
+    text-decoration: none;
+    border: 1px solid transparent;
+    transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.lang-nav a {
+    color: #007bff;
+    border-color: #007bff;
+}
+
+.lang-nav a:hover {
+    background-color: #007bff;
+    color: white;
+}
+
+.lang-nav .lang-current {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+    cursor: default;
 }
 
 .controls {
@@ -324,9 +351,33 @@ body.lang-ja {
     padding: 30px 30px 40px;
 }
 
-.index-page h1 {
-    margin: 0 0 10px;
+.index-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 10px;
+}
+
+.index-header h1 {
+    flex: 1;
+    margin: 0;
     color: #333;
+}
+
+.repo-link {
+    color: #007bff;
+    text-decoration: none;
+    font-size: 14px;
+    padding: 6px 12px;
+    border: 1px solid #007bff;
+    border-radius: 4px;
+    transition: background-color 0.2s, color 0.2s;
+    white-space: nowrap;
+}
+
+.repo-link:hover {
+    background-color: #007bff;
+    color: white;
 }
 
 .index-page .lead {

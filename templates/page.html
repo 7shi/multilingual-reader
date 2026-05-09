@@ -11,7 +11,11 @@
         <header class="page-header">
             <a href="index.html" class="back-link">← Index</a>
             <h1>{{ topic_label }}</h1>
-            <div class="lang-badge">{{ lang_name }}</div>
+            <nav class="lang-nav">
+                {% for item in lang_nav %}
+                {% if item.current %}<span class="lang-current" title="{{ item.name }}">{{ item.code|upper }}</span>{% else %}<a href="{{ item.href }}" title="{{ item.name }}">{{ item.code|upper }}</a>{% endif %}
+                {% endfor %}
+            </nav>
         </header>
 
         <div class="controls">

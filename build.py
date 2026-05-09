@@ -103,6 +103,16 @@ def build_page(env: Environment, topic: str, lang: str) -> None:
     lines, speakers = parse_text_file(src)
     cfg = LANG_CONFIG[lang]
 
+    lang_nav = [
+        {
+            "code": code,
+            "name": lcfg["name"],
+            "href": f"{topic}-{code}.html",
+            "current": code == lang,
+        }
+        for code, lcfg in LANG_CONFIG.items()
+    ]
+
     page_config = {
         "topic": topic,
         "lang": lang,
@@ -126,6 +136,7 @@ def build_page(env: Environment, topic: str, lang: str) -> None:
         lang_name=cfg["name"],
         default_rate=cfg["default_rate"],
         lines=lines,
+        lang_nav=lang_nav,
         page_config_json=config_json,
     )
     out = DIST_DIR / f"{topic}-{lang}.html"

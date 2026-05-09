@@ -298,6 +298,11 @@
             }
         };
         utterance.onerror = e => {
+            // stopText / rate 変更による cancel は意図的なものなのでエラー表示しない
+            if (isStopped || e.error === "canceled" || e.error === "interrupted") {
+                clearDynamicHighlight();
+                return;
+            }
             console.error("Speech synthesis error:", e);
             updateStatus("stopped", "Error occurred during playback");
             clearDynamicHighlight();
