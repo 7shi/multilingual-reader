@@ -1,7 +1,9 @@
 """multilingual-reader の静的サイトビルダー。
 
-examples/{topic}-{lang}.txt を読み込み、トピック × 言語ごとに dist/{topic}-{lang}.html
-を生成し、4×6 マトリクスのランディング dist/index.html も出力する。
+examples/{topic}-{lang}.txt を読み込み、以下を生成する:
+- dist/{topic}.html         多言語並列モード（デフォルト）
+- dist/{topic}-{lang}.html  単一言語モード（24 ファイル）
+- dist/index.html           ランディング
 """
 
 from __future__ import annotations
@@ -105,13 +107,21 @@ def build_page(env: Environment, topic: str, lang: str) -> None:
 
     lang_nav = [
         {
+            "code": "all",
+            "label": "All",
+            "name": "All languages",
+            "href": f"{topic}.html",
+            "current": False,
+        }
+    ]
+    for code, lcfg in LANG_CONFIG.items():
+        lang_nav.append({
             "code": code,
+            "label": code.upper(),
             "name": lcfg["name"],
             "href": f"{topic}-{code}.html",
             "current": code == lang,
-        }
-        for code, lcfg in LANG_CONFIG.items()
-    ]
+        })
 
     page_config = {
         "topic": topic,
@@ -144,6 +154,96 @@ def build_page(env: Environment, topic: str, lang: str) -> None:
     print(f"  wrote {out.relative_to(ROOT)} ({len(lines)} lines)")
 
 
+def build_multi_page(env: Environment, topic: str) -> None:
+    """単一トピックの多言語並列モード HTML を生成（dist/{topic}.html）。"""
+    # 全言語の行を読み込む（fr の登場順を speaker_index の基準とする）
+    all_lines: dict[str, list[Line]] = {}
+    for lang in LANG_CONFIG:
+        src = EXAMPLES_DIR / f"{topic}-{lang}.txt"
+        if not src.exists():
+            raise FileNotFoundError(src)
+        lines, _ = parse_text_file(src)
+        all_lines[lang] = lines
+
+    # speakers の登場順は最初の言語（fr）から取得し、speaker_index は全言語共通。
+    base_lines = all_lines["fr"]
+    speakers_in_order: list[str] = []
+    for line in base_lines:
+        if line.speaker not in speakers_in_order:
+            speakers_in_order.append(line.speaker)
+
+    # 行ごと × 言語ごとのエントリへ展開（行が無い言語はスキップ）
+    max_lines = max(len(v) for v in all_lines.values())
+    groups = []
+    for i in range(max_lines):
+        group = []
+        speaker_index = 0
+        if i < len(base_lines):
+            speaker_index = speakers_in_order.index(base_lines[i].speaker)
+        for code in LANG_CONFIG:
+            lines = all_lines[code]
+            if i < len(lines):
+                group.append({
+                    "lang": code,
+                    "speaker": lines[i].speaker,
+                    "text": lines[i].text,
+                    "speaker_index": speaker_index,
+                })
+        groups.append(group)
+
+    # ページ設定（言語一覧、speakers の登場順）
+    languages_cfg = []
+    for code, cfg in LANG_CONFIG.items():
+        item = {
+            "code": code,
+            "name": cfg["name"],
+            "lang_code": cfg["code"],
+            "default_rate": cfg["default_rate"],
+        }
+        if "font_family" in cfg:
+            item["font_family"] = cfg["font_family"]
+        languages_cfg.append(item)
+
+    page_config = {
+        "topic": topic,
+        "languages": languages_cfg,
+        "speakers": speakers_in_order,
+    }
+
+    lang_nav = [
+        {
+            "code": "all",
+            "label": "All",
+            "name": "All languages",
+            "href": f"{topic}.html",
+            "current": True,
+        }
+    ]
+    for code, lcfg in LANG_CONFIG.items():
+        lang_nav.append({
+            "code": code,
+            "label": code.upper(),
+            "name": lcfg["name"],
+            "href": f"{topic}-{code}.html",
+            "current": False,
+        })
+
+    config_json = json.dumps(page_config, ensure_ascii=False, indent=2)
+    config_json = config_json.replace("<", "\\u003c").replace(">", "\\u003e").replace("&", "\\u0026")
+
+    template = env.get_template("multi.html")
+    html = template.render(
+        topic=topic,
+        topic_label=TOPIC_LABELS[topic],
+        groups=groups,
+        lang_nav=lang_nav,
+        page_config_json=config_json,
+    )
+    out = DIST_DIR / f"{topic}.html"
+    out.write_text(html, encoding="utf-8")
+    print(f"  wrote {out.relative_to(ROOT)} (multi, {len(groups)} groups)")
+
+
 def build_index(env: Environment) -> None:
     """4×6 マトリクスのランディングを生成。"""
     topics = [{"id": tid, "label": label} for tid, label in TOPIC_LABELS.items()]
@@ -171,7 +271,11 @@ def main() -> None:
         autoescape=select_autoescape(["html"]),
     )
 
-    print("Building pages...")
+    print("Building multi-language pages...")
+    for topic in TOPIC_LABELS:
+        build_multi_page(env, topic)
+
+    print("Building single-language pages...")
     for topic in TOPIC_LABELS:
         for lang in LANG_CONFIG:
             build_page(env, topic, lang)

@@ -12,11 +12,12 @@
             <h1>🎧 Multilingual Podcast Reader</h1>
             <a href="https://github.com/7shi/multilingual-reader" class="repo-link" target="_blank" rel="noopener">📦 Repository</a>
         </header>
-        <p class="lead">Choose a topic × language combination.</p>
+        <p class="lead">Choose a topic. The default <strong>All</strong> link opens a side-by-side multilingual page; the language-code links open single-language pages.</p>
         <table class="index-matrix">
             <thead>
                 <tr>
                     <th>Topic</th>
+                    <th>All</th>
                     {% for lang in langs %}
                     <th>{{ lang.name }}</th>
                     {% endfor %}
@@ -26,6 +27,7 @@
                 {% for topic in topics %}
                 <tr>
                     <th class="topic-cell">{{ topic.label }}</th>
+                    <td><a class="primary-link" href="{{ topic.id }}.html">All</a></td>
                     {% for lang in langs %}
                     <td><a href="{{ topic.id }}-{{ lang.id }}.html">{{ lang.id|upper }}</a></td>
                     {% endfor %}

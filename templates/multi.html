@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="{{ lang_code }}">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ topic_label }} ({{ lang_name }}) - Multilingual Podcast Reader</title>
+    <title>{{ topic_label }} (All languages) - Multilingual Podcast Reader</title>
     <link rel="stylesheet" href="assets/reader.css">
 </head>
-<body class="lang-{{ lang }}">
+<body class="multi-page">
     <div class="container">
         <header class="page-header">
             <a href="index.html" class="back-link">← Index</a>
@@ -27,26 +27,34 @@
 
         <div id="speakerVoices" class="speaker-voices" style="display: none;">
             <div class="collapsible-header" onclick="toggleSpeakerVoices()">
-                <h3>🎭 Speaker Voice Assignment & Speed</h3>
+                <h3>🎭 Voice Assignment & Language Speeds</h3>
                 <span id="toggleIcon" class="toggle-icon">▼</span>
             </div>
             <div id="voiceAssignmentContainer" class="voice-assignment collapsed">
                 <div class="global-speed-control">
-                    <label for="rate">Speed:</label>
-                    <input type="range" id="rate" min="0.5" max="2" step="0.1" value="{{ default_rate }}">
-                    <span id="rateValue">{{ '%.1f'|format(default_rate) }}x</span>
+                    <label for="rate">Global Speed:</label>
+                    <input type="range" id="rate" min="0.5" max="2" step="0.1" value="1.0">
+                    <span id="rateValue">1.0x</span>
                 </div>
-                <div id="speakerControlsContainer" class="speaker-controls-container">
-                    <!-- 話者別音声選択は JS で生成 -->
+                <div id="languageControlsContainer" class="language-controls-container">
+                    <!-- 言語別 speed + speaker voice select は JS で生成 -->
                 </div>
             </div>
         </div>
 
-        <div id="textContent" class="text-content">
-            {% for line in lines %}
-            <div class="line speaker-{{ line.speaker_index }}" data-index="{{ loop.index0 }}" data-speaker="{{ line.speaker }}">
-                <span class="speaker-label">{{ line.speaker }}</span>
-                <span class="line-text">{{ line.text }}</span>
+        <div id="textContent" class="text-content multi-content">
+            {% for group in groups %}
+            <div class="translation-group" data-group-index="{{ loop.index0 }}">
+                {% set group_index = loop.index0 %}
+                {% for entry in group %}
+                <div class="translation-line speaker-{{ entry.speaker_index }} lang-{{ entry.lang }}" data-line-index="{{ group_index }}" data-lang="{{ entry.lang }}">
+                    <div class="language-flag enabled">{{ entry.lang|upper }}</div>
+                    <div class="translation-content">
+                        <span class="speaker-label">{{ entry.speaker }}:</span>
+                        <span class="line-text">{{ entry.text }}</span>
+                    </div>
+                </div>
+                {% endfor %}
             </div>
             {% endfor %}
         </div>
@@ -57,6 +65,6 @@
     <script id="page-config" type="application/json">
 {{ page_config_json|safe }}
     </script>
-    <script src="assets/reader.js"></script>
+    <script src="assets/reader-multi.js"></script>
 </body>
 </html>
