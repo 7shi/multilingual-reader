@@ -45,6 +45,8 @@ multilingual-reader/
 │   ├── multi.html                 # 多言語並列ページのテンプレート
 │   ├── index.html                 # ランディングのテンプレート
 │   └── static/
+│       ├── README.md              # 音声再生システムの実装ドキュメント
+│       ├── speech.js              # Web Speech API 共通ユーティリティ（ES Module）
 │       ├── reader.js              # 単一言語ページ用 JS
 │       ├── reader-multi.js        # 多言語並列ページ用 JS
 │       └── reader.css             # 共通 CSS
