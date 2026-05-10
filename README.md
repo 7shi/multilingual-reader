@@ -7,8 +7,11 @@
 - **トピック × 言語の独立ページ**: 4トピック × 6言語（fr/en/es/de/ja/zh）= 24 ページ + ランディング
 - **Web Speech API による読み上げ**: 話者別音声選択、グローバル速度調整、再生・停止・一時停止
 - **動的ハイライト**: ブラウザ対応時は再生中の単語を boundary イベントで強調
-- **話者識別**: 登場順（speaker-0 / speaker-1 ...）で色分け表示
-- **言語別フォント**: 中国語は Noto Sans SC、日本語は Hiragino Kaku Gothic ProN を優先
+
+### 🌐 推奨ブラウザ
+
+1. **Edge**: オンライン音声の充実、動的ハイライト対応
+2. **Chrome**: 主要言語のオンライン音声
 
 ## 🎓 コンテンツ内容
 
@@ -27,10 +30,16 @@
 
 ```
 multilingual-reader/
+├── MEMO.md                        # 判断メモ・モデル傾向・推敲知見・将来検討事項
+├── trtools/                       # 翻訳・評価ツールパッケージ
+├── examples/                      # 真実の源となる多言語テキスト・参照訳評価
+│   ├── {topic}-{lang}.txt         # 4トピック × 6言語 = 24 ファイル
+│   ├── evals/                     # trtools eval による参照訳評価
+│   └── tr/                        # trtools translate によるローカルLLM翻訳・評価
+├── DEPLOY.md                      # ビルド・実行時・デプロイのアーキテクチャ詳細
+├── Makefile                       # build / clean / serve / deploy ターゲット
 ├── build.py                       # 静的サイトビルダー（uv run build.py）
 ├── deploy.sh                      # gh-pages ブランチへの push スクリプト
-├── Makefile                       # build / clean / serve / deploy ターゲット
-├── DEPLOY.md                      # ビルド・実行時・デプロイのアーキテクチャ詳細
 ├── templates/
 │   ├── page.html                  # 単一言語ページのテンプレート
 │   ├── multi.html                 # 多言語並列ページのテンプレート
@@ -39,14 +48,66 @@ multilingual-reader/
 │       ├── reader.js              # 単一言語ページ用 JS
 │       ├── reader-multi.js        # 多言語並列ページ用 JS
 │       └── reader.css             # 共通 CSS
-├── examples/                      # 真実の源となる多言語テキスト・参照訳評価
-│   ├── {topic}-{lang}.txt         # 4トピック × 6言語 = 24 ファイル
-│   ├── evals/                     # trtools eval による参照訳評価
-│   └── tr/                        # trtools translate によるローカルLLM翻訳・評価
+├── dist/                          # ビルド成果物（.gitignore 対象）
 ├── experimental/                  # 翻訳実験系列（01〜10）
-├── trtools/                       # 翻訳・評価ツールパッケージ
-├── obsolete/                      # 廃止スクリプト・元データ
-└── dist/                          # ビルド成果物（.gitignore 対象）
+└── obsolete/                      # 廃止スクリプト・元データ
+```
+
+## 🛠️ 翻訳評価ツール（trtools/）
+
+全実験で共通して使用するツールをパッケージ化したもの。詳細は [trtools/README.md](trtools/README.md) を参照。
+
+| コマンド | 用途 |
+|---------|------|
+| `uv run trtools translate` | テキストを行単位で翻訳（用語注入・サマリー圧縮方式） |
+| `uv run trtools eval` | LLMによる翻訳品質評価（5項目×20点、100点満点） |
+| `uv run trtools agg` | 3回評価の中央値集計 |
+| `uv run trtools term` | テキストから用語・固有名詞を抽出し訳語をTSVに保存 |
+| `uv run trtools batch` | 翻訳→評価→集約を一括実行 |
+| `uv run trtools review` | 高品質ベースラインを別モデルで推敲 |
+
+`trtools` は実験で得られた成果を統合したもの。詳細は [experimental/README.md](experimental/README.md) を参照。
+
+## 📚 参照訳と評価結果（examples/）
+
+[examples/](examples/) には各トピック × 各言語の参照訳テキストファイルが格納されている。原文はフランス語で、英語・スペイン語はフランス語から直接翻訳しているが、ドイツ語・日本語・中国語は英語を経由した重訳。
+
+全トピック共通の固有名詞や番組名は [examples/tr/terms/common.tsv](examples/tr/terms/common.tsv) で固定している。run ごとの訳語ブレを避けるため。
+
+[examples/evals/](examples/evals/) には `trtools eval`（評価者: `ollama:qwen3.6`）による3回評価の JSON と集計結果（[SCORES.txt](examples/evals/SCORES.txt)）が格納されている。再評価・追加評価は [examples/evals/batch.sh](examples/evals/batch.sh) で実行できる。
+
+**全トピックの評価結果（各トピック3回評価の中央値を言語別に平均）:**
+
+| 言語 | 平均値 | トピック数 | 翻訳元 | 翻訳 | 校正 |
+|-----------|------:|---:|---|---|---|
+| 英語   | 98.25 |  4 | フランス語 | Gemini 2.5 Pro | Claude Sonnet 4.5 |
+| 日本語  | 97.00 |  4 | 英語 | Gemini 2.5 Pro | Claude Sonnet 4.5 |
+| スペイン語   | 96.75 |  4 | フランス語 | Gemma 4 26B | Gemini 3.1 Pro Preview |
+| 中国語   | 96.50 |  4 | 英語 | Gemma 4 26B | Gemini 3.1 Pro Preview |
+| ドイツ語    | 96.25 |  4 | 英語 | Gemma 4 26B | Gemini 3.1 Pro Preview |
+
+それ以外の言語については、[MEMO.md](memo.md) および [examples/tr/README.md](examples/tr/README.md) を参照。
+
+## 📝 データ追加
+
+`examples/{topic}-{lang}.txt` を真実の源とする。フォーマットは 1 行 1 発話の `話者名: 発言内容`（全角コロン `：` も可）。
+
+新トピックを追加する手順：
+
+1. `trtools` で多言語翻訳を生成
+2. `examples/{topic}-{lang}.txt` を 6 言語分配置
+3. `build.py` の `TOPIC_LABELS` に新トピックを追加
+4. `make build` で全 24 + N ページが再生成される
+
+### 多言語翻訳（trtools）
+
+`trtools translate` で行単位翻訳（空行保持、用語注入・サマリー圧縮方式）。
+
+```bash
+# 用語事前抽出 + 翻訳
+uv run trtools term extract base.txt -f French -m ollama:gemma4:12b -o terms.json
+uv run trtools term translate terms.json -t Spanish -m ollama:gemma4:12b -o terms.tsv
+uv run trtools translate base.txt -f French -t Spanish -o output-es.txt -m ollama:gemma4:26b --terms-json terms.json --terms-tsv terms.tsv
 ```
 
 ## 🚀 ビルドとデプロイ
@@ -79,85 +140,12 @@ make deploy
 
 `deploy.sh` は `git worktree` で `gh-pages` ブランチを `.gh-pages-worktree/` に展開し、`dist/` の内容で置き換えてコミット・プッシュする。差分がないときは何もしない。
 
-#### 初回セットアップ（GitHub UI 側）
+### 初回セットアップ
+
+`gh-pages` ブランチは初回 `make deploy` 実行時に自動で作成される。
+
+GitHub UI 側での設定手順：
 
 1. GitHub リポジトリの **Settings → Pages** を開く
 2. **Source** を `Deploy from a branch` に設定
 3. **Branch** を `gh-pages` / `/ (root)` に設定して **Save**
-4. 数分後に `https://7shi.github.io/multilingual-reader/` で公開される
-
-`gh-pages` ブランチは初回 `make deploy` 実行時に自動で作成される。
-
-## 🌐 ブラウザ対応
-
-### 必要な機能
-- **Web Speech API**: 音声合成
-- **ES6 対応**: モダン JavaScript
-
-### 推奨ブラウザ
-- **Chrome/Edge**: 最適な音声品質、動的ハイライト完全対応
-- **Firefox**: 基本機能対応、動的ハイライト部分対応
-- **Safari**: iOS/macOS での音声合成対応、動的ハイライト限定対応
-
-### 音声エンジン
-- **Microsoft Azure**: 高品質オンライン音声（優先）
-- **Google Cloud**: 多言語対応音声
-- **システム音声**: ローカル音声（フォールバック）
-
-## 📝 データ追加
-
-`examples/{topic}-{lang}.txt` を真実の源とする。フォーマットは 1 行 1 発話の `話者名: 発言内容`（中国語は全角コロン `：` も可）。
-
-新トピックを追加する手順：
-
-1. `trtools` で多言語翻訳を生成（[trtools/README.md](trtools/README.md)）
-2. `examples/{topic}-{lang}.txt` を 6 言語分配置
-3. `build.py` の `TOPIC_LABELS` に新トピックを追加
-4. `make build` で全 24 + N ページが再生成される
-
-### 多言語翻訳（trtools）
-
-`trtools translate` で行単位翻訳（空行保持、用語注入・サマリー圧縮方式）。詳細は [trtools/README.md](trtools/README.md) を参照。
-
-```bash
-# 用語事前抽出 + 翻訳
-uv run trtools term extract base.txt -f French -m ollama:gemma4:12b -o terms.json
-uv run trtools term translate terms.json -t Spanish -m ollama:gemma4:12b -o terms.tsv
-uv run trtools translate base.txt -f French -t Spanish -o output-es.txt \
-  -m ollama:gemma4:26b --terms-json terms.json --terms-tsv terms.tsv
-```
-
-## 🛠️ 翻訳評価ツール（trtools/）
-
-全実験で共通して使用するツールをパッケージ化したもの。詳細は [trtools/README.md](trtools/README.md) を参照。
-
-| コマンド | 用途 |
-|---------|------|
-| `uv run trtools translate` | テキストを行単位で翻訳（用語注入・サマリー圧縮方式） |
-| `uv run trtools eval` | LLMによる翻訳品質評価（5項目×20点、100点満点） |
-| `uv run trtools agg` | 3回評価の中央値集計 |
-| `uv run trtools term` | テキストから用語・固有名詞を抽出し訳語をTSVに保存 |
-| `uv run trtools batch` | 翻訳→評価→集約を一括実行 |
-| `uv run trtools review` | 高品質ベースラインを別モデルで推敲 |
-
-`trtools` は実験01〜09で得られた成果を統合したもの。実験10で `trtools review` への統合を完了している。詳細は [experimental/README.md](experimental/README.md) を参照。
-
-## 📚 参照訳と評価結果（examples/）
-
-[examples/](examples/) には各トピック × 各言語の参照訳テキストファイルが格納されている。原文はフランス語で、英語・スペイン語はフランス語から直接翻訳しているが、ドイツ語・日本語・中国語は英語を経由した重訳。
-
-全トピック共通の固有名詞や番組名は [examples/tr/terms/common.tsv](examples/tr/terms/common.tsv) で固定している。run ごとの訳語ブレを避けるため。
-
-[examples/evals/](examples/evals/) には `trtools eval`（評価者: `ollama:qwen3.6`）による3回評価の JSON と集計結果（[SCORES.txt](examples/evals/SCORES.txt)）が格納されている。再評価・追加評価は [examples/evals/batch.sh](examples/evals/batch.sh) で実行できる。
-
-**全トピックの評価結果（各トピック3回評価の中央値を言語別に平均）:**
-
-| 言語 | 平均値 | トピック数 | 翻訳元 | 翻訳 | 校正 |
-|-----------|------:|---:|---|---|---|
-| 英語   | 98.25 |  4 | フランス語 | Gemini 2.5 Pro | Claude Sonnet 4.5 |
-| 日本語  | 97.00 |  4 | 英語 | Gemini 2.5 Pro | Claude Sonnet 4.5 |
-| スペイン語   | 96.75 |  4 | フランス語 | Gemma 4 26B | Gemini 3.1 Pro Preview |
-| 中国語   | 96.50 |  4 | 英語 | Gemma 4 26B | Gemini 3.1 Pro Preview |
-| ドイツ語    | 96.25 |  4 | 英語 | Gemma 4 26B | Gemini 3.1 Pro Preview |
-
-全言語とも校正を施しており、参照訳として実験のベースラインに使用できる水準。
