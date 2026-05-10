@@ -88,7 +88,7 @@ multilingual-reader/
 | 中国語   | 96.50 |  4 | 英語 | Gemma 4 26B | Gemini 3.1 Pro Preview |
 | ドイツ語    | 96.25 |  4 | 英語 | Gemma 4 26B | Gemini 3.1 Pro Preview |
 
-それ以外の言語については、[MEMO.md](memo.md) および [examples/tr/README.md](examples/tr/README.md) を参照。
+それ以外の言語については、[MEMO.md](MEMO.md) および [examples/tr/README.md](examples/tr/README.md) を参照。
 
 ## 📝 データ追加
 
