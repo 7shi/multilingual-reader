@@ -90,6 +90,8 @@ multilingual-reader/
 
 それ以外の言語については、[MEMO.md](MEMO.md) および [examples/tr/README.md](examples/tr/README.md) を参照。
 
+翻訳評価の枠組みは一定レベルに達したため、以後は [examples/tr/onde/](examples/tr/onde/) にモデルごとのディレクトリを追加し、言語能力のベンチマークとして活用していく。追加手順は [examples/tr/ADD_MODEL.md](examples/tr/ADD_MODEL.md) を参照。
+
 ## 📝 データ追加
 
 `examples/{topic}-{lang}.txt` を真実の源とする。フォーマットは 1 行 1 発話の `話者名: 発言内容`（全角コロン `：` も可）。
