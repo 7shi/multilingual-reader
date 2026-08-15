@@ -115,6 +115,8 @@ def run(args):
     ui = StatusLine(
         label=getattr(args, 'label', None),
         start=getattr(args, 'start', None),
+        index=getattr(args, 'index', None),
+        count=getattr(args, 'count', None),
     )
 
     chunk_data = []

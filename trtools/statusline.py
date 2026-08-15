@@ -16,11 +16,13 @@ def _fmt_elapsed(seconds: float) -> str:
 
 
 class StatusLine:
-    def __init__(self, label=None, start=None):
+    def __init__(self, label=None, start=None, index=None, count=None):
         self.console = Console()
         self.stream = ConsoleStream(self.console)
         self._label = label
         self._start = start
+        self._index = index
+        self._count = count
 
     def write(self, text: str) -> None:
         self.stream.write(text)
@@ -39,11 +41,12 @@ class StatusLine:
         self.console.print(Panel(text, title=title, border_style="cyan"))
 
     def progress(self, total: int, start: int = 0) -> "_ProgressContext":
-        return _ProgressContext(self.console, self._label, self._start, total, start)
+        return _ProgressContext(self.console, self._label, self._start, total, start,
+                                 index=self._index, count=self._count)
 
 
 class _ProgressContext:
-    def __init__(self, console, label, start, total, completed=0):
+    def __init__(self, console, label, start, total, completed=0, index=None, count=None):
         self._total = total
         self._completed = completed
 
@@ -53,6 +56,10 @@ class _ProgressContext:
                 n = int(task.total) if task.total is not None else "?"
                 return Text(f"({completed}/{n})", style="progress.download")
 
+        class LangMofNColumn(ProgressColumn):
+            def render(self, task) -> Text:
+                return Text(f"({index}/{count})", style="progress.download")
+
         class BatchTimeColumn(ProgressColumn):
             def render(self, task) -> Text:
                 return Text(_fmt_elapsed(time.time() - start), style="progress.elapsed")
@@ -60,9 +67,11 @@ class _ProgressContext:
         columns = [SpinnerColumn()]
         if label:
             columns.append(TextColumn("[bold cyan]{task.description}"))
+        if count:
+            columns.append(LangMofNColumn())
         if start is not None:
             columns.append(BatchTimeColumn())
-        if label or start is not None:
+        if label or start is not None or count:
             columns.append(TextColumn("|"))
         columns += [BarColumn(), TaskProgressColumn(), MofNParenColumn(), TimeElapsedColumn()]
 

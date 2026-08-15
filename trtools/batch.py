@@ -1,6 +1,7 @@
 # 翻訳→評価→集約を一括実行するバッチサブコマンド
 
 import os
+import time
 from argparse import Namespace
 from pathlib import Path
 from . import translate, evaluate, aggregate
@@ -91,12 +92,16 @@ def run(args):
 
     # --- 翻訳フェーズ ---
     if not args.eval_only:
+        tr_total = len(inputs) * len(args.langs) * args.tr_runs
+        tr_index = 0
+        tr_start = time.time()
         for topic, from_code, from_lang, input_file in inputs:
             terms_json = str(terms_dir / f"{topic}-{from_code}.json") if terms_dir else None
             terms_tsv = str(terms_dir / f"{topic}-{from_code}.tsv") if terms_dir else None
             for lang in args.langs:
                 lang_name = LANG_NAMES.get(lang, lang.capitalize())
                 for trrun in range(1, args.tr_runs + 1):
+                    tr_index += 1
                     out = _tr_path(topic, lang, trrun, args.tr_runs, args.tr_dir)
                     if os.path.exists(out):
                         print(f"Skipping {out} (already exists)")
@@ -114,6 +119,10 @@ def run(args):
                         terms_tsv=terms_tsv,
                         no_think=args.no_think,
                         retry_wait=args.retry_wait,
+                        label=lang,
+                        start=tr_start,
+                        index=tr_index,
+                        count=tr_total,
                     )
                     try:
                         translate.run(tr_args)
@@ -124,10 +133,14 @@ def run(args):
         return
 
     # --- 評価フェーズ ---
+    ev_total = len(inputs) * len(args.langs) * args.tr_runs
+    ev_index = 0
+    ev_start = time.time()
     for topic, from_code, from_lang, input_file in inputs:
         for lang in args.langs:
             lang_name = LANG_NAMES.get(lang, lang.capitalize())
             for trrun in range(1, args.tr_runs + 1):
+                ev_index += 1
                 tr_file = _tr_path(topic, lang, trrun, args.tr_runs, args.tr_dir)
                 if not os.path.exists(tr_file):
                     print(f"Skipping {tr_file} evaluation (translation not available)")
@@ -149,6 +162,10 @@ def run(args):
                         no_think=False,
                         run=evrun,
                         runs=args.eval_runs,
+                        label=lang,
+                        start=ev_start,
+                        index=ev_index,
+                        count=ev_total,
                     )
                     try:
                         evaluate.run(eval_args)
