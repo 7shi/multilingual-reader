@@ -1,32 +1,15 @@
-.PHONY: all translate evaluate scores trends
-
-DIR = ../../..
-include ../../common.mk
-
 TRANSLATOR = ollama:qwen3.6
-EVALUATOR1 = ollama:qwen3.6
-EVALUATOR2 = ollama:gpt-oss:120b
-SUMMARIZER = $(EVALUATOR1)
 
-TRANSLATE = uv run trtools batch \
-	--terms-dir ../../terms \
-	--threshold 20 \
-	--no-think \
-	$(DIR)/onde-en.txt \
-	--langs $(CORE_LANGS) $(EXTRA_LANGS)
+include ../common.mk
 
-all: translate evaluate scores trends
+# 【過去実験】評価者を他モデルに替え、自己評価と他者評価の採点基準を比較したもの。
+# 翻訳は共通の tr/ を再利用するため、評価と集計のみ行う。
+# all には含めず、対象言語は実験当時のセットに固定する。
+ALT = gpt-oss-120b
+ALT_EVALUATOR = ollama:gpt-oss:120b
 
-translate:
-	$(TRANSLATE) --tr-only -m $(TRANSLATOR)
-
-evaluate:
-	$(TRANSLATE) --eval-only --evaluator $(EVALUATOR1)
-	#$(TRANSLATE) --eval-only --evaluator $(EVALUATOR2) --eval-dir gpt-oss-120b/evals
-
-scores:
-	uv run trtools agg evals/*.json | tee SCORES.txt
-	#uv run trtools agg gpt-oss-120b/evals/*.json | tee gpt-oss-120b/SCORES.txt
-
-trends:
-	uv run trtools trend evals/*.json -m $(SUMMARIZER) --no-think --sync README.md
+.PHONY: $(ALT)
+$(ALT): LANGS = eo hi te kn tr et sr ko
+$(ALT):
+	$(TRANSLATE) --eval-only --evaluator $(ALT_EVALUATOR) --eval-dir $(ALT)/evals
+	uv run trtools agg $(ALT)/evals/*.json | tee $(ALT)/SCORES.txt

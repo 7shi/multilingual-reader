@@ -1,36 +1,20 @@
-.PHONY: all translate evaluate scores trends
+TRANSLATOR = ollama:gpt-oss:120b
 
-DIR = ../../..
-include ../../common.mk
+include ../common.mk
 
-TRANSLATOR1 = ollama:gpt-oss:120b
-TRANSLATOR2 = openrouter:openai/gpt-oss-120b:free
-EVALUATOR1 = ollama:qwen3.6
-EVALUATOR2 = openrouter:qwen/qwen3.6-35b-a3b
-SUMMARIZER = $(EVALUATOR1)
+# 【過去実験】ローカル（Ollama）とクラウド（OpenRouter）の実行環境の違いによる
+# 挙動の差異を検証したもの。all には含めず、明示的に指定した場合のみ実行する。
+# 対象言語は実験当時のセットに固定する。
+.PHONY: openrouter
 
-TRANSLATE = uv run trtools batch \
-	--terms-dir ../../terms \
-	--threshold 20 \
-	--no-think \
-	$(DIR)/onde-en.txt \
-	--langs $(CORE_LANGS) $(EXTRA_LANGS)
+OR_TRANSLATOR = openrouter:openai/gpt-oss-120b:free
+OR_EVALUATOR  = openrouter:qwen/qwen3.6-35b-a3b
+OR = openrouter
 
-all: translate evaluate scores trends
-
-translate:
-	$(TRANSLATE) --tr-only -m $(TRANSLATOR1)
-	#$(TRANSLATE) --tr-only -m $(TRANSLATOR2) --tr-dir openrouter/tr
-
-evaluate:
-	$(TRANSLATE) --eval-only --evaluator $(EVALUATOR1)
-	#$(TRANSLATE) --eval-only --evaluator $(EVALUATOR1) --tr-dir openrouter/tr --eval-dir openrouter/evals-ollama
-	#$(TRANSLATE) --eval-only --evaluator $(EVALUATOR2) --tr-dir openrouter/tr --eval-dir openrouter/evals
-
-scores:
-	uv run trtools agg evals/*.json | tee SCORES.txt
-	#uv run trtools agg openrouter/evals-ollama/*.json | tee openrouter/SCORES-ollama.txt
-	#uv run trtools agg openrouter/evals/*.json | tee openrouter/SCORES.txt
-
-trends:
-	uv run trtools trend evals/*.json -m $(SUMMARIZER) --no-think --sync README.md
+openrouter: LANGS = eo hi te kn tr et sr ko
+openrouter:
+	$(TRANSLATE) --tr-only -m $(OR_TRANSLATOR) --tr-dir $(OR)/tr
+	$(TRANSLATE) --eval-only --evaluator $(EVALUATOR) --tr-dir $(OR)/tr --eval-dir $(OR)/evals-ollama
+	$(TRANSLATE) --eval-only --evaluator $(OR_EVALUATOR) --tr-dir $(OR)/tr --eval-dir $(OR)/evals
+	uv run trtools agg $(OR)/evals-ollama/*.json | tee $(OR)/SCORES-ollama.txt
+	uv run trtools agg $(OR)/evals/*.json | tee $(OR)/SCORES.txt

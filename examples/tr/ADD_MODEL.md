@@ -7,7 +7,7 @@
 新しいモデルをベンチマークに追加する際は [onde/TEMPLATE/](onde/TEMPLATE/) を基本構成として複製する。`TEMPLATE/` はひな形専用のディレクトリで、`make all` の対象には含めない。
 
 1. `TEMPLATE/` を対象モデル名のディレクトリ名でコピー
-2. コピー先の `Makefile` の `TRANSLATOR` を対象モデルに変更（`EVALUATOR` は基準を揃えるため `ollama:qwen3.6` のまま）
+2. コピー先の `Makefile` の `TRANSLATOR` を対象モデルに変更（それ以外は [onde/common.mk](onde/common.mk) の共通定義を使う。評価者は基準を揃えるため `ollama:qwen3.6` に固定）
 3. コピー先の `README.md` の `TODO` 箇所（タイトル・翻訳モデル名）を書き換え
 4. `make` で翻訳・評価・集計を実行
 5. 親の [onde/Makefile](onde/Makefile) にターゲットを追加、[onde/README.md](onde/README.md) のディレクトリ一覧にも追記
