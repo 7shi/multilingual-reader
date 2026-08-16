@@ -6,7 +6,7 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
-from trtools.language import LANG_NAMES
+from trtools.language import LANGUAGES, LANG_NAMES
 
 ROOT = Path(__file__).resolve().parent
 ONDE_MODELS = ("gemma4", "gpt-oss", "qwen3.6")
@@ -24,6 +24,7 @@ LINE_RE = re.compile(r"^([a-z0-9.]+)-([a-z0-9.]+):\s+(\d+)/100点$")
 class CompareRow:
     code: str
     display_name: str
+    display_name_ja: str
     scores: tuple[int, int, int]
     sort_key: tuple
 
@@ -71,6 +72,7 @@ def load_compare_rows() -> list[CompareRow]:
             CompareRow(
                 code=code,
                 display_name=LANG_NAMES[code],
+                display_name_ja=LANGUAGES[code]["ja"],
                 scores=scores,
                 sort_key=(*[-s for s in sorted(scores, reverse=True)], code),
             )
@@ -86,7 +88,7 @@ def render_compare_rows() -> list[str]:
     for row in rows:
         max_score = max(row.scores)
         scores = [format_score(score, max_score) for score in row.scores]
-        rendered.append(f"| ({row.code}) {row.display_name} | {' | '.join(scores)} |")
+        rendered.append(f"| {row.display_name_ja} | {' | '.join(scores)} |")
     return rendered
 
 
@@ -116,7 +118,7 @@ def render_core_rows() -> list[str]:
             )
         onde_score = onde_scores[onde_key]
         average = (sum(topic_scores) + onde_score) / 4
-        name = LANG_NAMES[code]
+        name = LANGUAGES[code]["ja"]
         rows.append(
             (average, code, topic_scores, onde_score, name)
         )
@@ -125,7 +127,7 @@ def render_core_rows() -> list[str]:
     rendered = []
     for average, code, topic_scores, onde_score, name in rows:
         rendered.append(
-            f"| ({code}) {name} | {topic_scores[0]} | {topic_scores[1]} | "
+            f"| {name} | {topic_scores[0]} | {topic_scores[1]} | "
             f"{topic_scores[2]} | {onde_score} | {average:.2f} |"
         )
     return rendered
@@ -149,7 +151,7 @@ def render_classify_rows(overall: bool = False) -> list[str]:
         for label, lo, hi in TIERS:
             tier_rows = [r for r in all_rows if lo <= max(r.scores) < hi]
             if tier_rows:
-                names = ", ".join(r.display_name for r in tier_rows)
+                names = "、".join(r.display_name_ja for r in tier_rows)
                 lines.append(f"- {label}: {names}")
     else:
         for i, model in enumerate(ONDE_MODELS):
@@ -158,8 +160,8 @@ def render_classify_rows(overall: bool = False) -> list[str]:
             for label, lo, hi in TIERS:
                 tier_rows = [r for r in model_rows if lo <= r.scores[i] < hi]
                 if tier_rows:
-                    names = ", ".join(
-                        f"**{r.display_name}**" if r.scores[i] == max(r.scores) else r.display_name
+                    names = "、".join(
+                        f"**{r.display_name_ja}**" if r.scores[i] == max(r.scores) else r.display_name_ja
                         for r in tier_rows
                     )
                     lines.append(f"- {label}: {names}")
@@ -170,7 +172,7 @@ def render_classify_rows(overall: bool = False) -> list[str]:
         key=lambda r: -max(r.scores),
     )
     if bottom:
-        names = ", ".join(r.display_name for r in bottom)
+        names = "、".join(r.display_name_ja for r in bottom)
         lines.append(f"- 致命的な欠陥（60点未満）: {names}")
 
     return lines

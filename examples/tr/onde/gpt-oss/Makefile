@@ -1,4 +1,4 @@
-.PHONY: all translate evaluate scores
+.PHONY: all translate evaluate scores trends
 
 DIR = ../../..
 include ../../common.mk
@@ -15,7 +15,7 @@ TRANSLATE = uv run trtools batch \
 	$(DIR)/onde-en.txt \
 	--langs $(CORE_LANGS) $(EXTRA_LANGS)
 
-all: translate evaluate scores
+all: translate evaluate scores trends
 
 translate:
 	$(TRANSLATE) --tr-only -m $(TRANSLATOR1)
@@ -30,3 +30,6 @@ scores:
 	uv run trtools agg evals/*.json | tee SCORES.txt
 	#uv run trtools agg openrouter/evals-ollama/*.json | tee openrouter/SCORES-ollama.txt
 	#uv run trtools agg openrouter/evals/*.json | tee openrouter/SCORES.txt
+
+trends:
+	uv run trtools trend evals/*.json -m $(EVALUATOR1) --no-think --sync README.md

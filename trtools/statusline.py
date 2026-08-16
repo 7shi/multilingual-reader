@@ -16,13 +16,15 @@ def _fmt_elapsed(seconds: float) -> str:
 
 
 class StatusLine:
-    def __init__(self, label=None, start=None, index=None, count=None):
+    def __init__(self, label=None, start=None, index=None, count=None, left_count=False):
         self.console = Console()
         self.stream = ConsoleStream(self.console)
         self._label = label
         self._start = start
         self._index = index
         self._count = count
+        # 進捗そのものが処理件数を表す場合、(m/n) を左側（ラベルの直後）に置く
+        self._left_count = left_count
 
     def write(self, text: str) -> None:
         self.stream.write(text)
@@ -42,11 +44,13 @@ class StatusLine:
 
     def progress(self, total: int, start: int = 0) -> "_ProgressContext":
         return _ProgressContext(self.console, self._label, self._start, total, start,
-                                 index=self._index, count=self._count)
+                                 index=self._index, count=self._count,
+                                 left_count=self._left_count)
 
 
 class _ProgressContext:
-    def __init__(self, console, label, start, total, completed=0, index=None, count=None):
+    def __init__(self, console, label, start, total, completed=0, index=None, count=None,
+                 left_count=False):
         self._total = total
         self._completed = completed
 
@@ -69,11 +73,16 @@ class _ProgressContext:
             columns.append(TextColumn("[bold cyan]{task.description}"))
         if count:
             columns.append(LangMofNColumn())
+        elif left_count:
+            columns.append(MofNParenColumn())
         if start is not None:
             columns.append(BatchTimeColumn())
-        if label or start is not None or count:
+        if label or start is not None or count or left_count:
             columns.append(TextColumn("|"))
-        columns += [BarColumn(), TaskProgressColumn(), MofNParenColumn(), TimeElapsedColumn()]
+        columns += [BarColumn(), TaskProgressColumn()]
+        if not left_count:
+            columns.append(MofNParenColumn())
+        columns.append(TimeElapsedColumn())
 
         self._progress = Progress(*columns, console=console)
         self._label = label
@@ -87,5 +96,8 @@ class _ProgressContext:
     def __exit__(self, *args):
         return self._progress.__exit__(*args)
 
-    def update(self, completed: int) -> None:
-        self._progress.update(self._task, completed=completed)
+    def update(self, completed: int, label: str = None) -> None:
+        if label is None:
+            self._progress.update(self._task, completed=completed)
+        else:
+            self._progress.update(self._task, completed=completed, description=label)

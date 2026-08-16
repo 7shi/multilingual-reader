@@ -1,4 +1,4 @@
-.PHONY: all translate evaluate scores
+.PHONY: all translate evaluate scores trends
 
 DIR = ../../..
 include ../../common.mk
@@ -14,7 +14,7 @@ TRANSLATE = uv run trtools batch \
 	$(DIR)/onde-en.txt \
 	--langs $(CORE_LANGS) $(EXTRA_LANGS)
 
-all: translate evaluate scores
+all: translate evaluate scores trends
 
 translate:
 	$(TRANSLATE) --tr-only -m $(TRANSLATOR)
@@ -26,3 +26,6 @@ evaluate:
 scores:
 	uv run trtools agg evals/*.json | tee SCORES.txt
 	#uv run trtools agg gpt-oss-120b/evals/*.json | tee gpt-oss-120b/SCORES.txt
+
+trends:
+	uv run trtools trend evals/*.json -m $(EVALUATOR1) --no-think --sync README.md
