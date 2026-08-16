@@ -7,6 +7,7 @@ TRANSLATOR1 = ollama:gpt-oss:120b
 TRANSLATOR2 = openrouter:openai/gpt-oss-120b:free
 EVALUATOR1 = ollama:qwen3.6
 EVALUATOR2 = openrouter:qwen/qwen3.6-35b-a3b
+SUMMARIZER = $(EVALUATOR1)
 
 TRANSLATE = uv run trtools batch \
 	--terms-dir ../../terms \
@@ -32,4 +33,4 @@ scores:
 	#uv run trtools agg openrouter/evals/*.json | tee openrouter/SCORES.txt
 
 trends:
-	uv run trtools trend evals/*.json -m $(EVALUATOR1) --no-think --sync README.md
+	uv run trtools trend evals/*.json -m $(SUMMARIZER) --no-think --sync README.md

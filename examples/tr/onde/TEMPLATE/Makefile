@@ -5,7 +5,8 @@ include ../../common.mk
 
 # TODO: 対象モデルの ollama タグに置き換える（例: ollama:gemma4:26b）
 TRANSLATOR = ollama:MODEL_NAME
-EVALUATOR = ollama:qwen3.6
+EVALUATOR  = ollama:qwen3.6
+SUMMARIZER = $(EVALUATOR)
 
 TRANSLATE = uv run trtools batch \
 	--terms-dir ../../terms \
@@ -26,4 +27,4 @@ scores:
 	uv run trtools agg evals/*.json | tee SCORES.txt
 
 trends:
-	uv run trtools trend evals/*.json -m $(EVALUATOR) --no-think --sync README.md
+	uv run trtools trend evals/*.json -m $(SUMMARIZER) --no-think --sync README.md

@@ -6,6 +6,7 @@ include ../../common.mk
 TRANSLATOR = ollama:qwen3.6
 EVALUATOR1 = ollama:qwen3.6
 EVALUATOR2 = ollama:gpt-oss:120b
+SUMMARIZER = $(EVALUATOR1)
 
 TRANSLATE = uv run trtools batch \
 	--terms-dir ../../terms \
@@ -28,4 +29,4 @@ scores:
 	#uv run trtools agg gpt-oss-120b/evals/*.json | tee gpt-oss-120b/SCORES.txt
 
 trends:
-	uv run trtools trend evals/*.json -m $(EVALUATOR1) --no-think --sync README.md
+	uv run trtools trend evals/*.json -m $(SUMMARIZER) --no-think --sync README.md
