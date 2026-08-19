@@ -9,7 +9,7 @@ from pathlib import Path
 from trtools.language import LANGUAGES, LANG_NAMES
 
 ROOT = Path(__file__).resolve().parent
-ONDE_MODELS = ("gemma4", "gpt-oss", "qwen3.6")
+ONDE_MODELS = ("gemma4", "gpt-oss", "qwen3.6", "qwen3.8")
 ONDE_SCORE_FILES = {
     model: ROOT / "onde" / model / "SCORES.txt" for model in ONDE_MODELS
 }
@@ -25,7 +25,7 @@ class CompareRow:
     code: str
     display_name: str
     display_name_ja: str
-    scores: tuple[int, int, int]
+    scores: tuple[int, ...]
     sort_key: tuple
 
 
