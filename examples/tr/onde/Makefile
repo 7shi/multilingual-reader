@@ -1,6 +1,6 @@
-.PHONY: all gemma4 gpt-oss qwen3.6 qwen3.8
+.PHONY: all gemma4 gpt-oss qwen3.6 qwen3.8 muse-glimmer
 
-all: gemma4 gpt-oss qwen3.6 qwen3.8
+all: gemma4 gpt-oss qwen3.6 qwen3.8 muse-glimmer
 
 gemma4:
 	$(MAKE) -C gemma4
@@ -13,3 +13,6 @@ qwen3.6:
 
 qwen3.8:
 	$(MAKE) -C qwen3.8
+
+muse-glimmer:
+	$(MAKE) -C muse-glimmer

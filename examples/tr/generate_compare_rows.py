@@ -9,7 +9,7 @@ from pathlib import Path
 from trtools.language import LANGUAGES, LANG_NAMES
 
 ROOT = Path(__file__).resolve().parent
-ONDE_MODELS = ("gemma4", "gpt-oss", "qwen3.6", "qwen3.8")
+ONDE_MODELS = ("gemma4", "gpt-oss", "qwen3.6", "qwen3.8", "muse-glimmer")
 ONDE_SCORE_FILES = {
     model: ROOT / "onde" / model / "SCORES.txt" for model in ONDE_MODELS
 }
