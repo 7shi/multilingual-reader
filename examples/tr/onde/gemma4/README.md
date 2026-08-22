@@ -1,22 +1,22 @@
 # examples/tr/onde/gemma4/
 
-onde テキストを対象とした追加言語を含む翻訳・評価を行います。
+Translation and evaluation of the onde text, covering an extended set of languages.
 
-対象言語: [common.mk](../../common.mk) で定義された `CORE_LANGS` + `EXTRA_LANGS`
+Target languages: `CORE_LANGS` + `EXTRA_LANGS` defined in [common.mk](../../common.mk)
 
-## 実行
+## Running
 
-`make` で翻訳・評価・集計を一括実行。翻訳は `tr/`、評価は `evals/`、スコアは `SCORES.txt` に出力。
+`make` runs translation, evaluation, and aggregation in one batch. Translations go to `tr/`, evaluations to `evals/`, and scores to `SCORES.txt`.
 
-- 翻訳モデル: gemma4:26b
-- 評価モデル: qwen3.6
-- 設定: threshold=20・keep=5・CoT なし・用語ファイル注入（`../../terms/*-en.{json,tsv}`）
+- Translation model: gemma4:26b
+- Evaluation model: qwen3.6
+- Settings: threshold=20, keep=5, no CoT, term file injection (`../../terms/*-en.{json,tsv}`)
 
-## 翻訳品質の概要
+## Translation quality overview
 
-評価結果（`SCORES.txt`）および内容の検証に基づく各言語の品質傾向は以下の通りです。
+The quality trend for each language, based on the evaluation results (`SCORES.txt`) and manual content verification, is as follows.
 
-目安：高品質 (90点以上)、実用範囲 (80〜89点)、中品質 (60〜79点)、致命的な欠陥 (60点未満)
+Guide: high quality (90+), practical range (80-89), medium quality (60-79), critical defects (below 60)
 
 | Language | Score | Trend Analysis |
 | --- | ---: | --- |

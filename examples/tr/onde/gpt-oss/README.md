@@ -1,26 +1,26 @@
 # examples/tr/onde/gpt-oss/
 
-onde テキストを対象とした追加言語を含む翻訳・評価を行います。
+Translation and evaluation of the onde text, covering an extended set of languages.
 
-対象言語: [common.mk](../../common.mk) で定義された `CORE_LANGS` + `EXTRA_LANGS`
+Target languages: `CORE_LANGS` + `EXTRA_LANGS` defined in [common.mk](../../common.mk)
 
-## 実行
+## Running
 
-`make` で翻訳・評価・集計を一括実行。
+`make` runs translation, evaluation, and aggregation in one batch.
 
-- 翻訳モデル: `gpt-oss:120b` (Ollama)
-- 評価モデル: `qwen3.6` (Ollama)
-- 設定: threshold=20・keep=5・CoT なし・用語ファイル注入（`../../terms/*-en.{json,tsv}`）
+- Translation model: `gpt-oss:120b` (Ollama)
+- Evaluation model: `qwen3.6` (Ollama)
+- Settings: threshold=20, keep=5, no CoT, term file injection (`../../terms/*-en.{json,tsv}`)
 
-**出力先**: 翻訳 `tr/`、評価 `evals/`、スコア `SCORES.txt`
+**Output**: translations `tr/`, evaluations `evals/`, scores `SCORES.txt`
 
-**注意点**: `gpt-oss:120b` は CoT（思考プロセス）の出力を無効にできないため、翻訳に非常に時間がかかります。本ディレクトリでの翻訳実行は、あくまで品質検証を目的としています。
+**Note**: `gpt-oss:120b` cannot disable CoT (thinking process) output, so translation takes a very long time. Running translation in this directory is intended purely for quality verification.
 
-## 翻訳品質の概要
+## Translation quality overview
 
-評価結果（`SCORES.txt`）および内容の検証に基づく各言語の品質傾向は以下の通りです。
+The quality trend for each language, based on the evaluation results (`SCORES.txt`) and manual content verification, is as follows.
 
-目安：高品質 (90点以上)、実用範囲 (80〜89点)、中品質 (60〜79点)、致命的な欠陥 (60点未満)
+Guide: high quality (90+), practical range (80-89), medium quality (60-79), critical defects (below 60)
 
 | Language | Score | Trend Analysis |
 | --- | ---: | --- |
