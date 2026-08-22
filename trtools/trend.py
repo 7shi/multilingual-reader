@@ -17,8 +17,11 @@ CRITERIA = [
     "information_completeness",
 ]
 
-# 同期対象の表を識別するヘッダ行
-TABLE_HEADER = "| 言語 | スコア | 傾向の分析 |"
+# 同期対象の表を識別するヘッダ行（言語ごと）
+TABLE_HEADERS = {
+    "en": "| Language | Score | Trend Analysis |",
+    "ja": "| 言語 | スコア | 傾向の分析 |",
+}
 TABLE_SEPARATOR = "| --- | ---: | --- |"
 
 
@@ -36,6 +39,8 @@ def add_parser(subparsers):
     parser.add_argument("--no-think", action="store_true", help="thinking処理を無効化")
     parser.add_argument("-w", "--retry-wait", type=int, default=DEFAULT_RETRY_WAIT_SECONDS,
                         help=f"リトライ時の待機時間（秒）（デフォルト: {DEFAULT_RETRY_WAIT_SECONDS}秒）")
+    parser.add_argument("-l", "--lang", choices=["en", "ja"], default="en",
+                        help="要約の出力言語（デフォルト: en）")
     parser.set_defaults(func=run)
     return parser
 
@@ -89,58 +94,46 @@ def append_jsonl(path, record):
         f.write(json.dumps(record, ensure_ascii=False) + "\n")
 
 
-def _build_payload(data_list, statistics, total_scores):
-    """評価ログ3件を criterion 単位にマージする。
-    ファイルパスやモデル名など要約に不要なメタ情報は含めない。
+def _build_input(data_list):
+    """評価ログ3件を Evaluation ブロックのプレーンテキストに変換する。
+    criterion 別のスコア・reasoning は要約を混乱させるため渡さず、
+    合計スコアと overall_comment のみを渡す。
     """
-    first = next((d for d in data_list if d), {})
-    criteria = {}
-    for criterion in CRITERIA:
-        stats = statistics.get(criterion)
-        criteria[criterion] = {
-            "scores": stats["scores"] if stats else [],
-            "reasoning": [
-                d["evaluation"][criterion]["reasoning"]
-                for d in data_list
-                if d and criterion in d.get("evaluation", {})
-            ],
-        }
-    return {
-        "target_language": first.get("target_language"),
-        "total_scores": [
-            sum(d["evaluation"][c]["score"] for c in CRITERIA)
-            for d in data_list
-            if d and all(c in d.get("evaluation", {}) for c in CRITERIA)
-        ],
-        "median_total": total_scores["median"],
-        "criteria": criteria,
-        "overall_comments": [
-            d["evaluation"]["overall_comment"]
-            for d in data_list
-            if d and "overall_comment" in d.get("evaluation", {})
-        ],
-    }
+    blocks = []
+    for i, d in enumerate(data_list, 1):
+        if not d or "evaluation" not in d:
+            continue
+        ev = d["evaluation"]
+        total = sum(ev[c]["score"] for c in CRITERIA if c in ev)
+        comment = ev.get("overall_comment", "")
+        blocks.append(f"# Evaluation {i} (Score {total})\n\n{comment}")
+    return "\n\n".join(blocks)
 
 
-def render_table(records):
+def _matches_lang(text, lang):
+    """テキストが指定言語（en/ja）で書かれているか。"""
+    return _is_japanese(text) if lang == "ja" else not _is_japanese(text)
+
+
+def render_table(records, lang):
     """JSONL のレコードから Markdown の表を組み立てる。スコア降順・言語コード昇順。"""
     rows = sorted(records.values(), key=lambda r: (-r["score"], r["lang"]))
-    lines = [TABLE_HEADER, TABLE_SEPARATOR]
+    lines = [TABLE_HEADERS[lang], TABLE_SEPARATOR]
     for r in rows:
-        name = LANGUAGES.get(r["lang"], {}).get("ja", r["lang"])
+        name = LANGUAGES.get(r["lang"], {}).get(lang, r["lang"])
         lines.append(f"| {name} | {r['score']} | {r['analysis']} |")
     return lines
 
 
 def sync_readme(path, table_lines):
-    """README 内の TABLE_HEADER を持つ表を差し替える。"""
+    """README 内の TABLE_HEADERS のいずれかを持つ表を差し替える。"""
     p = Path(path)
     lines = p.read_text(encoding="utf-8").split("\n")
     result = []
     i = 0
     replaced = False
     while i < len(lines):
-        if lines[i].strip() == TABLE_HEADER:
+        if lines[i].strip() in TABLE_HEADERS.values():
             result.extend(table_lines)
             replaced = True
             i += 1
@@ -151,7 +144,8 @@ def sync_readme(path, table_lines):
             result.append(lines[i])
             i += 1
     if not replaced:
-        print(f"警告: {path} に対象の表が見つかりませんでした: {TABLE_HEADER}")
+        headers = " / ".join(TABLE_HEADERS.values())
+        print(f"警告: {path} に対象の表が見つかりませんでした: {headers}")
         return False
     p.write_text("\n".join(result), encoding="utf-8")
     print(f"表を更新しました: {path}")
@@ -186,6 +180,8 @@ def run(args):
         if skipped:
             print(f"{skipped}言語はJSONLに存在するためスキップします。")
 
+        output_lang_name = "Japanese" if args.lang == "ja" else "English"
+
         if pending:
             client = LLMClient(
                 model=args.model,
@@ -200,50 +196,50 @@ def run(args):
                 for offset, (base_name, code, runs) in enumerate(pending, skipped + 1):
                     prog.update(offset - 1, label=code)
                     data_list = [load_evaluation_data(runs[i]) for i in [1, 2, 3]]
-                    statistics, total_scores = calculate_statistics(data_list)
+                    _, total_scores = calculate_statistics(data_list)
                     lang_name = LANG_NAMES.get(code, code.capitalize())
 
-                    payload = _build_payload(data_list, statistics, total_scores)
+                    evaluations = _build_input(data_list)
                     prompts = [
                         f"<evaluations lang=\"{lang_name}\">\n"
-                        f"{json.dumps(payload, ensure_ascii=False, indent=2)}\n"
+                        f"{evaluations}\n"
                         f"</evaluations>",
-                        f"The JSON above contains three independent evaluations of one translation "
+                        f"The block above contains three independent evaluations of one translation "
                         f"whose target language is {lang_name}. Trust these evaluations as given; "
                         f"do not re-evaluate the translation yourself. Summarize the single most "
                         f"notable characteristic in one short phrase. "
                         f"An issue mentioned in multiple runs is more reliable than one mentioned "
                         f"only once.\n"
-                        f"IMPORTANT: The summary must be written in Japanese, but it describes a "
-                        f"translation into {lang_name}. Never confuse the language you write in "
-                        f"with the language being evaluated.\n"
+                        f"IMPORTANT: The summary must be written in {output_lang_name}, but it "
+                        f"describes a translation into {lang_name}. Never confuse the language you "
+                        f"write in with the language being evaluated.\n"
                         f"IMPORTANT: State only what the evaluations actually say. Do not add "
                         f"details they do not mention. For example, if they report a mixed-language "
-                        f"defect without naming the intruding language, write 他言語の混入 rather "
-                        f"than guessing which language it was.\n"
+                        f"defect without naming the intruding language, describe it generically "
+                        f"rather than guessing which language it was.\n"
                         f"OUTPUT FORMAT: Reply with the summary phrase itself and nothing else. "
                         f"It goes directly into a Markdown table cell, so no labels, no quotation "
                         f"marks around the whole phrase, no bullet points, no line breaks, no "
                         f"trailing period, and no explanation before or after. "
-                        f"If defects exist, state the most prominent one concretely "
-                        f"(e.g. 話者タグの脱落が頻発, 英単語が混入). If the translation is sound, "
-                        f"state that briefly (e.g. 全体的に安定). "
-                        f"Keep it within 40 Japanese characters. "
-                        f"Write it in Japanese — not in English, and not in {lang_name}.",
+                        f"If defects exist, state the most prominent one concretely. If the "
+                        f"translation is sound, state that briefly. "
+                        f"Keep it within 40 characters if written in Japanese, or a short phrase of "
+                        f"about 8 words or fewer if written in English. "
+                        f"Write it in {output_lang_name} — not in {lang_name}.",
                     ]
 
                     print(f"\nAnalyzing {base_name} ...")
                     for attempt in range(3):
                         p = prompts if attempt == 0 else prompts + [
-                            "The previous reply was not in Japanese. "
-                            "Reply again with the same summary written in Japanese, "
-                            "and output nothing but the phrase itself."
+                            f"The previous reply was not in {output_lang_name}. "
+                            f"Reply again with the same summary written in {output_lang_name}, "
+                            f"and output nothing but the phrase itself."
                         ]
                         text = client.call(p, file=ui.stream)
                         ui.stream.end()
-                        if _is_japanese(text):
+                        if _matches_lang(text, args.lang):
                             break
-                        print(f"日本語で返らなかったため再試行します（{attempt + 1}/3）")
+                        print(f"{output_lang_name}で返らなかったため再試行します（{attempt + 1}/3）")
 
                     median = total_scores["median"]
                     record = {
@@ -260,7 +256,7 @@ def run(args):
         print(f"{args.output_file} にレコードがありません。")
         return
 
-    table = render_table(records)
+    table = render_table(records, args.lang)
     print()
     for line in table:
         print(line)

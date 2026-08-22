@@ -18,72 +18,72 @@ onde テキストを対象とした追加言語を含む翻訳・評価を行い
 
 目安：高品質 (90点以上)、実用範囲 (80〜89点)、中品質 (60〜79点)、致命的な欠陥 (60点未満)
 
-| 言語 | スコア | 傾向の分析 |
+| Language | Score | Trend Analysis |
 | --- | ---: | --- |
-| ポルトガル語 | 98 | 技術用語の正確な使用と自然な口語表現の両立 |
-| フランス語 | 97 | 技術用語の正確な使用と、ポッドキャスト形式に適した自然な口語表現 |
-| イタリア語 | 95 | 「psi quadro」の表記揺れが見られる |
-| 中国語 | 95 | 変数表記の統一と光学用語の微調整が必要 |
-| スペイン語 | 92 | 「esa matiz」の性不一致など軽微な文法ミスあり |
-| ドイツ語 | 91 | 一部用語の不自然な訳語（Rinneなど）が残る |
-| カタルーニャ語 | 90 | 少数の文法誤りと英語由来の直訳的な表現が fluency を低下させている |
-| ベトナム語 | 90 | 直訳調の表現と文法誤りが散見され、自然さに欠ける |
-| ルーマニア語 | 89 | 文法・用語ミスが散見され、読解を妨げる |
-| トルコ語 | 88 | タイプミスと不自然な訳語が目立つ |
-| ウクライナ語 | 86 | 英語由来のフィラー語の直訳が残る |
-| ロシア語 | 85 | 他言語の混入と一人称代名詞の不一致が指摘される |
-| スウェーデン語 | 85 | 不自然な訳語や明らかな誤記（betなど）が散見される |
-| デンマーク語 | 83 | 不自然な表現や明らかなタイポの頻発 |
-| アラビア語 | 77 | 文語的直訳および不自然な感嘆詞の使用 |
-| マケドニア語 | 77 | 複数のタイプミスと不自然な直訳表現が残る |
-| オランダ語 | 77 | 不自然な表現と英単語の混入 |
-| ポーランド語 | 77 | 主語と形容詞/名詞の性・数の不一致が頻発 |
-| ガリシア語 | 75 | ポルトガル語由来の用語混入が頻発 |
-| ノルウェー語 | 71 | 数学表記の誤訳と言語・タイプミスが頻発 |
-| アフリカーンス語 | 68 | 文脈を無視した単語の誤訳が頻発し、自然な流暢さが損なわれている |
-| リトアニア語 | 67 | 文法（性・格）誤りと不自然な表現が頻発 |
-| セルビア語 | 65 | 文法誤りと用語の誤訳が多数 |
-| チェコ語 | 60 | 他言語混入、数学式誤訳、非存在語の多用 |
-| インドネシア語 | 60 | 中国語の混入と用語誤訳が目立つ |
-| クロアチア語 | 59 | 頻繁なタイプミスと用語の誤訳により不自然 |
-| ウルドゥー語 | 59 | 直訳による不自然な文法・用語誤訳が多数 |
-| ブルガリア語 | 58 | 文法誤・用語ミス・不自然な表現が pervasive |
-| ヒンディー語 | 57 | 物理用語の誤訳と硬直した直訳調が顕著 |
-| 日本語 | 56 | 他言語の混入による著しい不自然さ |
-| ハンガリー語 | 55 | 物理用語の数値的誤訳と不自然な直訳表現が頻発 |
-| マラーティー語 | 54 | 重大な文法・用語誤訳および話者タグ脱落により可読性が損なわれている |
-| インターリングア | 53 | 他言語混入と非標準表現により自然さが損なわれている |
-| ネパール語 | 52 | 不自然な直訳、用語誤訳、他言語混入 |
-| アルバニア語 | 52 | 明らかな機械翻訳特有の用語誤訳と不自然な表現が頻発し、文法的および意味的な欠陥が目立つ |
-| ペルシア語 | 50 | 他言語の混入と不自然な語彙が頻発 |
-| スロバキア語 | 50 | 文法錯誤・不自然な直訳・数学表記の誤り |
-| スロベニア語 | 50 | 頻繁な誤訳、不自然な表現、およびタイプミス |
-| ベンガル語 | 42 | 物理用語の誤訳と不自然な表現が目立つ |
-| マレー語 | 42 | 話者タグの脱落と構造的欠陥による会話流れの崩壊 |
-| ベラルーシ語 | 37 | ロシア語の混入と専門用語の誤訳が深刻 |
-| エストニア語 | 33 | 深刻な文法・用語の誤りと自然さの欠如 |
-| タガログ語 | 33 | 専門用語の誤訳と非-existent語の多用が頻発し、意味が不明 |
-| アゼルバイジャン語 | 32 | 機械翻訳特有の構文破綻と用語誤訳が頻発 |
-| ヘブライ語 | 32 | 重大な意味誤訳と用語の混入により文意が不明 |
-| ジョージア語 | 32 | 非存在語の頻発と文構造の崩壊 |
-| ギリシャ語 | 31 | 他言語の混入と物理用語の重大な誤訳 |
-| エスペラント | 31 | 重大な用語誤訳と文法錯誤が頻発 |
-| ラトビア語 | 31 | 科学用語の重大な誤訳および文法錯誤が頻発 |
-| タミル語 | 30 | 他言語文字の混入と技術用語の誤訳 |
-| 朝鮮語 | 29 | 終盤の途切れと他言語混入による重大な構造不全 |
-| タイ語 | 28 | 終端の中途半端な切断による情報欠如 |
-| アルメニア語 | 27 | 文法崩壊と意味不明な表現、専門用語の誤訳が pervasive |
-| ウェールズ語 | 26 | 物理用語の誤訳と文法的破綻による不自然さ |
-| バスク語 | 26 | 大量の「ago」反復生成ミスによる構造的欠陥と著しい読みにくさ |
-| クメール語 | 26 | 重大な機械翻訳の出力物と無意味な語彙・文法エラーが頻発 |
-| カンナダ語 | 26 | 意味不明な語彙、他言語混入、構文崩壊の多用 |
-| スワヒリ語 | 26 | 物理用語の重大な誤訳と意味の歪曲 |
-| テルグ語 | 26 | 科学的用語の重大な誤訳・意味不明語（例: ripple→ヘルメット）が頻発し、内容が科学的不正確で読めない |
-| モンゴル語 | 23 | メタコメントや他言語文字の混入による構造的欠陥 |
-| マラヤーラム語 | 22 | 意味を反転させる重大な誤訳と構造的欠陥が頻発 |
-| ビルマ語 | 22 | 訳語の破綻、用語誤訳、文法崩壊が極めて深刻 |
-| アイスランド語 | 21 | 物理用語の重大な誤訳と意味の歪曲が pervasive |
-| ラーオ語 | 21 | 物理用語の誤訳と不自然な表現が pervasive |
-| シンハラ語 | 20 | 重度の機械翻訳出力、文法破綻および技術用語誤訳 |
-| アイルランド語 | 9 | 末尾の大量の欠落と重大な構造不全 |
-| フィンランド語 | 0 | 大半の対話が脱落し、話者名の羅列で終了 |
+| Portuguese | 98 | Exemplary scientific and conversational quality |
+| French | 97 | Professional-grade scientific accuracy with natural podcast tone |
+| Italian | 95 | Minor terminology refinement needed for 'psi quadro' |
+| Chinese | 95 | Publication-ready quality with minor stylistic tweaks suggested |
+| Spanish | 92 | Minor grammatical inconsistencies and oversights |
+| German | 91 | Minor lexical and terminology issues |
+| Catalan | 90 | Minor grammatical errors and calques |
+| Vietnamese | 90 | Minor grammatical and typographical slips |
+| Romanian | 89 | Minor grammatical and terminology flaws |
+| Turkish | 88 | Minor fluency and typographical errors |
+| Ukrainian | 86 | Linguistic unpolish and unnatural phrasing |
+| Russian | 85 | Mixed-language glitch and awkward phrasing |
+| Swedish | 85 | Minor grammatical errors and literal phrasing |
+| Danish | 83 | Grammatical errors and typos |
+| Arabic | 77 | Fluency and terminology issues despite scientific accuracy |
+| Macedonian | 77 | Technical accuracy hampered by typos and poor fluency |
+| Dutch | 77 | Untranslated English word 'easily' and terminology errors |
+| Polish | 77 | Grammatical errors and literal calques |
+| Galician | 75 | Lexical inaccuracies and Portuguese interference |
+| Norwegian | 71 | Systematic typos and incorrect math notation |
+| Afrikaans | 68 | Noticeable lexical errors and unnatural phrasing |
+| Lithuanian | 67 | Persistent grammatical errors and non-standard terminology |
+| Serbian | 65 | Frequent grammatical errors and terminology mistakes |
+| Czech | 60 | Mixed-language intrusion and literal calques |
+| Indonesian | 60 | Chinese character insertion and terminology errors |
+| Croatian | 59 | Frequent typos and technical inaccuracies |
+| Urdu | 59 | Major lexical errors and unnatural phrasing |
+| Bulgarian | 58 | Pervasive grammatical errors and terminology mistakes |
+| Hindi | 57 | Pervasive literalism and terminology errors |
+| Japanese | 56 | Severe mixed-language artifacts and unnatural phrasing |
+| Hungarian | 55 | Significant technical terminology errors and unnatural phrasing |
+| Marathi | 54 | Persistent grammatical errors and unnatural phrasing |
+| Interlingua | 53 | Severe mixing of non-Interlingua languages and terms |
+| Nepali | 52 | Severe artifacts including Chinese characters and semantic errors |
+| Albanian | 52 | Severe lexical and grammatical errors |
+| Persian | 50 | Mixed Chinese character insertion |
+| Slovak | 50 | Frequent grammatical errors and unnatural calques |
+| Slovene | 50 | Severe linguistic and technical defects |
+| Bengali | 42 | Significant mistranslations and unnatural phrasing |
+| Malay | 42 | Severe structural and dialogue management failures |
+| Belarusian | 37 | Severe grammatical errors and terminology inaccuracies |
+| Estonian | 33 | Severe terminology errors and grammatical defects |
+| Tagalog | 33 | Severe mistranslation and hallucination of physics terms |
+| Azerbaijani | 32 | Severe linguistic and semantic errors |
+| Hebrew | 32 | Severe semantic and lexical errors |
+| Georgian | 32 | Pervasive machine artifacts and severe errors |
+| Greek | 31 | Severe mixed-language fragments and terminology errors |
+| Esperanto | 31 | Pervasive major defects |
+| Latvian | 31 | Severe grammatical and terminological errors |
+| Tamil | 30 | Severe structural defects and mixed scripts |
+| Korean | 29 | Severe truncation and mixed-language fragments |
+| Thai | 28 | Abrupt mid-sentence cutoff and technical errors |
+| Armenian | 27 | Catastrophic semantic and structural failure |
+| Welsh | 26 | Fundamentally broken with severe lexical and grammatical defects |
+| Basque | 26 | Massive repetition glitch |
+| Khmer | 26 | Severe machine translation artifacts and gibberish |
+| Kannada | 26 | Severe lexical defects and mixed scripts |
+| Swahili | 26 | Severe lexical and technical errors |
+| Telugu | 26 | Pervasive scientific inaccuracies and severe linguistic defects |
+| Mongolian | 23 | Severe structural defects and meta-commentary intrusion |
+| Malayalam | 22 | Severe lexical errors and structural breakdowns |
+| Burmese | 22 | Severe lexical and grammatical errors |
+| Icelandic | 21 | Pervasive severe mistranslations of core physics terminology |
+| Lao | 21 | Severe machine translation artifacts |
+| Sinhala | 20 | Severe terminology mismatches and broken syntax |
+| Irish | 9 | Severe truncation and critical structural failure |
+| Finnish | 0 | Severely truncated and structurally broken translation |

@@ -22,75 +22,75 @@ onde テキストを対象とした追加言語を含む翻訳・評価を行い
 
 目安：高品質 (90点以上)、実用範囲 (80〜89点)、中品質 (60〜79点)、致命的な欠陥 (60点未満)
 
-| 言語 | スコア | 傾向の分析 |
+| Language | Score | Trend Analysis |
 | --- | ---: | --- |
-| スペイン語 | 98 | 話者タグの脱落が頻発していること |
-| フランス語 | 97 | 話者タグの脱落というフォーマット上の問題が残る |
-| カタルーニャ語 | 96 | 話者タグの脱落と用語の不整合が見られる |
-| イタリア語 | 95 | 話者タグの脱落や誤りによる読みづらさが複数回指摘 |
-| 日本語 | 94 | 話者タグの脱落による対話構造の不整合が頻発 |
-| ベトナム語 | 93 | 話者タグの脱落により対話の構造が不明確 |
-| ポルトガル語 | 90 | 話者タグの脱落が頻発している点が残念ですが、技術用語と自然さは高い品質を保っています |
-| スウェーデン語 | 89 | 話者タグの脱落と構造的な不整合が複数報告されている |
-| ウクライナ語 | 88 | 話者タグの脱落と直訳的な不自然な表現が見られる |
-| オランダ語 | 86 | 構造化欠陥と不自然な表現が散見される |
-| アラビア語 | 83 | 訳語の硬直した表現と会話文の不適切な処理 |
-| ドイツ語 | 83 | 話者タグの頻発する脱落 |
-| トルコ語 | 83 | 話者タグの脱落と不自然な表現が指摘 |
-| アフリカーンス語 | 81 | 話者タグの頻繁な脱落により対話形式が崩れている |
-| ブルガリア語 | 80 | 話者タグの頻な脱落と語尾の不統一 |
-| チェコ語 | 80 | 話者タグの頻繁な脱落と表記揺れによるフォーマット不具合が多数 |
-| ガリシア語 | 80 | 話者タグの脱落と語彙・表記の不整合 |
-| ロシア語 | 79 | 話者タグの脱落により対話形式が乱れている |
-| 中国語 | 79 | 話者タグ脱落による構成欠陥と若干の直訳癖 |
-| インドネシア語 | 78 | 話者タグの脱落や付与ミスによる構造的な不整合が頻発 |
-| デンマーク語 | 77 | 話者タグの頻繁な脱落により対話構造が混乱 |
-| ハンガリー語 | 77 | 話者タグの脱落による対話構造の崩壊が頻発 |
-| ネパール語 | 77 | 話者タグ脱落と頻発する綴りミス |
-| マケドニア語 | 75 | 話者タグの脱落と重大な訳誤が多く見られる |
-| ペルシア語 | 74 | 話者タグの脱落により対話構造が崩れている |
-| インターリングア | 73 | ロマンス語の影響による非標準的な語形と文法 |
-| スロベニア語 | 73 | 話者タグの欠落および文の重複による構造的な欠陥 |
-| スロバキア語 | 71 | 話者タグの頻発する脱落と誤訳 |
-| ウルドゥー語 | 70 | 科学用語の表記揺れと話者タグの脱落 |
-| ベラルーシ語 | 69 | 物理学用語の不統一と誤訳 |
-| マレー語 | 69 | 話者タグの脱落と専門用語の不整合 |
-| ノルウェー語 | 69 | 話者タグの頻繁な脱落と「psi i andre」などの非自然的な表現 |
-| ポーランド語 | 67 | 話者ラベルの脱落と構造的欠陥 |
-| タガログ語 | 67 | 非標準用語・直訳・文法誤りの混入 |
-| ギリシャ語 | 66 | 専門用語の誤訳と話者タグ・文脈の欠落 |
-| アゼルバイジャン語 | 65 | 話者タグの欠落と不自然な表現が目立つ |
-| ヘブライ語 | 65 | 話者タグの頻繁な欠落と用語誤訳 |
-| 朝鮮語 | 65 | 話者タグの頻繁な脱落による対話の流れの混乱 |
-| フィンランド語 | 63 | 話者タグの脱落と用語の誤訳が頻発 |
-| ラトビア語 | 61 | 話者タグの頻繁な欠落と不自然な表現 |
-| セルビア語 | 61 | 話者タグの脱落と構造的欠陥が目立つ |
-| マラーティー語 | 60 | pervasive orthographic errorsの悪影響 |
-| スワヒリ語 | 58 | 科学的用語の重大な誤訳と文脈を無視した直訳的表現 |
-| エスペラント | 57 | 話者タグの脱落と用語ミスが頻発 |
-| クロアチア語 | 57 | 話者タグの脱落、行の重複、プロンプト漏洩 |
-| ルーマニア語 | 56 | 話者タグの脱落と構造的断片化 |
-| マラヤーラム語 | 54 | 技術用語の表記揺れと頻繁な誤字 |
-| アルバニア語 | 54 | 話者タグの頻繁な脱落と文法・用語の不自然さ |
-| エストニア語 | 53 | 話者タグの脱落と不自然な直訳 |
-| ウェールズ語 | 52 | 明らかな語法錯誤と専門用語の誤訳が頻発 |
-| モンゴル語 | 52 | 機械翻訳特有の固着語法と専門用語誤訳が深刻 |
-| ベンガル語 | 50 | 技術用語の表記揺れと機械的な直訳調 |
-| カンナダ語 | 49 | 物理用語の誤訳と不自然な英語構文の混入が頻発 |
-| リトアニア語 | 48 | 話者タグの脱落と文の重複が頻発し、用語も誤りあり |
-| バスク語 | 45 | 話者タグの頻繁な脱落と不自然な表現、非標準用語（kuadratu）の使用 |
-| アイスランド語 | 45 | 英由来の直訳表現と技術用語の不正確さが頻発 |
-| タイ語 | 42 | 文字化けによる頻発の表記誤り |
-| アルメニア語 | 41 | 用語の誤訳と直訳による不自然な表現が頻発 |
-| ヒンディー語 | 39 | 多数の誤変換、未校正のtypo、および話者タグの欠如により、翻訳の品質が不安定で機械的な出力に陥っている |
-| テルグ語 | 39 | 頻発する綴り誤り・文法不自然・用語ミス |
-| ビルマ語 | 38 | 系統的なミャンマー語綴り誤りの頻発 |
-| シンハラ語 | 33 | 頻繁な綴り間違いと文法・構文の破綻 |
-| クメール語 | 32 | systemicな表記・誤字の混入と文法・語彙の不適切さ |
-| ジョージア語 | 31 | 文法錯誤、存在しない語彙、他言語混入が pervasive |
-| タミル語 | 30 | 非標準的な表記と用語の誤訳による明らかな品質欠陥 |
-| アイルランド語 | 29 | 文法・用語の深刻な誤りと話者タグ脱落 |
-| ラーオ語 | 23 | 専門用語の誤訳と不自然な構文が顕著 |
+| Spanish | 98 | Minor missing speaker tags |
+| French | 97 | Professional quality with occasional missing speaker tags |
+| Catalan | 96 | High quality with missing speaker tags |
+| Italian | 95 | Inconsistent speaker attribution formatting |
+| Japanese | 94 | Inconsistent omission of speaker tags |
+| Vietnamese | 93 | Missing speaker labels disrupts flow |
+| Portuguese | 90 | Speaker labels dropped; technical accuracy high |
+| Swedish | 89 | Missing speaker tags and minor grammatical errors |
+| Ukrainian | 88 | Missing speaker tags and literal phrasing |
+| Dutch | 86 | Accurate content marred by formatting and fluency issues |
+| Arabic | 83 | Minor fluency and formatting issues |
+| German | 83 | Frequent omission of speaker attribution tags |
+| Turkish | 83 | Minor formatting and phrasing issues |
+| Afrikaans | 81 | Missing speaker labels disrupt dialogue format |
+| Bulgarian | 80 | Missing speaker attribution and formatting inconsistencies |
+| Czech | 80 | Missing speaker tags and minor errors |
+| Galician | 80 | Missing speaker labels and gender errors |
+| Russian | 79 | Systematic omission of speaker tags |
+| Chinese | 79 | Missed speaker attribution tags |
+| Indonesian | 78 | Structural formatting errors |
+| Danish | 77 | Missing speaker tags and grammatical errors |
+| Hungarian | 77 | Structural flaws and grammatical errors |
+| Nepali | 77 | Systemic grammatical errors and typos |
+| Macedonian | 75 | Lack of proofreading and structural errors |
+| Persian | 74 | Missing speaker tags disrupt flow |
+| Interlingua | 73 | Inconsistencies between evaluations on quality and errors |
+| Slovene | 73 | Significant formatting errors and grammatical fractures |
+| Slovak | 71 | Critical omission of speaker labels and minor typos |
+| Urdu | 70 | Inconsistent scientific transliteration and terminology |
+| Belarusian | 69 | Notable terminology errors and formatting issues |
+| Malay | 69 | Significant terminology errors and missing speaker labels |
+| Norwegian | 69 | Missing speaker tags and awkward calques |
+| Polish | 67 | Missing speaker labels |
+| Tagalog | 67 | Significant linguistic and grammatical flaws |
+| Greek | 66 | Significant terminology and structural errors |
+| Azerbaijani | 65 | Missing speaker tags disrupt dialogue format |
+| Hebrew | 65 | Missing speaker labels and grammatical errors |
+| Korean | 65 | Missing speaker tags disrupt readability |
+| Finnish | 63 | Missing speaker labels and typos |
+| Latvian | 61 | Missing speaker labels and grammatical errors |
+| Serbian | 61 | Missing speaker tags and formatting issues |
+| Marathi | 60 | Pervasive orthographic errors |
+| Swahili | 58 | Significant scientific terminology errors |
+| Esperanto | 57 | Missing dialogue speaker tags |
+| Croatian | 57 | Severe formatting and structural defects |
+| Romanian | 56 | Significant structural and formatting defects |
+| Malayalam | 54 | Pervasive orthographic and grammatical errors |
+| Albanian | 54 | Missing speaker tags and grammatical errors |
+| Estonian | 53 | Severe grammatical errors and terminology inaccuracies |
+| Welsh | 52 | severe grammatical and terminology flaws |
+| Mongolian | 52 | Heavy machine-translation artifacts and terminology errors |
+| Bengali | 50 | Severe orthographic and grammatical errors |
+| Kannada | 49 | pervasive linguistic and technical defects |
+| Lithuanian | 48 | Major structural and terminological defects |
+| Basque | 45 | Systematic grammatical errors and missing speaker labels |
+| Icelandic | 45 | Grammatical errors and awkward calques |
+| Thai | 42 | Pervasive orthographic errors throughout |
+| Armenian | 41 | Frequent lexical and critical mistranslations |
+| Hindi | 39 | Major typographical and formatting defects |
+| Telugu | 39 | Severe mixed-script corruption and pervasive grammatical errors |
+| Burmese | 38 | Severe spelling errors |
+| Sinhala | 33 | Pervasive orthographic errors and unnatural phrasing |
+| Khmer | 32 | Systematic orthographic errors and rigid syntax |
+| Georgian | 31 | Severe grammatical and structural errors |
+| Tamil | 30 | Severe orthographic and grammatical errors |
+| Irish | 29 | Major grammatical and terminology defects |
+| Lao | 23 | Critical terminology errors and mixed language |
 
 全体を通して、モデルの規模に反して低リソース言語の翻訳は極めて不安定で、多言語の混入、状況認識の漏出、話者タグの脱落などが頻発しました。
 
