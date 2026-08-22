@@ -1,0 +1,31 @@
+{
+  "original_file": "../../../onde-en.txt",
+  "translation_file": "tr/onde-ka.txt",
+  "source_language": "English",
+  "target_language": "Georgian",
+  "model_used": "ollama:qwen3.6",
+  "evaluation": {
+    "readability": {
+      "reasoning": "The translation contains a severe structural defect in the form of unedited meta-commentary (`Wait, that's not a real Georgian word...`) left directly within the dialogue. This completely disrupts reading flow and comprehension at a pivotal moment in the text. While the remaining Georgian sentences are generally comprehensible, this artifact makes the text impossible to use without extensive editing.",
+      "score": 4
+    },
+    "fluency": {
+      "reasoning": "Beyond the critical structural artifact, the Georgian phrasing often feels overly literal or slightly unnatural for a spoken podcast format. Examples include `გასცდი ყურს` (should be `გისმენთ`) and `უზუსტობელი` (nonsense word left in the text). Conversational fillers are sometimes mechanically translated (`ანუ`, `ჰმ`, `ვაუ`), which, while acceptable for a podcast, feel stiff when combined with literal calques.",
+      "score": 3
+    },
+    "terminology": {
+      "reasoning": "On its own, the technical vocabulary is actually quite strong and accurately reflects standard Georgian scientific conventions. Terms like `ტალღური ფუნქცია` (wave function), `ბორნის წესი` (Born rule), `ჰაიზენბერგის განუსაზღვრელობის პრინციპი` (Heisenberg uncertainty principle), and `ევანესცენტური ტალღები` (evanescent waves) are correctly applied. Consistency is maintained throughout the physics discussion, warranting a moderate-to-good score despite the surrounding formatting issues.",
+      "score": 12
+    },
+    "contextual_adaptation": {
+      "reasoning": "The original text aims for an accessible yet scientifically rigorous science communication podcast tone. The Georgian draft successfully preserves the conversational dynamic between the two physicists and adapts the conceptual flow well. However, the unremoved editorial notes completely break the professional broadcast context and introduce mixed-language interference, severely undermining contextual fidelity.",
+      "score": 4
+    },
+    "information_completeness": {
+      "reasoning": "All core physics concepts, experimental references (double-slit experiment, NSOM, Abbe limit), and philosophical conclusions are present in the translation. However, the meta-commentary block accidentally replaces a line of dialogue (`ლუკ: საოცარია.`) and inserts non-translated English text. This constitutes an information corruption rather than mere omission, requiring editorial intervention to restore integrity.",
+      "score": 5
+    },
+    "overall_comment": "The translation demonstrates a solid grasp of advanced physics terminology and successfully maps complex quantum/optical concepts into Georgian. However, it suffers from a critical quality control failure: unedited meta-commentary and self-correction notes are left directly in the output text, breaking immersion and violating basic editorial standards. Several phrases also require naturalization to match spoken Georgian podcast conventions (e.g., replacing literal calques with idiomatic expressions). Immediate cleanup is required before publication or broadcast use. With editorial correction of the artifacts and minor phrasing adjustments, this could be elevated to a high-quality output.\n\nReasoning aligns with Guideline 3: structural defects are treated as critical errors, heavily penalizing readability, fluency, contextual adaptation, and information completeness. Terminology receives a higher score as it remains technically accurate despite the formatting flaws. Overall score reflects the severe nature of the unremoved artifacts.\nScore: 4/20"
+  },
+  "total_score": 28
+}
