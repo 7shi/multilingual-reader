@@ -9,7 +9,19 @@ from pathlib import Path
 from trtools.language import LANGUAGES, LANG_NAMES
 
 ROOT = Path(__file__).resolve().parent
-ONDE_MODELS = ("gemma4", "gpt-oss", "qwen3.6", "qwen3.8", "muse-glimmer")
+ONDE_MAKEFILE = ROOT / "onde" / "Makefile"
+MODELS_RE = re.compile(r"^MODELS\s*=\s*(.+)$", re.MULTILINE)
+
+
+def load_onde_models() -> tuple[str, ...]:
+    text = ONDE_MAKEFILE.read_text(encoding="utf-8")
+    match = MODELS_RE.search(text)
+    if match is None:
+        raise ValueError(f"MODELS assignment not found in {ONDE_MAKEFILE}")
+    return tuple(match.group(1).split())
+
+
+ONDE_MODELS = load_onde_models()
 ONDE_SCORE_FILES = {
     model: ROOT / "onde" / model / "SCORES.txt" for model in ONDE_MODELS
 }
@@ -18,6 +30,10 @@ CORE_SCORE_FILE = ROOT / "core" / "SCORES.txt"
 CORE_ONDE_MODEL = "gemma4"
 CORE_CODES = ("ja", "zh", "es", "fr", "de")
 LINE_RE = re.compile(r"^([a-z0-9.]+)-([a-z0-9.]+):\s+(\d+)/100点$")
+README_FILE = ROOT / "README.md"
+SYNC_HEADERS = {
+    "compare": "| Language | ",
+}
 
 
 @dataclass(frozen=True)
@@ -82,13 +98,23 @@ def load_compare_rows() -> list[CompareRow]:
     return rows
 
 
+def render_compare_header(linked: bool) -> list[str]:
+    if linked:
+        model_cells = [f"[{model}](onde/{model}/README.md)" for model in ONDE_MODELS]
+    else:
+        model_cells = list(ONDE_MODELS)
+    header = f"| Language | {' | '.join(model_cells)} |"
+    separator = f"| --- | {' | '.join(['---:'] * len(ONDE_MODELS))} |"
+    return [header, separator]
+
+
 def render_compare_rows() -> list[str]:
     rows = load_compare_rows()
     rendered = []
     for row in rows:
         max_score = max(row.scores)
         scores = [format_score(score, max_score) for score in row.scores]
-        rendered.append(f"| {row.display_name_ja} | {' | '.join(scores)} |")
+        rendered.append(f"| {row.display_name} | {' | '.join(scores)} |")
     return rendered
 
 
@@ -178,7 +204,26 @@ def render_classify_rows(overall: bool = False) -> list[str]:
     return lines
 
 
-def build_parser() -> argparse.ArgumentParser:
+def sync_section(section: str, table_lines: list[str]) -> None:
+    header_prefix = SYNC_HEADERS[section]
+    readme_lines = README_FILE.read_text(encoding="utf-8").splitlines()
+
+    header_idx = next(
+        (i for i, line in enumerate(readme_lines) if line.startswith(header_prefix)),
+        None,
+    )
+    if header_idx is None:
+        raise ValueError(f"header line starting with {header_prefix!r} not found in {README_FILE}")
+
+    rows_end = header_idx + 2  # header line + separator line
+    while rows_end < len(readme_lines) and readme_lines[rows_end].startswith("|"):
+        rows_end += 1
+
+    new_lines = readme_lines[:header_idx] + table_lines + readme_lines[rows_end:]
+    README_FILE.write_text("\n".join(new_lines) + "\n", encoding="utf-8")
+
+
+def main() -> int:
     parser = argparse.ArgumentParser(
         description="Generate README rows for examples/tr score tables."
     )
@@ -194,15 +239,25 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="for classify: show overall best-score classification instead of per-model",
     )
-    return parser
+    parser.add_argument(
+        "--sync",
+        action="store_true",
+        help="write the generated rows into README.md between the section's markers "
+        f"(supported sections: {', '.join(SYNC_HEADERS)})",
+    )
+    args = parser.parse_args()
 
-
-def main() -> int:
-    args = build_parser().parse_args()
+    if args.sync and args.section not in SYNC_HEADERS:
+        print(
+            f"error: --sync is not supported for section '{args.section}' "
+            f"(supported: {', '.join(SYNC_HEADERS)})",
+            file=sys.stderr,
+        )
+        return 1
 
     try:
         if args.section == "compare":
-            lines = render_compare_rows()
+            lines = render_compare_header(linked=args.sync) + render_compare_rows()
         elif args.section == "core":
             lines = render_core_rows()
         elif args.section == "classify":
@@ -210,6 +265,7 @@ def main() -> int:
         else:
             lines = [
                 "<!-- compare -->",
+                *render_compare_header(linked=False),
                 *render_compare_rows(),
                 "",
                 "<!-- core -->",
@@ -218,6 +274,11 @@ def main() -> int:
     except ValueError as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 1
+
+    if args.sync:
+        sync_section(args.section, lines)
+        print(f"synced {len(lines)} lines into {README_FILE}")
+        return 0
 
     for line in lines:
         print(line)
