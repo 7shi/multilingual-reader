@@ -8,6 +8,7 @@ include ../../common.mk
 
 EVALUATOR  = ollama:qwen3.6
 SUMMARIZER = $(EVALUATOR)
+OPTIONS   ?= --no-think
 
 # 対象言語。過去実験など一部の言語だけを扱う場合はターゲット側で上書きする。
 LANGS = $(CORE_LANGS) $(EXTRA_LANGS)
@@ -15,7 +16,7 @@ LANGS = $(CORE_LANGS) $(EXTRA_LANGS)
 TRANSLATE = uv run trtools batch \
 	--terms-dir ../../terms \
 	--threshold 20 \
-	--no-think \
+	$(OPTIONS) \
 	$(DIR)/onde-en.txt \
 	--langs $(LANGS)
 
