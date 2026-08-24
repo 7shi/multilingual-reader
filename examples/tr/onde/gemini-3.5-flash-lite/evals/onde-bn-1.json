@@ -1,0 +1,31 @@
+{
+  "original_file": "../../../onde-en.txt",
+  "translation_file": "tr/onde-bn.txt",
+  "source_language": "English",
+  "target_language": "Bengali",
+  "model_used": "ollama:qwen3.6",
+  "evaluation": {
+    "readability": {
+      "reasoning": "The presence of mixed English lines (e.g., 'Camille: That's an absolutely stunning parallel.'), standalone letters ('l'), and severely corrupted Bengali Unicode characters (e.g., 'পর্যয়ে', 'নিয়ে', 'অদ্বিতীয়', 'বাড়াতে') drastically impairs readability. Readers would struggle to parse sentences due to broken glyph rendering and abrupt language switches.",
+      "score": 4
+    },
+    "fluency": {
+      "reasoning": "Fluency is heavily compromised by structural defects. While the Bengali portions show an attempt at conversational pacing, the sudden shifts to English, case irregularities ('lUc', 'camille'), and font/encoding mismatches break the natural flow entirely. The text does not sound smooth or native.",
+      "score": 5
+    },
+    "terminology": {
+      "reasoning": "Where the text is correctly rendered, scientific terminology is generally appropriate and consistent (e.g., 'তরঙ্গ ফাংশন', 'বর্নের নিয়ম', 'হাইজেনবার্গের অনিশ্চয়তা নীতি', 'অপবর্তন'). However, the severe encoding corruption and inconsistent rendering make it impossible to consistently evaluate terminology application across the document. A moderate score is given to acknowledge that the correct terms were originally selected.",
+      "score": 7
+    },
+    "contextual_adaptation": {
+      "reasoning": "The podcast format's conversational tone is partially preserved, but the structural corruption and mixed-language insertions undermine contextual coherence. The adaptation does not smoothly account for target-reader expectations due to technical failures in encoding and formatting.",
+      "score": 6
+    },
+    "information_completeness": {
+      "reasoning": "Most of the original dialogue's content appears to be present in the Bengali text, but several sentences are broken by English insertions or corrupted characters. While no major conceptual sections seem entirely omitted, the rendering issues cause partial information loss and force readers to guess missing characters.",
+      "score": 7
+    },
+    "overall_comment": "The translation demonstrates a solid underlying grasp of the source material and appropriate technical vocabulary selection. However, it suffers from critical structural and technical defects: mixed English/Bengali segments, inconsistent casing, and widespread Unicode/encoding corruption in Bengali characters. These issues severely damage readability, fluency, and overall usability. Despite accurate conceptual mapping, the execution fails to meet basic quality standards for publication or professional use without immediate technical remediation and proofreading of corrupted glyphs. Per critical guidelines, structural defects heavily penalize the score regardless of partial translation adequacy elsewhere in the text. A complete re-encoding and linguistic cleanup is required to reach a passable quality level (15+/20). Overall quality: Poor/Needs Heavy Revision due to technical corruption and mixed-language breaches."
+  },
+  "total_score": 29
+}

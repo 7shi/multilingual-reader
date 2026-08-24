@@ -9,6 +9,7 @@ onde テキストを対象として各モデルで翻訳・評価を行います
 - [muse-glimmer](muse-glimmer/)
 - [ox-alpha](ox-alpha/)
 - [gpt-5.6-luna](gpt-5.6-luna/)
+- [gemini-3.5-flash-lite](gemini-3.5-flash-lite/)
 
 onde はフランス語で「波」を意味します。ここでは物理用語として「波動」の意味で使用されています。
 
