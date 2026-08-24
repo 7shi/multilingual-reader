@@ -8,6 +8,7 @@ onde テキストを対象として各モデルで翻訳・評価を行います
 - [qwen3.8](qwen3.8/)
 - [muse-glimmer](muse-glimmer/)
 - [ox-alpha](ox-alpha/)
+- [gpt-5.6-luna](gpt-5.6-luna/)
 
 onde はフランス語で「波」を意味します。ここでは物理用語として「波動」の意味で使用されています。
 

@@ -1,4 +1,4 @@
-MODELS = gemma4 gpt-oss qwen3.6 qwen3.8 muse-glimmer ox-alpha
+MODELS = gemma4 gpt-oss qwen3.6 qwen3.8 muse-glimmer ox-alpha gpt-5.6-luna
 
 .PHONY: all $(MODELS)
 
