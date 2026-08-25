@@ -125,6 +125,7 @@ def run(args):
                         terms_tsv=terms_tsv,
                         no_think=args.no_think,
                         retry_wait=args.retry_wait,
+                        fix=False,
                         label=lang,
                         start=tr_start,
                         index=tr_index,

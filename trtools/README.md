@@ -142,6 +142,7 @@ uv run trtools translate <input_file> -f <from_lang> -t <to_lang> -o <output> -m
 | `--terms-tsv` | なし | `term translate` の出力TSVファイル |
 | `--no-think` | false | thinking処理を無効化（Qwen3モデル用） |
 | `-w`, `--retry-wait` | 3 | リトライ待機秒数 |
+| `--fix` | false | 既存出力の空行のみ再翻訳。通常モードは行数のみで再開判定するため空行を検出せず継続してしまうが、`--fix` では出力ファイル全体を書き直して空行の箇所だけ再翻訳する |
 
 ### 使用例
 

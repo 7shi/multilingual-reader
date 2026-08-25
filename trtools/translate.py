@@ -35,6 +35,8 @@ def add_parser(subparsers):
                         help="thinking 処理を無効化（Qwen3 モデル用）")
     parser.add_argument("-w", "--retry-wait", type=int, default=DEFAULT_RETRY_WAIT_SECONDS,
                         help=f"リトライ時の待機時間（秒）（デフォルト: {DEFAULT_RETRY_WAIT_SECONDS}秒）")
+    parser.add_argument("--fix", action="store_true",
+                        help="既存出力の空行のみ再翻訳してファイル全体を書き直す（通常モードは行数のみで再開判定）")
     parser.set_defaults(func=run)
 
 
@@ -143,15 +145,32 @@ def run(args):
     if os.path.exists(args.output_file):
         with open(args.output_file, "r", encoding="utf-8") as f:
             existing_lines = f.readlines()
-    resume_count = sum(1 for orig_idx, _ in content_lines if orig_idx < len(existing_lines))
-    translated_text = {
-        orig_idx: existing_lines[orig_idx].rstrip("\n")
-        for orig_idx, _ in content_lines[:resume_count]
-    }
 
-    if total > 0 and resume_count >= total:
-        ui.write(f"既に翻訳済みです: {args.output_file}\n")
-        return
+    if args.fix:
+        # 空行になっている行だけを再翻訳する。追記では位置を保てないため全体を書き直す。
+        translated_text = {
+            orig_idx: (existing_lines[orig_idx].rstrip("\n") if orig_idx < len(existing_lines) else "")
+            for orig_idx, _ in content_lines
+        }
+        bad_indices = {
+            k for k, (orig_idx, _) in enumerate(content_lines)
+            if not translated_text[orig_idx].strip()
+        }
+        if not bad_indices:
+            ui.write(f"空行はありません: {args.output_file}\n")
+            return
+        resume_count = 0
+    else:
+        resume_count = sum(1 for orig_idx, _ in content_lines if orig_idx < len(existing_lines))
+        translated_text = {
+            orig_idx: existing_lines[orig_idx].rstrip("\n")
+            for orig_idx, _ in content_lines[:resume_count]
+        }
+        bad_indices = set()
+
+        if total > 0 and resume_count >= total:
+            ui.write(f"既に翻訳済みです: {args.output_file}\n")
+            return
 
     # 要約は trtools summary で事前生成しておく必要がある（未生成ならエラー）
     summaries = load_summaries(args.input_file, total, threshold, keep)
@@ -220,18 +239,28 @@ def run(args):
 
     start_time = time.time()
     next_compression = None
-    next_write_idx = len(existing_lines)
+    next_write_idx = 0 if args.fix else len(existing_lines)
 
-    out_f = open(args.output_file, "a" if resume_count else "w", encoding="utf-8")
+    out_f = open(args.output_file, "w" if (args.fix or not resume_count) else "a", encoding="utf-8")
     try:
         with ui.progress(total, start=resume_count) as prog:
             for k in range(resume_count, total):
                 i = k + 1
                 orig_idx, line = content_lines[k]
-                prompt = f"Translate the following {from_lang} line into {to_lang}.\n{line}"
-                translated, user_msg, asst_msg = translate_line(prompt)
+                if args.fix and k not in bad_indices:
+                    translated = translated_text[orig_idx]
+                    user_msg = {
+                        "role": "user",
+                        "content": f"Translate the following {from_lang} line into {to_lang}.\n{line}",
+                    }
+                    asst_msg = {"role": "assistant", "content": translated}
+                    chat_history.append(user_msg)
+                    chat_history.append(asst_msg)
+                else:
+                    prompt = f"Translate the following {from_lang} line into {to_lang}.\n{line}"
+                    translated, user_msg, asst_msg = translate_line(prompt)
+                    translated_text[orig_idx] = translated
                 translation_messages.extend([user_msg, asst_msg])
-                translated_text[orig_idx] = translated
                 prog.update(i)
 
                 out_f.writelines(all_lines[next_write_idx:orig_idx])
