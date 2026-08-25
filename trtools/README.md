@@ -29,6 +29,10 @@ uv run trtools [--label LABEL] [--start START] <command> [options]
 
 `--threshold` 行ごとに翻訳履歴を英語サマリーに圧縮し、`--keep` 件の直近ペアと組み合わせてコンテキストを再構築する。これにより長文でも一貫性を保ちながら KV キャッシュが安定して効く。
 
+サマリーは英語で出力され、翻訳先言語 (`to_lang`) に依存しない内容のため、`summary` サブコマンドで原文（トピック）ごとに事前生成しておく。原文と同じディレクトリに `{topic}-summary.jsonl` として保存され、同じトピックの全ての `to_lang`・複数回の `translate` 実行で使い回せる。`translate`・`batch` はいずれも生成済みのキャッシュを読むだけで自動生成はせず、未生成の場合はエラーになるため、事前に `summary` を実行しておく必要がある。
+
+`translate` は1行訳すごとに出力ファイルへ逐次書き込む。途中で失敗・中断しても、同じコマンドで再実行すれば既存の翻訳行を飛ばして続きから再開する（chat_history は事前生成済みサマリーと出力ファイルの既存行から同じ手順で再構築される）。1行の翻訳結果が空、または内部に改行を含む場合は不正とみなし最大3回まで再試行、失敗時は例外を送出する。
+
 ### term extract/translate: 翻訳ループからの分離
 
 用語抽出を翻訳ループ内で行うと、run ごとに抽出結果がブレて**訳語の不一致**が生じる（例: `affinage` → `refinamiento` / `ajuste fino`）。`term extract/translate` で用語を事前に確定・校正してから全 run で共有することで、このブレを原理的に排除する。
@@ -55,6 +59,7 @@ uv run trtools [--label LABEL] [--start START] <command> [options]
 
 | コマンド | 概要 |
 |---|---|
+| [`summary`](#summary) | 原文の要約を事前生成（`translate` 用キャッシュ） |
 | [`translate`](#translate) | テキストを行単位で翻訳 |
 | [`review`](#review) | 他者評価による翻訳推敲 |
 | [`eval`](#eval) | 翻訳品質を5項目で評価 |
@@ -70,9 +75,48 @@ uv run trtools [--label LABEL] [--start START] <command> [options]
 
 ---
 
+## summary
+
+`translate` のサマリー圧縮方式で使う要約を原文だけから事前生成する。要約は英語で出力され `to_lang` に依存しないため、原文（トピック）ごとに1回生成すれば、そのトピックの全ての `to_lang`・複数回の `translate` 実行で使い回せる。
+
+保存先は原文と同じディレクトリの `{topic}-summary.jsonl`（トピック名は入力ファイル名の `-<言語コード>` を除いた部分。例: `finetuning-fr.txt` → `finetuning-summary.jsonl`）。既に必要なチェックポイント分が揃っていれば何もしない。
+
+```
+uv run trtools summary <input_file...> -f <from_lang> -m <model> [options]
+```
+
+### 必須引数
+
+| 引数 | 説明 |
+|---|---|
+| `input_files` | 要約対象のテキストファイル（複数指定可）。ファイルごとに `[i/n]` を表示しながら順に処理する |
+| `-f`, `--from` | 原語。言語名（`French`）または言語コード（`fr`） |
+| `-m`, `--model` | 要約生成モデル |
+
+### オプション
+
+| オプション | デフォルト | 説明 |
+|---|---|---|
+| `--threshold` | `10` | 要約生成の間隔（行数）。`translate` と揃える |
+| `--keep` | `5` | チェックポイント算出用の保持行数。`translate` と揃える |
+| `--no-think` | false | thinking処理を無効化（Qwen3モデル用） |
+| `-w`, `--retry-wait` | 3 | リトライ待機秒数 |
+
+### 使用例
+
+```bash
+# 単一ファイル
+uv run trtools summary finetuning-fr.txt -f fr -m ollama:gemma4:26b
+
+# 複数ファイルをまとめて処理（[1/2], [2/2] と進捗表示）
+uv run trtools summary finetuning-en.txt transformer-en.txt -f en -m ollama:gemma4:26b
+```
+
+---
+
 ## translate
 
-テキストファイルを行単位で翻訳する。空行を保持しながら1行ずつ翻訳し、コンテキスト圧縮で長文に対応する。
+テキストファイルを行単位で翻訳する。空行を保持しながら1行ずつ翻訳し、コンテキスト圧縮で長文に対応する。事前に `summary` サブコマンドで要約キャッシュを生成しておく必要がある（未生成の場合はエラーになる）。
 
 ```
 uv run trtools translate <input_file> -f <from_lang> -t <to_lang> -o <output> -m <model> [options]
@@ -504,6 +548,8 @@ uv run trtools term merge terms/finetuning-en.tsv extra-langs.tsv \
 
 翻訳→評価→集約を一括実行する。ファイル名の言語コード（例: `finetuning-fr.txt` → `fr`）から原語を自動導出し、`--tr-dir` と `--eval-dir` で指定したディレクトリに出力を整理する。既存ファイルはスキップする。
 
+`summary` は自動生成しないため、翻訳フェーズの前に対象ファイルの `{topic}-summary.jsonl` を `trtools summary` で生成しておくこと。未生成の場合はその翻訳対象がエラーになりスキップされる。
+
 ```
 uv run trtools batch <files...> --langs <lang...> -m <model> [options]
 ```
@@ -562,6 +608,10 @@ SCORES.txt                    # 集約スコア
 ### 使用例
 
 ```bash
+# 事前に要約を生成（trtools batch は自動生成しない）
+uv run trtools summary ../finetuning-en.txt ../transformer-en.txt \
+  -f en -m ollama:gemma4:26b --threshold 20
+
 # 翻訳のみ（複数ファイル・複数言語）
 uv run trtools batch \
   ../finetuning-en.txt ../transformer-en.txt \
@@ -610,7 +660,13 @@ uv run trtools term translate terms/topic-fr.json \
   -c terms/common.tsv -o terms/topic-fr.tsv
 ```
 
-### 2. 翻訳と評価を一括実行する
+### 2. 要約を事前生成する
+
+```bash
+uv run trtools summary topic-fr.txt -f fr -m ollama:gemma4:26b
+```
+
+### 3. 翻訳と評価を一括実行する
 
 ```bash
 uv run trtools batch topic-fr.txt \
@@ -621,10 +677,10 @@ uv run trtools batch topic-fr.txt \
   --no-think
 ```
 
-### 3. 個別に翻訳・評価・集約を実行する
+### 4. 個別に翻訳・評価・集約を実行する
 
 ```bash
-# 翻訳
+# 翻訳（事前に summary topic-fr.txt を実行済みであること）
 uv run trtools translate topic-fr.txt -f fr -t en \
   -o tr/topic-en.txt -m ollama:gemma4:26b --no-think \
   --terms-json terms/topic-fr.json --terms-tsv terms/topic-fr.tsv

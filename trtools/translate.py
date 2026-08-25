@@ -4,9 +4,13 @@
 
 import csv
 import json
+import os
 import time
 from .llm import LLMClient, DEFAULT_RETRY_WAIT_SECONDS
 from .statusline import StatusLine
+from .summary import load_summaries
+
+LINE_RETRY_COUNT = 3
 
 
 def add_parser(subparsers):
@@ -99,6 +103,21 @@ def _build_terms_messages(start_line, end_line, chunk_data, glossary, from_lang,
     return [user_msg, assistant_msg]
 
 
+def _build_summary_messages(summary_text):
+    """要約テキストをコンテキスト注入用のメッセージペアに変換する。"""
+    if not summary_text:
+        return []
+    user_msg = {
+        "role": "user",
+        "content": f"Context summary of the source text so far:\n{summary_text}",
+    }
+    assistant_msg = {
+        "role": "assistant",
+        "content": "Understood, I will keep this context in mind.",
+    }
+    return [user_msg, assistant_msg]
+
+
 def run(args):
     from_lang = args.from_lang
     to_lang = args.to_lang
@@ -118,6 +137,24 @@ def run(args):
         index=getattr(args, 'index', None),
         count=getattr(args, 'count', None),
     )
+
+    # 出力ファイルの既存内容から再開位置を求める
+    existing_lines = []
+    if os.path.exists(args.output_file):
+        with open(args.output_file, "r", encoding="utf-8") as f:
+            existing_lines = f.readlines()
+    resume_count = sum(1 for orig_idx, _ in content_lines if orig_idx < len(existing_lines))
+    translated_text = {
+        orig_idx: existing_lines[orig_idx].rstrip("\n")
+        for orig_idx, _ in content_lines[:resume_count]
+    }
+
+    if total > 0 and resume_count >= total:
+        ui.write(f"既に翻訳済みです: {args.output_file}\n")
+        return
+
+    # 要約は trtools summary で事前生成しておく必要がある（未生成ならエラー）
+    summaries = load_summaries(args.input_file, total, threshold, keep)
 
     chunk_data = []
     glossary = {}
@@ -140,72 +177,80 @@ def run(args):
         ),
     }
 
-    initial_end = min(threshold + keep, total)
-    chat_history = (
-        [system_message]
-        + _build_terms_messages(1, initial_end, chunk_data, glossary, from_lang, to_lang)
-    )
+    def build_chat_history(position):
+        """position（訳し終えた行数）時点の chat_history を組み立てる。
+        新規開始（position == 0）でも再開でも同じ手順で構築する。"""
+        seed_start = position + 1
+        seed_end = min(position + threshold + keep, total)
+        terms_msgs = _build_terms_messages(seed_start, seed_end, chunk_data, glossary, from_lang, to_lang)
+        checkpoint = max((i for i in summaries if i <= position), default=None)
+        summary_msgs = _build_summary_messages(summaries.get(checkpoint))
+        translation_messages = []
+        for orig_idx, line in content_lines[max(0, position - keep):position]:
+            translated = translated_text[orig_idx]
+            translation_messages.append({
+                "role": "user",
+                "content": f"Translate the following {from_lang} line into {to_lang}.\n{line}",
+            })
+            translation_messages.append({"role": "assistant", "content": translated})
+        return (
+            [system_message] + terms_msgs + summary_msgs
+            + translation_messages[-keep * 2:]
+        ), translation_messages
 
-    translation_messages = []
-    summary_messages = []
-    next_compression = None
-    results = {}
+    chat_history, translation_messages = build_chat_history(resume_count)
 
-    def call_llm(prompt, stream=True):
-        user_msg = {"role": "user", "content": prompt}
-        chat_history.append(user_msg)
-        translated = client.call(chat_history, file=ui.stream if stream else None)
-        ui.stream.end()
-        asst_msg = {"role": "assistant", "content": translated}
-        chat_history.append(asst_msg)
-        return translated, user_msg, asst_msg
+    def translate_line(prompt):
+        for attempt in range(1, LINE_RETRY_COUNT + 1):
+            user_msg = {"role": "user", "content": prompt}
+            chat_history.append(user_msg)
+            translated = client.call(chat_history, file=ui.stream)
+            ui.stream.end()
+            stripped = translated.strip()
+            if stripped and "\n" not in stripped:
+                asst_msg = {"role": "assistant", "content": stripped}
+                chat_history.append(asst_msg)
+                return stripped, user_msg, asst_msg
+            chat_history.pop()
+            if attempt < LINE_RETRY_COUNT:
+                ui.write(f"WARNING: 翻訳結果が不正です（試行{attempt}/{LINE_RETRY_COUNT}）。再試行します。\n")
+                time.sleep(args.retry_wait)
+            else:
+                raise RuntimeError(f"翻訳結果が不正です（{LINE_RETRY_COUNT}回失敗）: {prompt!r}")
 
     start_time = time.time()
+    next_compression = None
+    next_write_idx = len(existing_lines)
 
-    with ui.progress(total) as prog:
-        for i, (orig_idx, line) in enumerate(content_lines, 1):
-            prompt = f"Translate the following {from_lang} line into {to_lang}.\n{line}"
-            translated, user_msg, asst_msg = call_llm(prompt)
-            translation_messages.extend([user_msg, asst_msg])
-            results[orig_idx] = translated
-            prog.update(i)
+    out_f = open(args.output_file, "a" if resume_count else "w", encoding="utf-8")
+    try:
+        with ui.progress(total, start=resume_count) as prog:
+            for k in range(resume_count, total):
+                i = k + 1
+                orig_idx, line = content_lines[k]
+                prompt = f"Translate the following {from_lang} line into {to_lang}.\n{line}"
+                translated, user_msg, asst_msg = translate_line(prompt)
+                translation_messages.extend([user_msg, asst_msg])
+                translated_text[orig_idx] = translated
+                prog.update(i)
 
-            if i % threshold == 0 and i + keep < total:
-                saved_len = len(chat_history)
-                summary_prompt = (
-                    "Please summarize the translation history above in 2-3 sentences (in English). "
-                    "Focus on topics and narrative context. "
-                    "If a previous summary exists, integrate the new content with it rather "
-                    "than starting over."
-                )
-                summary_text, sum_req, sum_res = call_llm(summary_prompt, stream=False)
-                ui.show_panel(summary_text, title="Summary")
-                del chat_history[saved_len:]
-                summary_messages.extend([sum_req, sum_res])
-                next_compression = i + keep
+                out_f.writelines(all_lines[next_write_idx:orig_idx])
+                out_f.write(translated + "\n")
+                out_f.flush()
+                next_write_idx = orig_idx + 1
 
-            if next_compression is not None and i == next_compression:
-                next_start = i + 1
-                next_end = min(i + threshold + keep, total)
-                terms_msgs = _build_terms_messages(
-                    next_start, next_end, chunk_data, glossary, from_lang, to_lang
-                )
-                chat_history = (
-                    [system_message]
-                    + terms_msgs
-                    + summary_messages[-2:]
-                    + translation_messages[-keep * 2:]
-                )
-                next_compression = None
+                if i % threshold == 0 and i + keep < total and i in summaries:
+                    next_compression = i + keep
+
+                if next_compression is not None and i == next_compression:
+                    chat_history, translation_messages = build_chat_history(i)
+                    next_compression = None
+
+        out_f.writelines(all_lines[next_write_idx:])
+    finally:
+        out_f.close()
 
     elapsed = time.time() - start_time
-
-    with open(args.output_file, "w", encoding="utf-8") as f:
-        for i, line in enumerate(all_lines):
-            if line.strip():
-                f.write(results[i] + "\n")
-            else:
-                f.write(line)
 
     ui.write(f"\n翻訳完了: {from_lang} → {to_lang} ({args.output_file})\n")
     ui.write(f"処理時間: {elapsed:.1f}秒 ({elapsed/60:.1f}分)\n")

@@ -47,6 +47,11 @@ def _parse_input_file(file_path):
     return topic, from_code
 
 
+def _line_count(path):
+    with open(path, "r", encoding="utf-8") as f:
+        return sum(1 for _ in f)
+
+
 def _tr_path(topic, lang, trrun, tr_runs, tr_dir="tr"):
     """翻訳出力ファイルパスを返す。tr_runs==1 のときはサフィックスなし。"""
     if tr_runs == 1:
@@ -98,12 +103,13 @@ def run(args):
         for topic, from_code, from_lang, input_file in inputs:
             terms_json = str(terms_dir / f"{topic}-{from_code}.json") if terms_dir else None
             terms_tsv = str(terms_dir / f"{topic}-{from_code}.tsv") if terms_dir else None
+
             for lang in args.langs:
                 lang_name = LANG_NAMES.get(lang, lang.capitalize())
                 for trrun in range(1, args.tr_runs + 1):
                     tr_index += 1
                     out = _tr_path(topic, lang, trrun, args.tr_runs, args.tr_dir)
-                    if os.path.exists(out):
+                    if os.path.exists(out) and _line_count(out) >= _line_count(str(input_file)):
                         print(f"Skipping {out} (already exists)")
                         continue
                     print(f"\nTranslating {out} ...")
