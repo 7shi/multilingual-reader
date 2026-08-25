@@ -232,8 +232,8 @@ def run(args):
                 return stripped, user_msg, asst_msg
             chat_history.pop()
             if attempt < LINE_RETRY_COUNT:
-                ui.write(f"WARNING: 翻訳結果が不正です（試行{attempt}/{LINE_RETRY_COUNT}）。再試行します。\n")
-                time.sleep(args.retry_wait)
+                ui.stream.error("翻訳結果が不正です。")
+                ui.stream.wait_retry(args.retry_wait, f"再試行中 ({attempt}/{LINE_RETRY_COUNT})...")
             else:
                 raise RuntimeError(f"翻訳結果が不正です（{LINE_RETRY_COUNT}回失敗）: {prompt!r}")
 
