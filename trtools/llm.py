@@ -8,29 +8,6 @@ from llm7shi import create_json_descriptions_prompt
 DEFAULT_RETRY_WAIT_SECONDS = 3
 
 
-class ConsoleStream:
-    """generate_with_schema の file= に渡す Rich コンソールラッパー。
-    改行単位でバッファリングし console.print() に転送する。"""
-
-    def __init__(self, console):
-        self._console = console
-        self._buf = ""
-
-    def write(self, text: str) -> None:
-        self._buf += text
-        while "\n" in self._buf:
-            line, self._buf = self._buf.split("\n", 1)
-            self._console.print(line, highlight=False)
-
-    def flush(self) -> None:
-        pass
-
-    def end(self) -> None:
-        if self._buf.strip():
-            self._console.print(self._buf, highlight=False)
-            self._buf = ""
-
-
 class LLMClient:
     def __init__(self, model: str, max_length: int = 8192, think: bool = True,
                  retry_wait: int = DEFAULT_RETRY_WAIT_SECONDS, max_retries: int = 3):

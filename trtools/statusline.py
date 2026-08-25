@@ -1,11 +1,10 @@
 import time
-from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 from rich.progress import (Progress, ProgressColumn, SpinnerColumn, TextColumn,
                            BarColumn, TaskProgressColumn, TimeElapsedColumn)
 from rich.text import Text
-from .llm import ConsoleStream
+from llm7shi.statusline import StatusLine as _BaseStatusLine
 
 
 def _fmt_elapsed(seconds: float) -> str:
@@ -15,19 +14,15 @@ def _fmt_elapsed(seconds: float) -> str:
     return f"{h}:{m:02d}:{sec:02d}"
 
 
-class StatusLine:
+class StatusLine(_BaseStatusLine):
     def __init__(self, label=None, start=None, index=None, count=None, left_count=False):
-        self.console = Console()
-        self.stream = ConsoleStream(self.console)
+        super().__init__()
         self._label = label
         self._start = start
         self._index = index
         self._count = count
         # 進捗そのものが処理件数を表す場合、(m/n) を左側（ラベルの直後）に置く
         self._left_count = left_count
-
-    def write(self, text: str) -> None:
-        self.stream.write(text)
 
     def rule(self, text: str) -> None:
         self.console.rule(f"[dim]{text}[/dim]")
@@ -43,14 +38,15 @@ class StatusLine:
         self.console.print(Panel(text, title=title, border_style="cyan"))
 
     def progress(self, total: int, start: int = 0) -> "_ProgressContext":
-        return _ProgressContext(self.console, self._label, self._start, total, start,
-                                 index=self._index, count=self._count,
-                                 left_count=self._left_count)
+        return _ProgressContext(self, total, start, self._start, index=self._index,
+                                 count=self._count, left_count=self._left_count)
 
 
 class _ProgressContext:
-    def __init__(self, console, label, start, total, completed=0, index=None, count=None,
+    def __init__(self, status_line, total, completed=0, start=None, index=None, count=None,
                  left_count=False):
+        self._status_line = status_line
+        label = status_line._label
         self._total = total
         self._completed = completed
 
@@ -84,16 +80,18 @@ class _ProgressContext:
             columns.append(MofNParenColumn())
         columns.append(TimeElapsedColumn())
 
-        self._progress = Progress(*columns, console=console)
+        self._progress = Progress(*columns, console=status_line.console)
         self._label = label
         self._task = None
 
     def __enter__(self):
+        self._status_line.active_progress = self._progress
         self._progress.__enter__()
         self._task = self._progress.add_task(self._label or "", total=self._total, completed=self._completed)
         return self
 
     def __exit__(self, *args):
+        self._status_line.active_progress = None
         return self._progress.__exit__(*args)
 
     def update(self, completed: int, label: str = None) -> None:
