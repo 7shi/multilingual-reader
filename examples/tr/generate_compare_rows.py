@@ -227,33 +227,25 @@ def main() -> int:
     parser = argparse.ArgumentParser(
         description="Generate README rows for examples/tr score tables."
     )
-    parser.add_argument(
-        "section",
-        nargs="?",
-        choices=("compare", "core", "all", "classify"),
-        default="compare",
-        help="which rows to output (default: compare)",
-    )
-    parser.add_argument(
-        "--overall",
-        action="store_true",
-        help="for classify: show overall best-score classification instead of per-model",
-    )
-    parser.add_argument(
+    subparsers = parser.add_subparsers(dest="section")
+
+    compare_parser = subparsers.add_parser("compare", help="onde comparison table (default)")
+    compare_parser.add_argument(
         "--sync",
         action="store_true",
-        help="write the generated rows into README.md between the section's markers "
-        f"(supported sections: {', '.join(SYNC_HEADERS)})",
+        help="write the generated rows into README.md between the section's markers",
     )
-    args = parser.parse_args()
+    subparsers.add_parser("core", help="core language table")
+    subparsers.add_parser("all", help="compare + core tables")
+    classify_parser = subparsers.add_parser("classify", help="classify languages by score tier")
+    classify_parser.add_argument(
+        "--overall",
+        action="store_true",
+        help="show overall best-score classification instead of per-model",
+    )
 
-    if args.sync and args.section not in SYNC_HEADERS:
-        print(
-            f"error: --sync is not supported for section '{args.section}' "
-            f"(supported: {', '.join(SYNC_HEADERS)})",
-            file=sys.stderr,
-        )
-        return 1
+    parser.set_defaults(section="compare", sync=False, overall=False)
+    args = parser.parse_args()
 
     try:
         if args.section == "compare":
