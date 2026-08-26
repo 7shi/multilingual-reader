@@ -2,9 +2,13 @@ from __future__ import annotations
 
 import argparse
 import re
+import statistics
 import sys
 from dataclasses import dataclass
 from pathlib import Path
+
+# onde/*/plot_comparison.py と同様に matplotlib でグラフを生成する（graph サブコマンド用）
+import matplotlib.pyplot as plt
 
 from trtools.language import LANGUAGES, LANG_NAMES
 
@@ -31,8 +35,11 @@ CORE_ONDE_MODEL = "gemma4"
 CORE_CODES = ("ja", "zh", "es", "fr", "de")
 LINE_RE = re.compile(r"^([a-z0-9.]+)-([a-z0-9.]+):\s+(\d+)/100点$")
 README_FILE = ROOT / "README.md"
+GRAPH_OUTPUT = ROOT / "compare_models.png"
+STATS_HEADER = "| モデル | 平均 | 標準偏差 | 備考 |"
 SYNC_HEADERS = {
     "compare": "| Language | ",
+    "stats": STATS_HEADER,
 }
 
 
@@ -116,6 +123,77 @@ def render_compare_rows() -> list[str]:
         scores = [format_score(score, max_score) for score in row.scores]
         rendered.append(f"| {row.display_name} | {' | '.join(scores)} |")
     return rendered
+
+
+def compute_stats() -> dict[str, tuple[float, float]]:
+    rows = load_compare_rows()
+    stats = {}
+    for i, model in enumerate(ONDE_MODELS):
+        scores = [row.scores[i] for row in rows]
+        stats[model] = (statistics.mean(scores), statistics.pstdev(scores))
+    return stats
+
+
+def load_existing_model_notes() -> dict[str, tuple[str, str]]:
+    """model -> (モデル欄の表示文字列, 備考) を既存の stats 表から読み取る
+    （平均・標準偏差は再計算するため無視）。モデル欄には手動で追記した
+    括弧書き（パラメータ規模など）が含まれることがあるため、先頭の
+    空白区切りトークン（モデル名本体）をキーにして引き当てる。
+    """
+    readme_lines = README_FILE.read_text(encoding="utf-8").splitlines()
+    header_idx = next(
+        (i for i, line in enumerate(readme_lines) if line == STATS_HEADER),
+        None,
+    )
+    if header_idx is None:
+        return {}
+
+    notes: dict[str, tuple[str, str]] = {}
+    i = header_idx + 2  # header line + separator line
+    while i < len(readme_lines) and readme_lines[i].startswith("|"):
+        cols = [c.strip() for c in readme_lines[i].split("|")[1:-1]]
+        model_cell, _mean, _stdev, remark = cols
+        model = model_cell.split(" ", 1)[0]
+        notes[model] = (model_cell, remark)
+        i += 1
+    return notes
+
+
+def render_stats_header() -> list[str]:
+    return [STATS_HEADER, "| --- | ---: | ---: | --- |"]
+
+
+def render_stats_rows() -> list[str]:
+    stats = compute_stats()
+    notes = load_existing_model_notes()
+    rendered = []
+    for model in sorted(ONDE_MODELS, key=lambda m: -stats[m][0]):
+        mean, stdev = stats[model]
+        model_cell, remark = notes.get(model, (model, ""))
+        rendered.append(f"| {model_cell} | {mean:.2f} | {stdev:.2f} | {remark} |")
+    return rendered
+
+
+def plot_model_stats() -> None:
+    rows = load_compare_rows()
+    stats = compute_stats()
+    notes = load_existing_model_notes()
+    models = sorted(ONDE_MODELS, key=lambda m: -stats[m][0])
+    labels = [notes.get(m, (m, ""))[0] for m in models]
+    data = [[row.scores[ONDE_MODELS.index(m)] for row in rows] for m in models]
+
+    fig, ax = plt.subplots(figsize=(8, len(models) * 0.6 + 1))
+    ax.boxplot(data, orientation="horizontal", tick_labels=labels)
+
+    ax.invert_yaxis()
+    ax.set_xlim(0, 100)
+    ax.set_xlabel("Score")
+    ax.set_title("Score distribution by model")
+    ax.grid(axis="x", alpha=0.3)
+    fig.tight_layout()
+
+    fig.savefig(GRAPH_OUTPUT, dpi=150)
+    print(f"Saved: {GRAPH_OUTPUT}")
 
 
 def render_core_rows() -> list[str]:
@@ -236,7 +314,8 @@ def main() -> int:
         help="write the generated rows into README.md between the section's markers",
     )
     subparsers.add_parser("core", help="core language table")
-    subparsers.add_parser("all", help="compare + core tables")
+    subparsers.add_parser("all", help="compare + stats + core tables")
+    subparsers.add_parser("graph", help="generate compare_models.png (score boxplot per model)")
     classify_parser = subparsers.add_parser("classify", help="classify languages by score tier")
     classify_parser.add_argument(
         "--overall",
@@ -247,9 +326,18 @@ def main() -> int:
     parser.set_defaults(section="compare", sync=False, overall=False)
     args = parser.parse_args()
 
+    if args.section == "graph":
+        try:
+            plot_model_stats()
+        except ValueError as exc:
+            print(f"error: {exc}", file=sys.stderr)
+            return 1
+        return 0
+
     try:
         if args.section == "compare":
-            lines = render_compare_header(linked=args.sync) + render_compare_rows()
+            compare_lines = render_compare_header(linked=args.sync) + render_compare_rows()
+            stats_lines = render_stats_header() + render_stats_rows()
         elif args.section == "core":
             lines = render_core_rows()
         elif args.section == "classify":
@@ -260,12 +348,29 @@ def main() -> int:
                 *render_compare_header(linked=False),
                 *render_compare_rows(),
                 "",
+                "<!-- stats -->",
+                *render_stats_header(),
+                *render_stats_rows(),
+                "",
                 "<!-- core -->",
                 *render_core_rows(),
             ]
     except ValueError as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 1
+
+    if args.section == "compare":
+        if args.sync:
+            sync_section("compare", compare_lines)
+            sync_section("stats", stats_lines)
+            print(
+                f"synced {len(compare_lines)} lines (compare) and "
+                f"{len(stats_lines)} lines (stats) into {README_FILE}"
+            )
+            return 0
+        for line in compare_lines + [""] + stats_lines:
+            print(line)
+        return 0
 
     if args.sync:
         sync_section(args.section, lines)
