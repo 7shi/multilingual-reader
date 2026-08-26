@@ -20,70 +20,70 @@ Guide: high quality (90+), practical range (80-89), medium quality (60-79), crit
 
 | Language | Score | Trend Analysis |
 | --- | ---: | --- |
-| Portuguese | 96 | Minor grammar and filler word issues |
-| Spanish | 95 | Minor lexical and idiomatic improvements needed |
-| Italian | 95 | Minor terminology conventions and minor stylistic adjustments |
-| Vietnamese | 93 | Excellent accuracy and natural flow |
-| Japanese | 92 | Excellent quality with minor phrasing adjustments needed |
-| Chinese | 91 | Minor literal phrasing affecting fluency |
-| Catalan | 89 | Lexical mistranslations ('rosseca', 'ressecca') |
-| Macedonian | 89 | Minor calques and stiff phrasing |
-| Dutch | 89 | Minor stylistic and phrasing issues |
-| Polish | 89 | Minor grammatical and fluency issues |
-| Bulgarian | 86 | Literal conversational fillers disrupt fluency |
-| Persian | 86 | Noticeable fluency issues and mixed-language defects |
-| French | 85 | Grammatical errors and inconsistent register |
+| Portuguese | 96 | Minor typo and filler word retention |
+| Spanish | 95 | Minor phrasing and gender agreement issues |
+| Italian | 95 | Minor terminology variations for strict academic standards |
+| Vietnamese | 93 | Excellent technical accuracy with minor conversational phrasing issues |
+| Japanese | 92 | Minor phrasing and nuance issues |
+| Chinese | 91 | Minor fluency and terminology issues |
+| Catalan | 89 | Lexical mistranslations and anglicisms |
+| Macedonian | 89 | Notable calques and awkward phrasing |
+| Dutch | 89 | Minor stylistic and grammatical inaccuracies |
+| Polish | 89 | Minor terminology inaccuracies and fluency issues |
+| Bulgarian | 86 | Technical accuracy hindered by unnatural filler words |
+| Persian | 86 | Notable fluency issues and untranslated 'ripple' |
+| French | 85 | Grammatical errors and 'rideau' mistranslation |
 | Turkish | 85 | Minor fluency issues from literal calques |
-| Danish | 84 | Minor grammatical errors and terminology issues |
-| Galician | 82 | Notable lexical and morphological errors requiring proofreading |
-| Korean | 82 | Non-standard terminology and code-switching detract from fluency |
-| Urdu | 82 | Minor issues with terminology consistency and naturalness |
+| Danish | 84 | Minor grammatical and terminology errors |
+| Galician | 82 | Minor errors and Portuguese/Spanish interference |
+| Korean | 82 | Mixed-language typo and non-standard terminology |
+| Urdu | 82 | Inconsistent terminology and unnatural phrasing |
 | Afrikaans | 80 | Untranslated English terms and typos |
-| Lithuanian | 79 | Technical errors and unnatural phrasing |
-| Arabic | 78 | Grammatical errors and duplicate line glitches hinder fluency |
-| Slovak | 78 | Grammatical errors and lack of fluency |
-| Ukrainian | 78 | Grammatical inconsistencies and literal calques |
+| Lithuanian | 79 | Notable grammatical errors and non-standard calques |
+| Slovak | 78 | Good accuracy with grammatical and fluency issues |
+| Ukrainian | 78 | Direct calques and a textual duplication error |
 | Malay | 76 | Terminology precision issues and Anglicisms |
-| Romanian | 76 | Grammatical inconsistencies and lack of polish |
-| Croatian | 75 | Recurring grammatical errors and mistranslations |
-| German | 74 | Noticeable grammatical inaccuracies |
-| Swedish | 74 | Noticeable grammatical awkwardness and duplication errors |
-| Armenian | 73 | Calques and lack of natural flow |
-| Serbian | 72 | Persistent grammatical errors and terminology mistranslations |
-| Czech | 71 | Grammatical errors and awkward calques |
-| Hungarian | 71 | Severe fluency issues and typos |
-| Slovene | 71 | Grammatical errors and unnatural phrasing |
-| Indonesian | 67 | Repetition of dialogue lines and terminology errors |
-| Hebrew | 65 | Severe linguistic and terminology errors |
-| Estonian | 64 | Numerous typos and technical errors |
-| Azerbaijani | 63 | Literal calques and stiff syntax |
-| Norwegian | 63 | Grammatical errors, unidiomatic math phrasing, and duplication artifacts |
-| Basque | 62 | Mixed language errors and duplication artifacts |
-| Swahili | 62 | Significant literal translation artifacts and terminology errors |
-| Mongolian | 60 | Pervasive fluency issues and literal phrasing |
-| Belarusian | 59 | Multiple machine-translation artifacts and errors |
-| Georgian | 57 | Mixed-language artifact and key mistranslations |
-| Finnish | 56 | Pervasive grammatical errors and unnatural phrasing |
+| Romanian | 76 | Grammatical inconsistencies and loanwords |
+| Arabic | 75 | Systematic grammatical and fluency issues |
+| Croatian | 75 | Frequent grammatical errors and terminology issues |
+| German | 74 | Grammar and phrasing issues |
+| Swedish | 74 | Notable grammatical awkwardness and duplication error |
+| Armenian | 73 | Notable machine-translation artifacts and literal calques |
+| Serbian | 72 | Persistent grammatical errors and specific term mistranslations |
+| Czech | 71 | Frequent Czech grammatical errors and case governance issues |
+| Hungarian | 71 | Severe fluency and mechanical errors |
+| Slovene | 71 | Grammatical errors and literal calques |
+| Indonesian | 67 | Repetitive dialogue lines and terminology errors |
+| Hebrew | 65 | Severe linguistic issues and terminology errors |
+| Estonian | 64 | Persistent grammatical errors and non-standard terminology |
+| Azerbaijani | 63 | Obvious machine translation artifacts |
+| Norwegian | 63 | Grammatical errors and duplicated lines |
+| Basque | 62 | Major grammatical errors and language mix-ups |
+| Swahili | 62 | Significant literal calques and inaccurate physics terminology |
+| Mongolian | 60 | Pervasive fluency and grammatical issues |
+| Belarusian | 59 | Numerous MT artifacts and errors |
+| Georgian | 57 | Critical mistranslations and mixed-language artifacts |
+| Finnish | 56 | Severe grammatical errors and literal phrasing |
 | Latvian | 53 | Pervasive grammatical and terminology errors |
-| Icelandic | 51 | Grammar and terminology errors |
-| Welsh | 50 | Pervasive lexical and grammatical errors |
-| Tagalog | 50 | Severe machine-translation artifacts and unnatural phrasing |
-| Russian | 48 | Grammatical errors and repetition artifacts |
-| Greek | 45 | Critical physics terminology errors and unnatural phrasing |
-| Irish | 43 | Pervasive grammatical errors and unnatural phrasing |
-| Albanian | 43 | Severe grammatical and syntactic defects |
-| Telugu | 42 | Severe grammar and terminology flaws |
+| Icelandic | 51 | Significant mathematical and terminology errors |
+| Welsh | 50 | Pervasive spelling and grammatical errors with mistranslated technical terms |
+| Tagalog | 50 | Severe linguistic and grammatical flaws |
+| Russian | 48 | Pervasive grammatical errors and structural repetitions |
+| Greek | 45 | Critical terminology errors and grammatical flaws |
+| Irish | 43 | Severe grammatical errors and awkward phrasing |
+| Albanian | 43 | Severe grammatical and morphological errors |
+| Telugu | 42 | Severe grammatical and terminology defects |
 | Bengali | 41 | Severe orthographical and grammatical errors |
-| Thai | 39 | Severe typographical and orthographic corruption |
-| Hindi | 38 | Pervasive typographical and formatting errors |
-| Esperanto | 36 | Critical terminology errors and grammatical defects |
-| Marathi | 35 | Pervasive grammatical errors and unnatural syntax |
-| Malayalam | 34 | Pervasive grammatical errors and unnatural syntax |
-| Nepali | 34 | Severe machine-translation artifacts and broken syntax |
-| Lao | 32 | Severe errors in technical terminology and fluency |
-| Kannada | 29 | Severe technical and linguistic defects |
-| Interlingua | 27 | Severe linguistic and structural flaws including code artifacts |
-| Khmer | 24 | Severe corruption and unintelligibility |
-| Sinhala | 23 | Severe grammatical and linguistic errors |
-| Tamil | 21 | Pervasive repetitive loops and broken syntax |
-| Burmese | 12 | Severe character corruption and structural breakdown |
+| Tamil | 40 | Pervasive typographical errors |
+| Thai | 39 | Severe typographical and orthographic errors |
+| Hindi | 38 | Pervasive typographical errors and inconsistent rendering |
+| Esperanto | 36 | Systematic technical and grammatical defects |
+| Kannada | 35 | Pervasive grammatical errors and critical semantic mistranslations |
+| Marathi | 35 | Severe grammatical errors and unnatural syntax |
+| Malayalam | 34 | Severe grammatical and syntactic errors |
+| Nepali | 34 | Severe machine-translation artifacts and grammatical errors |
+| Lao | 32 | Systematic terminology errors and pervasive typos |
+| Interlingua | 27 | Severe structural defects and mixed-language contamination |
+| Sinhala | 23 | Severe grammatical and technical errors make it incomprehensible |
+| Burmese | 17 | Severe encoding corruption and structural breakdown |
+| Khmer | 16 | Catastrophic character corruption and gibberish |

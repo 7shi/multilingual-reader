@@ -20,70 +20,70 @@ Guide: high quality (90+), practical range (80-89), medium quality (60-79), crit
 
 | Language | Score | Trend Analysis |
 | --- | ---: | --- |
-| Spanish | 97 | Minor non-natural filler words |
-| Swedish | 97 | Flawless and publication-ready quality |
-| French | 96 | High quality with minor linguistic oversights |
-| Korean | 95 | Minor stylistic stiffness and particle notation issues |
-| Italian | 94 | Minor non-standard mathematical phrasing |
-| Armenian | 93 | High quality with minor typos and terminology inconsistencies |
-| Polish | 92 | High quality with minor speaker-label and syntactic issues |
-| Galician | 91 | Minor Lusitanisms (e.g., quadrado) and typos |
-| Georgian | 91 | Minor OCR artifacts in otherwise excellent translation |
-| Portuguese | 91 | Minor speaker tag inconsistencies |
+| Spanish | 97 | Minor unnatural conversational fillers |
+| Swedish | 97 | Professional-grade accuracy and fluency |
+| French | 96 | High quality with minor anglicisms |
+| Korean | 95 | Minor stylistic stiffness and phrasing issues |
+| Italian | 94 | Minor non-standard math phrasing 'psi quadro' and 'lambda mezzi' |
+| Armenian | 93 | Minor typos and terminology inconsistencies |
+| Polish | 92 | Minor speaker-label misattribution |
+| Galician | 91 | Minor Lusitanisms and lexical errors |
+| Georgian | 91 | Minor OCR typos and formatting glitches |
+| Portuguese | 91 | Speaker tags swapped between interlocutors |
 | Vietnamese | 91 | Minor stylistic adjustments needed for spoken fluency |
-| Slovene | 90 | Minor terminology slips and literal phrasing artifacts |
-| Dutch | 89 | Minor errors and non-natural phrasing |
-| Czech | 86 | Minor typographical and grammatical errors require light editing |
-| Catalan | 85 | Minor errors and typos |
-| Hindi | 85 | Minor fluency and formatting issues |
-| Afrikaans | 83 | Typographical errors and incorrect terminology |
-| Esperanto | 83 | Minor terminology inaccuracies |
-| Malayalam | 82 | Ready for publication with high quality |
-| Burmese | 81 | Minor typos and terminology errors |
-| Azerbaijani | 80 | Literal phrasing and terminology inconsistencies |
-| Serbian | 80 | Terminology and grammatical errors |
-| Japanese | 79 | One untranslated English dialogue line |
-| Russian | 79 | Mixed-language fragments disrupt coherence |
-| German | 78 | Grammatical errors and unnatural phrasing |
-| Urdu | 78 | Inconsistent speaker tags and technical terminology |
-| Arabic | 74 | Untranslated English sentence present |
-| Turkish | 73 | Missing sentence fragment disrupts flow |
-| Thai | 71 | One full sentence left untranslated in English |
-| Bulgarian | 70 | Significant untranslated English segments |
-| Persian | 69 | Mixed-language placeholders and untranslated sentences |
-| Indonesian | 68 | Critical semantic inversion and generation artifacts |
-| Telugu | 68 | Structural defects and typographical errors |
-| Finnish | 67 | Critical typos, structural placeholders, and meta-commentary |
-| Norwegian | 65 | Persistent artifacts and non-standard math notation |
-| Kannada | 63 | Significant technical inaccuracies and unnatural phrasing |
-| Romanian | 63 | Multiple grammatical errors and artifacts |
-| Croatian | 61 | Mixed-language insertion and lexical errors |
-| Malay | 61 | Critical terminology errors and structural omissions |
-| Hebrew | 60 | Untranslated English line breaks language consistency |
-| Danish | 59 | Frequent speaker attribution errors and typos |
-| Icelandic | 56 | Critical terminology and semantic errors |
-| Hungarian | 53 | Unremoved placeholder and literal mistranslation |
-| Nepali | 52 | Mixed-language artifacts and untranslated lines |
-| Albanian | 52 | Pervasive grammatical errors |
-| Slovak | 51 | Severe grammatical defects |
-| Khmer | 50 | Critical structural defects and unnatural phrasing |
-| Latvian | 50 | Systematic grammatical errors and terminology mismatches |
-| Lithuanian | 49 | Severe systematic grammatical errors |
+| Slovene | 90 | Minor terminology slips and literal phrasing |
+| Hungarian | 89 | Minor typos and formatting errors |
+| Burmese | 89 | Minor stylistic stiffness in technical sentences |
+| Dutch | 89 | Minor fluency and attribution issues |
+| Hebrew | 88 | Minor linguistic flaws and typos in an accurate scientific text |
+| Czech | 86 | Minor grammatical and typographical imperfections |
+| Catalan | 85 | Minor typographical errors and misattributed dialogue |
+| Hindi | 85 | Minor fluency and terminology consistency issues |
+| Afrikaans | 83 | Numerous critical lexical and typographical errors |
+| Esperanto | 83 | Minor terminology inaccuracies in physics context |
+| Malayalam | 82 | Requires linguistic polish and terminology standardization |
+| Azerbaijani | 80 | Minor technical and stylistic issues |
+| Serbian | 80 | Grammatical errors, speaker attribution mistakes, and terminology issues |
+| Japanese | 79 | Single untranslated English line |
+| Russian | 79 | Mixed-language fragments present |
+| German | 78 | Grammatical errors and unnatural filler translations |
+| Urdu | 78 | Inconsistent terminology and formatting glitches |
+| Arabic | 74 | Critical untranslated English sentence defect |
+| Basque | 74 | Typographical errors and terminology inconsistencies |
+| Turkish | 73 | Untranslated sentence fragment disrupts completeness |
+| Thai | 71 | Untranslated English sentence interrupts text |
+| Bulgarian | 70 | Untranslated English segments |
+| Persian | 69 | Mixed-language typos and untranslated sentences |
+| Khmer | 69 | Naturalization and terminology standardization required |
+| Indonesian | 68 | Semantic inversion and generation artifacts |
+| Telugu | 68 | Grammatical errors and formatting glitches |
+| Finnish | 67 | Critical terminology typo and meta-commentary |
+| Norwegian | 65 | Missing speaker labels and formatting flaws |
+| Romanian | 63 | Major grammatical errors and unedited artifacts |
+| Croatian | 61 | Untranslated English paragraph remains mid-text |
+| Kannada | 61 | Mixed scripts and terminology errors |
+| Malay | 61 | Critical technical mistranslations and structural omissions |
+| Danish | 59 | Speaker attribution glitches and terminology errors |
+| Icelandic | 56 | Critical physics terminology errors and lexical mismatches |
+| Nepali | 52 | Severe formatting artifacts and untranslated dialogue |
+| Albanian | 52 | Systematic grammatical errors and case misuse |
+| Slovak | 51 | Severe grammatical and syntactic errors |
+| Latvian | 50 | Systematic grammatical and terminology errors |
+| Lithuanian | 49 | Severe systemic grammatical errors |
 | Tagalog | 49 | Major terminology and fluency defects |
-| Chinese | 49 | Mixed-language artifacts and untranslated text |
-| Basque | 45 | Critical structural glitches and repetitive errors |
-| Belarusian | 42 | Untranslated English sentences and inconsistent speaker labeling |
-| Marathi | 42 | Severe structural and mixed-language defects |
-| Ukrainian | 39 | Missing English text segments |
-| Bengali | 38 | Pervasive encoding corruption and mixed language |
-| Macedonian | 36 | Critical mixed-language defects and lexical errors |
-| Greek | 33 | Critical structural defects and mixed-language content |
-| Lao | 33 | Structural defects and mixed orthography |
-| Mongolian | 33 | Critical structural flaws and untranslated English sentences |
-| Swahili | 33 | Mixed-language defects and garbled output |
-| Estonian | 32 | Critical structural defects and untranslated content |
-| Tamil | 30 | Severe foreign character corruption throughout text |
-| Irish | 27 | Severe mixed-language intrusions and critical terminology errors |
-| Interlingua | 26 | Critical structural defects and mixed language |
-| Welsh | 23 | Mixed-language character intrusions and structural defects |
-| Sinhala | 20 | Severe mixed-script contamination |
+| Chinese | 49 | Severe mixed-language artifacts disrupt quality |
+| Belarusian | 42 | Presence of untranslated English text |
+| Marathi | 42 | Severe mixed-language and structural defects |
+| Ukrainian | 39 | Critical structural defects with untranslated segments |
+| Macedonian | 36 | Critical omissions and mixed-language defects |
+| Greek | 33 | Untranslated English segments and technical errors |
+| Lao | 33 | Severe structural and spelling defects |
+| Mongolian | 33 | Untranslated English sentences and mixed speaker attributions |
+| Swahili | 33 | Critical mixed-language defects and structural corruption |
+| Estonian | 32 | Critical untranslating and wrong speaker tags |
+| Tamil | 30 | Critical foreign character insertion |
+| Welsh | 28 | Untranslated English blocks and structural defects |
+| Irish | 27 | Mixed-language intrusions and structural defects |
+| Interlingua | 26 | Untranslated English paragraph inserted mid-text |
+| Sinhala | 20 | Catastrophic structural corruption with mixed scripts |
+| Bengali | 0 | Severely incomplete and garbled |

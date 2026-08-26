@@ -20,70 +20,70 @@ Guide: high quality (90+), practical range (80-89), medium quality (60-79), crit
 
 | Language | Score | Trend Analysis |
 | --- | ---: | --- |
-| Catalan | 97 | Nearly perfect high-quality scientific localization |
-| French | 97 | Minor tu/vous mixing |
-| Italian | 97 | Exceptional quality and accuracy with minor stylistic deviations |
-| Polish | 97 | Highly accurate and professional with minor stylistic tweaks needed |
-| Portuguese | 97 | Flawless scientific and stylistic quality |
-| Swedish | 97 | Exceptional scientific and linguistic quality |
-| Dutch | 96 | Minor phrasing adjustments regarding 'squared' would elevate fluency further |
-| Russian | 96 | High quality with minor stylistic polish needed |
-| Spanish | 95 | Minor dialogue formatting error at end |
-| Vietnamese | 95 | High technical accuracy with minor stylistic issues |
-| Persian | 94 | Minor terminology standardization needed |
-| Japanese | 93 | Professional grade with minor grammatical flaws |
-| Romanian | 93 | Minor stylistic and lexical issues |
-| Bulgarian | 92 | Minor grammatical and stylistic flaws |
-| Czech | 92 | Minor grammatical and phrasing inconsistencies |
+| Catalan | 97 | Flawless high-quality scientific localization |
+| Spanish | 97 | Near-perfect professional quality with minor stylistic nuances |
+| French | 97 | Minor tu/vous inconsistency |
+| Italian | 97 | Exceptionally high quality with minor stylistic flaws |
+| Polish | 97 | Minor fluency issues and calques |
+| Portuguese | 97 | Nearly flawless professional quality |
+| Swedish | 97 | Exceptional quality and accuracy with no critical defects |
+| Ukrainian | 97 | Professional grade with minor issues |
+| German | 96 | Minor stylistic literalness and stiffness |
+| Dutch | 96 | Minor phrasing adjustments needed for fluency |
+| Russian | 96 | Professional and accurate with minor stylistic polish needed |
+| Danish | 95 | Minor lexical and grammatical imperfections |
+| Norwegian | 95 | Exceptional quality with minor terminology refinement suggested |
+| Slovak | 95 | Minor typos and literal phrasing |
+| Albanian | 95 | High quality, minor literalisms |
+| Serbian | 95 | Minor transliteration and phrasing issues |
+| Vietnamese | 95 | Excellent scientific accuracy and fluency |
+| Persian | 94 | Minor stylistic refinements needed for flow |
+| Macedonian | 94 | Minor literal phrasing and stylistic adjustments needed |
+| Thai | 94 | Minor literalism and standardization issues |
+| Galician | 93 | Minor lexical inaccuracies and Portuguese interference |
+| Croatian | 93 | Minor terminology issues and stylistic calques |
+| Japanese | 93 | High-quality with one minor flaw |
+| Romanian | 93 | Minor stylistic issues including unnatural word choices |
+| Chinese | 93 | Excellent scientific accuracy with minor stylistic imperfections |
+| Bulgarian | 92 | Minor stylistic and grammatical inconsistencies |
+| Czech | 92 | Minor grammatical and stylistic issues |
+| Finnish | 92 | Minor phrasing stiffness and literal artifacts reduce absolute fluency |
 | Hebrew | 92 | Minor terminology and fluency tweaks needed |
-| Turkish | 92 | High quality with minor fluency issues |
-| Telugu | 91 | Minor terminology refinements needed |
-| Galician | 90 | Portuguese-influenced orthographic inconsistencies |
-| Lithuanian | 90 | Minor typos and machine-translation artifacts |
-| Albanian | 90 | Minor lexical calques in mathematical phrasing |
-| Belarusian | 89 | Minor lexical inaccuracies and non-standard technical terminology |
-| German | 89 | Minor stylistic and grammatical issues |
-| Macedonian | 88 | Minor dialogue omission and slightly stiff phrasing |
-| Norwegian | 88 | Minor terminology stiffness and literal math verbalization |
-| Slovene | 88 | Minor literal calques and phrasing quirks |
-| Basque | 87 | Conversational filler inaccuracies |
-| Hindi | 87 | Minor fluency hiccups and artifacts impact natural flow |
-| Latvian | 87 | Minor terminology and grammatical slips |
-| Bengali | 86 | Minor fluency and one dialogue omission |
-| Croatian | 86 | Minor errors and glitches |
-| Slovak | 86 | Minor errors and calques |
-| Azerbaijani | 85 | Minor terminology errors and literal phrasing |
-| Mongolian | 85 | Minor fluency issues and terminology refinements needed |
-| Indonesian | 84 | Minor terminology precision issues |
-| Serbian | 84 | Typographical errors and content omissions |
-| Tamil | 84 | Minor terminology inconsistencies and calques |
-| Nepali | 83 | Literal phrasing hinders fluency |
-| Thai | 83 | Minor phrasing stiffness and formatting inconsistencies |
-| Interlingua | 82 | Truncated ending and minor grammatical/calque issues |
-| Burmese | 82 | Typographical errors and inconsistent formatting |
-| Armenian | 80 | Minor typos and awkward phrasing |
-| Marathi | 80 | Needs proofreading for typos and fluency |
-| Urdu | 78 | Unnatural phrasing due to literal translation and heavy transliteration |
-| Esperanto | 77 | Lexical inaccuracies and awkward phrasing |
-| Swahili | 77 | Excessive literalism and non-standard terminology |
-| Arabic | 74 | Dialogue omissions and literal phrasing |
-| Danish | 74 | Structural flaws and dialogue attribution errors |
-| Ukrainian | 74 | Critical structural defect with mixed-language meta-commentary |
-| Chinese | 74 | Excellent terminology but missing dialogue lines and speaker tags |
-| Icelandic | 73 | Grammar errors and non-standard terminology |
-| Kannada | 73 | Notable terminology inaccuracies |
-| Malayalam | 71 | Literal phrasing and terminology inconsistencies |
-| Sinhala | 70 | Unnatural phrasing and terminology errors |
-| Malay | 69 | Terminology errors and omissions |
-| Hungarian | 68 | Major omissions and structural flaws |
-| Korean | 65 | Significant omissions and structural defects |
-| Tagalog | 64 | Inconsistent and incorrect technical terminology |
-| Finnish | 62 | Severe omissions and structural defects |
-| Estonian | 60 | Major omissions and structural defects |
-| Greek | 56 | Severe structural flaw: mixed-language intrusions and meta-commentary present in the final output |
-| Afrikaans | 42 | Unremoved English meta-commentary |
-| Khmer | 42 | Significant technical terminology errors and unnatural phrasing |
-| Irish | 41 | Omission of critical content and mistranslation of key terms |
-| Welsh | 40 | Major grammatical errors and inaccurate terminology |
-| Lao | 34 | Severe technical terminology and MT artifacts |
-| Georgian | 28 | Unremoved English meta-commentary |
+| Georgian | 92 | Minor stylistic adjustments and one typo |
+| Slovene | 92 | Minor fluency and grammatical issues |
+| Turkish | 92 | Minor literal phrasing issues |
+| Bengali | 91 | Minor awkwardness prevents native fluency despite high accuracy |
+| Hindi | 91 | Minor stylistic and phrasing issues only |
+| Telugu | 91 | Minor terminology refinements needed for perfect accuracy |
+| Arabic | 90 | Minor refinements in phrasing and terminology needed for native-level polish |
+| Basque | 90 | Minor terminology and expression calques |
+| Lithuanian | 90 | Minor stylistic and typographical issues present |
+| Korean | 88 | Minor terminology inconsistency for 'psi' |
+| Latvian | 87 | Minor terminology inconsistencies and literal phrasing |
+| Afrikaans | 85 | Prominent lexical mistranslation: 'podcast' as 'potgooi' |
+| Belarusian | 85 | Technical terminology errors and Russianisms |
+| Estonian | 85 | Terminology inaccuracies and minor phrasing issues |
+| Indonesian | 84 | Minor terminology precision and phrasing issues |
+| Tamil | 84 | Minor stylistic and terminology issues |
+| Greek | 82 | Minor technical inaccuracies and grammatical slips |
+| Mongolian | 81 | High quality with minor lexical calques |
+| Marathi | 81 | Fluency suffers from literal calques and rigid syntax |
+| Hungarian | 80 | Missing speaker tags and terminology issues |
+| Armenian | 80 | Minor errors and literal phrasing |
+| Kannada | 80 | Minor terminology and fluency issues |
+| Swahili | 80 | Non-standard physics terminology and literal phrasing |
+| Burmese | 78 | Significant terminology errors |
+| Nepali | 78 | Over-literal translation patterns reduce fluency |
+| Urdu | 78 | Literal phrasing and awkward syntax |
+| Esperanto | 77 | Lexical inaccuracies and awkward calques |
+| Khmer | 73 | Mistranslated technical physics terminology |
+| Azerbaijani | 72 | Non-standard terminology and noticeable translationese |
+| Interlingua | 71 | Severe non-standard vocabulary and morphology |
+| Malayalam | 71 | Noticeable literal phrasing and stiffness |
+| Malay | 71 | Significant terminology errors and awkward phrasing |
+| Irish | 68 | Significant terminology errors and Anglicized phrasing |
+| Icelandic | 66 | Significant technical terminology errors |
+| Tagalog | 66 | Literal translation and non-standard terminology |
+| Sinhala | 62 | Significant lexical inaccuracies and rigid syntax |
+| Lao | 51 | Severe machine-translation artifacts and technical inaccuracies |
+| Welsh | 43 | Systematic vocabulary errors and grammatical defects |

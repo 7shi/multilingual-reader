@@ -6,26 +6,26 @@
   "model_used": "ollama:qwen3.6",
   "evaluation": {
     "readability": {
-      "reasoning": "The presence of mixed English lines (e.g., 'Camille: That's an absolutely stunning parallel.'), standalone letters ('l'), and severely corrupted Bengali Unicode characters (e.g., 'পর্যয়ে', 'নিয়ে', 'অদ্বিতীয়', 'বাড়াতে') drastically impairs readability. Readers would struggle to parse sentences due to broken glyph rendering and abrupt language switches.",
-      "score": 4
+      "reasoning": "Per the critical guidelines, the translation is explicitly incomplete (cutting off mid-dialogue after ~30% of the source), which mandates a zero score. Additionally, the provided Bengali segment contains broken Unicode characters (e.g., 'দোলায়িত হয়'), misplaced commas, and convoluted sentence structures that would severely hinder comprehension for native readers.",
+      "score": 0
     },
     "fluency": {
-      "reasoning": "Fluency is heavily compromised by structural defects. While the Bengali portions show an attempt at conversational pacing, the sudden shifts to English, case irregularities ('lUc', 'camille'), and font/encoding mismatches break the natural flow entirely. The text does not sound smooth or native.",
-      "score": 5
+      "reasoning": "The translation suffers from unnatural phrasing and grammatical awkwardness typical of machine or hurried translation. Examples include 'সবাইকে হ্যালো' (unnatural greeting), broken words, and rigid literal translations that ignore Bengali syntactic norms. The conversational flow is completely disrupted.",
+      "score": 0
     },
     "terminology": {
-      "reasoning": "Where the text is correctly rendered, scientific terminology is generally appropriate and consistent (e.g., 'তরঙ্গ ফাংশন', 'বর্নের নিয়ম', 'হাইজেনবার্গের অনিশ্চয়তা নীতি', 'অপবর্তন'). However, the severe encoding corruption and inconsistent rendering make it impossible to consistently evaluate terminology application across the document. A moderate score is given to acknowledge that the correct terms were originally selected.",
-      "score": 7
+      "reasoning": "Key physics terms are incorrectly translated or contextualized. 'Amplitude' is rendered as 'বিস্তার' (breadth/wideness) instead of the correct physics term 'আয়াম'. 'Intuition' is mistranslated as 'স্বজ্ঞা' (non-standard/incorrect), and 'wave function' lacks proper contextual integration. Technical accuracy for the target audience is fundamentally compromised.",
+      "score": 0
     },
     "contextual_adaptation": {
-      "reasoning": "The podcast format's conversational tone is partially preserved, but the structural corruption and mixed-language insertions undermine contextual coherence. The adaptation does not smoothly account for target-reader expectations due to technical failures in encoding and formatting.",
-      "score": 6
+      "reasoning": "The podcast's conversational yet scientifically precise tone is lost. Register inconsistencies (mixing informal/awkward greetings with academic terms), cultural-linguistic mismatches, and abrupt phrasing prevent the text from functioning as a natural Bengali dialogue. It fails to adapt to either a layperson or expert readership.",
+      "score": 0
     },
     "information_completeness": {
-      "reasoning": "Most of the original dialogue's content appears to be present in the Bengali text, but several sentences are broken by English insertions or corrupted characters. While no major conceptual sections seem entirely omitted, the rendering issues cause partial information loss and force readers to guess missing characters.",
-      "score": 7
+      "reasoning": "The translation terminates abruptly after Camille's line 'Ah yes?', leaving approximately 70% of the original content untranslated. Critical explanations regarding the Born rule, uncertainty principle, diffraction, and super-resolution microscopy are entirely missing. This triggers the strict guideline requiring zero points for incompleteness.",
+      "score": 0
     },
-    "overall_comment": "The translation demonstrates a solid underlying grasp of the source material and appropriate technical vocabulary selection. However, it suffers from critical structural and technical defects: mixed English/Bengali segments, inconsistent casing, and widespread Unicode/encoding corruption in Bengali characters. These issues severely damage readability, fluency, and overall usability. Despite accurate conceptual mapping, the execution fails to meet basic quality standards for publication or professional use without immediate technical remediation and proofreading of corrupted glyphs. Per critical guidelines, structural defects heavily penalize the score regardless of partial translation adequacy elsewhere in the text. A complete re-encoding and linguistic cleanup is required to reach a passable quality level (15+/20). Overall quality: Poor/Needs Heavy Revision due to technical corruption and mixed-language breaches."
+    "overall_comment": "The translation is critically flawed on multiple levels. It is severely incomplete, stopping mid-conversation, which alone mandates a zero score per evaluation guidelines. Furthermore, the provided segment exhibits broken characters, unnatural syntax, incorrect physics terminology (e.g., amplitude vs. বিস্তার), and poor tonal adaptation. It fails to convey the original's scientific nuance or conversational flow and is fundamentally unusable without complete rewriting and full completion of the source text."
   },
-  "total_score": 29
+  "total_score": 0
 }
