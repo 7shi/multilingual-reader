@@ -10,7 +10,7 @@ from trtools.language import LANGUAGES, LANG_NAMES
 
 ROOT = Path(__file__).resolve().parent
 ONDE_MAKEFILE = ROOT / "onde" / "Makefile"
-MODELS_RE = re.compile(r"^MODELS\s*=\s*(.+)$", re.MULTILINE)
+MODELS_RE = re.compile(r"^MODELS\s*=\s*((?:.*\\\n)*.*)$", re.MULTILINE)
 
 
 def load_onde_models() -> tuple[str, ...]:
@@ -18,7 +18,7 @@ def load_onde_models() -> tuple[str, ...]:
     match = MODELS_RE.search(text)
     if match is None:
         raise ValueError(f"MODELS assignment not found in {ONDE_MAKEFILE}")
-    return tuple(match.group(1).split())
+    return tuple(match.group(1).replace("\\", " ").split())
 
 
 ONDE_MODELS = load_onde_models()
