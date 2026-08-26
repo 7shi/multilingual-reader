@@ -7,7 +7,7 @@ onde テキストを対象として各モデルで翻訳・評価を行います
 - [qwen3.6](qwen3.6/)
 - [qwen3.8](qwen3.8/)
 - [muse-glimmer](muse-glimmer/)
-- [ox-alpha](ox-alpha/)
+- [ox-alpha](ox-alpha/) (glm-5.3-flash stealth)
 - [gpt-5.6-luna](gpt-5.6-luna/)
 - [gemini-3.5-flash-lite](gemini-3.5-flash-lite/)
 

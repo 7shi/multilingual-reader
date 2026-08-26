@@ -8,7 +8,7 @@ Target languages: `CORE_LANGS` + `EXTRA_LANGS` defined in [common.mk](../../comm
 
 `make` runs translation, evaluation, and aggregation in one batch. Translations go to `tr/`, evaluations to `evals/`, and scores to `SCORES.txt`.
 
-- Translation model: ox-alpha
+- Translation model: ox-alpha (glm-5.3-flash stealth)
 - Evaluation model: qwen3.6
 - Settings: threshold=20, keep=5, no CoT, term file injection (`../../terms/*-en.{json,tsv}`)
 

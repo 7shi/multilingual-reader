@@ -7,7 +7,7 @@
 - **qwen3.6**: Qwen 3.6 35B-A3B (MoE)
 - **qwen3.8**: Qwen 3.8 27B (dense)
 - **muse-glimmer**: 27.9B (dense)
-- **ox-alpha**: Ox Alpha（評価用ステルスモデル）
+- **ox-alpha**: Ox Alpha（GLM-5.3-Flash ステルス版）
 - **gpt-5.6-luna**: GPT-5.6 Luna（クローズドモデル）
 - **gemini-3.5-flash-lite**: Gemini 3.5 Flash-Lite（クローズドモデル）
 
