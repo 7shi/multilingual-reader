@@ -1,0 +1,31 @@
+{
+  "original_file": "../../../onde-en.txt",
+  "translation_file": "tr/onde-bn.txt",
+  "source_language": "English",
+  "target_language": "Bengali",
+  "model_used": "ollama:qwen3.6",
+  "evaluation": {
+    "readability": {
+      "reasoning": "The translation contains massive sequential number placeholders `{1}` through `{1000}` inserted directly into the middle of sentences and paragraphs, alongside fragments of English text. This completely breaks syntax boundaries and logical flow, making large sections impossible to read or comprehend in Bengali.",
+      "score": 4
+    },
+    "fluency": {
+      "reasoning": "While intact portions use grammatically acceptable Bengali phrasing, the pervasive structural artifacts cause abrupt sentence truncations and random language switches (e.g., `it states that it is impossible...`). These interruptions destroy natural rhythm and smoothness for native readers.",
+      "score": 4
+    },
+    "terminology": {
+      "reasoning": "Where the text remains intact, physics terminology is actually well-handled (তরঙ্গ ফাংশন for wave function, অপবর্তন for diffraction, অনিশ্চয়তা নীতি for uncertainty principle, ইভানেসেন্ট তরঙ্গ for evanescent waves). However, the structural corruption prevents consistent application across the document.",
+      "score": 9
+    },
+    "contextual_adaptation": {
+      "reasoning": "The conversational podcast format and academic intent are partially preserved in uncorrupted segments. However, the catastrophic formatting defects disrupt narrative continuity, making it impossible to effectively convey the original tone, pacing, or cultural/educational context throughout.",
+      "score": 5
+    },
+    "information_completeness": {
+      "reasoning": "Significant portions of Camille's and Luc's dialogue are fragmented or entirely replaced by placeholder sequences. Key explanatory sentences are lost or interleaved with untranslated English fragments, resulting in substantial information loss and broken conceptual links (e.g., between amplitude, width, and resolution limits).",
+      "score": 3
+    },
+    "overall_comment": "The translation demonstrates a solid grasp of Bengali physics terminology in intact segments, but suffers from a catastrophic structural defect: over 1,000 sequential numeric placeholders (`{1}` to `{1000}`) are randomly inserted throughout the text, accompanied by mixed-language fragments. This severely breaks sentence boundaries, causes major information loss, and violates critical translation quality standards. The file requires immediate post-processing to remove artifacts and restore textual integrity before it can be considered usable or readable.\nScore: 3/20"
+  },
+  "total_score": 25
+}

@@ -1,0 +1,31 @@
+{
+  "original_file": "../../../onde-en.txt",
+  "translation_file": "tr/onde-tl.txt",
+  "source_language": "English",
+  "target_language": "Tagalog",
+  "model_used": "ollama:qwen3.6",
+  "evaluation": {
+    "readability": {
+      "reasoning": "The presence of embedded code fragments (`strip_tags`), random meta-text (`Tagalog.`), and verbatim paragraph repetitions severely disrupts the flow and comprehension for Tagalog readers. These artifacts break sentence structure and confuse speaker attributions.",
+      "score": 4
+    },
+    "fluency": {
+      "reasoning": "Natural conversational tone is completely undermined by formatting errors, awkward direct translations, and broken syntax. Phrases like `Ang isa bang napaka-'taas' na alon...` are syntactically forced, and the repetition of entire blocks makes the text sound unpolished and machine-generated rather than human-edited.",
+      "score": 3
+    },
+    "terminology": {
+      "reasoning": "Attempts are made to translate physics concepts (e.g., `punsiyon ng alon` for wave function, `prinsipyo ng kawalang-katiyakan ni Heisenberg`), but many terms deviate from standard Filipino scientific nomenclature. For instance, `dobleng siwang` for double-slit is non-standard and confusing. While the vocabulary shows effort, consistency and academic appropriateness are lacking.",
+      "score": 6
+    },
+    "contextual_adaptation": {
+      "reasoning": "The original podcast relies on a smooth, engaging, yet educational tone. The structural glitches, code injections, and unnatural phrasing completely fracture this intended atmosphere. Cultural or pedagogical adaptation is not adequately considered, as the text reads like a raw MT dump rather than a localized academic conversation.",
+      "score": 5
+    },
+    "information_completeness": {
+      "reasoning": "All core scientific concepts and dialogue points from the original are technically present in the text. However, critical presentation flaws (duplications, code snippets, broken speaker tags) create redundancy and obscure key explanations, requiring readers to mentally reconstruct missing context or ignore artifacts.",
+      "score": 7
+    },
+    "overall_comment": "While the translation captures the raw content of the physics podcast, it suffers from catastrophic structural and post-processing errors. Embedded code fragments (`strip_tags`, `Tagalog.`), exact paragraph duplications, and broken speaker attributions render it unusable in its current state. Technical terminology shows initial effort but lacks standardization, and the conversational-academic tone is entirely disrupted. Significant manual editing and pipeline cleanup are required before this text can be considered for publication or use in educational contexts.\nScore: 5/20 (Critical structural defects per guidelines.)"
+  },
+  "total_score": 25
+}

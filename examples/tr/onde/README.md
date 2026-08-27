@@ -12,6 +12,7 @@ onde テキストを対象として各モデルで翻訳・評価を行います
 - [gemini-3.5-flash-lite](gemini-3.5-flash-lite/)
 - [gemini-2.5-flash](gemini-2.5-flash/)
 - [gemma4-31b](gemma4-31b/)
+- [gemini-3-flash](gemini-3-flash/)
 
 onde はフランス語で「波」を意味します。ここでは物理用語として「波動」の意味で使用されています。
 

@@ -1,0 +1,31 @@
+{
+  "original_file": "../../../onde-en.txt",
+  "translation_file": "tr/onde-bn.txt",
+  "source_language": "English",
+  "target_language": "Bengali",
+  "model_used": "ollama:qwen3.6",
+  "evaluation": {
+    "readability": {
+      "reasoning": "The translation suffers from catastrophic structural corruption. Large sections are replaced by sequential numeric placeholders ({1} to {1000}), completely breaking sentence flow and logical progression. Major physics explanations are truncated or omitted mid-dialogue, making it impossible for Bengali readers to follow the concepts. The conversational structure is frequently broken, with speaker turns merging or vanishing entirely.",
+      "score": 2
+    },
+    "fluency": {
+      "reasoning": "Even in the uncorrupted segments, the Bengali exhibits unnatural phrasing and awkward syntax typical of literal machine translation. Mixed English-Bengali code-switching (e.g., 'delta x', 'lambda over two', 'NSOM') feels jarring and breaks the natural cadence expected in a Bengali podcast script. The pervasive placeholder corruption further prevents any meaningful assessment of fluency.",
+      "score": 3
+    },
+    "terminology": {
+      "reasoning": "Technical terms are handled inconsistently. Some concepts receive appropriate Bengali equivalents (e.g., 'অপবর্তন' for diffraction, 'অনিশ্চয়তা নীতি' for uncertainty principle, 'বর্নের নিয়ম' for Born rule), but many critical physics terms are left untranslated or awkwardly transliterated ('ইভানেসেন্ট তরঙ্গ', 'NSOM'). The lack of contextual integration and the massive text loss prevent accurate technical communication.",
+      "score": 4
+    },
+    "contextual_adaptation": {
+      "reasoning": "The original podcast's intent to bridge quantum mechanics and everyday physics is severely undermined. The translation fails to adapt the conversational tone for a Bengali-speaking audience, reading instead as a fragmented draft. Cultural and pedagogical nuances (like explaining wave-particle duality through accessible analogies) are lost due to structural breaks and untranslated English references.",
+      "score": 3
+    },
+    "information_completeness": {
+      "reasoning": "Critical information is missing due to the inserted placeholder blocks that replace entire dialogues and explanations. Key points about the square amplitude rule, classical optics analogy, diffraction limits, and super-resolution microscopy are truncated or entirely absent. The translation does not preserve the original's educational arc or philosophical conclusion.",
+      "score": 2
+    },
+    "overall_comment": "The translation is fundamentally unusable due to severe structural corruption. Hundreds of numeric placeholders ({1}–{1000}) are inserted throughout the text, destroying coherence, breaking speaker dialogue flow, and causing massive information loss. While the initial Bengali attempts show some correct terminology, the pervasive corruption, inconsistent handling of physics terms, lack of natural phrasing, and missing content render it critically flawed. It fails to meet basic translation quality standards and requires complete reconstruction from the source text rather than minor editing or back-translation fixes. Per evaluation guidelines, structural defects warrant the lowest scoring range across all criteria. A complete rewrite is necessary to restore educational value and linguistic integrity for Bengali readers. The overall score is 3 out of 20 points, reflecting its status as a severely broken draft rather than a functional translation. Recommendations: discard current version, apply context-aware neural translation with post-editing focus on physics terminology standardization (e.g., বোরন নিয়ম/জীবনশীলতার বিবরণ), ensure dialogue formatting is preserved, and remove all placeholder artifacts before release. The podcast format demands high conversational fluency, which must be manually refined by a bilingual physics writer. This version should not be published or distributed in its current state. Critical guideline violations (structural defects, mixed languages, missing text) directly justify the low scoring range across all dimensions. Overall quality is critically deficient."
+  },
+  "total_score": 14
+}

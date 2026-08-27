@@ -1,0 +1,31 @@
+{
+  "original_file": "../../../onde-en.txt",
+  "translation_file": "tr/onde-tl.txt",
+  "source_language": "English",
+  "target_language": "Tagalog",
+  "model_used": "ollama:qwen3.6",
+  "evaluation": {
+    "readability": {
+      "reasoning": "The translation is largely comprehensible in terms of conveying the scientific dialogue, but it contains severe structural defects that disrupt logical flow and reading comprehension. These include embedded code (`strip_tags`), meta-linguistic artifacts (`Tagalog.` inserted mid-sentence), floating dialogue lines without speaker tags, and duplicated speaker blocks. These pipeline errors create significant noise, making the text feel broken and requiring constant reorientation by the reader.",
+      "score": 4
+    },
+    "fluency": {
+      "reasoning": "The text suffers from numerous unnatural expressions, non-standard neologisms, and grammatical breaks that hinder smooth reading for a native Tagalog speaker. Examples include 'mapapabulaanang' (non-existent word, likely meant 'hindi maikakaila'), 'nalusutan' (incorrect derivation, should be 'malampasan' or 'maisagawa'), and awkward calques like 'ubrang pinong dulo' instead of the more natural 'napaka-pinong dulo' or 'super-tinip na dulo'. The conversational cadence is frequently interrupted by these lexical and syntactic errors.",
+      "score": 3
+    },
+    "terminology": {
+      "reasoning": "Critical mistranslation of foundational physics terms severely compromises scientific accuracy. 'Pisiko' incorrectly denotes a sick person rather than 'physicist' (should be 'pisikista' or 'siyentipiko sa pisika'). 'Konserbasyon' refers to church property conservation, not physical 'conservation' ('konservasyon' or 'pagpapanatili ng dami'). Code artifacts (`strip_tags`, `Tagalog.`) injected into a technical transcript further degrade terminology integrity. While terms like 'ebanesenteng alon', 'difraksiyon', and 'lapad' are acceptable, the inconsistent and scientifically inaccurate handling of core concepts is highly problematic.",
+      "score": 2
+    },
+    "contextual_adaptation": {
+      "reasoning": "The podcast format and accessible tone of the original are partially preserved, and the philosophical closing question is effectively maintained. However, the technical inaccuracies and structural corruption significantly detract from the intended academic yet conversational register. The text fails to properly adapt the scientific context for a Tagalog-speaking audience expecting accurate physics discourse, resulting in a mismatch between the source's intellectual tone and the translation's execution.",
+      "score": 6
+    },
+    "information_completeness": {
+      "reasoning": "Despite structural noise, all major conceptual elements from the original transcript are present: wave function as probability, Born rule, amplitude-energy parallel in classical optics, Heisenberg uncertainty principle, diffraction/Abbe limit, evanescent waves, and NSOM super-resolution techniques. No scientific concepts or dialogue turns are fundamentally omitted, though the delivery is marred by formatting/pipeline errors that create minor redundancy and confusion.",
+      "score": 10
+    },
+    "overall_comment": "The translation preserves the core scientific narrative and philosophical inquiry of the original podcast transcript, but it is critically undermined by severe pipeline corruption (e.g., `strip_tags`, meta-insertions, duplicate speaker blocks), systematic terminology failures in physics (e.g., 'pisiko', 'konserbasyon'), and numerous non-standard lexical choices. While the underlying information remains intact, the structural and linguistic flaws severely compromise readability, fluency, and scientific accuracy. Substantive manual revision is required to restore professional quality and technical fidelity for a Tagalog-speaking audience interested in physics content."
+  },
+  "total_score": 25
+}

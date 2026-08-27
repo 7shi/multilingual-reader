@@ -1,0 +1,31 @@
+{
+  "original_file": "../../../onde-en.txt",
+  "translation_file": "tr/onde-lo.txt",
+  "source_language": "English",
+  "target_language": "Lao",
+  "model_used": "ollama:qwen3.6",
+  "evaluation": {
+    "readability": {
+      "reasoning": "The text is largely comprehensible and successfully breaks down complex physics concepts into a conversational podcast format. However, the massive generation loop in the middle section creates a severe readability barrier, forcing the reader to skip ~30 identical paragraphs with broken HTML tags. Outside this defect, sentence structure is logical and easy to follow.",
+      "score": 6
+    },
+    "fluency": {
+      "reasoning": "Fluency is significantly compromised by two factors: the catastrophic repetition artifact that completely breaks textual flow, and several awkward literal translations typical of raw machine translation (e.g., 'Wait' translated as 'ຖ້າກ່ອນ' instead of 'ຊະນຸດ' or 'ຂໍໜ້ອຍ'; 'lambda over two' awkwardly rendered as 'ແລມບດາສ່ວນສອງ'). These artifacts make the text sound unnatural to native Lao speakers.",
+      "score": 5
+    },
+    "terminology": {
+      "reasoning": "The translation demonstrates strong domain knowledge, correctly adapting complex physics terms into Lao (e.g., ຟັງຊັນຄື້ນ for wave function, ຫຼັກການຄວາມບໍ່ແນ່ນອນ for uncertainty principle, ຄື້ນເລືອນຫາຍ for evanescent waves). However, notable errors include translating 'diffraction' as 'ການເຫຼື້ອມ' (glimmer/shine) instead of the standard ການເງີດຂອງຄື້ນ or ພາວະແຍກສະບາຍ, and phonetically transliterating 'lambda' rather than using the standard mathematical symbol λ or accepted loan term. Consistency is otherwise good.",
+      "score": 9
+    },
+    "contextual_adaptation": {
+      "reasoning": "The translation effectively preserves the original's educational podcast tone and adapts well to a Lao-speaking academic audience. The dialogue structure and pacing mirror the conversational yet technical intent of the source. Cultural adaptation is appropriate for science communication, maintaining neutrality while using accessible phrasing suitable for laypersons encountering advanced physics.",
+      "score": 8
+    },
+    "information_completeness": {
+      "reasoning": "All core scientific ideas (Born rule, wave-particle duality, amplitude vs. width independence, Heisenberg uncertainty, Abbe limit, super-resolution techniques) are fully conveyed without conceptual omission. However, the severe repetition loop introduces massive redundancy, violating the guideline to eliminate redundancy while keeping content concise. Conceptually complete, but structurally flawed in presentation.",
+      "score": 7
+    },
+    "overall_comment": "The translation captures the scientific depth and conversational podcast format of the original English text with notable accuracy in physics terminology. However, it suffers from a critical structural failure: a massive generation loop causing extensive paragraph repetition accompanied by raw HTML tags, which severely disrupts readability and fluency. Additionally, several lexical choices are awkward or contextually inaccurate (e.g., mistranslation of 'diffraction' and unnatural transliteration of 'lambda'). While the conceptual mapping is strong and appropriate for a Lao academic audience, the structural defect and MT-like phrasing significantly degrade overall quality. A careful manual edit to remove the repetition loop and refine localized terminology is essential before publication or use in educational contexts. Per evaluation guidelines, critical structural defects warrant a heavily weighted penalty on fluency, readability, and the final score. Overall, it serves as a strong conceptual draft but requires substantial post-editing for professional use. (Score: 4/20 per strict guideline #3 for critical structural errors.)"
+  },
+  "total_score": 35
+}
