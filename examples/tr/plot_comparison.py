@@ -1,7 +1,3 @@
-# /// script
-# requires-python = ">=3.10"
-# dependencies = ["matplotlib"]
-# ///
 """指定したモデルの組み合わせで翻訳評価スコアを比較する折れ線グラフを1枚生成する。
 
 実行: uv run plot_comparison.py -o compare/gemini35fl.png \

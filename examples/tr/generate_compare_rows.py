@@ -7,7 +7,7 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
-# onde/*/plot_comparison.py と同様に matplotlib でグラフを生成する（graph サブコマンド用）
+# plot_comparison.py と同様に matplotlib でグラフを生成する（graph サブコマンド用）
 import matplotlib.pyplot as plt
 from matplotlib.cbook import boxplot_stats
 
@@ -37,7 +37,8 @@ CORE_CODES = ("ja", "zh", "es", "fr", "de")
 LINE_RE = re.compile(r"^([a-z0-9.]+)-([a-z0-9.]+):\s+(\d+)/100点$")
 README_FILE = ROOT / "README.md"
 GRAPH_OUTPUT = ROOT / "compare" / "MODELS.png"
-STATS_HEADER = "| モデル | 平均 | 標準偏差 | 備考 |"
+GRAPH_SVG_OUTPUT = ROOT / "MODELS.svg"
+STATS_HEADER = "| モデル | 中央値 | 標準偏差 | 備考 |"
 SYNC_HEADERS = {
     "compare": "| Language | ",
     "stats": STATS_HEADER,
@@ -131,13 +132,13 @@ def compute_stats() -> dict[str, tuple[float, float]]:
     stats = {}
     for i, model in enumerate(ONDE_MODELS):
         scores = [row.scores[i] for row in rows]
-        stats[model] = (statistics.mean(scores), statistics.pstdev(scores))
+        stats[model] = (statistics.median(scores), statistics.pstdev(scores))
     return stats
 
 
 def load_existing_model_notes() -> dict[str, tuple[str, str]]:
     """model -> (モデル欄の表示文字列, 備考) を既存の stats 表から読み取る
-    （平均・標準偏差は再計算するため無視）。モデル欄には手動で追記した
+    （中央値・標準偏差は再計算するため無視）。モデル欄には手動で追記した
     括弧書き（パラメータ規模など）が含まれることがあるため、先頭の
     空白区切りトークン（モデル名本体）をキーにして引き当てる。
     """
@@ -169,9 +170,9 @@ def render_stats_rows() -> list[str]:
     notes = load_existing_model_notes()
     rendered = []
     for model in sorted(ONDE_MODELS, key=lambda m: -stats[m][0]):
-        mean, stdev = stats[model]
+        median, stdev = stats[model]
         model_cell, remark = notes.get(model, (model, ""))
-        rendered.append(f"| {model_cell} | {mean:.2f} | {stdev:.2f} | {remark} |")
+        rendered.append(f"| {model_cell} | {median:.0f} | {stdev:.2f} | {remark} |")
     return rendered
 
 
@@ -211,6 +212,10 @@ def plot_model_stats(top: int | None = None) -> None:
     output.parent.mkdir(exist_ok=True)
     fig.savefig(output, dpi=150)
     print(f"Saved: {output}")
+
+    if top is None:
+        fig.savefig(GRAPH_SVG_OUTPUT)
+        print(f"Saved: {GRAPH_SVG_OUTPUT}")
 
     print(f"{'label':<20} {'min':>5} {'q1':>5} {'median':>6} {'q3':>5} {'max':>5}")
     for label, stats in zip(labels, boxplot_stats(data)):
