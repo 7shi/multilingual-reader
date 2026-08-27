@@ -2,7 +2,7 @@
 # requires-python = ">=3.10"
 # dependencies = ["matplotlib"]
 # ///
-"""Gemini 3.5 Flash Lite と Gemini 2.5 Flash と Gemma 4 と Gemma 4 31B の翻訳評価スコアを比較する折れ線グラフを生成する。
+"""Gemini 3.5 Flash Lite と Gemini 2.5 Flash と Gemma 4 26B-A4B と Gemma 4 31B の翻訳評価スコアを比較する折れ線グラフを生成する。
 
 実行: uv run plot_comparison.py
 """
@@ -40,7 +40,7 @@ def plot_sorted_by(ax, gemini_scores, gemini25_scores, gemma4_scores, gemma4_31b
 
     ax.plot([gemini_scores[lang] for lang in langs], names, marker="o", markersize=3, label="Gemini 3.5 Flash Lite")
     ax.plot([gemini25_scores[lang] for lang in langs], names, marker="o", markersize=3, label="Gemini 2.5 Flash")
-    ax.plot([gemma4_scores[lang] for lang in langs], names, marker="o", markersize=3, label="Gemma 4")
+    ax.plot([gemma4_scores[lang] for lang in langs], names, marker="o", markersize=3, label="Gemma 4 26B-A4B")
     ax.plot([gemma4_31b_scores[lang] for lang in langs], names, marker="o", markersize=3, label="Gemma 4 31B")
 
     ax.set_xlabel("Score")
@@ -60,7 +60,7 @@ def main():
     sort_keys = [
         (lambda lang: gemini_scores[lang], "Sorted by Gemini 3.5 Flash Lite", OUTPUT_GEMINI35FL),
         (lambda lang: gemini25_scores[lang], "Sorted by Gemini 2.5 Flash", OUTPUT_GEMINI25F),
-        (lambda lang: gemma4_scores[lang], "Sorted by Gemma 4", OUTPUT_GEMMA4),
+        (lambda lang: gemma4_scores[lang], "Sorted by Gemma 4 26B-A4B", OUTPUT_GEMMA4),
         (lambda lang: gemma4_31b_scores[lang], "Sorted by Gemma 4 31B", OUTPUT_GEMMA4_31B),
     ]
 
