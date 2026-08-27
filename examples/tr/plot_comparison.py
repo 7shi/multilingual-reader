@@ -2,10 +2,13 @@
 # requires-python = ">=3.10"
 # dependencies = ["matplotlib"]
 # ///
-"""Gemini 3.5 Flash Lite と Gemini 2.5 Flash と Gemma 4 26B-A4B と Gemma 4 31B の翻訳評価スコアを比較する折れ線グラフを生成する。
+"""指定したモデルの組み合わせで翻訳評価スコアを比較する折れ線グラフを1枚生成する。
 
-実行: uv run plot_comparison.py
+実行: uv run plot_comparison.py -o compare/gemini35fl.png \
+    -i gemini-3.5-flash-lite -l "Gemini 3.5 Flash Lite" \
+    -i gemini-2.5-flash -l "Gemini 2.5 Flash"
 """
+import argparse
 import json
 import sys
 from pathlib import Path
@@ -17,60 +20,56 @@ PROJECT_ROOT = HERE.parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 from trtools.language import resolve_lang
 
-GEMINI_TRENDS = HERE / "onde" / "gemini-3.5-flash-lite" / "TRENDS.jsonl"
-GEMINI25_TRENDS = HERE / "onde" / "gemini-2.5-flash" / "TRENDS.jsonl"
-GEMMA4_TRENDS = HERE / "onde" / "gemma4" / "TRENDS.jsonl"
-GEMMA4_31B_TRENDS = HERE / "onde" / "gemma4-31b" / "TRENDS.jsonl"
-COMPARE_DIR = HERE / "compare"
-OUTPUT_GEMINI35FL = COMPARE_DIR / "gemini35fl.png"
-OUTPUT_GEMINI25F = COMPARE_DIR / "gemini25f.png"
-OUTPUT_GEMMA4 = COMPARE_DIR / "gemma4.png"
-OUTPUT_GEMMA4_31B = COMPARE_DIR / "gemma4_31b.png"
+ONDE_DIR = HERE / "onde"
 
-def load_scores(path: Path) -> dict[str, int]:
+
+def load_scores(model: str) -> dict[str, int]:
+    path = ONDE_DIR / model / "TRENDS.jsonl"
     scores = {}
     for line in path.read_text(encoding="utf-8").splitlines():
         entry = json.loads(line)
         scores[entry["lang"]] = entry["score"]
     return scores
 
-def plot_sorted_by(ax, gemini_scores, gemini25_scores, gemma4_scores, gemma4_31b_scores, sort_key, title):
-    langs = sorted(gemini_scores, key=sort_key, reverse=True)
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("-o", "--output", required=True, type=Path, help="出力ファイルパス")
+    parser.add_argument(
+        "-i", "--model", action="append", required=True,
+        help="モデル名（onde/<model>/TRENDS.jsonl を参照、先頭指定がソート基準）",
+    )
+    parser.add_argument("-l", "--label", action="append", required=True, help="凡例ラベル")
+    args = parser.parse_args()
+    if len(args.model) != len(args.label):
+        parser.error("-i と -l の指定回数が一致しません")
+    return args
+
+
+def main() -> None:
+    args = parse_args()
+    scores_list = [load_scores(model) for model in args.model]
+
+    langs = sorted(scores_list[0], key=lambda lang: scores_list[0][lang], reverse=True)
     names = [resolve_lang(lang) for lang in langs]
 
-    ax.plot([gemini_scores[lang] for lang in langs], names, marker="o", markersize=3, label="Gemini 3.5 Flash Lite")
-    ax.plot([gemini25_scores[lang] for lang in langs], names, marker="o", markersize=3, label="Gemini 2.5 Flash")
-    ax.plot([gemma4_scores[lang] for lang in langs], names, marker="o", markersize=3, label="Gemma 4 26B-A4B")
-    ax.plot([gemma4_31b_scores[lang] for lang in langs], names, marker="o", markersize=3, label="Gemma 4 31B")
+    fig, ax = plt.subplots(figsize=(6, 20))
+    for scores, label in zip(scores_list, args.label):
+        ax.plot([scores[lang] for lang in langs], names, marker="o", markersize=3, label=label)
 
     ax.set_xlabel("Score")
     ax.set_ylabel("Language")
-    ax.set_title(title)
+    ax.set_title(f"Sorted by {args.label[0]}")
     ax.invert_yaxis()
     ax.tick_params(axis="y", labelsize=8)
     ax.legend()
     ax.grid(axis="x", alpha=0.3)
 
-def main():
-    gemini_scores = load_scores(GEMINI_TRENDS)
-    gemini25_scores = load_scores(GEMINI25_TRENDS)
-    gemma4_scores = load_scores(GEMMA4_TRENDS)
-    gemma4_31b_scores = load_scores(GEMMA4_31B_TRENDS)
+    args.output.parent.mkdir(parents=True, exist_ok=True)
+    fig.tight_layout()
+    fig.savefig(args.output, dpi=150)
+    print(f"Saved: {args.output}")
 
-    sort_keys = [
-        (lambda lang: gemini_scores[lang], "Sorted by Gemini 3.5 Flash Lite", OUTPUT_GEMINI35FL),
-        (lambda lang: gemini25_scores[lang], "Sorted by Gemini 2.5 Flash", OUTPUT_GEMINI25F),
-        (lambda lang: gemma4_scores[lang], "Sorted by Gemma 4 26B-A4B", OUTPUT_GEMMA4),
-        (lambda lang: gemma4_31b_scores[lang], "Sorted by Gemma 4 31B", OUTPUT_GEMMA4_31B),
-    ]
-
-    COMPARE_DIR.mkdir(exist_ok=True)
-    for sort_key, title, output in sort_keys:
-        fig, ax = plt.subplots(figsize=(6, 20))
-        plot_sorted_by(ax, gemini_scores, gemini25_scores, gemma4_scores, gemma4_31b_scores, sort_key, title)
-        fig.tight_layout()
-        fig.savefig(output, dpi=150)
-        print(f"Saved: {output}")
 
 if __name__ == "__main__":
     main()
