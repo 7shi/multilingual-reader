@@ -1,4 +1,12 @@
-.PHONY: all core onde compare
+.PHONY: help all core onde compare
+
+help:
+	@echo "Usage: make <target>"
+	@echo ""
+	@echo "  all      core + onde"
+	@echo "  core     build core examples"
+	@echo "  onde     build onde examples"
+	@echo "  compare  generate comparison graphs/tables"
 
 all: core onde
 

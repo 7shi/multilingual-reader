@@ -9,6 +9,7 @@ from pathlib import Path
 
 # onde/*/plot_comparison.py と同様に matplotlib でグラフを生成する（graph サブコマンド用）
 import matplotlib.pyplot as plt
+from matplotlib.cbook import boxplot_stats
 
 from trtools.language import LANGUAGES, LANG_NAMES
 
@@ -174,13 +175,24 @@ def render_stats_rows() -> list[str]:
     return rendered
 
 
-def plot_model_stats() -> None:
+def plot_model_stats(top: int | None = None) -> None:
     rows = load_compare_rows()
-    stats = compute_stats()
     notes = load_existing_model_notes()
-    models = sorted(ONDE_MODELS, key=lambda m: -stats[m][0])
+
+    per_model_scores = {
+        model: [row.scores[ONDE_MODELS.index(model)] for row in rows]
+        for model in ONDE_MODELS
+    }
+    if top is not None:
+        per_model_scores = {
+            model: sorted(scores, reverse=True)[:top]
+            for model, scores in per_model_scores.items()
+        }
+
+    medians = {model: statistics.median(scores) for model, scores in per_model_scores.items()}
+    models = sorted(ONDE_MODELS, key=lambda m: -medians[m])
     labels = [notes.get(m, (m, ""))[0] for m in models]
-    data = [[row.scores[ONDE_MODELS.index(m)] for row in rows] for m in models]
+    data = [per_model_scores[m] for m in models]
 
     fig, ax = plt.subplots(figsize=(8, len(models) * 0.6 + 1))
     ax.boxplot(data, orientation="horizontal", tick_labels=labels)
@@ -188,13 +200,24 @@ def plot_model_stats() -> None:
     ax.invert_yaxis()
     ax.set_xlim(0, 100)
     ax.set_xlabel("Score")
-    ax.set_title("Score distribution by model")
+    title = "Score distribution by model"
+    if top is not None:
+        title += f" (top {top})"
+    ax.set_title(title)
     ax.grid(axis="x", alpha=0.3)
     fig.tight_layout()
 
-    GRAPH_OUTPUT.parent.mkdir(exist_ok=True)
-    fig.savefig(GRAPH_OUTPUT, dpi=150)
-    print(f"Saved: {GRAPH_OUTPUT}")
+    output = GRAPH_OUTPUT if top is None else GRAPH_OUTPUT.with_name(f"MODELS{top}.png")
+    output.parent.mkdir(exist_ok=True)
+    fig.savefig(output, dpi=150)
+    print(f"Saved: {output}")
+
+    print(f"{'label':<20} {'min':>5} {'q1':>5} {'median':>6} {'q3':>5} {'max':>5}")
+    for label, stats in zip(labels, boxplot_stats(data)):
+        print(
+            f"{label:<20} {stats['whislo']:>5.0f} {stats['q1']:>5.0f} "
+            f"{stats['med']:>6.0f} {stats['q3']:>5.0f} {stats['whishi']:>5.0f}"
+        )
 
 
 def render_core_rows() -> list[str]:
@@ -316,7 +339,13 @@ def main() -> int:
     )
     subparsers.add_parser("core", help="core language table")
     subparsers.add_parser("all", help="compare + stats + core tables")
-    subparsers.add_parser("graph", help="generate compare/MODELS.png (score boxplot per model)")
+    graph_parser = subparsers.add_parser("graph", help="generate compare/MODELS.png (score boxplot per model)")
+    graph_parser.add_argument(
+        "--top",
+        type=int,
+        default=None,
+        help="use only each model's top-N languages by score (writes compare/MODELS<N>.png)",
+    )
     classify_parser = subparsers.add_parser("classify", help="classify languages by score tier")
     classify_parser.add_argument(
         "--overall",
@@ -329,7 +358,7 @@ def main() -> int:
 
     if args.section == "graph":
         try:
-            plot_model_stats()
+            plot_model_stats(top=args.top)
         except ValueError as exc:
             print(f"error: {exc}", file=sys.stderr)
             return 1

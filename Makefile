@@ -1,4 +1,12 @@
-.PHONY: build clean serve deploy
+.PHONY: help build clean serve deploy
+
+help:
+	@echo "Usage: make <target>"
+	@echo ""
+	@echo "  build    build site into dist/"
+	@echo "  clean    remove dist/"
+	@echo "  serve    serve dist/ on localhost:8000"
+	@echo "  deploy   build + deploy"
 
 build:
 	uv run build.py
