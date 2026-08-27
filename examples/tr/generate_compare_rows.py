@@ -35,7 +35,7 @@ CORE_ONDE_MODEL = "gemma4"
 CORE_CODES = ("ja", "zh", "es", "fr", "de")
 LINE_RE = re.compile(r"^([a-z0-9.]+)-([a-z0-9.]+):\s+(\d+)/100点$")
 README_FILE = ROOT / "README.md"
-GRAPH_OUTPUT = ROOT / "compare_models.png"
+GRAPH_OUTPUT = ROOT / "compare" / "MODELS.png"
 STATS_HEADER = "| モデル | 平均 | 標準偏差 | 備考 |"
 SYNC_HEADERS = {
     "compare": "| Language | ",
@@ -192,6 +192,7 @@ def plot_model_stats() -> None:
     ax.grid(axis="x", alpha=0.3)
     fig.tight_layout()
 
+    GRAPH_OUTPUT.parent.mkdir(exist_ok=True)
     fig.savefig(GRAPH_OUTPUT, dpi=150)
     print(f"Saved: {GRAPH_OUTPUT}")
 
@@ -315,7 +316,7 @@ def main() -> int:
     )
     subparsers.add_parser("core", help="core language table")
     subparsers.add_parser("all", help="compare + stats + core tables")
-    subparsers.add_parser("graph", help="generate compare_models.png (score boxplot per model)")
+    subparsers.add_parser("graph", help="generate compare/MODELS.png (score boxplot per model)")
     classify_parser = subparsers.add_parser("classify", help="classify languages by score tier")
     classify_parser.add_argument(
         "--overall",

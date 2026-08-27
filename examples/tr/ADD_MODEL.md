@@ -51,6 +51,7 @@
 - 「翻訳モデル間の比較」セクションにある表に、追加したモデルの列を反映します。列は `onde/Makefile` の `MODELS` の順序に従うため、手順1.4で `MODELS` に追加していれば表側の列編集は不要です。
 - 各モデルの代表スコア（基本の `SCORES.txt` に記録された数値）を記入し、その行の **最大スコアのセル** を太字（`**`）で強調します。最大値が同点の場合は、同点のセルをすべて太字にします。
 - 比較表は `uv run examples/tr/generate_compare_rows.py compare --sync` で更新します。ヘッダー行（各モデル名は `onde/{model}/README.md` へのリンク付き）・区切り行・本文行がまとめて書き換わります。
+- 続けて `uv run examples/tr/generate_compare_rows.py graph` を実行し、モデルごとのスコア分布boxplot（`compare/MODELS.png`）を再生成します。
 - 行順の決定アルゴリズムなど生成処理の詳細は [ADD_LANG.md の 2.1](ADD_LANG.md#21-比較表の更新) を参照してください。
 
 #### 3.4.2 傾向の分析セクションの更新

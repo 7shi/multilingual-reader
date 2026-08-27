@@ -13,18 +13,19 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 
 HERE = Path(__file__).parent
-PROJECT_ROOT = HERE.parent.parent.parent.parent
+PROJECT_ROOT = HERE.parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 from trtools.language import resolve_lang
 
-GEMINI_TRENDS = HERE / "TRENDS.jsonl"
-GEMINI25_TRENDS = HERE.parent / "gemini-2.5-flash" / "TRENDS.jsonl"
-GEMMA4_TRENDS = HERE.parent / "gemma4" / "TRENDS.jsonl"
-GEMMA4_31B_TRENDS = HERE.parent / "gemma4-31b" / "TRENDS.jsonl"
-OUTPUT_GEMINI35FL = HERE / "compare_gemini35fl.png"
-OUTPUT_GEMINI25F = HERE / "compare_gemini25f.png"
-OUTPUT_GEMMA4 = HERE / "compare_gemma4.png"
-OUTPUT_GEMMA4_31B = HERE / "compare_gemma4_31b.png"
+GEMINI_TRENDS = HERE / "onde" / "gemini-3.5-flash-lite" / "TRENDS.jsonl"
+GEMINI25_TRENDS = HERE / "onde" / "gemini-2.5-flash" / "TRENDS.jsonl"
+GEMMA4_TRENDS = HERE / "onde" / "gemma4" / "TRENDS.jsonl"
+GEMMA4_31B_TRENDS = HERE / "onde" / "gemma4-31b" / "TRENDS.jsonl"
+COMPARE_DIR = HERE / "compare"
+OUTPUT_GEMINI35FL = COMPARE_DIR / "gemini35fl.png"
+OUTPUT_GEMINI25F = COMPARE_DIR / "gemini25f.png"
+OUTPUT_GEMMA4 = COMPARE_DIR / "gemma4.png"
+OUTPUT_GEMMA4_31B = COMPARE_DIR / "gemma4_31b.png"
 
 def load_scores(path: Path) -> dict[str, int]:
     scores = {}
@@ -63,6 +64,7 @@ def main():
         (lambda lang: gemma4_31b_scores[lang], "Sorted by Gemma 4 31B", OUTPUT_GEMMA4_31B),
     ]
 
+    COMPARE_DIR.mkdir(exist_ok=True)
     for sort_key, title, output in sort_keys:
         fig, ax = plt.subplots(figsize=(6, 20))
         plot_sorted_by(ax, gemini_scores, gemini25_scores, gemma4_scores, gemma4_31b_scores, sort_key, title)
