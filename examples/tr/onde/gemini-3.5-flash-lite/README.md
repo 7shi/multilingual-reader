@@ -80,10 +80,10 @@ Guide: high quality (90+), practical range (80-89), medium quality (60-79), crit
 | Lao | 33 | Severe structural and spelling defects |
 | Mongolian | 33 | Untranslated English sentences and mixed speaker attributions |
 | Swahili | 33 | Critical mixed-language defects and structural corruption |
+| Bengali | 32 | Severe character corruption and structural defects |
 | Estonian | 32 | Critical untranslating and wrong speaker tags |
 | Tamil | 30 | Critical foreign character insertion |
 | Welsh | 28 | Untranslated English blocks and structural defects |
 | Irish | 27 | Mixed-language intrusions and structural defects |
 | Interlingua | 26 | Untranslated English paragraph inserted mid-text |
 | Sinhala | 20 | Catastrophic structural corruption with mixed scripts |
-| Bengali | 0 | Severely incomplete and garbled |
