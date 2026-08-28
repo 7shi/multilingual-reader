@@ -1,61 +1,61 @@
-# 多段階翻訳システム開発記録
+# Multi-stage translation system development log
 
-## 概要
+## Overview
 
-translate.pyを従来の単一処理から多段階翻訳システムに進化させ、認知バイアスを回避した高品質翻訳を実現。
+Evolved translate.py from single-pass processing into a multi-stage translation system, achieving high-quality translation that avoids cognitive bias.
 
-## 主要な実装変更
+## Key implementation changes
 
-### 1. モデル指定の必須化
+### 1. Required model specification
 ```python
-# 変更前
-parser.add_argument("-m", "--model", default=DEFAULT_MODEL, help=f"翻訳に使用するモデル")
+# Before
+parser.add_argument("-m", "--model", default=DEFAULT_MODEL, help=f"Model to use for translation")
 
-# 変更後
-parser.add_argument("-m", "--model", required=True, help="翻訳に使用するモデル")
+# After
+parser.add_argument("-m", "--model", required=True, help="Model to use for translation")
 ```
 
-### 2. 推論レベルの拡張
+### 2. Expanded reasoning levels
 ```python
-# 推論レベル選択肢を拡張
+# Expanded reasoning level choices
 parser.add_argument("-r", "--reasoning-level", type=int, default=2, choices=[0, 1, 2, 3, 4])
 ```
 
-**各レベルの特徴:**
-- **Level 0**: 推論なし、直接翻訳
-- **Level 1**: 標準推論付き翻訳
-- **Level 2**: 2段階翻訳（デフォルト、品質重視）
-- **Level 3**: 3段階翻訳（推論+2段階翻訳）
-- **Level 4**: 分割3段階翻訳（2回のLLM呼び出しに分割）
+**Characteristics of each level:**
+- **Level 0**: No reasoning, direct translation
+- **Level 1**: Translation with standard reasoning
+- **Level 2**: Two-stage translation (default, quality-focused)
+- **Level 3**: Three-stage translation (reasoning + two-stage translation)
+- **Level 4**: Split three-stage translation (split into two LLM calls)
 
-### 3. コンテキスト制御機能
+### 3. Context control feature
 ```python
-parser.add_argument("--history", type=int, default=5, help="コンテキストに含める履歴数")
-parser.add_argument("--translated-context", action="store_true", help="翻訳文のみ提供")
+parser.add_argument("--history", type=int, default=5, help="Number of history entries to include in context")
+parser.add_argument("--translated-context", action="store_true", help="Provide only the translated text")
 ```
 
-### 4. フィールド定義の統一化
-共通フィールドテンプレートを定義し、言語ペアを動的に埋め込み：
+### 4. Unified field definitions
+Defined common field templates and dynamically embedded the language pair:
 ```python
 translation_field = Field(description=f"Direct translation from {args.from_lang} to {args.to_lang}")
 quality_assessment_field = Field(description=f"Check specifically that: 1) The text is completely translated into {args.to_lang}, 2) No {args.from_lang} words remain...")
 ```
 
-### 5. レベル4の分割処理実装
+### 5. Split processing implementation for level 4
 ```python
 if args.reasoning_level == 4:
-    # 第1段階：推論と初回翻訳
+    # Stage 1: reasoning and initial translation
     first_parsed = generate_with_retry([context, prompt], FirstStageTranslation, args.model, "Stage 1")
-    
-    # 第2段階：品質評価と改善翻訳
+
+    # Stage 2: quality assessment and improved translation
     second_stage_prompt = f"Review and improve this translation..."
     second_parsed = generate_with_retry([context, second_stage_prompt], SecondStageTranslation, args.model, "Stage 2")
 ```
 
-### 6. エラーハンドリング強化
+### 6. Strengthened error handling
 ```python
 def generate_with_retry(prompts, schema, model, stage_name=""):
-    """リトライ機能付きのLLM生成関数"""
+    """LLM generation function with retry support"""
     for j in range(5):
         try:
             result = generate_with_schema(...)
@@ -67,58 +67,58 @@ def generate_with_retry(prompts, schema, model, stage_name=""):
                 raise
 ```
 
-## 並行開発：専用翻訳システム
+## Parallel development: dedicated translation systems
 
-### translate-exp.py（サブコマンド方式）
-3段階多モデル翻訳システム：
-- **Phase 1**: 初回翻訳
-- **Phase 2**: 別モデルでの品質チェック
-- **Phase 3**: 修正反映
+### translate-exp.py (subcommand approach)
+Three-stage multi-model translation system:
+- **Phase 1**: Initial translation
+- **Phase 2**: Quality check with a different model
+- **Phase 3**: Apply corrections
 
-### translate2.py/translate3.py（一気通貫版）
-- **translate2.py**: 3段階多モデル翻訳（85点品質）
-- **translate3.py**: Phase 2a統合システム（92点品質、推奨）
+### translate2.py / translate3.py (end-to-end versions)
+- **translate2.py**: Three-stage multi-model translation (85-point quality)
+- **translate3.py**: Phase 2a integrated system (92-point quality, recommended)
 
-## 品質評価結果
+## Quality evaluation results
 
-| システム | 品質スコア | 効率性 | 使用場面 |
+| System | Quality score | Efficiency | Use case |
 |:---|:---:|:---:|:---|
-| **translate3.py（Phase 2a）** | **92点** | **高** | **実用的高品質翻訳** |
-| translate.py Level 2 | 92点 | 中 | 従来システム |
-| translate2.py（3段階） | 85点 | 低 | 研究・実験目的 |
+| **translate3.py (Phase 2a)** | **92 points** | **High** | **Practical high-quality translation** |
+| translate.py Level 2 | 92 points | Medium | Legacy system |
+| translate2.py (three-stage) | 85 points | Low | Research/experimentation |
 
-## 技術的価値
+## Technical value
 
-### 解決した問題
-1. **言語混入問題**: フランス語「Bonjour」等の未翻訳語の残存
-2. **認知バイアス**: 同一モデルでの品質チェック限界
-3. **ユーザビリティ**: 複雑なサブコマンド体系
+### Problems solved
+1. **Language mixing**: untranslated words remaining, e.g. French "Bonjour"
+2. **Cognitive bias**: the limits of quality-checking with the same model
+3. **Usability**: an overly complex subcommand structure
 
-### イノベーション
-1. **多モデル協調**: 異なるモデルの強みを活用
-2. **段階的品質向上**: フェーズベースアプローチ
-3. **実用性重視**: 効率性と品質のバランス
+### Innovations
+1. **Multi-model collaboration**: leveraging the strengths of different models
+2. **Staged quality improvement**: a phase-based approach
+3. **Practicality focus**: balancing efficiency and quality
 
-## 推奨使用方法
+## Recommended usage
 
-### 日常的な高品質翻訳
+### Everyday high-quality translation
 ```bash
 python translate3.py input.txt -f French -t Spanish -o output.txt \
   -m ollama:gemma3n:e4b -c ollama:qwen2.5:7b
 ```
 
-### 従来システム（互換性維持）
+### Legacy system (kept for compatibility)
 ```bash
 python translate.py input.txt -f French -t Spanish -o output.txt \
   -m ollama:gemma3n:e4b -r 2
 ```
 
-### 研究・分析用途
+### Research/analysis use
 ```bash
 python translate2.py input.txt -f French -t Spanish -o output.txt \
   -m ollama:gemma3n:e4b -c ollama:qwen2.5:7b
 ```
 
-## まとめ
+## Summary
 
-複雑性から実用性への転換により、最高品質（92点）を効率的に実現するシステムを確立。translate3.pyの**Phase 2a統合システム**が最も実用的で推奨される解決策。
+The shift from complexity to practicality established a system that efficiently achieves the highest quality (92 points). translate3.py's **Phase 2a integrated system** is the most practical and recommended solution.

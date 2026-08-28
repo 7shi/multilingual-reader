@@ -1,52 +1,52 @@
 # Obsolete
 
-仕様が古くなったスクリプトを格納。
+Stores scripts whose specs are outdated.
 
 ## translate.py / translate.md
 
-`trtools translate` サブコマンドに置き換えられた旧翻訳スクリプト。話者分離・推論レベル別構造化出力・スライディング方式履歴管理を実装していたが、以下の理由で廃止：
+Old translation script replaced by the `trtools translate` subcommand. It implemented speaker separation, reasoning-level-based structured output, and sliding-window history management, but was retired for the following reasons:
 
-- 推論レベルを上げても翻訳品質は改善しない（実験結果より）
-- スライディング方式の履歴管理では用語ブレと KV キャッシュ無効の問題が発生
-- 話者分離は汎用性を損なう
+- Raising the reasoning level did not improve translation quality (per experimental results)
+- Sliding-window history management caused terminology drift and disabled the KV cache
+- Speaker separation hurt generality
 
-`translate.md` は開発記録（多段階翻訳・多モデル協調の試行の経緯）。
+`translate.md` is a development log (the history of trying multi-stage translation and multi-model collaboration).
 
-新しい実装は `trtools/translate.py`（`uv run trtools translate`）を参照。
+See `trtools/translate.py` (`uv run trtools translate`) for the new implementation.
 
 ## convert_genspark.py
 
-Genspark HTMLファイルから話者別対話データを抽出するスクリプト。
+Script that extracts per-speaker dialogue data from Genspark HTML files.
 
-### 使用方法（当時）
+### Usage (at the time)
 
 ```bash
-# 基本使用（デフォルトの話者名 A,B）
+# Basic usage (default speaker names A,B)
 uv run convert_genspark.py input.html -o output.txt
 
-# 話者名を指定
+# Specify speaker names
 uv run convert_genspark.py input.html -o output.txt --speaker Camille,Luc
 ```
 
-### 機能
+### Features
 
-- Genspark HTMLファイルから話者別対話データを抽出
-- `--speaker` オプションで話者名をカンマ区切りで指定可能
-- デフォルトでは話者名 A,B を使用
-- プル型XMLパーサーによる効率的なHTML解析
-- UTF-8エンコーディングで多言語対応
+- Extracts per-speaker dialogue data from Genspark HTML files
+- Speaker names can be specified as a comma-separated list via `--speaker`
+- Defaults to speaker names A,B
+- Efficient HTML parsing via a pull-style XML parser
+- Multilingual support via UTF-8 encoding
 
-### 新しいデータセット追加時の手順（当時）
+### Steps for adding a new dataset (at the time)
 
-Gensparkで生成した場合：
+When generated with Genspark:
 
-1. Gensparkの出力からDOMの該当箇所をコピーしてHTMLファイルとして保存
-2. `convert_genspark.py` を使用して対話データを抽出：
+1. Copy the relevant DOM section from Genspark's output and save it as an HTML file
+2. Extract the dialogue data using `convert_genspark.py`:
 
 ```bash
 uv run convert_genspark.py genspark_output.html -o base_dialogue.txt --speaker Camille,Luc
 ```
 
-### 入力サンプル: genspark/
+### Input sample: genspark/
 
-`obsolete/genspark/` 配下に当時の Genspark 出力スナップショット 3 ファイル（transformer.html / onde.html / momentum.html）を保管している。これらは現在の `examples/{topic}-{lang}.txt` 系列の起点となったフランス語原文の元データで、Genspark の DOM をコピーして保存したもの。convert_genspark.py の入力フォーマット例として参照可能。
+`obsolete/genspark/` holds 3 snapshot files of Genspark output from that time (transformer.html / onde.html / momentum.html). These are the original data behind the French source text that seeded the current `examples/{topic}-{lang}.txt` series, saved by copying Genspark's DOM. They can be referenced as sample input formats for convert_genspark.py.

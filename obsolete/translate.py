@@ -1,15 +1,15 @@
-# 指定ファイルをローカルLLMで英語と日本語に翻訳（1行ずつ処理、文脈付き）
+# Translate the given file into English and Japanese using a local LLM (line by line, with context)
 
 DEFAULT_MODEL = "ollama:gemma3n:e4b"
 
 import argparse
-parser = argparse.ArgumentParser(description="対話テキストを1:1で翻訳")
-parser.add_argument("input_file", help="翻訳対象のテキストファイル")
-parser.add_argument("-f", "--from", dest="from_lang", required=True, help="原語（例: English, French, Japanese）")
-parser.add_argument("-t", "--to", dest="to_lang", required=True, help="翻訳先言語（例: English, French, Japanese）")
-parser.add_argument("-o", "--output", dest="output_file", required=True, help="出力ファイル名")
-parser.add_argument("-m", "--model", default=DEFAULT_MODEL, help=f"翻訳に使用するモデル（デフォルト: {DEFAULT_MODEL}）")
-parser.add_argument("-r", "--reasoning-level", type=int, default=2, choices=[0, 1, 2], help="推論レベル: 0=推論なし, 1=標準推論, 2=2段階翻訳")
+parser = argparse.ArgumentParser(description="Translate dialogue text line by line")
+parser.add_argument("input_file", help="Text file to translate")
+parser.add_argument("-f", "--from", dest="from_lang", required=True, help="Source language (e.g. English, French, Japanese)")
+parser.add_argument("-t", "--to", dest="to_lang", required=True, help="Target language (e.g. English, French, Japanese)")
+parser.add_argument("-o", "--output", dest="output_file", required=True, help="Output file name")
+parser.add_argument("-m", "--model", default=DEFAULT_MODEL, help=f"Model to use for translation (default: {DEFAULT_MODEL})")
+parser.add_argument("-r", "--reasoning-level", type=int, default=2, choices=[0, 1, 2], help="Reasoning level: 0=no reasoning, 1=standard reasoning, 2=two-stage translation")
 args = parser.parse_args()
 
 with open(args.input_file, "r", encoding="utf-8") as f:
@@ -38,34 +38,34 @@ elif args.reasoning_level == 2:
 json_descriptions = create_json_descriptions_prompt(Translation)
 
 def normalize(text):
-    # ord(ch)<32の文字をすべてスペースに変換
+    # Convert all characters with ord(ch)<32 to spaces
     normalized = ''.join(' ' if ord(ch) < 32 else ch for ch in text)
-    # スペースの連続を1個にまとめる
+    # Collapse consecutive spaces into one
     normalized = re.sub(r' +', ' ', normalized)
     return normalized.strip()
 
-context_history = []  # 文脈保持用
+context_history = []  # for keeping context
 
-# 翻訳対象行を事前にカウント
+# Count translation-target lines in advance
 translation_lines = [line for line in lines if line.strip() and ":" in line.strip()]
 
-# 1行ずつ翻訳
-for i, line in enumerate(tqdm(lines, desc="翻訳処理")):
+# Translate line by line
+for i, line in enumerate(tqdm(lines, desc="Translating")):
     line = line.strip()
-    
-    # 話者が分離できなければスキップ
+
+    # Skip if the speaker can't be separated
     if ":" not in line:
         continue
-    
+
     print()
     print(line)
-    
-    # 話者を分離
+
+    # Separate speaker
     speaker, text = line.split(":", 1)
     speaker = speaker.strip()
     text = text.strip()
-    
-    # 文脈作成（直前の5つの翻訳結果）
+
+    # Build context (the last 5 translation results)
     context_lines = []
     if context_history:
         context_lines.append("Previous conversation context:")
@@ -74,13 +74,13 @@ for i, line in enumerate(tqdm(lines, desc="翻訳処理")):
             context_lines.append(f"Original: {ctx['speaker']}: {ctx['original']}")
             context_lines.append(f"Translation: {ctx['speaker']}: {ctx['translation']}")
             context_lines.append("")
-    
+
     context = "\n".join(context_lines) if context_lines else "(No context)"
-    
-    # プロンプト作成（話者情報を含める）
+
+    # Build prompt (include speaker info)
     prompt = f"Translate the following {args.from_lang} text spoken by {speaker} into {args.to_lang}:\n{text}"
-    
-    # 実際の翻訳実行
+
+    # Run the actual translation
     for j in range(5):
         if j:
             print("Retry:", j)
@@ -99,19 +99,19 @@ for i, line in enumerate(tqdm(lines, desc="翻訳処理")):
                 print(e)
             else:
                 raise
-    
-    # 文脈履歴に追加
+
+    # Add to context history
     translated_text = normalize(parsed['translation'])
     context_history.append({
         'speaker': speaker,
         'original': text,
         'translation': translated_text
     })
-    
 
-# 結果を保存
+
+# Save results
 with open(args.output_file, "w", encoding="utf-8") as f:
     for ctx in context_history:
         f.write(f"{ctx['speaker']}: {ctx['translation']}\n")
 
-print(f"翻訳完了: {args.from_lang} → {args.to_lang} ({args.output_file})")
+print(f"Translation complete: {args.from_lang} → {args.to_lang} ({args.output_file})")
