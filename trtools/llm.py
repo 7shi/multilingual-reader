@@ -1,9 +1,9 @@
 import json
-import time
+import sys
 from typing import Type
 from pydantic import BaseModel
 from llm7shi.compat import generate_with_schema
-from llm7shi import create_json_descriptions_prompt
+from llm7shi import create_json_descriptions_prompt, wait_retry, error
 
 DEFAULT_RETRY_WAIT_SECONDS = 3
 
@@ -30,17 +30,15 @@ class LLMClient:
 
     def call_json(self, prompts: list, schema: Type[BaseModel], **kwargs) -> dict:
         full_prompts = prompts + [create_json_descriptions_prompt(schema)]
+        file = kwargs.get("file", sys.stderr)
         for attempt in range(self.max_retries):
             text = self.call(full_prompts, schema=schema, **kwargs)
             try:
                 return json.loads(text)
             except json.JSONDecodeError as e:
                 if attempt < self.max_retries - 1:
-                    print(f"JSON decode error (attempt {attempt + 1}/{self.max_retries}): {e}")
-                    for i in range(self.retry_wait, -1, -1):
-                        print(f"\rWaiting to retry... {i}s ", end="", flush=True)
-                        time.sleep(1)
-                    print()
+                    error(f"JSON decode error (attempt {attempt + 1}/{self.max_retries}): {e}", file=file)
+                    wait_retry(self.retry_wait, "Waiting to retry...", file=file)
                 else:
-                    print(f"JSON decoding failed {self.max_retries} times.")
+                    error(f"JSON decoding failed {self.max_retries} times.", file=file)
                     raise

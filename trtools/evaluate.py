@@ -91,12 +91,18 @@ Score each criterion from 0-20 points based on the ENTIRE document."""
         ui.stream.end()
         prog.update(run)
 
+    labels = [
+        ("Readability & comprehensibility", evaluation_result['readability']['score']),
+        ("Fluency & naturalness", evaluation_result['fluency']['score']),
+        ("Terminology appropriateness", evaluation_result['terminology']['score']),
+        ("Contextual adaptation", evaluation_result['contextual_adaptation']['score']),
+        ("Information completeness", evaluation_result['information_completeness']['score']),
+    ]
+    width = max(len(label) for label, _ in labels)
+
     ui.write("=== Translation Evaluation Result ===\n")
-    ui.write(f"1. Readability & comprehensibility: {evaluation_result['readability']['score']:2d}/20\n")
-    ui.write(f"2. Fluency & naturalness           : {evaluation_result['fluency']['score']:2d}/20\n")
-    ui.write(f"3. Terminology appropriateness     : {evaluation_result['terminology']['score']:2d}/20\n")
-    ui.write(f"4. Contextual adaptation           : {evaluation_result['contextual_adaptation']['score']:2d}/20\n")
-    ui.write(f"5. Information completeness        : {evaluation_result['information_completeness']['score']:2d}/20\n")
+    for i, (label, score) in enumerate(labels, 1):
+        ui.write(f"{i}. {label.ljust(width)}: {score:2d}/20\n")
 
     total_score = (evaluation_result['readability']['score'] +
                    evaluation_result['fluency']['score'] +
