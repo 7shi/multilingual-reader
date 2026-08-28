@@ -1,6 +1,6 @@
-# Claude Code 設定
+# Claude Code Settings
 
-## 言語設定
-- **会話言語**: 日本語
-- **コメント**: 日本語で記述
-- **コミットメッセージ**: 日本語で記述
+## Language settings
+- **Conversation language**: match the user's language
+- **Comments**: written in English
+- **Commit messages**: written in English
