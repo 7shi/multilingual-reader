@@ -1,6 +1,6 @@
-# 言語コードと表記の対応表
-# 追加・修正はこの LANGUAGES のみを編集する。
-# ja は README の表で使用する日本語表記。
+# Mapping table between language codes and display names
+# Add/edit only this LANGUAGES dict.
+# The "ja" values are the Japanese names used in the README tables.
 
 LANGUAGES = {
     "af": {"en": "Afrikaans", "ja": "アフリカーンス語"},

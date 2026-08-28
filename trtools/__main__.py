@@ -4,10 +4,10 @@ from trtools import evaluate, aggregate, term, translate, batch, review, trend, 
 def main():
     parser = argparse.ArgumentParser(
         prog="trtools",
-        description="翻訳ツール集",
+        description="Translation tool suite",
     )
-    parser.add_argument("--label", default=None, help="プログレスバーに表示するラベル（例: 'nl: Dutch (2/10)'）")
-    parser.add_argument("--start", type=float, default=None, help="バッチ開始時刻（Unixタイムスタンプ）")
+    parser.add_argument("--label", default=None, help="Label shown in the progress bar (e.g. 'nl: Dutch (2/10)')")
+    parser.add_argument("--start", type=float, default=None, help="Batch start time (Unix timestamp)")
 
     subparsers = parser.add_subparsers(dest="command", metavar="<command>")
     subparsers.required = True

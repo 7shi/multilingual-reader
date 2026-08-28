@@ -1,6 +1,8 @@
-# 評価ログから言語ごとの傾向を要約するサブコマンド
-# 3回分の評価結果をマージして LLM に渡し、README の「傾向の分析」列に貼れる一文を生成する。
-# 中間結果は JSONL に追記するため、中断しても未処理の言語だけを再開できる。
+# Subcommand that summarizes per-language trends from evaluation logs
+# Merges 3 evaluation results and passes them to the LLM to generate a sentence
+# that can be pasted into the README's "Trend Analysis" column.
+# Intermediate results are appended to a JSONL, so only unprocessed languages
+# need to be redone if interrupted.
 
 import json
 from pathlib import Path
@@ -17,7 +19,7 @@ CRITERIA = [
     "information_completeness",
 ]
 
-# 同期対象の表を識別するヘッダ行（言語ごと）
+# Header row identifying the target table to sync (per language)
 TABLE_HEADERS = {
     "en": "| Language | Score | Trend Analysis |",
     "ja": "| 言語 | スコア | 傾向の分析 |",
@@ -26,27 +28,27 @@ TABLE_SEPARATOR = "| --- | ---: | --- |"
 
 
 def add_parser(subparsers):
-    parser = subparsers.add_parser("trend", help="評価ログから言語ごとの傾向を要約")
-    parser.add_argument("files", nargs="*", help="評価結果JSONファイル（複数指定可能）")
+    parser = subparsers.add_parser("trend", help="Summarize per-language trends from evaluation logs")
+    parser.add_argument("files", nargs="*", help="Evaluation result JSON files (multiple allowed)")
     parser.add_argument("-m", "--model", default=None,
-                        help="要約に使用するモデル（--render-only 時は不要）")
+                        help="Model used for summarization (not needed with --render-only)")
     parser.add_argument("-o", "--output", dest="output_file", default="TRENDS.jsonl",
-                        help="中間結果のJSONL（デフォルト: TRENDS.jsonl）")
+                        help="Intermediate result JSONL (default: TRENDS.jsonl)")
     parser.add_argument("--sync", default=None,
-                        help="生成後に表を書き戻す README.md のパス")
+                        help="Path of the README.md to write the table back into after generation")
     parser.add_argument("--render-only", action="store_true",
-                        help="生成せずJSONLから表の出力・同期のみ行う")
-    parser.add_argument("--no-think", action="store_true", help="thinking処理を無効化")
+                        help="Only output/sync the table from the JSONL, without generating")
+    parser.add_argument("--no-think", action="store_true", help="Disable thinking")
     parser.add_argument("-w", "--retry-wait", type=int, default=DEFAULT_RETRY_WAIT_SECONDS,
-                        help=f"リトライ時の待機時間（秒）（デフォルト: {DEFAULT_RETRY_WAIT_SECONDS}秒）")
+                        help=f"Wait time on retry, in seconds (default: {DEFAULT_RETRY_WAIT_SECONDS}s)")
     parser.add_argument("-l", "--lang", choices=["en", "ja"], default="en",
-                        help="要約の出力言語（デフォルト: en）")
+                        help="Output language of the summary (default: en)")
     parser.set_defaults(func=run)
     return parser
 
 
 def _lang_code(base_name):
-    """base_name（例: onde-ja、onde-ja-1）から言語コードを取り出す。"""
+    """Extract the language code from base_name (e.g. onde-ja, onde-ja-1)."""
     parts = base_name.split("-")
     if len(parts) >= 3 and parts[-1].isdigit():
         return parts[-2]
@@ -54,7 +56,7 @@ def _lang_code(base_name):
 
 
 def _is_japanese(text):
-    """かな・漢字を含むか。プレーンテキスト出力が英語で返る場合の検出用。"""
+    """Whether the text contains kana/kanji. Used to detect when plain-text output comes back in English."""
     return any(
         "぀" <= ch <= "ヿ" or "一" <= ch <= "鿿"
         for ch in text
@@ -62,19 +64,19 @@ def _is_japanese(text):
 
 
 def _clean(text):
-    """LLM のプレーンテキスト出力を表のセルに入る一行に整える。"""
+    """Trim the LLM's plain-text output down to a single line that fits in a table cell."""
     s = " ".join(text.split())
-    # 全体が引用符で囲まれている場合のみ外す（訳語の引用は保持）
+    # Strip quotes only if they wrap the whole string (keep quotes used within a quoted term)
     for lq, rq in (("「", "」"), ('"', '"'), ("'", "'"), ("“", "”")):
         if len(s) > 1 and s.startswith(lq) and s.endswith(rq) and lq not in s[1:-1]:
             s = s[1:-1].strip()
     s = s.rstrip("。.")
-    # セル区切りと衝突するためエスケープする
+    # Escape since it clashes with the cell separator
     return s.replace("|", "\\|")
 
 
 def load_jsonl(path):
-    """JSONL を {lang: record} として読み込む。存在しなければ空。"""
+    """Load a JSONL as {lang: record}. Returns empty if it doesn't exist."""
     records = {}
     p = Path(path)
     if not p.exists():
@@ -95,9 +97,9 @@ def append_jsonl(path, record):
 
 
 def _build_input(data_list):
-    """評価ログ3件を Evaluation ブロックのプレーンテキストに変換する。
-    criterion 別のスコア・reasoning は要約を混乱させるため渡さず、
-    合計スコアと overall_comment のみを渡す。
+    """Convert 3 evaluation logs into plain-text Evaluation blocks.
+    Per-criterion scores/reasoning are omitted since they would confuse the
+    summary; only the total score and overall_comment are passed.
     """
     blocks = []
     for i, d in enumerate(data_list, 1):
@@ -111,12 +113,12 @@ def _build_input(data_list):
 
 
 def _matches_lang(text, lang):
-    """テキストが指定言語（en/ja）で書かれているか。"""
+    """Whether the text is written in the given language (en/ja)."""
     return _is_japanese(text) if lang == "ja" else not _is_japanese(text)
 
 
 def render_table(records, lang):
-    """JSONL のレコードから Markdown の表を組み立てる。スコア降順・言語コード昇順。"""
+    """Build a Markdown table from JSONL records. Sorted by score descending, then language code ascending."""
     rows = sorted(records.values(), key=lambda r: (-r["score"], r["lang"]))
     lines = [TABLE_HEADERS[lang], TABLE_SEPARATOR]
     for r in rows:
@@ -126,7 +128,7 @@ def render_table(records, lang):
 
 
 def sync_readme(path, table_lines):
-    """README 内の TABLE_HEADERS のいずれかを持つ表を差し替える。"""
+    """Replace the table in the README whose header matches one of TABLE_HEADERS."""
     p = Path(path)
     lines = p.read_text(encoding="utf-8").split("\n")
     result = []
@@ -137,7 +139,7 @@ def sync_readme(path, table_lines):
             result.extend(table_lines)
             replaced = True
             i += 1
-            # 既存の表本体を読み飛ばす
+            # Skip past the existing table body
             while i < len(lines) and lines[i].strip().startswith("|"):
                 i += 1
         else:
@@ -145,10 +147,10 @@ def sync_readme(path, table_lines):
             i += 1
     if not replaced:
         headers = " / ".join(TABLE_HEADERS.values())
-        print(f"警告: {path} に対象の表が見つかりませんでした: {headers}")
+        print(f"Warning: no matching table found in {path}: {headers}")
         return False
     p.write_text("\n".join(result), encoding="utf-8")
-    print(f"表を更新しました: {path}")
+    print(f"Updated table: {path}")
     return True
 
 
@@ -157,18 +159,18 @@ def run(args):
 
     if not args.render_only:
         if not args.files:
-            print("エラー: 評価JSONファイルを指定してください（--render-only 時は不要）")
+            print("Error: specify evaluation JSON files (not needed with --render-only)")
             return
         if not args.model:
-            print("エラー: -m/--model が必要です")
+            print("Error: -m/--model is required")
             return
 
         groups = find_evaluation_groups(args.files)
         if not groups:
-            print("評価ファイルのグループが見つかりませんでした。")
+            print("No evaluation file groups found.")
             return
 
-        # 未処理の言語だけを対象にする
+        # Target only unprocessed languages
         pending = []
         for base_name, runs in sorted(groups.items()):
             code = _lang_code(base_name)
@@ -178,7 +180,7 @@ def run(args):
 
         skipped = len(groups) - len(pending)
         if skipped:
-            print(f"{skipped}言語はJSONLに存在するためスキップします。")
+            print(f"Skipping {skipped} language(s) already present in the JSONL.")
 
         output_lang_name = "Japanese" if args.lang == "ja" else "English"
 
@@ -188,8 +190,8 @@ def run(args):
                 think=(not args.no_think),
                 retry_wait=args.retry_wait,
             )
-            # 言語ごとに1回しか処理しないため、全言語で1本のバーとして表示する
-            # 再開時も分母は全言語のままとし、スキップ済みを完了済みとして扱う
+            # Each language is processed only once, so show a single bar across all languages
+            # The denominator stays the total across all languages on resume too, treating skipped ones as complete
             total = len(groups)
             ui = StatusLine(label=pending[0][1], left_count=True)
             with ui.progress(total, start=skipped) as prog:
@@ -239,7 +241,7 @@ def run(args):
                         ui.stream.end()
                         if _matches_lang(text, args.lang):
                             break
-                        print(f"{output_lang_name}で返らなかったため再試行します（{attempt + 1}/3）")
+                        print(f"Retrying since the reply was not in {output_lang_name} ({attempt + 1}/3)")
 
                     median = total_scores["median"]
                     record = {
@@ -247,13 +249,13 @@ def run(args):
                         "score": int(median) if median is not None else 0,
                         "analysis": _clean(text),
                     }
-                    # 1言語ごとに追記して中断に備える
+                    # Append after each language so an interruption loses at most one
                     append_jsonl(args.output_file, record)
                     records[code] = record
                     prog.update(offset, label=code)
 
     if not records:
-        print(f"{args.output_file} にレコードがありません。")
+        print(f"No records in {args.output_file}.")
         return
 
     table = render_table(records, args.lang)

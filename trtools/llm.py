@@ -36,11 +36,11 @@ class LLMClient:
                 return json.loads(text)
             except json.JSONDecodeError as e:
                 if attempt < self.max_retries - 1:
-                    print(f"JSONデコードエラー（試行{attempt + 1}/{self.max_retries}）: {e}")
+                    print(f"JSON decode error (attempt {attempt + 1}/{self.max_retries}): {e}")
                     for i in range(self.retry_wait, -1, -1):
-                        print(f"\rリトライ待ち... {i}s ", end="", flush=True)
+                        print(f"\rWaiting to retry... {i}s ", end="", flush=True)
                         time.sleep(1)
                     print()
                 else:
-                    print(f"JSONデコードに{self.max_retries}回失敗しました。")
+                    print(f"JSON decoding failed {self.max_retries} times.")
                     raise

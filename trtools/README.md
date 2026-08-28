@@ -1,6 +1,6 @@
-# trtools リファレンス
+# trtools Reference
 
-翻訳・評価・用語管理を一括で行うコマンドラインツール集。
+A command-line tool suite for translation, evaluation, and terminology management.
 
 ```
 uv run trtools [--label LABEL] [--start START] <command> [options]
@@ -8,107 +8,107 @@ uv run trtools [--label LABEL] [--start START] <command> [options]
 
 ---
 
-## メインオプション
+## Main Options
 
-どのサブコマンドでも共通して使用できるオプション。プログレスバーの表示制御に使う。
+Options available across all subcommands, used to control progress bar display.
 
-| オプション | 説明 |
+| Option | Description |
 |---|---|
-| `--label LABEL` | プログレスバーに表示するラベル文字列（例: `bg: Bulgarian (2/10)`）。指定しなければ非表示 |
-| `--start START` | バッチ開始時刻（Unixタイムスタンプ）。指定するとバッチ全体の経過時間を表示 |
+| `--label LABEL` | Label string shown in the progress bar (e.g. `bg: Bulgarian (2/10)`). Hidden if not specified |
+| `--start START` | Batch start time (Unix timestamp). If specified, shows elapsed time for the whole batch |
 
-`--label` と `--start` がどちらも未指定の場合、プログレスバーのセパレータ `|` も非表示になる。
+If both `--label` and `--start` are omitted, the progress bar's `|` separator is also hidden.
 
 ---
 
-## 設計思想
+## Design Philosophy
 
-### translate: サマリー圧縮方式
+### translate: Summary Compression Approach
 
-スライディング方式（直近N件のみ保持）では古い履歴が押し出されると**用語ブレ**が発生し、プロンプト先頭が毎回変化するため**KVキャッシュが無効**になるという課題があった。これを解決するため、チャットの構造を `system + summary（最新1件） + 直近keep件` に固定する**サマリー圧縮方式**を採用している。
+With a sliding-window approach (keeping only the last N entries), pushing out old history causes **terminology drift**, and since the start of the prompt changes every time, the **KV cache is invalidated**. To solve this, `translate` uses a **summary compression approach** that fixes the chat structure to `system + summary (latest one) + last keep entries`.
 
-`--threshold` 行ごとに翻訳履歴を英語サマリーに圧縮し、`--keep` 件の直近ペアと組み合わせてコンテキストを再構築する。これにより長文でも一貫性を保ちながら KV キャッシュが安定して効く。
+Every `--threshold` lines, the translation history is compressed into an English summary and combined with the last `--keep` pairs to rebuild the context. This keeps the KV cache stable and effective even for long documents while maintaining consistency.
 
-サマリーは英語で出力され、翻訳先言語 (`to_lang`) に依存しない内容のため、`summary` サブコマンドで原文（トピック）ごとに事前生成しておく。原文と同じディレクトリに `{topic}-summary.jsonl` として保存され、同じトピックの全ての `to_lang`・複数回の `translate` 実行で使い回せる。`translate`・`batch` はいずれも生成済みのキャッシュを読むだけで自動生成はせず、未生成の場合はエラーになるため、事前に `summary` を実行しておく必要がある。
+Since the summary is output in English and does not depend on the target language (`to_lang`), it is pre-generated once per original text (topic) with the `summary` subcommand. It is saved as `{topic}-summary.jsonl` in the same directory as the original, and can be reused across all `to_lang` values and multiple `translate` runs for that topic. Neither `translate` nor `batch` auto-generates it — they only read the pre-generated cache and error if it is missing, so `summary` must be run beforehand.
 
-`translate` は1行訳すごとに出力ファイルへ逐次書き込む。途中で失敗・中断しても、同じコマンドで再実行すれば既存の翻訳行を飛ばして続きから再開する（chat_history は事前生成済みサマリーと出力ファイルの既存行から同じ手順で再構築される）。1行の翻訳結果が空、または内部に改行を含む場合は不正とみなし最大3回まで再試行、失敗時は例外を送出する。
+`translate` writes to the output file incrementally, one translated line at a time. If it fails or is interrupted partway through, rerunning the same command skips existing translated lines and resumes from where it left off (chat_history is rebuilt using the same procedure from the pre-generated summary and the output file's existing lines). If a single line's translation result is empty or contains an internal newline, it is treated as invalid and retried up to 3 times; an exception is raised on failure.
 
-### term extract/translate: 翻訳ループからの分離
+### term extract/translate: Separation from the Translation Loop
 
-用語抽出を翻訳ループ内で行うと、run ごとに抽出結果がブレて**訳語の不一致**が生じる（例: `affinage` → `refinamiento` / `ajuste fino`）。`term extract/translate` で用語を事前に確定・校正してから全 run で共有することで、このブレを原理的に排除する。
+Extracting terms inside the translation loop causes the extraction results to drift from run to run, leading to **inconsistent translated terms** (e.g. `affinage` -> `refinamiento` / `ajuste fino`). `term extract/translate` fixes and proofreads terms beforehand and shares them across all runs, eliminating this drift by design.
 
-用語 TSV は LLM 生成後に校正が必要。ローカル LLM はスラッシュ2択・誤訳・他言語混入・語尾ミスなどの誤りを含みやすい。校正済み TSV を `trtools translate --terms-json/--terms-tsv` で注入することで、一貫した訳語が全翻訳 run に適用される。
+The term TSV needs proofreading after LLM generation. Local LLMs are prone to errors such as slash-separated alternatives, mistranslations, mixed-language contamination, and inflection mistakes. Injecting the proofread TSV via `trtools translate --terms-json/--terms-tsv` applies consistent terminology across all translation runs.
 
-### eval/agg: 3回評価の中央値
+### eval/agg: Median of 3 Evaluation Runs
 
-評価モデルの出力は run ごとに揺れるため、1回のスコアは信頼性が低い。同一翻訳に対して評価を3回実行し、`agg` で中央値をとることで評価者のランダム性を抑制する。
+Since the evaluation model's output varies from run to run, a single score is unreliable. Running the evaluation 3 times on the same translation and taking the median with `agg` suppresses the evaluator's randomness.
 
-推奨評価モデルは **qwen3.6**。CoT による論理的検証で技術的欠陥を正しく特定できる。GPT-OSS 120B は92点が上限で上位モデルの差別化が困難なため非推奨。評価の CoT は無効化しないほうが信頼性が高い。
+The recommended evaluation model is **qwen3.6**. Its CoT-based logical verification correctly identifies technical defects. GPT-OSS 120B is not recommended, since its scores cap out at 92 points, making it hard to differentiate top-tier models. Evaluation is more reliable with CoT left enabled.
 
-### モデル選定の指針
+### Model Selection Guidelines
 
-推奨翻訳モデルは **gemma4-26b**（`ollama:gemma4:26b`）。MoE のため高速で、スコア安定性が高く、評価者（qwen3.6）と異なるアーキテクチャのため自己評価バイアスも排除できる。
+The recommended translation model is **gemma4-26b** (`ollama:gemma4:26b`). Being MoE, it is fast, has high score stability, and also avoids self-evaluation bias since it has a different architecture from the evaluator (qwen3.6).
 
-リソース制約がある環境では **gemma4-e4b**（`ollama:gemma4:e4b`）が代替候補。校正済み共有用語辞書（`--terms-json`/`--terms-tsv`）を使用することで安定性が向上する。ただし人称不統一といった文法的問題が出やすい点は許容が必要。
+In resource-constrained environments, **gemma4-e4b** (`ollama:gemma4:e4b`) is an alternative candidate. Using a proofread shared term glossary (`--terms-json`/`--terms-tsv`) improves its stability. However, it is more prone to grammatical issues such as inconsistent person, which needs to be tolerated.
 
-両モデル共に短い相槌行や話者交代を挟む継続行でスピーカータグが脱落することがあり、翻訳後の確認が必要。
+Both models can occasionally drop the speaker tag on short acknowledgment lines or continuation lines that follow a speaker change, so checking after translation is necessary.
 
 ---
 
-## サブコマンド一覧
+## Subcommand List
 
-| コマンド | 概要 |
+| Command | Overview |
 |---|---|
-| [`summary`](#summary) | 原文の要約を事前生成（`translate` 用キャッシュ） |
-| [`translate`](#translate) | テキストを行単位で翻訳 |
-| [`review`](#review) | 他者評価による翻訳推敲 |
-| [`eval`](#eval) | 翻訳品質を5項目で評価 |
-| [`agg`](#agg) | 評価結果JSONを集約（中央値） |
-| [`trend`](#trend) | 評価ログから言語ごとの傾向を要約 |
-| [`term extract`](#term-extract) | テキストから専門用語を抽出 |
-| [`term translate`](#term-translate) | 抽出用語をTSVに翻訳 |
-| [`term show`](#term-show) | 用語TSVを言語・キーで絞り込んで表示 |
-| [`term set`](#term-set) | 用語TSVの特定セルを更新 |
-| [`term reorder`](#term-reorder) | 用語TSVの列を指定順に並べ替えて出力 |
-| [`term merge`](#term-merge) | 複数の用語TSVを列結合して出力 |
-| [`batch`](#batch) | 翻訳→評価→集約を一括実行 |
+| [`summary`](#summary) | Pre-generate a summary of the original text (cache for `translate`) |
+| [`translate`](#translate) | Translate text line by line |
+| [`review`](#review) | Polish a translation via third-party review |
+| [`eval`](#eval) | Evaluate translation quality on 5 criteria |
+| [`agg`](#agg) | Aggregate evaluation result JSON (median) |
+| [`trend`](#trend) | Summarize per-language trends from evaluation logs |
+| [`term extract`](#term-extract) | Extract technical terms from text |
+| [`term translate`](#term-translate) | Translate extracted terms into a TSV |
+| [`term show`](#term-show) | Show a term TSV filtered by language/key |
+| [`term set`](#term-set) | Update a specific cell in a term TSV |
+| [`term reorder`](#term-reorder) | Reorder term TSV columns into a given order |
+| [`term merge`](#term-merge) | Merge multiple term TSVs by column |
+| [`batch`](#batch) | Run translate -> evaluate -> aggregate in one go |
 
 ---
 
 ## summary
 
-`translate` のサマリー圧縮方式で使う要約を原文だけから事前生成する。要約は英語で出力され `to_lang` に依存しないため、原文（トピック）ごとに1回生成すれば、そのトピックの全ての `to_lang`・複数回の `translate` 実行で使い回せる。
+Pre-generates, from the original text alone, the summary used by `translate`'s summary compression approach. Since the summary is output in English and does not depend on `to_lang`, generating it once per original text (topic) lets it be reused across all `to_lang` values and multiple `translate` runs for that topic.
 
-保存先は原文と同じディレクトリの `{topic}-summary.jsonl`（トピック名は入力ファイル名の `-<言語コード>` を除いた部分。例: `finetuning-fr.txt` → `finetuning-summary.jsonl`）。既に必要なチェックポイント分が揃っていれば何もしない。
+It is saved as `{topic}-summary.jsonl` in the same directory as the original (the topic name is the input filename with the `-<language code>` suffix removed, e.g. `finetuning-fr.txt` -> `finetuning-summary.jsonl`). Does nothing if the required checkpoints already exist.
 
 ```
 uv run trtools summary <input_file...> -f <from_lang> -m <model> [options]
 ```
 
-### 必須引数
+### Required Arguments
 
-| 引数 | 説明 |
+| Argument | Description |
 |---|---|
-| `input_files` | 要約対象のテキストファイル（複数指定可）。ファイルごとに `[i/n]` を表示しながら順に処理する |
-| `-f`, `--from` | 原語。言語名（`French`）または言語コード（`fr`） |
-| `-m`, `--model` | 要約生成モデル |
+| `input_files` | Text files to summarize (multiple allowed). Processed in order, showing `[i/n]` per file |
+| `-f`, `--from` | Source language. Language name (`French`) or language code (`fr`) |
+| `-m`, `--model` | Summary generation model |
 
-### オプション
+### Options
 
-| オプション | デフォルト | 説明 |
+| Option | Default | Description |
 |---|---|---|
-| `--threshold` | `10` | 要約生成の間隔（行数）。`translate` と揃える |
-| `--keep` | `5` | チェックポイント算出用の保持行数。`translate` と揃える |
-| `--no-think` | false | thinking処理を無効化（Qwen3モデル用） |
-| `-w`, `--retry-wait` | 3 | リトライ待機秒数 |
+| `--threshold` | `10` | Interval for summary generation, in lines. Match with `translate` |
+| `--keep` | `5` | Number of lines to keep for checkpoint calculation. Match with `translate` |
+| `--no-think` | false | Disable thinking (for Qwen3 models) |
+| `-w`, `--retry-wait` | 3 | Retry wait time in seconds |
 
-### 使用例
+### Examples
 
 ```bash
-# 単一ファイル
+# Single file
 uv run trtools summary finetuning-fr.txt -f fr -m ollama:gemma4:26b
 
-# 複数ファイルをまとめて処理（[1/2], [2/2] と進捗表示）
+# Process multiple files together (shows progress as [1/2], [2/2])
 uv run trtools summary finetuning-en.txt transformer-en.txt -f en -m ollama:gemma4:26b
 ```
 
@@ -116,42 +116,42 @@ uv run trtools summary finetuning-en.txt transformer-en.txt -f en -m ollama:gemm
 
 ## translate
 
-テキストファイルを行単位で翻訳する。空行を保持しながら1行ずつ翻訳し、コンテキスト圧縮で長文に対応する。事前に `summary` サブコマンドで要約キャッシュを生成しておく必要がある（未生成の場合はエラーになる）。
+Translates a text file line by line. Translates one line at a time while preserving empty lines, handling long documents through context compression. Requires a summary cache pre-generated with the `summary` subcommand (errors if not generated).
 
 ```
 uv run trtools translate <input_file> -f <from_lang> -t <to_lang> -o <output> -m <model> [options]
 ```
 
-### 必須引数
+### Required Arguments
 
-| 引数 | 説明 |
+| Argument | Description |
 |---|---|
-| `input_file` | 翻訳対象のテキストファイル |
-| `-f`, `--from` | 原語。言語名（`French`）または言語コード（`fr`） |
-| `-t`, `--to` | 翻訳先言語。言語名（`Spanish`）または言語コード（`es`） |
-| `-o`, `--output` | 出力ファイル名 |
-| `-m`, `--model` | 翻訳モデル（例: `ollama:gemma4:26b`） |
+| `input_file` | Text file to translate |
+| `-f`, `--from` | Source language. Language name (`French`) or language code (`fr`) |
+| `-t`, `--to` | Target language. Language name (`Spanish`) or language code (`es`) |
+| `-o`, `--output` | Output filename |
+| `-m`, `--model` | Translation model (e.g. `ollama:gemma4:26b`) |
 
-### オプション
+### Options
 
-| オプション | デフォルト | 説明 |
+| Option | Default | Description |
 |---|---|---|
-| `--threshold` | `10` | 要約生成の間隔（行数） |
-| `--keep` | `5` | 圧縮後に保持する翻訳ペア数 |
-| `--terms-json` | なし | `term extract` の出力JSONファイル |
-| `--terms-tsv` | なし | `term translate` の出力TSVファイル |
-| `--no-think` | false | thinking処理を無効化（Qwen3モデル用） |
-| `-w`, `--retry-wait` | 3 | リトライ待機秒数 |
-| `--fix` | false | 既存出力の空行のみ再翻訳。通常モードは行数のみで再開判定するため空行を検出せず継続してしまうが、`--fix` では出力ファイル全体を書き直して空行の箇所だけ再翻訳する |
+| `--threshold` | `10` | Interval for summary generation, in lines |
+| `--keep` | `5` | Number of translation pairs to keep after compression |
+| `--terms-json` | none | Output JSON file from `term extract` |
+| `--terms-tsv` | none | Output TSV file from `term translate` |
+| `--no-think` | false | Disable thinking (for Qwen3 models) |
+| `-w`, `--retry-wait` | 3 | Retry wait time in seconds |
+| `--fix` | false | Retranslate only the empty lines in the existing output. Normal mode determines resume position from line count alone, so it does not detect empty lines and simply continues; `--fix` rewrites the whole output file, retranslating only the empty spots |
 
-### 使用例
+### Examples
 
 ```bash
-# 基本的な翻訳
+# Basic translation
 uv run trtools translate finetuning-fr.txt -f fr -t es \
   -o finetuning-es.txt -m ollama:gemma4:26b --no-think
 
-# 用語注入あり
+# With term injection
 uv run trtools translate finetuning-fr.txt -f fr -t es \
   -o finetuning-es.txt -m ollama:gemma4:26b \
   --threshold 10 --keep 5 --no-think \
@@ -163,38 +163,38 @@ uv run trtools translate finetuning-fr.txt -f fr -t es \
 
 ## review
 
-翻訳ファイルをLLMによる他者評価で推敲する。話者名付き行（`話者: テキスト` 形式）を対象に、分析→改善の2段階プロンプトで翻訳品質を向上させる。
+Polishes a translation file via LLM-based third-party review. Targets lines with a speaker name (`Speaker: Text` format) and improves translation quality through a two-stage analyze-then-improve prompt.
 
 ```
 uv run trtools review --original <orig> --translation <tr> -f <from> -t <to> -o <output> -m <model> [options]
 ```
 
-### 必須引数
+### Required Arguments
 
-| 引数 | 説明 |
+| Argument | Description |
 |---|---|
-| `--original` | 原文ファイル |
-| `--translation` | 推敲対象の翻訳ファイル |
-| `-f`, `--from` | 原語コード（例: `en`） |
-| `-t`, `--to` | 翻訳先言語コード（例: `nl`） |
-| `-o`, `--output` | 推敲後の出力ファイル名 |
-| `-m`, `--model` | 推敲に使用するモデル |
+| `--original` | Original text file |
+| `--translation` | Translation file to be polished |
+| `-f`, `--from` | Source language code (e.g. `en`) |
+| `-t`, `--to` | Target language code (e.g. `nl`) |
+| `-o`, `--output` | Output filename after polishing |
+| `-m`, `--model` | Model used for polishing |
 
-### オプション
+### Options
 
-| オプション | デフォルト | 説明 |
+| Option | Default | Description |
 |---|---|---|
-| `--history` | `10` | コンテキストとして参照する直前の推敲済み行数 |
-| `--no-think` | false | thinking処理を無効化 |
-| `--terms` | なし | 用語対訳TSVファイル（話者名の変換に使用） |
+| `--history` | `10` | Number of preceding polished lines referenced as context |
+| `--no-think` | false | Disable thinking |
+| `--terms` | none | Term translation TSV file (used to convert speaker names) |
 
-### 動作
+### Behavior
 
-- 話者名付き行（`話者: テキスト`）のみ推敲対象とし、空行・話者名なし行はそのまま出力する
-- 推敲は2段階：① 翻訳の問題点を分析（`No issues` なら改善スキップ）→ ② 改善訳を生成
-- `--terms` で渡したTSVの話者名列を参照し、出力の話者名を対象言語に変換する
+- Only lines with a speaker name (`Speaker: Text`) are polished; empty lines and lines without a speaker name are output unchanged
+- Polishing has two stages: (1) analyze translation issues (skip improvement if `No issues`) -> (2) generate the improved translation
+- Speaker names in the output are converted to the target language using the speaker-name column of the TSV passed via `--terms`
 
-### 使用例
+### Example
 
 ```bash
 uv run trtools review \
@@ -210,44 +210,44 @@ uv run trtools review \
 
 ## eval
 
-翻訳品質を5項目（各20点、合計100点）で評価する。評価結果をJSONファイルに保存できる。
+Evaluates translation quality on 5 criteria (20 points each, 100 points total). The evaluation result can be saved to a JSON file.
 
 ```
 uv run trtools eval --original <orig> --translation <tr> -f <from> -t <to> -m <model> [options]
 ```
 
-### 必須引数
+### Required Arguments
 
-| 引数 | 説明 |
+| Argument | Description |
 |---|---|
-| `--original` | 原文ファイル |
-| `--translation` | 翻訳文ファイル |
-| `-f`, `--from` | 原語。言語名または言語コード |
-| `-t`, `--to` | 翻訳先言語。言語名または言語コード |
-| `-m`, `--model` | 評価モデル（例: `ollama:qwen3.6`） |
+| `--original` | Original text file |
+| `--translation` | Translated text file |
+| `-f`, `--from` | Source language. Language name or language code |
+| `-t`, `--to` | Target language. Language name or language code |
+| `-m`, `--model` | Evaluation model (e.g. `ollama:qwen3.6`) |
 
-### オプション
+### Options
 
-| オプション | デフォルト | 説明 |
+| Option | Default | Description |
 |---|---|---|
-| `-o`, `--output` | なし | 評価結果JSONの保存先 |
-| `-w`, `--retry-wait` | 3 | リトライ待機秒数 |
-| `--no-think` | false | thinking処理を無効化 |
-| `--run` | `1` | 現在の評価回数（プログレスバーの表示に使用） |
-| `--runs` | `1` | 評価の総回数（プログレスバーの表示に使用） |
+| `-o`, `--output` | none | Where to save the evaluation result JSON |
+| `-w`, `--retry-wait` | 3 | Retry wait time in seconds |
+| `--no-think` | false | Disable thinking |
+| `--run` | `1` | Current evaluation run number (used for the progress bar) |
+| `--runs` | `1` | Total number of evaluation runs (used for the progress bar) |
 
-### 評価項目
+### Evaluation Criteria
 
-1. **読みやすさと理解しやすさ**（20点）
-2. **流暢さと自然さ**（20点）
-3. **専門用語の適切性**（20点）
-4. **文脈適応性**（20点）
-5. **情報の完全性**（20点）
+1. **Readability & comprehensibility** (20 points)
+2. **Fluency & naturalness** (20 points)
+3. **Terminology appropriateness** (20 points)
+4. **Contextual adaptation** (20 points)
+5. **Information completeness** (20 points)
 
-### 使用例
+### Examples
 
 ```bash
-# 1回評価
+# Single evaluation run
 uv run trtools eval \
   --original finetuning-fr.txt \
   --translation finetuning-es.txt \
@@ -255,7 +255,7 @@ uv run trtools eval \
   -m ollama:qwen3.6 -w 3 \
   -o evals/finetuning-es-1.json
 
-# 3回評価（プログレスバーに x/3 を表示）
+# 3 evaluation runs (shows x/3 in the progress bar)
 for run in 1 2 3; do
   uv run trtools eval \
     --original finetuning-fr.txt \
@@ -271,32 +271,32 @@ done
 
 ## agg
 
-`eval` で生成した評価JSONファイル（3回分）を集約し、各項目の中央値を計算する。ファイル名は `<base>-1.json`, `<base>-2.json`, `<base>-3.json` の形式を想定。
+Aggregates the evaluation JSON files (3 runs) generated by `eval` and calculates the median for each criterion. Assumes filenames of the form `<base>-1.json`, `<base>-2.json`, `<base>-3.json`.
 
 ```
 uv run trtools agg <json_files...> [options]
 ```
 
-### 引数
+### Arguments
 
-| 引数 | 説明 |
+| Argument | Description |
 |---|---|
-| `files` | 評価JSONファイル（複数指定可、ワイルドカード可） |
+| `files` | Evaluation JSON files (multiple allowed, wildcards allowed) |
 
-### オプション
+### Options
 
-| オプション | デフォルト | 説明 |
+| Option | Default | Description |
 |---|---|---|
-| `-o`, `--output` | なし | 集約結果JSONの保存先 |
-| `--verbose` | false | 項目別の中央値・平均・標準偏差を表示 |
+| `-o`, `--output` | none | Where to save the aggregated result JSON |
+| `--verbose` | false | Show the per-criterion median, mean, and standard deviation |
 
-### 使用例
+### Examples
 
 ```bash
-# 全evalファイルを集約してSCORES.txtに保存
+# Aggregate all eval files and save to SCORES.txt
 uv run trtools agg evals/*.json | tee SCORES.txt
 
-# 詳細表示
+# Detailed display
 uv run trtools agg evals/*.json --verbose
 ```
 
@@ -304,52 +304,52 @@ uv run trtools agg evals/*.json --verbose
 
 ## trend
 
-`eval` で生成した評価JSON（3回分）を言語ごとにマージし、LLM に要約させて `README.md` の「傾向の分析」列に入れる一文を生成する。中間結果を JSONL に追記し、そこから Markdown の表を組み立てて `README.md` に書き戻す。
+Merges the evaluation JSON (3 runs) generated by `eval` per language, has the LLM summarize it, and generates a sentence for `README.md`'s "Trend Analysis" column. Intermediate results are appended to a JSONL, from which a Markdown table is built and written back into `README.md`.
 
 ```
 uv run trtools trend <json_files...> -m <model> [options]
 ```
 
-### 引数
+### Arguments
 
-| 引数 | 説明 |
+| Argument | Description |
 |---|---|
-| `files` | 評価JSONファイル（複数指定可、ワイルドカード可）。`--render-only` 時は不要 |
+| `files` | Evaluation JSON files (multiple allowed, wildcards allowed). Not needed with `--render-only` |
 
-### オプション
+### Options
 
-| オプション | デフォルト | 説明 |
+| Option | Default | Description |
 |---|---|---|
-| `-m`, `--model` | なし | 要約に使用するモデル（`--render-only` 時は不要） |
-| `-o`, `--output` | `TRENDS.jsonl` | 中間結果のJSONL |
-| `--sync` | なし | 生成後に表を書き戻す `README.md` のパス |
-| `--render-only` | false | 生成せずJSONLから表の出力・同期のみ行う |
-| `--no-think` | false | thinking処理を無効化 |
-| `-w`, `--retry-wait` | 3 | リトライ時の待機時間（秒） |
-| `-l`, `--lang` | `en` | 要約の出力言語（`en`/`ja`） |
+| `-m`, `--model` | none | Model used for summarization (not needed with `--render-only`) |
+| `-o`, `--output` | `TRENDS.jsonl` | Intermediate result JSONL |
+| `--sync` | none | Path of the `README.md` to write the table back into after generation |
+| `--render-only` | false | Only output/sync the table from the JSONL, without generating |
+| `--no-think` | false | Disable thinking |
+| `-w`, `--retry-wait` | 3 | Wait time on retry, in seconds |
+| `-l`, `--lang` | `en` | Output language of the summary (`en`/`ja`) |
 
-### 動作
+### Behavior
 
-LLM に渡すのは評価ログのみで、訳文は渡さない。訳文を渡すと4回目の評価をやり直すことになり、3回評価の中央値による安定化が活きないため。ファイルパスやモデル名、criterion 別のスコア・reasoning など要約を混乱させる情報は渡さず、評価ごとの総合スコア `total_score` と総合評価 `overall_comment` のみを渡す。3回とも指摘された欠陥は1回だけのものより信頼できる、という判断材料になる。
+Only the evaluation logs are passed to the LLM; the translated text itself is not. Passing the translated text would amount to redoing a 4th evaluation, undermining the stabilization gained from taking the median of 3 evaluation runs. Information that would confuse the summary — file paths, model names, per-criterion scores/reasoning — is withheld; only the per-run total score `total_score` and overall evaluation `overall_comment` are passed. A defect flagged in all 3 runs is more reliable than one flagged only once, which serves as a signal for the summary.
 
-プロンプトでは評価結果を所与として信頼させ、ログにない具体性を補わないよう制約している（例：混入言語が特定されていなければどの言語かを断定せず一般的な表現にとどめさせる）。出力言語（`-l`/`--lang` で指定、デフォルト `en`）と評価対象言語の混同も明示的に禁止している。
+The prompt instructs the model to trust the evaluation results as given and not to add specifics not present in the logs (e.g., if a contaminating language isn't identified, keep the description generic rather than naming a language). It also explicitly forbids confusing the output language (specified via `-l`/`--lang`, default `en`) with the language being evaluated.
 
-出力は1項目のみのため構造化出力は使わず、プレーンテキストで受け取る。ラベルや引用符、句点、前後の説明を付けないようプロンプトで指示し、受け取った側でも全体を囲む引用符・末尾の句点・改行を除去し、表のセルと衝突する `|` をエスケープする。指定した言語で返ってこなかった場合は最大3回まで再指示して引き直す。
+Since the output is a single item, structured output is not used; plain text is received instead. The prompt instructs the model not to add labels, quotation marks, a trailing period, or surrounding explanation, and on the receiving side, surrounding quotes, a trailing period, and newlines are stripped, and `|` is escaped since it clashes with the table cell separator. If the reply doesn't come back in the specified language, it is re-prompted and regenerated up to 3 times.
 
-**中断からの再開**: 1言語ぶん生成するたびに JSONL へ追記し、起動時に JSONL を読んで既存の言語をスキップする。中断しても失うのは最大1言語ぶん。特定言語だけ引き直したい場合は該当行を削除して再実行する。
+**Resuming after interruption**: Each generated language is appended to the JSONL as it completes, and at startup the JSONL is read to skip languages already present. An interruption loses at most one language's worth of work. To regenerate a specific language, delete its line and rerun.
 
-**表の同期**: `--sync` を指定すると、対象ファイル内の `| 言語 | スコア | 傾向の分析 |`（`ja`）または `| Language | Score | Trend Analysis |`（`en`）というヘッダを持つ表を丸ごと差し替える。ヘッダが一致する表のみを対象とするため、同一ファイル内の他の表は影響を受けない。ヘッダ自体も `-l`/`--lang` に応じて生成されるため、既存の表がどちらの言語で書かれていても検出・置換できる。行はスコア降順・言語コード昇順に並べ、言語名は `LANGUAGES`（[language.py](language.py)）の `-l`/`--lang` に対応する表記（`en`/`ja`）を使う。
+**Table sync**: With `--sync` specified, the entire table in the target file whose header is `| 言語 | スコア | 傾向の分析 |` (`ja`) or `| Language | Score | Trend Analysis |` (`en`) is replaced. Only tables with a matching header are targeted, so other tables in the same file are unaffected. Since the header itself is generated according to `-l`/`--lang`, the existing table can be detected and replaced regardless of which language it was written in. Rows are sorted by score descending, then language code ascending, and language names use the `-l`/`--lang`-corresponding notation (`en`/`ja`) from `LANGUAGES` ([language.py](language.py)).
 
-### 使用例
+### Examples
 
 ```bash
-# 全言語の傾向を生成して README.md の表を更新
+# Generate trends for all languages and update the table in README.md
 uv run trtools trend evals/*.json -m ollama:qwen3.6 --no-think --sync README.md
 
-# 中断後の再開（未生成の言語だけ処理される）
+# Resume after interruption (only ungenerated languages are processed)
 uv run trtools trend evals/*.json -m ollama:qwen3.6 --no-think --sync README.md
 
-# 生成済みJSONLから表の再出力・同期のみ
+# Only re-output/sync the table from the existing JSONL
 uv run trtools trend --render-only --sync README.md
 ```
 
@@ -357,30 +357,30 @@ uv run trtools trend --render-only --sync README.md
 
 ## term extract
 
-テキストファイルから固有名詞・専門用語を抽出し、チャンク単位でJSONに保存する。`translate` サブコマンドの `--terms-json` に渡す用途。
+Extracts proper nouns and technical terms from a text file and saves them as JSON, chunk by chunk. Intended to be passed to the `translate` subcommand's `--terms-json`.
 
 ```
 uv run trtools term extract <input_file> -f <from_lang> -m <model> -o <output.json> [options]
 ```
 
-### 必須引数
+### Required Arguments
 
-| 引数 | 説明 |
+| Argument | Description |
 |---|---|
-| `input_file` | 用語を抽出するテキストファイル |
-| `-f`, `--from` | 原語。言語名または言語コード |
-| `-m`, `--model` | 使用モデル |
-| `-o`, `--output` | 出力JSONファイル名 |
+| `input_file` | Text file to extract terms from |
+| `-f`, `--from` | Source language. Language name or language code |
+| `-m`, `--model` | Model to use |
+| `-o`, `--output` | Output JSON filename |
 
-### オプション
+### Options
 
-| オプション | デフォルト | 説明 |
+| Option | Default | Description |
 |---|---|---|
-| `--keep` | `5` | チャンクサイズ（行数） |
-| `-w`, `--retry-wait` | 3 | リトライ待機秒数 |
-| `--no-think` | false | thinking処理を無効化 |
+| `--keep` | `5` | Chunk size, in lines |
+| `-w`, `--retry-wait` | 3 | Retry wait time in seconds |
+| `--no-think` | false | Disable thinking |
 
-### 使用例
+### Example
 
 ```bash
 uv run trtools term extract finetuning-fr.txt \
@@ -393,40 +393,40 @@ uv run trtools term extract finetuning-fr.txt \
 
 ## term translate
 
-`term extract` で生成したJSONを読み込み、各言語の用語翻訳をTSVファイルに書き出す。共通語彙TSV（`-c`）があれば一致する用語はLLMをスキップして流用する。
+Loads the JSON generated by `term extract` and writes out term translations for each language into a TSV file. If a common glossary TSV (`-c`) is given, matching terms are taken from it, skipping the LLM.
 
 ```
 uv run trtools term translate <extract.json> -t <lang> [-t <lang> ...] -m <model> -o <output.tsv> [options]
 ```
 
-### 必須引数
+### Required Arguments
 
-| 引数 | 説明 |
+| Argument | Description |
 |---|---|
-| `extract_file` | `term extract` の出力JSON |
-| `-t`, `--to` | 翻訳先言語。言語名または言語コード（複数指定可） |
-| `-m`, `--model` | 使用モデル |
-| `-o`, `--output` | 出力TSVファイル名 |
+| `extract_file` | Output JSON from `term extract` |
+| `-t`, `--to` | Target language. Language name or language code (multiple allowed) |
+| `-m`, `--model` | Model to use |
+| `-o`, `--output` | Output TSV filename |
 
-### オプション
+### Options
 
-| オプション | デフォルト | 説明 |
+| Option | Default | Description |
 |---|---|---|
-| `-c`, `--common` | なし | 共通語彙TSVファイル（既存翻訳の流用） |
-| `-w`, `--retry-wait` | 3 | リトライ待機秒数 |
-| `--no-think` | false | thinking処理を無効化 |
+| `-c`, `--common` | none | Common glossary TSV file (reuse existing translations) |
+| `-w`, `--retry-wait` | 3 | Retry wait time in seconds |
+| `--no-think` | false | Disable thinking |
 
-### 使用例
+### Examples
 
 ```bash
-# フランス語 → 英語・スペイン語
+# French -> English, Spanish
 uv run trtools term translate terms/finetuning-fr.json \
   -t en -t es \
   -m ollama:gemma4:31b --no-think \
   -c terms/common.tsv \
   -o terms/finetuning-fr.tsv
 
-# 英語 → ドイツ語・日本語・中国語
+# English -> German, Japanese, Chinese
 uv run trtools term translate terms/finetuning-en.json \
   -t de -t ja -t zh \
   -m ollama:gemma4:31b --no-think \
@@ -438,32 +438,32 @@ uv run trtools term translate terms/finetuning-en.json \
 
 ## term show
 
-用語TSVを言語列・キーで絞り込んで標準出力に表示する。列数が多いTSVをLLMに渡す際の前処理や、校正対象の確認に使用する。
+Shows a term TSV, filtered by language column and key, on standard output. Used as preprocessing before passing a wide TSV to an LLM, or to check items pending proofreading.
 
 ```
 uv run trtools term show <tsv_file> [-l <lang> ...] [-k <key> ...]
 ```
 
-### 引数
+### Arguments
 
-| 引数 | 説明 |
+| Argument | Description |
 |---|---|
-| `tsv_file` | 対象TSVファイル |
-| `-l`, `--lang` | 表示する言語列。言語名または言語コード（複数指定可、省略時は全列） |
-| `-k`, `--key` | 表示するキー・第1列の値（複数指定可、省略時は全行） |
+| `tsv_file` | Target TSV file |
+| `-l`, `--lang` | Language column(s) to show. Language name or language code (multiple allowed; all columns if omitted) |
+| `-k`, `--key` | Key(s) to show, i.e. values in the first column (multiple allowed; all rows if omitted) |
 
-キー列（第1列）は `-l` の指定に関わらず常に先頭に出力される。
+The key column (first column) is always output first regardless of the `-l` specification.
 
-### 使用例
+### Examples
 
 ```bash
-# 日本語列のみ全行表示
+# Show all rows, Japanese column only
 uv run trtools term show terms/onde-en.tsv -l ja
 
-# 日本語・ドイツ語を2列表示
+# Show two columns, Japanese and German
 uv run trtools term show terms/onde-en.tsv -l ja -l de
 
-# キーで絞り込み
+# Filter by key
 uv run trtools term show terms/onde-en.tsv -l ja -k physics -k waves
 ```
 
@@ -471,22 +471,22 @@ uv run trtools term show terms/onde-en.tsv -l ja -k physics -k waves
 
 ## term set
 
-用語TSVの特定セルを上書きして保存する。LLMによる自動翻訳後の個別校正に使用する。
+Overwrites and saves a specific cell in a term TSV. Used for individual proofreading after LLM auto-translation.
 
 ```
 uv run trtools term set <tsv_file> -k <key> -l <lang> -v <value>
 ```
 
-### 必須引数
+### Required Arguments
 
-| 引数 | 説明 |
+| Argument | Description |
 |---|---|
-| `tsv_file` | 対象TSVファイル |
-| `-k`, `--key` | 変更するキー（第1列の値） |
-| `-l`, `--lang` | 変更する言語列名。言語名または言語コード |
-| `-v`, `--value` | 新しい値 |
+| `tsv_file` | Target TSV file |
+| `-k`, `--key` | Key to change (value in the first column) |
+| `-l`, `--lang` | Language column name to change. Language name or language code |
+| `-v`, `--value` | New value |
 
-### 使用例
+### Example
 
 ```bash
 uv run trtools term set terms/onde-en.tsv -k "physics" -l ja -v "物理学"
@@ -496,21 +496,21 @@ uv run trtools term set terms/onde-en.tsv -k "physics" -l ja -v "物理学"
 
 ## term reorder
 
-用語TSVの列を指定した順序に並べ替えて出力する。存在しない列は空列として追加される。
+Reorders the columns of a term TSV into a given order and outputs it. A missing column is added as an empty column.
 
 ```
 uv run trtools term reorder <tsv_file> -c <lang> [...] -o <output.tsv>
 ```
 
-### 必須引数
+### Required Arguments
 
-| 引数 | 説明 |
+| Argument | Description |
 |---|---|
-| `tsv_file` | 対象TSVファイル |
-| `-c`, `--col` | 出力する列名。言語名または言語コード（複数指定） |
-| `-o`, `--output` | 出力TSVファイル |
+| `tsv_file` | Target TSV file |
+| `-c`, `--col` | Column name(s) to output. Language name or language code (multiple) |
+| `-o`, `--output` | Output TSV file |
 
-### 使用例
+### Example
 
 ```bash
 uv run trtools term reorder terms/finetuning-en.tsv \
@@ -522,23 +522,23 @@ uv run trtools term reorder terms/finetuning-en.tsv \
 
 ## term merge
 
-複数の用語TSVを列結合して出力する。キー列（第1列）が共通の場合はキー値でマッチし、キー列がない場合は行位置でマッチする。同じ列名が複数ファイルに存在する場合、後のファイルの非空値がセル単位で上書きする。
+Merges multiple term TSVs by column and outputs the result. If the key column (first column) is common, rows are matched by key value; without a key column, rows are matched by position. When the same column name exists in multiple files, non-empty values from later files overwrite cell by cell.
 
 ```
 uv run trtools term merge <file1> <file2> [...] -o <output.tsv>
 ```
 
-### 必須引数
+### Required Arguments
 
-| 引数 | 説明 |
+| Argument | Description |
 |---|---|
-| `FILE...` | 入力TSVファイル（複数） |
-| `-o`, `--output` | 出力TSVファイル |
+| `FILE...` | Input TSV files (multiple) |
+| `-o`, `--output` | Output TSV file |
 
-### 使用例
+### Example
 
 ```bash
-# 既存TSVに別ファイルの言語列を追加
+# Add language columns from another file to an existing TSV
 uv run trtools term merge terms/finetuning-en.tsv extra-langs.tsv \
   -o terms/finetuning-en-full.tsv
 ```
@@ -547,73 +547,73 @@ uv run trtools term merge terms/finetuning-en.tsv extra-langs.tsv \
 
 ## batch
 
-翻訳→評価→集約を一括実行する。ファイル名の言語コード（例: `finetuning-fr.txt` → `fr`）から原語を自動導出し、`--tr-dir` と `--eval-dir` で指定したディレクトリに出力を整理する。既存ファイルはスキップする。
+Runs translate -> evaluate -> aggregate in one go. Derives the source language from the filename's language code (e.g. `finetuning-fr.txt` -> `fr`) and organizes output into the directories given by `--tr-dir` and `--eval-dir`. Existing files are skipped.
 
-`summary` は自動生成しないため、翻訳フェーズの前に対象ファイルの `{topic}-summary.jsonl` を `trtools summary` で生成しておくこと。未生成の場合はその翻訳対象がエラーになりスキップされる。
+Since `summary` is not auto-generated, `{topic}-summary.jsonl` must be generated with `trtools summary` for the target files before the translation phase. If not generated, that translation target errors and is skipped.
 
 ```
 uv run trtools batch <files...> --langs <lang...> -m <model> [options]
 ```
 
-### 必須引数
+### Required Arguments
 
-| 引数 | 説明 |
+| Argument | Description |
 |---|---|
-| `files` | 入力テキストファイル（例: `../finetuning-fr.txt`）。ファイル名末尾の `-XX` が原語コードとして使われる |
-| `--langs` | 翻訳先言語コードリスト（例: `en es de`） |
-| `-m`, `--model` | 翻訳モデル（`--eval-only` 時は不要） |
+| `files` | Input text files (e.g. `../finetuning-fr.txt`). The `-XX` suffix in the filename is used as the source language code |
+| `--langs` | List of target language codes (e.g. `en es de`) |
+| `-m`, `--model` | Translation model (not needed with `--eval-only`) |
 
-### オプション
+### Options
 
-| オプション | デフォルト | 説明 |
+| Option | Default | Description |
 |---|---|---|
-| `--evaluator` | なし | 評価モデル（`--tr-only` 時は不要） |
-| `--tr-only` | false | 翻訳のみ実行（評価・集約をスキップ） |
-| `--eval-only` | false | 評価のみ実行（翻訳・集約をスキップ） |
-| `--no-agg` | false | 集約のみスキップ（`SCORES.txt` を生成しない） |
-| `-f`, `--from` | ファイル名から自動導出 | 原語（手動指定する場合） |
-| `--terms-dir` | なし | 用語ファイルのディレクトリ（`<topic>-<from>.json/tsv` を自動検索） |
-| `--tr-runs` | `1` | 翻訳の実行回数 |
-| `--eval-runs` | `3` | 評価の実行回数 |
-| `--threshold` | `10` | 要約生成の間隔（行数） |
-| `--keep` | `5` | 圧縮後に保持する翻訳ペア数 |
-| `--no-think` | false | CoT無効化 |
-| `--tr-dir` | `tr` | 翻訳出力ディレクトリ |
-| `--eval-dir` | `evals` | 評価出力ディレクトリ |
-| `-w`, `--retry-wait` | `3` | リトライ待機秒数 |
+| `--evaluator` | none | Evaluation model (not needed with `--tr-only`) |
+| `--tr-only` | false | Run translation only (skip evaluation and aggregation) |
+| `--eval-only` | false | Run evaluation only (skip translation and aggregation) |
+| `--no-agg` | false | Skip aggregation only (do not generate `SCORES.txt`) |
+| `-f`, `--from` | auto-derived from filename | Source language (for manual override) |
+| `--terms-dir` | none | Directory of term files (auto-searches for `<topic>-<from>.json/tsv`) |
+| `--tr-runs` | `1` | Number of translation runs |
+| `--eval-runs` | `3` | Number of evaluation runs |
+| `--threshold` | `10` | Interval for summary generation, in lines |
+| `--keep` | `5` | Number of translation pairs to keep after compression |
+| `--no-think` | false | Disable CoT |
+| `--tr-dir` | `tr` | Translation output directory |
+| `--eval-dir` | `evals` | Evaluation output directory |
+| `-w`, `--retry-wait` | `3` | Retry wait time in seconds |
 
-### 出力ファイル構成
+### Output File Layout
 
-`--tr-runs 1`（デフォルト）の場合:
+With `--tr-runs 1` (default):
 
 ```
 <tr-dir>/
-  <topic>-<lang>.txt          # 翻訳結果
+  <topic>-<lang>.txt          # Translation result
 <eval-dir>/
-  <topic>-<lang>-1.json  # 評価結果（eval-runごと）
+  <topic>-<lang>-1.json  # Evaluation result (per eval-run)
   <topic>-<lang>-2.json
   <topic>-<lang>-3.json
-SCORES.txt                    # 集約スコア
+SCORES.txt                    # Aggregated score
 ```
 
-`--tr-runs 3` の場合はサフィックス付き（例: `<tr-dir>/finetuning-de-1.txt`, `<eval-dir>/finetuning-de-1-1.json`）。
+With `--tr-runs 3`, filenames get a suffix (e.g. `<tr-dir>/finetuning-de-1.txt`, `<eval-dir>/finetuning-de-1-1.json`).
 
-### 対応言語コード
+### Supported Language Codes
 
-[trtools/language.py](language.py) を参照。登録されていない言語コードは言語名として大文字化して渡される（例: `xx` → `Xx`）。
+See [trtools/language.py](language.py). An unregistered language code is passed through as a capitalized language name (e.g. `xx` -> `Xx`).
 
-一定の品質が確認されている言語（全4トピック・gemma4-26b、[examples/](../examples/) 参照訳として採用済み）: `en` English, `ja` Japanese, `es` Spanish, `zh` Chinese, `de` German
+Languages with confirmed quality (all 4 topics, gemma4-26b, adopted as reference translations in [examples/](../examples/)): `en` English, `ja` Japanese, `es` Spanish, `zh` Chinese, `de` German
 
-上記以外の言語の品質は未確認。生成結果は必ず確認・校正すること。
+Quality for other languages is unconfirmed. Always review and proofread generated results.
 
-### 使用例
+### Examples
 
 ```bash
-# 事前に要約を生成（trtools batch は自動生成しない）
+# Pre-generate summaries (trtools batch does not auto-generate them)
 uv run trtools summary ../finetuning-en.txt ../transformer-en.txt \
   -f en -m ollama:gemma4:26b --threshold 20
 
-# 翻訳のみ（複数ファイル・複数言語）
+# Translation only (multiple files, multiple languages)
 uv run trtools batch \
   ../finetuning-en.txt ../transformer-en.txt \
   --langs de ja zh \
@@ -622,7 +622,7 @@ uv run trtools batch \
   --threshold 20 --no-think \
   --tr-only
 
-# 翻訳 + 評価 + 集約
+# Translation + evaluation + aggregation
 uv run trtools batch \
   ../finetuning-fr.txt ../transformer-fr.txt \
   --langs en es \
@@ -631,43 +631,43 @@ uv run trtools batch \
   --terms-dir ../terms \
   --no-think
 
-# 評価のみ（翻訳済みファイルを前提に、評価だけ再実行）
+# Evaluation only (assuming translated files already exist, rerun just the evaluation)
 uv run trtools batch \
   ../finetuning-en.txt \
   --langs de ja zh \
   --evaluator ollama:qwen3.6 \
   --eval-only
 
-# 集約は別途実行
+# Run aggregation separately
 uv run trtools agg evals/*.json | tee SCORES.txt
 ```
 
 ---
 
-## 典型的なワークフロー
+## Typical Workflow
 
-### 1. 用語ファイルを準備する
+### 1. Prepare term files
 
 ```bash
-# 用語抽出
+# Extract terms
 uv run trtools term extract topic-fr.txt \
   -f fr -m ollama:gemma4:31b --keep 5 --no-think \
   -o terms/topic-fr.json
 
-# 用語翻訳
+# Translate terms
 uv run trtools term translate terms/topic-fr.json \
   -t en -t es \
   -m ollama:gemma4:31b --no-think \
   -c terms/common.tsv -o terms/topic-fr.tsv
 ```
 
-### 2. 要約を事前生成する
+### 2. Pre-generate summaries
 
 ```bash
 uv run trtools summary topic-fr.txt -f fr -m ollama:gemma4:26b
 ```
 
-### 3. 翻訳と評価を一括実行する
+### 3. Run translation and evaluation in one go
 
 ```bash
 uv run trtools batch topic-fr.txt \
@@ -678,15 +678,15 @@ uv run trtools batch topic-fr.txt \
   --no-think
 ```
 
-### 4. 個別に翻訳・評価・集約を実行する
+### 4. Run translation, evaluation, and aggregation individually
 
 ```bash
-# 翻訳（事前に summary topic-fr.txt を実行済みであること）
+# Translation (assumes summary topic-fr.txt has already been run)
 uv run trtools translate topic-fr.txt -f fr -t en \
   -o tr/topic-en.txt -m ollama:gemma4:26b --no-think \
   --terms-json terms/topic-fr.json --terms-tsv terms/topic-fr.tsv
 
-# 評価（3回）
+# Evaluation (3 runs)
 for run in 1 2 3; do
   uv run trtools eval \
     --original topic-fr.txt --translation tr/topic-en.txt \
@@ -696,6 +696,6 @@ for run in 1 2 3; do
     -o evals/topic-en-$run.json
 done
 
-# 集約
+# Aggregation
 uv run trtools agg evals/topic-en-*.json | tee SCORES.txt
 ```

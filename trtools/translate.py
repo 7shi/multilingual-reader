@@ -1,6 +1,8 @@
-# 行単位翻訳サブコマンド（用語注入・サマリー圧縮方式）
-# experimental4/translate.py をベースに話者分離を廃止し、空行を保持したまま1行ずつ翻訳する。
-# 用語抽出は trtools term extract/translate で事前に実施し、JSON と TSV を読み込んで注入する。
+# Line-by-line translation subcommand (term injection / summary compression)
+# Based on experimental4/translate.py, but drops speaker separation and translates
+# line by line while preserving empty lines.
+# Term extraction is done beforehand with trtools term extract/translate, and the
+# resulting JSON and TSV are loaded and injected here.
 
 import csv
 import json
@@ -14,34 +16,34 @@ LINE_RETRY_COUNT = 3
 
 
 def add_parser(subparsers):
-    parser = subparsers.add_parser("translate", help="テキストを行単位で翻訳（空行保持）")
-    parser.add_argument("input_file", help="翻訳対象のテキストファイル")
+    parser = subparsers.add_parser("translate", help="Translate text line by line (preserving empty lines)")
+    parser.add_argument("input_file", help="Text file to translate")
     parser.add_argument("-f", "--from", dest="from_lang", required=True,
-                        help="原語（例: French, English, Japanese）")
+                        help="Source language (e.g. French, English, Japanese)")
     parser.add_argument("-t", "--to", dest="to_lang", required=True,
-                        help="翻訳先言語（例: Spanish, Japanese）")
+                        help="Target language (e.g. Spanish, Japanese)")
     parser.add_argument("-o", "--output", dest="output_file", required=True,
-                        help="出力ファイル名")
-    parser.add_argument("-m", "--model", required=True, help="翻訳モデル")
+                        help="Output filename")
+    parser.add_argument("-m", "--model", required=True, help="Translation model")
     parser.add_argument("--threshold", type=int, default=10,
-                        help="要約生成の間隔（行数）（デフォルト: 10）")
+                        help="Interval for summary generation, in lines (default: 10)")
     parser.add_argument("--keep", type=int, default=5,
-                        help="圧縮後に保持する翻訳ペア数（デフォルト: 5）")
+                        help="Number of translation pairs to keep after compression (default: 5)")
     parser.add_argument("--terms-json", default=None,
-                        help="trtools term extract の出力 JSON ファイル")
+                        help="Output JSON file from trtools term extract")
     parser.add_argument("--terms-tsv", default=None,
-                        help="trtools term translate の出力 TSV ファイル")
+                        help="Output TSV file from trtools term translate")
     parser.add_argument("--no-think", action="store_true",
-                        help="thinking 処理を無効化（Qwen3 モデル用）")
+                        help="Disable thinking (for Qwen3 models)")
     parser.add_argument("-w", "--retry-wait", type=int, default=DEFAULT_RETRY_WAIT_SECONDS,
-                        help=f"リトライ時の待機時間（秒）（デフォルト: {DEFAULT_RETRY_WAIT_SECONDS}秒）")
+                        help=f"Wait time on retry, in seconds (default: {DEFAULT_RETRY_WAIT_SECONDS}s)")
     parser.add_argument("--fix", action="store_true",
-                        help="既存出力の空行のみ再翻訳してファイル全体を書き直す（通常モードは行数のみで再開判定）")
+                        help="Retranslate only the empty lines in the existing output and rewrite the whole file (normal mode determines resume position from line count alone)")
     parser.set_defaults(func=run)
 
 
 def _load_terms(terms_json, terms_tsv, from_lang, to_lang, write=None):
-    """JSON と TSV から chunk_data と glossary を構築する。"""
+    """Build chunk_data and glossary from the JSON and TSV."""
     if write is None:
         write = lambda text: print(text, end="")
 
@@ -49,7 +51,7 @@ def _load_terms(terms_json, terms_tsv, from_lang, to_lang, write=None):
         json_data = json.load(f)
 
     if json_data.get("from") != from_lang:
-        write(f"WARNING: 用語JSONの原語 '{json_data.get('from')}' が指定言語 '{from_lang}' と異なります。\n")
+        write(f"WARNING: term JSON's source language '{json_data.get('from')}' differs from the specified '{from_lang}'.\n")
 
     chunk_data = json_data.get("chunks", [])
 
@@ -58,10 +60,10 @@ def _load_terms(terms_json, terms_tsv, from_lang, to_lang, write=None):
         reader = csv.reader(f, delimiter="\t")
         header = next(reader)
         if from_lang not in header:
-            write(f"WARNING: TSV に '{from_lang}' 列がありません。用語注入をスキップします。\n")
+            write(f"WARNING: TSV has no '{from_lang}' column. Skipping term injection.\n")
             return chunk_data, glossary
         if to_lang not in header:
-            write(f"WARNING: TSV に '{to_lang}' 列がありません。用語注入をスキップします。\n")
+            write(f"WARNING: TSV has no '{to_lang}' column. Skipping term injection.\n")
             return chunk_data, glossary
         from_idx = header.index(from_lang)
         to_idx = header.index(to_lang)
@@ -76,7 +78,7 @@ def _load_terms(terms_json, terms_tsv, from_lang, to_lang, write=None):
 
 
 def _build_terms_messages(start_line, end_line, chunk_data, glossary, from_lang, to_lang):
-    """指定行範囲（1-indexed inclusive）に登場する用語のメッセージペアを返す。"""
+    """Return message pairs for terms appearing in the given line range (1-indexed inclusive)."""
     seen = set()
     relevant = []
     for chunk in chunk_data:
@@ -106,7 +108,7 @@ def _build_terms_messages(start_line, end_line, chunk_data, glossary, from_lang,
 
 
 def _build_summary_messages(summary_text):
-    """要約テキストをコンテキスト注入用のメッセージペアに変換する。"""
+    """Convert summary text into a message pair for context injection."""
     if not summary_text:
         return []
     user_msg = {
@@ -129,7 +131,7 @@ def run(args):
     with open(args.input_file, "r", encoding="utf-8") as f:
         all_lines = f.readlines()
 
-    # 空行以外を翻訳対象として抽出（元の行インデックスを保持）
+    # Extract non-empty lines as translation targets (preserving the original line index)
     content_lines = [(i, line.rstrip("\n")) for i, line in enumerate(all_lines) if line.strip()]
     total = len(content_lines)
 
@@ -140,14 +142,14 @@ def run(args):
         count=getattr(args, 'count', None),
     )
 
-    # 出力ファイルの既存内容から再開位置を求める
+    # Determine the resume position from the output file's existing content
     existing_lines = []
     if os.path.exists(args.output_file):
         with open(args.output_file, "r", encoding="utf-8") as f:
             existing_lines = f.readlines()
 
     if args.fix:
-        # 空行になっている行だけを再翻訳する。追記では位置を保てないため全体を書き直す。
+        # Retranslate only lines that are empty. Appending can't preserve position, so rewrite the whole file.
         translated_text = {
             orig_idx: (existing_lines[orig_idx].rstrip("\n") if orig_idx < len(existing_lines) else "")
             for orig_idx, _ in content_lines
@@ -157,7 +159,7 @@ def run(args):
             if not translated_text[orig_idx].strip()
         }
         if not bad_indices:
-            ui.write(f"空行はありません: {args.output_file}\n")
+            ui.write(f"No empty lines: {args.output_file}\n")
             return
         resume_count = 0
     else:
@@ -169,10 +171,10 @@ def run(args):
         bad_indices = set()
 
         if total > 0 and resume_count >= total:
-            ui.write(f"既に翻訳済みです: {args.output_file}\n")
+            ui.write(f"Already translated: {args.output_file}\n")
             return
 
-    # 要約は trtools summary で事前生成しておく必要がある（未生成ならエラー）
+    # The summary must be pre-generated with trtools summary (errors if missing)
     summaries = load_summaries(args.input_file, total, threshold, keep)
 
     chunk_data = []
@@ -197,8 +199,8 @@ def run(args):
     }
 
     def build_chat_history(position):
-        """position（訳し終えた行数）時点の chat_history を組み立てる。
-        新規開始（position == 0）でも再開でも同じ手順で構築する。"""
+        """Build chat_history as of position (number of lines translated so far).
+        The same procedure is used whether starting fresh (position == 0) or resuming."""
         seed_start = position + 1
         seed_end = min(position + threshold + keep, total)
         terms_msgs = _build_terms_messages(seed_start, seed_end, chunk_data, glossary, from_lang, to_lang)
@@ -232,10 +234,10 @@ def run(args):
                 return stripped, user_msg, asst_msg
             chat_history.pop()
             if attempt < LINE_RETRY_COUNT:
-                ui.stream.error("翻訳結果が不正です。")
-                ui.stream.wait_retry(args.retry_wait, f"再試行中 ({attempt}/{LINE_RETRY_COUNT})...")
+                ui.stream.error("Invalid translation result.")
+                ui.stream.wait_retry(args.retry_wait, f"Retrying ({attempt}/{LINE_RETRY_COUNT})...")
             else:
-                raise RuntimeError(f"翻訳結果が不正です（{LINE_RETRY_COUNT}回失敗）: {prompt!r}")
+                raise RuntimeError(f"Invalid translation result (failed {LINE_RETRY_COUNT} times): {prompt!r}")
 
     start_time = time.time()
     next_compression = None
@@ -281,5 +283,5 @@ def run(args):
 
     elapsed = time.time() - start_time
 
-    ui.write(f"\n翻訳完了: {from_lang} → {to_lang} ({args.output_file})\n")
-    ui.write(f"処理時間: {elapsed:.1f}秒 ({elapsed/60:.1f}分)\n")
+    ui.write(f"\nTranslation complete: {from_lang} -> {to_lang} ({args.output_file})\n")
+    ui.write(f"Elapsed time: {elapsed:.1f}s ({elapsed/60:.1f}min)\n")

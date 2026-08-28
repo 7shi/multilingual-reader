@@ -5,16 +5,16 @@ from .statusline import StatusLine
 
 
 def add_parser(subparsers):
-    parser = subparsers.add_parser("review", help="他者評価による翻訳推敲")
-    parser.add_argument("--original", required=True, help="原文テキストファイル")
-    parser.add_argument("--translation", required=True, help="ベースライン翻訳テキストファイル")
-    parser.add_argument("-f", "--from", dest="from_lang", required=True, help="原語コード（例: en）")
-    parser.add_argument("-t", "--to", dest="to_lang", required=True, help="翻訳先言語コード（例: nl）")
-    parser.add_argument("-o", "--output", required=True, help="推敲後出力ファイル名")
-    parser.add_argument("-m", "--model", required=True, help="推敲に使用するモデル")
-    parser.add_argument("--history", type=int, default=10, help="コンテキスト履歴数（デフォルト: 10）")
-    parser.add_argument("--no-think", action="store_true", help="thinking処理を無効化")
-    parser.add_argument("--terms", help="用語対訳TSVファイル（話者名の変換に使用）")
+    parser = subparsers.add_parser("review", help="Polish a translation via third-party review")
+    parser.add_argument("--original", required=True, help="Original text file")
+    parser.add_argument("--translation", required=True, help="Baseline translation text file")
+    parser.add_argument("-f", "--from", dest="from_lang", required=True, help="Source language code (e.g. en)")
+    parser.add_argument("-t", "--to", dest="to_lang", required=True, help="Target language code (e.g. nl)")
+    parser.add_argument("-o", "--output", required=True, help="Output filename after polishing")
+    parser.add_argument("-m", "--model", required=True, help="Model used for polishing")
+    parser.add_argument("--history", type=int, default=10, help="Number of context history entries (default: 10)")
+    parser.add_argument("--no-think", action="store_true", help="Disable thinking")
+    parser.add_argument("--terms", help="Term translation TSV file (used to convert speaker names)")
     parser.set_defaults(func=run)
 
 

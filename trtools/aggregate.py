@@ -1,4 +1,4 @@
-# 評価結果集約スクリプト（中央値計算）
+# Evaluation result aggregation script (median calculation)
 
 import argparse
 import json
@@ -8,7 +8,7 @@ from statistics import median, mean, stdev
 from pathlib import Path
 
 def find_evaluation_groups(files):
-    """ファイルリストから評価ファイルグループを検索"""
+    """Search the file list for evaluation file groups"""
     pattern = re.compile(r'^(.+)-([123])\.json$')
     groups = {}
 
@@ -31,7 +31,7 @@ def find_evaluation_groups(files):
     return complete_groups
 
 def load_evaluation_data(filepath):
-    """評価JSONファイルを読み込み"""
+    """Load an evaluation JSON file"""
     try:
         with open(filepath, 'r', encoding='utf-8') as f:
             return json.load(f)
@@ -40,7 +40,7 @@ def load_evaluation_data(filepath):
         return None
 
 def calculate_statistics(evaluation_data_list):
-    """3回の評価データから各項目の統計値を計算"""
+    """Calculate per-criterion statistics from 3 evaluation runs"""
     criteria = ['readability', 'fluency', 'terminology', 'contextual_adaptation', 'information_completeness']
     statistics = {}
 
@@ -80,7 +80,7 @@ def calculate_statistics(evaluation_data_list):
     return statistics, total_scores
 
 def aggregate_evaluations(files):
-    """ファイルリストの評価結果を集約"""
+    """Aggregate evaluation results from the file list"""
     groups = find_evaluation_groups(files)
     results = {}
 
@@ -109,10 +109,10 @@ def aggregate_evaluations(files):
     return results
 
 def add_parser(subparsers):
-    parser = subparsers.add_parser("agg", help="評価結果JSONの中央値を集約")
-    parser.add_argument("files", nargs="+", help="評価結果JSONファイル（複数指定可能）")
-    parser.add_argument("-o", "--output", dest="output_file", help="集約結果をJSONで保存するファイル名")
-    parser.add_argument("--verbose", action="store_true", help="詳細な統計情報を表示")
+    parser = subparsers.add_parser("agg", help="Aggregate the median of evaluation result JSON files")
+    parser.add_argument("files", nargs="+", help="Evaluation result JSON files (multiple allowed)")
+    parser.add_argument("-o", "--output", dest="output_file", help="Filename to save the aggregated result as JSON")
+    parser.add_argument("--verbose", action="store_true", help="Show detailed statistics")
     parser.set_defaults(func=run)
     return parser
 
@@ -126,18 +126,18 @@ def run(args):
             print(f"\n{base_name}:")
             if result['statistics']:
                 criteria_names = {
-                    'readability': '読みやすさと理解しやすさ',
-                    'fluency': '流暢さと自然さ          ',
-                    'terminology': '専門用語の適切性        ',
-                    'contextual_adaptation': '文脈適応性              ',
-                    'information_completeness': '情報の完全性            '
+                    'readability': 'Readability & comprehensibility',
+                    'fluency': 'Fluency & naturalness           ',
+                    'terminology': 'Terminology appropriateness     ',
+                    'contextual_adaptation': 'Contextual adaptation           ',
+                    'information_completeness': 'Information completeness        '
                 }
                 for criterion, name in criteria_names.items():
                     stats = result['statistics'][criterion]
                     if stats:
-                        print(f"  {name}: 中央値={stats['median']}, 平均={stats['mean']:.1f}, 標準偏差={stats['stdev']:.2f} (スコア: {stats['scores']})")
+                        print(f"  {name}: median={stats['median']}, mean={stats['mean']:.1f}, stdev={stats['stdev']:.2f} (scores: {stats['scores']})")
                 if total['median'] is not None:
-                    print(f"  総合得点: 中央値={total['median']}, 平均={total['mean']:.1f}, 標準偏差={total['stdev']:.2f}/100点")
+                    print(f"  Total score: median={total['median']}, mean={total['mean']:.1f}, stdev={total['stdev']:.2f}/100")
         else:
             if total['median'] is not None:
                 print(f"{base_name}: {total['median']}")
@@ -145,14 +145,14 @@ def run(args):
     if args.output_file:
         with open(args.output_file, 'w', encoding='utf-8') as f:
             json.dump(aggregated_results, f, ensure_ascii=False, indent=2)
-        print(f"\n集約結果をJSONで保存しました: {args.output_file}")
+        print(f"\nSaved aggregated result as JSON: {args.output_file}")
 
     if args.verbose:
-        print(f"\n処理完了: {len(aggregated_results)}件のファイルグループを集約しました")
+        print(f"\nDone: aggregated {len(aggregated_results)} file group(s)")
 
 if __name__ == "__main__":
     import argparse
-    parser = argparse.ArgumentParser(description="評価結果JSONの中央値を集約")
+    parser = argparse.ArgumentParser(description="Aggregate the median of evaluation result JSON files")
     subparsers = parser.add_subparsers()
     add_parser(subparsers)
     args = parser.parse_args(["agg"] + __import__("sys").argv[1:])

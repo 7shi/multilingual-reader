@@ -21,7 +21,7 @@ class StatusLine(_BaseStatusLine):
         self._start = start
         self._index = index
         self._count = count
-        # 進捗そのものが処理件数を表す場合、(m/n) を左側（ラベルの直後）に置く
+        # When the progress itself represents the item count, place (m/n) on the left (right after the label)
         self._left_count = left_count
 
     def rule(self, text: str) -> None:

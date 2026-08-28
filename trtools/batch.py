@@ -1,4 +1,4 @@
-# 翻訳→評価→集約を一括実行するバッチサブコマンド
+# Batch subcommand that runs translate -> evaluate -> aggregate in one go
 
 import os
 import time
@@ -9,40 +9,40 @@ from .language import LANG_NAMES
 
 
 def add_parser(subparsers):
-    parser = subparsers.add_parser("batch", help="翻訳→評価→集約を一括実行")
+    parser = subparsers.add_parser("batch", help="Run translate -> evaluate -> aggregate in one go")
     parser.add_argument("files", nargs="+",
-                        help="入力テキストファイル（例: ../finetuning-fr.txt）")
+                        help="Input text files (e.g. ../finetuning-fr.txt)")
     parser.add_argument("--langs", nargs="+", required=True,
-                        help="翻訳先言語コードリスト（例: en es）")
+                        help="List of target language codes (e.g. en es)")
     parser.add_argument("-f", "--from", dest="from_lang", default=None,
-                        help="原語（省略時はファイル名の言語コードから自動導出）")
-    parser.add_argument("-m", "--model", default=None, help="翻訳モデル（--eval-only 時は不要）")
-    parser.add_argument("--evaluator", default=None, help="評価モデル（--tr-only 時は不要）")
-    parser.add_argument("--tr-only", action="store_true", help="翻訳のみ実行（評価・集約をスキップ）")
-    parser.add_argument("--eval-only", action="store_true", help="評価のみ実行（翻訳・集約をスキップ）")
+                        help="Source language (auto-derived from the filename's language code if omitted)")
+    parser.add_argument("-m", "--model", default=None, help="Translation model (not needed with --eval-only)")
+    parser.add_argument("--evaluator", default=None, help="Evaluation model (not needed with --tr-only)")
+    parser.add_argument("--tr-only", action="store_true", help="Run translation only (skip evaluation and aggregation)")
+    parser.add_argument("--eval-only", action="store_true", help="Run evaluation only (skip translation and aggregation)")
     parser.add_argument("--terms-dir", default=None,
-                        help="用語ファイルのディレクトリ（省略時は用語注入なし）")
-    parser.add_argument("--tr-runs", type=int, default=1, help="翻訳回数（デフォルト: 1）")
-    parser.add_argument("--eval-runs", type=int, default=3, help="評価回数（デフォルト: 3）")
+                        help="Directory of term files (no term injection if omitted)")
+    parser.add_argument("--tr-runs", type=int, default=1, help="Number of translation runs (default: 1)")
+    parser.add_argument("--eval-runs", type=int, default=3, help="Number of evaluation runs (default: 3)")
     parser.add_argument("--threshold", type=int, default=10,
-                        help="要約生成の間隔（デフォルト: 10）")
+                        help="Interval for summary generation (default: 10)")
     parser.add_argument("--keep", type=int, default=5,
-                        help="圧縮後に保持する翻訳ペア数（デフォルト: 5）")
-    parser.add_argument("--no-think", action="store_true", help="CoT 無効化")
-    parser.add_argument("--no-agg", action="store_true", help="集約をスキップ（SCORES.txt を生成しない）")
-    parser.add_argument("--tr-dir", default="tr", help="翻訳出力ディレクトリ（デフォルト: tr）")
-    parser.add_argument("--eval-dir", default="evals", help="評価出力ディレクトリ（デフォルト: evals）")
+                        help="Number of translation pairs to keep after compression (default: 5)")
+    parser.add_argument("--no-think", action="store_true", help="Disable CoT")
+    parser.add_argument("--no-agg", action="store_true", help="Skip aggregation (do not generate SCORES.txt)")
+    parser.add_argument("--tr-dir", default="tr", help="Translation output directory (default: tr)")
+    parser.add_argument("--eval-dir", default="evals", help="Evaluation output directory (default: evals)")
     parser.add_argument("-w", "--retry-wait", type=int, default=3,
-                        help="リトライ待機秒数（デフォルト: 3）")
+                        help="Retry wait time in seconds (default: 3)")
     parser.set_defaults(func=run)
     return parser
 
 
 def _parse_input_file(file_path):
-    """ファイルパスから (topic, from_code) を導出する。
-    例: ../finetuning-fr.txt → ("finetuning", "fr")
+    """Derive (topic, from_code) from a file path.
+    e.g. ../finetuning-fr.txt -> ("finetuning", "fr")
     """
-    stem = Path(file_path).stem  # 例: "finetuning-fr"
+    stem = Path(file_path).stem  # e.g. "finetuning-fr"
     topic, from_code = stem.rsplit("-", 1)
     return topic, from_code
 
@@ -53,14 +53,14 @@ def _line_count(path):
 
 
 def _tr_path(topic, lang, trrun, tr_runs, tr_dir="tr"):
-    """翻訳出力ファイルパスを返す。tr_runs==1 のときはサフィックスなし。"""
+    """Return the translation output file path. No suffix when tr_runs==1."""
     if tr_runs == 1:
         return f"{tr_dir}/{topic}-{lang}.txt"
     return f"{tr_dir}/{topic}-{lang}-{trrun}.txt"
 
 
 def _eval_path(topic, lang, trrun, tr_runs, evrun, eval_dir="evals"):
-    """評価出力ファイルパスを返す。tr_runs==1 のときは trrun 部分を省略。"""
+    """Return the evaluation output file path. Omits the trrun part when tr_runs==1."""
     if tr_runs == 1:
         return f"{eval_dir}/{topic}-{lang}-{evrun}.json"
     return f"{eval_dir}/{topic}-{lang}-{trrun}-{evrun}.json"
@@ -68,13 +68,13 @@ def _eval_path(topic, lang, trrun, tr_runs, evrun, eval_dir="evals"):
 
 def run(args):
     if args.tr_only and args.eval_only:
-        print("エラー: --tr-only と --eval-only は同時に指定できません")
+        print("Error: --tr-only and --eval-only cannot be specified together")
         return
     if not args.eval_only and not args.model:
-        print("エラー: -m/--model が必要です（評価のみ実行する場合は --eval-only を指定）")
+        print("Error: -m/--model is required (specify --eval-only to run evaluation only)")
         return
     if not args.tr_only and not args.evaluator:
-        print("エラー: --evaluator が必要です（翻訳のみ実行する場合は --tr-only を指定）")
+        print("Error: --evaluator is required (specify --tr-only to run translation only)")
         return
 
     terms_dir = Path(args.terms_dir) if args.terms_dir else None
@@ -84,7 +84,7 @@ def run(args):
     if not args.tr_only:
         os.makedirs(args.eval_dir, exist_ok=True)
 
-    # ファイルごとに (topic, from_code, from_lang, input_file) を解決
+    # Resolve (topic, from_code, from_lang, input_file) for each file
     inputs = []
     for file_path in args.files:
         p = Path(file_path)
@@ -95,7 +95,7 @@ def run(args):
         from_lang = args.from_lang or LANG_NAMES.get(from_code, from_code.capitalize())
         inputs.append((topic, from_code, from_lang, p))
 
-    # --- 翻訳フェーズ ---
+    # --- Translation phase ---
     if not args.eval_only:
         tr_total = len(inputs) * len(args.langs) * args.tr_runs
         tr_index = 0
@@ -134,12 +134,12 @@ def run(args):
                     try:
                         translate.run(tr_args)
                     except Exception as e:
-                        print(f"翻訳エラー ({out}): {e}")
+                        print(f"Translation error ({out}): {e}")
 
     if args.tr_only:
         return
 
-    # --- 評価フェーズ ---
+    # --- Evaluation phase ---
     ev_total = len(inputs) * len(args.langs) * args.tr_runs
     ev_index = 0
     ev_start = time.time()
@@ -177,12 +177,12 @@ def run(args):
                     try:
                         evaluate.run(eval_args)
                     except Exception as e:
-                        print(f"評価エラー ({eval_out}): {e}")
+                        print(f"Evaluation error ({eval_out}): {e}")
 
     if args.eval_only or args.no_agg:
         return
 
-    # --- 集約フェーズ ---
+    # --- Aggregation phase ---
     with open("SCORES.txt", "w", encoding="utf-8") as scores_f:
         first = True
         for topic, from_code, from_lang, _ in inputs:

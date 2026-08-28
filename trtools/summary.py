@@ -1,11 +1,11 @@
-# 原文の要約を事前生成するサブコマンド（trtools translate 用キャッシュ）
+# Subcommand that pre-generates a summary of the original text (cache for trtools translate)
 #
-# 要約は "in English" で出力され、翻訳先言語 (to_lang) に依存しない。
-# そのため原文（トピック）ごとに1回だけ生成しておけば、同じトピックの
-# すべての to_lang / 複数回の translate 実行で使い回せる。
-# 保存先はソースと同じディレクトリの {topic}-summary.jsonl（トピック名は
-# 入力ファイル名の "-<言語コード>" を除いた部分）。
-# translate はこのファイルを読むだけで自動生成はせず、無ければエラーにする。
+# The summary is output "in English" and does not depend on the target language (to_lang).
+# So generating it once per original text (topic) lets it be reused across
+# all to_lang values / multiple translate runs for that topic.
+# It is saved as {topic}-summary.jsonl in the same directory as the source
+# (the topic name is the input filename with the "-<language code>" suffix removed).
+# translate only reads this file and does not auto-generate it; it errors if missing.
 
 import json
 from pathlib import Path
@@ -13,32 +13,32 @@ from .llm import LLMClient, DEFAULT_RETRY_WAIT_SECONDS
 
 
 def add_parser(subparsers):
-    parser = subparsers.add_parser("summary", help="原文の要約を事前生成（trtools translate 用キャッシュ）")
-    parser.add_argument("input_files", nargs="+", help="要約対象のテキストファイル（複数指定可）")
+    parser = subparsers.add_parser("summary", help="Pre-generate a summary of the original text (cache for trtools translate)")
+    parser.add_argument("input_files", nargs="+", help="Text files to summarize (multiple allowed)")
     parser.add_argument("-f", "--from", dest="from_lang", required=True,
-                        help="原語（例: French, English, Japanese）")
-    parser.add_argument("-m", "--model", required=True, help="要約生成モデル")
+                        help="Source language (e.g. French, English, Japanese)")
+    parser.add_argument("-m", "--model", required=True, help="Summary generation model")
     parser.add_argument("--threshold", type=int, default=10,
-                        help="要約生成の間隔（行数）（translate と揃える。デフォルト: 10）")
+                        help="Interval for summary generation, in lines (match translate; default: 10)")
     parser.add_argument("--keep", type=int, default=5,
-                        help="チェックポイント算出用の保持行数（translate と揃える。デフォルト: 5）")
+                        help="Number of lines to keep for checkpoint calculation (match translate; default: 5)")
     parser.add_argument("--no-think", action="store_true",
-                        help="thinking 処理を無効化（Qwen3 モデル用）")
+                        help="Disable thinking (for Qwen3 models)")
     parser.add_argument("-w", "--retry-wait", type=int, default=DEFAULT_RETRY_WAIT_SECONDS,
-                        help=f"リトライ時の待機時間（秒）（デフォルト: {DEFAULT_RETRY_WAIT_SECONDS}秒）")
+                        help=f"Wait time on retry, in seconds (default: {DEFAULT_RETRY_WAIT_SECONDS}s)")
     parser.set_defaults(func=run)
 
 
 def read_content_lines(input_file):
-    """空行以外を抽出する（元の行インデックスを保持）。"""
+    """Extract non-empty lines (preserving the original line index)."""
     with open(input_file, "r", encoding="utf-8") as f:
         all_lines = f.readlines()
     return [(i, line.rstrip("\n")) for i, line in enumerate(all_lines) if line.strip()]
 
 
 def topic_summary_path(input_file):
-    """入力ファイルのトピック名から要約キャッシュのパスを導出する。
-    例: examples/finetuning-fr.txt → examples/finetuning-summary.jsonl"""
+    """Derive the summary cache path from the input file's topic name.
+    e.g. examples/finetuning-fr.txt -> examples/finetuning-summary.jsonl"""
     p = Path(input_file)
     topic, _, _ = p.stem.rpartition("-")
     topic = topic or p.stem
@@ -46,7 +46,7 @@ def topic_summary_path(input_file):
 
 
 def summary_checkpoints(total, threshold, keep):
-    """要約を生成するチェックポイント（訳し終えた行数）の一覧を返す。"""
+    """Return the list of checkpoints (lines translated so far) at which to generate a summary."""
     checkpoints = []
     i = threshold
     while i <= total:
@@ -69,7 +69,7 @@ def _read_cache(path):
 
 
 def load_summaries(input_file, total, threshold, keep):
-    """生成済みの要約キャッシュを読み込む。不足があればエラーにする。"""
+    """Load the already-generated summary cache. Errors if anything is missing."""
     checkpoints = summary_checkpoints(total, threshold, keep)
     if not checkpoints:
         return {}
@@ -79,9 +79,9 @@ def load_summaries(input_file, total, threshold, keep):
     missing = [i for i in checkpoints if i not in summaries]
     if missing:
         raise FileNotFoundError(
-            f"要約キャッシュが不足しています: {path}（不足行: {missing}）\n"
-            f"先に `trtools summary {input_file} -f <from_lang> -m <model> "
-            f"--threshold {threshold} --keep {keep}` を実行してください。"
+            f"Summary cache is missing entries: {path} (missing lines: {missing})\n"
+            f"Run `trtools summary {input_file} -f <from_lang> -m <model> "
+            f"--threshold {threshold} --keep {keep}` first."
         )
     return summaries
 
@@ -93,13 +93,13 @@ def _generate_one(input_file, from_lang, threshold, keep, client):
     path = topic_summary_path(input_file)
 
     if not checkpoints:
-        print(f"要約は不要です（行数が threshold+keep 以下）: {input_file}")
+        print(f"Summary not needed (line count is at or below threshold+keep): {input_file}")
         return
 
     summaries = _read_cache(path)
     missing = [i for i in checkpoints if i not in summaries]
     if not missing:
-        print(f"要約は既に生成済みです: {path}")
+        print(f"Summary already generated: {path}")
         return
 
     system_msg = {
@@ -125,11 +125,11 @@ def _generate_one(input_file, from_lang, threshold, keep, client):
                 summaries[i] = summary_text
                 out_f.write(json.dumps({"i": i, "summary": summary_text}, ensure_ascii=False) + "\n")
                 out_f.flush()
-                print(f"要約を生成しました（{i}/{total}行）")
+                print(f"Generated summary ({i}/{total} lines)")
             history.append({"role": "assistant", "content": summary_text})
             prev_end = i
 
-    print(f"要約を保存しました: {path}")
+    print(f"Saved summary: {path}")
 
 
 def run(args):

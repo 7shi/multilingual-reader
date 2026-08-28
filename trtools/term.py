@@ -1,4 +1,4 @@
-# 用語抽出・翻訳サブコマンド（term extract / term translate）
+# Term extraction/translation subcommand (term extract / term translate)
 
 import csv
 import json
@@ -30,7 +30,7 @@ class Glossary(BaseModel):
 # ---------------------------------------------------------------------------
 
 def add_parser(subparsers):
-    term_parser = subparsers.add_parser("term", help="用語の抽出・翻訳")
+    term_parser = subparsers.add_parser("term", help="Extract/translate terms")
     term_sub = term_parser.add_subparsers(dest="term_command", metavar="<command>")
     term_sub.required = True
     _add_extract_parser(term_sub)
@@ -42,69 +42,69 @@ def add_parser(subparsers):
 
 
 def _add_show_parser(subparsers):
-    parser = subparsers.add_parser("show", help="TSVの列・行を絞り込んで表示")
-    parser.add_argument("input_file", metavar="FILE", help="対象TSVファイル")
+    parser = subparsers.add_parser("show", help="Show a TSV filtered by columns/rows")
+    parser.add_argument("input_file", metavar="FILE", help="Target TSV file")
     parser.add_argument("-l", "--lang", action="append", metavar="LANG",
-                        help="表示する言語列（複数指定可、省略時は全列）")
+                        help="Language column(s) to show (multiple allowed; all columns if omitted)")
     parser.add_argument("-k", "--key", action="append", metavar="KEY",
-                        help="表示するキー（第1列の値、複数指定可、省略時は全行）")
+                        help="Key(s) to show, i.e. values in the first column (multiple allowed; all rows if omitted)")
     parser.set_defaults(func=run_show)
 
 
 def _add_reorder_parser(subparsers):
-    parser = subparsers.add_parser("reorder", help="TSVの列を指定順に並べ替えて出力")
-    parser.add_argument("input_file", metavar="FILE", help="対象TSVファイル")
+    parser = subparsers.add_parser("reorder", help="Reorder TSV columns into the given order")
+    parser.add_argument("input_file", metavar="FILE", help="Target TSV file")
     parser.add_argument("-c", "--col", action="append", required=True, metavar="LANG",
-                        help="出力する列名（複数指定、言語名または言語コード）")
-    parser.add_argument("-o", "--output", required=True, help="出力TSVファイル")
+                        help="Column name(s) to output (multiple; language name or code)")
+    parser.add_argument("-o", "--output", required=True, help="Output TSV file")
     parser.set_defaults(func=run_reorder)
 
 
 def _add_set_parser(subparsers):
-    parser = subparsers.add_parser("set", help="TSVの特定セルを更新")
-    parser.add_argument("input_file", metavar="FILE", help="対象TSVファイル")
-    parser.add_argument("-k", "--key", required=True, help="変更するキー（第1列の値）")
-    parser.add_argument("-l", "--lang", required=True, help="変更する言語列名")
-    parser.add_argument("-v", "--value", required=True, help="新しい値")
+    parser = subparsers.add_parser("set", help="Update a specific TSV cell")
+    parser.add_argument("input_file", metavar="FILE", help="Target TSV file")
+    parser.add_argument("-k", "--key", required=True, help="Key to change (value in the first column)")
+    parser.add_argument("-l", "--lang", required=True, help="Language column name to change")
+    parser.add_argument("-v", "--value", required=True, help="New value")
     parser.set_defaults(func=run_set)
 
 
 def _add_extract_parser(subparsers):
-    parser = subparsers.add_parser("extract", help="テキストから用語を抽出してJSONに保存")
-    parser.add_argument("input_file", help="翻訳対象のテキストファイル")
+    parser = subparsers.add_parser("extract", help="Extract terms from text and save as JSON")
+    parser.add_argument("input_file", help="Text file to translate")
     parser.add_argument("-f", "--from", dest="from_lang", required=True,
-                        help="原語（例: French, English, Japanese）")
-    parser.add_argument("-m", "--model", required=True, help="使用モデル")
+                        help="Source language (e.g. French, English, Japanese)")
+    parser.add_argument("-m", "--model", required=True, help="Model to use")
     parser.add_argument("-o", "--output", dest="output_file", required=True,
-                        help="用語抽出ファイル（JSON）")
+                        help="Term extraction file (JSON)")
     parser.add_argument("--keep", type=int, default=5,
-                        help="チャンクサイズ（デフォルト: 5）")
+                        help="Chunk size (default: 5)")
     parser.add_argument("-w", "--retry-wait", type=int, default=DEFAULT_RETRY_WAIT_SECONDS,
-                        help=f"リトライ時の待機時間（秒）（デフォルト: {DEFAULT_RETRY_WAIT_SECONDS}秒）")
+                        help=f"Wait time on retry, in seconds (default: {DEFAULT_RETRY_WAIT_SECONDS}s)")
     parser.add_argument("--no-think", action="store_true",
-                        help="thinking処理を無効化（Qwen3モデル用）")
+                        help="Disable thinking (for Qwen3 models)")
     parser.set_defaults(func=run_extract)
 
 
 def _add_translate_parser(subparsers):
-    parser = subparsers.add_parser("translate", help="用語JSONをTSVに翻訳（穴埋め方式）")
-    parser.add_argument("extract_file", help="用語抽出ファイル（JSON）")
+    parser = subparsers.add_parser("translate", help="Translate a term JSON into a TSV (fill-in-the-blanks)")
+    parser.add_argument("extract_file", help="Term extraction file (JSON)")
     parser.add_argument("-t", "--to", dest="to_langs", action="append", required=True,
-                        metavar="LANG", help="翻訳先言語（複数指定可）")
-    parser.add_argument("-m", "--model", required=True, help="使用モデル")
+                        metavar="LANG", help="Target language(s) (multiple allowed)")
+    parser.add_argument("-m", "--model", required=True, help="Model to use")
     parser.add_argument("-o", "--output", dest="output_file", required=True,
-                        help="出力TSVファイル")
+                        help="Output TSV file")
     parser.add_argument("-c", "--common", dest="common_file", default=None,
-                        help="共通語彙TSVファイル（一致する用語はLLMをスキップして採用）")
+                        help="Common glossary TSV file (matching terms are taken from it, skipping the LLM)")
     parser.add_argument("-w", "--retry-wait", type=int, default=DEFAULT_RETRY_WAIT_SECONDS,
-                        help=f"リトライ時の待機時間（秒）（デフォルト: {DEFAULT_RETRY_WAIT_SECONDS}秒）")
+                        help=f"Wait time on retry, in seconds (default: {DEFAULT_RETRY_WAIT_SECONDS}s)")
     parser.add_argument("--no-think", action="store_true",
-                        help="thinking処理を無効化（Qwen3モデル用）")
+                        help="Disable thinking (for Qwen3 models)")
     parser.set_defaults(func=run_translate)
 
 
 # ---------------------------------------------------------------------------
-# 共通ユーティリティ
+# Shared utilities
 # ---------------------------------------------------------------------------
 
 def load_entries(input_file):
@@ -121,7 +121,7 @@ def load_entries(input_file):
 
 
 def chunk_ranges(total, keep):
-    """全チャンクの (chunk_index, start, end) を返す（1-indexed inclusive）。"""
+    """Return (chunk_index, start, end) for every chunk (1-indexed inclusive)."""
     num = (total + keep - 1) // keep
     for cidx in range(1, num + 1):
         start = (cidx - 1) * keep + 1
@@ -195,7 +195,7 @@ def extract_terms(client, from_lang, chunk_text):
 def run_extract(args):
     args.from_lang = resolve_lang(args.from_lang)
     if os.path.exists(args.output_file):
-        print(f"用語抽出ファイルが既に存在します（スキップ）: {args.output_file}")
+        print(f"Term extraction file already exists (skipping): {args.output_file}")
         return
 
     entries = load_entries(args.input_file)
@@ -206,7 +206,7 @@ def run_extract(args):
         retry_wait=args.retry_wait,
     )
     chunks = list(chunk_ranges(total, args.keep))
-    print(f"用語抽出を開始: {len(chunks)} チャンク (keep={args.keep})")
+    print(f"Starting term extraction: {len(chunks)} chunk(s) (keep={args.keep})")
     chunk_terms_map = {}
     for cidx, start, end in chunks:
         chunk_text = "\n".join(f"{sp}: {tx}" for sp, tx in entries[start - 1:end])
@@ -224,7 +224,7 @@ def run_extract(args):
     }
     with open(args.output_file, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
-    print(f"用語抽出ファイルを保存: {args.output_file}")
+    print(f"Saved term extraction file: {args.output_file}")
 
 
 # ---------------------------------------------------------------------------
@@ -232,7 +232,7 @@ def run_extract(args):
 # ---------------------------------------------------------------------------
 
 def load_tsv(path):
-    """TSVを読み込み (header, rows) を返す。rows は {lang: value} の辞書リスト。"""
+    """Load a TSV and return (header, rows). rows is a list of {lang: value} dicts."""
     with open(path, "r", encoding="utf-8", newline="") as f:
         reader = csv.reader(f, delimiter="\t")
         header = next(reader)
@@ -241,7 +241,7 @@ def load_tsv(path):
 
 
 def save_tsv(path, header, rows):
-    """(header, rows) を TSV に保存する。"""
+    """Save (header, rows) as a TSV."""
     with open(path, "w", encoding="utf-8", newline="") as f:
         writer = csv.writer(f, delimiter="\t")
         writer.writerow(header)
@@ -251,12 +251,12 @@ def save_tsv(path, header, rows):
 
 def run_translate(args):
     args.to_langs = resolve_langs(args.to_langs)
-    # from.json を読み込み
+    # Load from.json
     with open(args.extract_file, "r", encoding="utf-8") as f:
         extract_data = json.load(f)
     from_lang = extract_data["from"]
 
-    # ユニーク用語リストを順序保持で構築
+    # Build the unique term list, preserving order
     seen = set()
     unique_terms = []
     for chunk in extract_data.get("chunks", []):
@@ -265,13 +265,13 @@ def run_translate(args):
                 seen.add(t)
                 unique_terms.append(t)
 
-    # TSV を開くか新規作成
+    # Open the TSV, or create a new one
     if os.path.exists(args.output_file):
         header, rows = load_tsv(args.output_file)
-        # from_lang が一致するか確認
+        # Check that from_lang matches
         if header[0] != from_lang:
-            print(f"WARNING: TSV の原語列 '{header[0]}' が from.json の '{from_lang}' と異なります。")
-        # unique_terms に存在しない行は保持しつつ、新しい用語を末尾に追加
+            print(f"WARNING: TSV source column '{header[0]}' differs from from.json's '{from_lang}'.")
+        # Keep rows not present in unique_terms while appending new terms at the end
         existing = {row[from_lang]: row for row in rows if from_lang in row}
         rows = []
         for t in unique_terms:
@@ -280,17 +280,17 @@ def run_translate(args):
         header = [from_lang]
         rows = [{from_lang: t} for t in unique_terms]
 
-    # 新しい to_lang 列をヘッダに追加
+    # Add the new to_lang column(s) to the header
     for to_lang in args.to_langs:
         if to_lang not in header:
             header.append(to_lang)
 
-    # 共通語彙の読み込み: {term: {lang: translation}}
+    # Load the common glossary: {term: {lang: translation}}
     common = {}
     if args.common_file and os.path.exists(args.common_file):
         common_header, common_rows = load_tsv(args.common_file)
         if from_lang not in common_header:
-            print(f"WARNING: 共通語彙に '{from_lang}' 列がありません。スキップします。")
+            print(f"WARNING: common glossary has no '{from_lang}' column. Skipping.")
         else:
             for row in common_rows:
                 term = row.get(from_lang, "")
@@ -303,14 +303,14 @@ def run_translate(args):
         retry_wait=args.retry_wait,
     )
 
-    # 言語ごとに穴埋め
+    # Fill in the blanks per language
     for to_lang in args.to_langs:
         missing_terms = [row[from_lang] for row in rows if not row.get(to_lang)]
         if not missing_terms:
-            print(f"[{to_lang}] 全用語が翻訳済み（スキップ）")
+            print(f"[{to_lang}] All terms already translated (skipping)")
             continue
 
-        # 共通語彙で先に埋める
+        # Fill in from the common glossary first
         from_common = []
         need_llm = []
         for term in missing_terms:
@@ -319,7 +319,7 @@ def run_translate(args):
             else:
                 need_llm.append(term)
         if from_common:
-            print(f"  共通語彙から採用: {len(from_common)} 件")
+            print(f"  Taken from common glossary: {len(from_common)}")
             for row in rows:
                 if not row.get(to_lang) and row[from_lang] in common:
                     val = common[row[from_lang]].get(to_lang, "")
@@ -328,7 +328,7 @@ def run_translate(args):
 
         if not need_llm:
             save_tsv(args.output_file, header, rows)
-            print(f"  保存: {args.output_file}")
+            print(f"  Saved: {args.output_file}")
             continue
 
         print(f"[Translating {len(need_llm)} term(s) → {to_lang}]")
@@ -338,9 +338,9 @@ def run_translate(args):
                 term = row[from_lang]
                 if term in mapping:
                     row[to_lang] = mapping[term]
-        # 言語ごとに保存（中断しても再開可能）
+        # Save per language (resumable if interrupted)
         save_tsv(args.output_file, header, rows)
-        print(f"  保存: {args.output_file}")
+        print(f"  Saved: {args.output_file}")
 
 
 # ---------------------------------------------------------------------------
@@ -357,7 +357,7 @@ def run_show(args):
         cols = [key_col]
         for lang in args.lang:
             if lang not in header:
-                print(f"警告: '{lang}' 列が見つかりません", file=sys.stderr)
+                print(f"Warning: column '{lang}' not found", file=sys.stderr)
             else:
                 cols.append(lang)
     else:
@@ -379,7 +379,7 @@ def run_set(args):
     key_col = header[0]
 
     if args.lang not in header:
-        print(f"エラー: '{args.lang}' 列が見つかりません", file=sys.stderr)
+        print(f"Error: column '{args.lang}' not found", file=sys.stderr)
         sys.exit(1)
 
     updated = False
@@ -390,17 +390,17 @@ def run_set(args):
             break
 
     if not updated:
-        print(f"エラー: キー '{args.key}' が見つかりません", file=sys.stderr)
+        print(f"Error: key '{args.key}' not found", file=sys.stderr)
         sys.exit(1)
 
     save_tsv(args.input_file, header, rows)
-    print(f"更新しました: {args.key!r} [{args.lang}] = {args.value!r}")
+    print(f"Updated: {args.key!r} [{args.lang}] = {args.value!r}")
 
 
 def _add_merge_parser(subparsers):
-    parser = subparsers.add_parser("merge", help="複数TSVを列結合（後ファイルがセル単位で上書き）")
-    parser.add_argument("input_files", metavar="FILE", nargs="+", help="入力TSVファイル（複数）")
-    parser.add_argument("-o", "--output", required=True, help="出力TSVファイル")
+    parser = subparsers.add_parser("merge", help="Merge multiple TSVs by column (later files overwrite cell by cell)")
+    parser.add_argument("input_files", metavar="FILE", nargs="+", help="Input TSV files (multiple)")
+    parser.add_argument("-o", "--output", required=True, help="Output TSV file")
     parser.set_defaults(func=run_merge)
 
 
@@ -428,7 +428,7 @@ def run_merge(args):
 
     merged_rows = [rows[k] for k in key_order]
     save_tsv(args.output, header, merged_rows)
-    print(f"保存: {args.output} ({len(merged_rows)} 行, {len(header)} 列)")
+    print(f"Saved: {args.output} ({len(merged_rows)} rows, {len(header)} columns)")
 
 
 def run_reorder(args):
@@ -436,6 +436,6 @@ def run_reorder(args):
     header, rows = load_tsv(args.input_file)
     for col in args.col:
         if col not in header:
-            print(f"警告: '{col}' 列が入力ファイルに存在しません（空列として追加）", file=sys.stderr)
+            print(f"Warning: column '{col}' not present in the input file (added as an empty column)", file=sys.stderr)
     save_tsv(args.output, args.col, rows)
-    print(f"保存: {args.output}")
+    print(f"Saved: {args.output}")

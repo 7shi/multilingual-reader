@@ -1,4 +1,4 @@
-# 翻訳評価スクリプト（SCORE.md基準）
+# Translation evaluation script (SCORE.md criteria)
 
 import json
 from pydantic import BaseModel, Field
@@ -30,18 +30,18 @@ class TranslationEvaluation(BaseModel):
     )
 
 def add_parser(subparsers):
-    parser = subparsers.add_parser("eval", help="翻訳品質を5項目基準で評価")
-    parser.add_argument("--original", required=True, help="原文ファイル")
-    parser.add_argument("--translation", required=True, help="翻訳文ファイル")
-    parser.add_argument("-m", "--model", required=True, help="評価に使用するモデル")
-    parser.add_argument("-f", "--from", dest="from_lang", required=True, help="原語（例: English, Japanese）")
-    parser.add_argument("-t", "--to", dest="to_lang", required=True, help="翻訳先言語（例: English, Japanese）")
-    parser.add_argument("-o", "--output", dest="output_file", help="評価結果をJSONで保存するファイル名")
+    parser = subparsers.add_parser("eval", help="Evaluate translation quality on 5 criteria")
+    parser.add_argument("--original", required=True, help="Original text file")
+    parser.add_argument("--translation", required=True, help="Translated text file")
+    parser.add_argument("-m", "--model", required=True, help="Model used for evaluation")
+    parser.add_argument("-f", "--from", dest="from_lang", required=True, help="Source language (e.g. English, Japanese)")
+    parser.add_argument("-t", "--to", dest="to_lang", required=True, help="Target language (e.g. English, Japanese)")
+    parser.add_argument("-o", "--output", dest="output_file", help="Filename to save the evaluation result as JSON")
     parser.add_argument("-w", "--retry-wait", type=int, default=DEFAULT_RETRY_WAIT_SECONDS,
-                        help=f"リトライ時の待機時間（秒）（デフォルト: {DEFAULT_RETRY_WAIT_SECONDS}秒）")
-    parser.add_argument("--no-think", action="store_true", help="thinking処理を無効化（Qwen3モデル用）")
-    parser.add_argument("--run", type=int, default=1, help="現在の評価回数（デフォルト: 1）")
-    parser.add_argument("--runs", type=int, default=1, help="評価の総回数（デフォルト: 1）")
+                        help=f"Wait time on retry, in seconds (default: {DEFAULT_RETRY_WAIT_SECONDS}s)")
+    parser.add_argument("--no-think", action="store_true", help="Disable thinking (for Qwen3 models)")
+    parser.add_argument("--run", type=int, default=1, help="Current evaluation run number (default: 1)")
+    parser.add_argument("--runs", type=int, default=1, help="Total number of evaluation runs (default: 1)")
     parser.set_defaults(func=run)
     return parser
 
@@ -91,19 +91,19 @@ Score each criterion from 0-20 points based on the ENTIRE document."""
         ui.stream.end()
         prog.update(run)
 
-    ui.write("=== 翻訳評価結果 ===\n")
-    ui.write(f"1. 読みやすさと理解しやすさ: {evaluation_result['readability']['score']:2d}/20点\n")
-    ui.write(f"2. 流暢さと自然さ          : {evaluation_result['fluency']['score']:2d}/20点\n")
-    ui.write(f"3. 専門用語の適切性        : {evaluation_result['terminology']['score']:2d}/20点\n")
-    ui.write(f"4. 文脈適応性              : {evaluation_result['contextual_adaptation']['score']:2d}/20点\n")
-    ui.write(f"5. 情報の完全性            : {evaluation_result['information_completeness']['score']:2d}/20点\n")
+    ui.write("=== Translation Evaluation Result ===\n")
+    ui.write(f"1. Readability & comprehensibility: {evaluation_result['readability']['score']:2d}/20\n")
+    ui.write(f"2. Fluency & naturalness           : {evaluation_result['fluency']['score']:2d}/20\n")
+    ui.write(f"3. Terminology appropriateness     : {evaluation_result['terminology']['score']:2d}/20\n")
+    ui.write(f"4. Contextual adaptation           : {evaluation_result['contextual_adaptation']['score']:2d}/20\n")
+    ui.write(f"5. Information completeness        : {evaluation_result['information_completeness']['score']:2d}/20\n")
 
     total_score = (evaluation_result['readability']['score'] +
                    evaluation_result['fluency']['score'] +
                    evaluation_result['terminology']['score'] +
                    evaluation_result['contextual_adaptation']['score'] +
                    evaluation_result['information_completeness']['score'])
-    ui.write(f"総合得点: {total_score}/100点\n")
+    ui.write(f"Total score: {total_score}/100\n")
 
     if args.output_file:
         output_data = {
@@ -117,11 +117,11 @@ Score each criterion from 0-20 points based on the ENTIRE document."""
         }
         with open(args.output_file, "w", encoding="utf-8") as f:
             json.dump(output_data, f, ensure_ascii=False, indent=2)
-        ui.write(f"\n評価結果をJSONで保存しました: {args.output_file}\n")
+        ui.write(f"\nSaved evaluation result as JSON: {args.output_file}\n")
 
 if __name__ == "__main__":
     import argparse
-    parser = argparse.ArgumentParser(description="翻訳品質を5項目基準で評価")
+    parser = argparse.ArgumentParser(description="Evaluate translation quality on 5 criteria")
     subparsers = parser.add_subparsers()
     add_parser(subparsers)
     args = parser.parse_args(["eval"] + __import__("sys").argv[1:])
