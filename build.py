@@ -1,9 +1,9 @@
-"""multilingual-reader の静的サイトビルダー。
+"""Static site builder for multilingual-reader.
 
-examples/{topic}-{lang}.txt を読み込み、以下を生成する:
-- dist/{topic}.html         多言語並列モード（デフォルト）
-- dist/{topic}-{lang}.html  単一言語モード（24 ファイル）
-- dist/index.html           ランディング
+Reads examples/{topic}-{lang}.txt and generates:
+- dist/{topic}.html         multilingual parallel mode (default)
+- dist/{topic}-{lang}.html  single-language mode (24 files)
+- dist/index.html           landing page
 """
 
 from __future__ import annotations
@@ -51,16 +51,16 @@ LANG_CONFIG: dict[str, dict] = {
 
 
 def normalize(text: str) -> str:
-    """制御文字をスペースに置換し、連続スペースを1個にまとめる。"""
+    """Replace control characters with spaces and collapse consecutive spaces into one."""
     normalized = "".join(" " if ord(ch) < 32 else ch for ch in text)
     normalized = re.sub(r" +", " ", normalized)
     return normalized.strip()
 
 
 def extract_speaker_and_text(text: str) -> tuple[str | None, str]:
-    """`話者名: 発言内容` 形式から (speaker, content) を抽出。
+    """Extract (speaker, content) from a `speaker_name: utterance` format string.
 
-    中国語の全角コロン `：` (U+FF1A) と ASCII コロン `:` の両方に対応。
+    Supports both the Chinese fullwidth colon `：` (U+FF1A) and the ASCII colon `:`.
     """
     text = normalize(text)
     for sep in (":", "："):
@@ -79,7 +79,7 @@ class Line:
 
 
 def parse_text_file(filepath: Path) -> tuple[list[Line], list[str]]:
-    """テキストファイルを Line のリストに変換し、話者の登場順リストも返す。"""
+    """Convert a text file into a list of Line, also returning speakers in order of appearance."""
     raw_lines = filepath.read_text(encoding="utf-8").splitlines()
     speakers_in_order: list[str] = []
     lines: list[Line] = []
@@ -97,7 +97,7 @@ def parse_text_file(filepath: Path) -> tuple[list[Line], list[str]]:
 
 
 def build_page(env: Environment, topic: str, lang: str) -> None:
-    """単一トピック × 単一言語の HTML を生成。"""
+    """Generate the HTML for a single topic × single language."""
     src = EXAMPLES_DIR / f"{topic}-{lang}.txt"
     if not src.exists():
         raise FileNotFoundError(src)
@@ -134,7 +134,7 @@ def build_page(env: Environment, topic: str, lang: str) -> None:
     }
 
     config_json = json.dumps(page_config, ensure_ascii=False, indent=2)
-    # script タグ内に安全に埋め込むため `<` `>` `&` を unicode escape する。
+    # Unicode-escape `<` `>` `&` so this can be embedded safely inside a script tag.
     config_json = config_json.replace("<", "\\u003c").replace(">", "\\u003e").replace("&", "\\u0026")
 
     template = env.get_template("page.html")
@@ -155,8 +155,8 @@ def build_page(env: Environment, topic: str, lang: str) -> None:
 
 
 def build_multi_page(env: Environment, topic: str) -> None:
-    """単一トピックの多言語並列モード HTML を生成（dist/{topic}.html）。"""
-    # 全言語の行を読み込む（fr の登場順を speaker_index の基準とする）
+    """Generate the multilingual parallel mode HTML for a single topic (dist/{topic}.html)."""
+    # Load lines for all languages (fr's order of appearance is the basis for speaker_index)
     all_lines: dict[str, list[Line]] = {}
     for lang in LANG_CONFIG:
         src = EXAMPLES_DIR / f"{topic}-{lang}.txt"
@@ -165,14 +165,14 @@ def build_multi_page(env: Environment, topic: str) -> None:
         lines, _ = parse_text_file(src)
         all_lines[lang] = lines
 
-    # speakers の登場順は最初の言語（fr）から取得し、speaker_index は全言語共通。
+    # Get speakers' order of appearance from the first language (fr); speaker_index is shared across all languages.
     base_lines = all_lines["fr"]
     speakers_in_order: list[str] = []
     for line in base_lines:
         if line.speaker not in speakers_in_order:
             speakers_in_order.append(line.speaker)
 
-    # 行ごと × 言語ごとのエントリへ展開（行が無い言語はスキップ）
+    # Expand into per-line × per-language entries (skip languages that have no line)
     max_lines = max(len(v) for v in all_lines.values())
     groups = []
     for i in range(max_lines):
@@ -191,7 +191,7 @@ def build_multi_page(env: Environment, topic: str) -> None:
                 })
         groups.append(group)
 
-    # ページ設定（言語一覧、speakers の登場順）
+    # Page config (language list, speakers' order of appearance)
     languages_cfg = []
     for code, cfg in LANG_CONFIG.items():
         item = {
@@ -245,7 +245,7 @@ def build_multi_page(env: Environment, topic: str) -> None:
 
 
 def build_index(env: Environment) -> None:
-    """4×6 マトリクスのランディングを生成。"""
+    """Generate the 4x6 matrix landing page."""
     topics = [{"id": tid, "label": label} for tid, label in TOPIC_LABELS.items()]
     langs = [{"id": lid, "name": cfg["name"]} for lid, cfg in LANG_CONFIG.items()]
     template = env.get_template("index.html")
@@ -256,7 +256,7 @@ def build_index(env: Environment) -> None:
 
 
 def copy_static() -> None:
-    """templates/static/* を dist/assets/ にコピー。"""
+    """Copy templates/static/* to dist/assets/."""
     assets = DIST_DIR / "assets"
     if assets.exists():
         shutil.rmtree(assets)

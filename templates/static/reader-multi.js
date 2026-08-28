@@ -1,6 +1,6 @@
-// Multilingual Podcast Reader - 多言語並列モード用ロジック
-// page-config の JSON とテンプレートでレンダリングされた .translation-group 要素を読み込み、
-// 全 6 言語の対訳を同時表示しながら、有効化された言語のみを順次読み上げる。
+// Multilingual Podcast Reader - logic for the multilingual parallel mode
+// Loads the page-config JSON and the .translation-group elements rendered by the template,
+// displaying all 6 languages' translations at once while reading aloud only the enabled languages in sequence.
 
 import { getFilteredVoicesForLang, autoAssignDefaultVoices, buildVoiceCandidates, speakWithRetry } from './speech.js';
 
@@ -10,7 +10,7 @@ const speakers = config.speakers;
 
 const RATE_STORAGE_KEY = `multilingualReader.langRates.${config.topic}`;
 
-// 言語別状態
+// Per-language state
 const langStates = {};
 languages.forEach(L => {
     langStates[L.code] = {

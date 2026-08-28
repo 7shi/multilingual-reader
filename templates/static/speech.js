@@ -1,5 +1,5 @@
-// Web Speech API 共通ユーティリティ
-// reader.js / reader-multi.js で共有する音声フィルタリング・自動割り当て・非同期発話ロジック
+// Web Speech API shared utilities
+// Voice filtering, automatic assignment, and asynchronous speech logic shared by reader.js / reader-multi.js
 
 const MALE_NAMES = [
     "gerard", "thierry", "antoine", "jean", "remy", "henri", "fabrice",
@@ -27,14 +27,14 @@ function isFemaleVoice(voice) {
         FEMALE_NAMES.some(x => n.includes(x));
 }
 
-// availableVoices から langCode に対応する音声を絞り込み、優先順に並べて返す。
+// Filters availableVoices down to those matching langCode, sorted by priority.
 export function getFilteredVoicesForLang(availableVoices, langCode) {
     const targetBase = langCode.split("-")[0].toLowerCase();
     const matches = availableVoices.filter(v => v.lang.split("-")[0].toLowerCase() === targetBase);
     return prioritizeVoicesByRegion(matches, langCode);
 }
 
-// multilingual 音声を除外し、完全一致 → オンライン → デフォルト → 名前順で並べる。
+// Excludes multilingual voices and orders by exact match → online → default → name.
 function prioritizeVoicesByRegion(voices, targetLangCode) {
     if (voices.length === 0) return voices;
     const nonMultilingual = voices.filter(v => !v.name.toLowerCase().includes("multilingual"));
@@ -52,7 +52,7 @@ function prioritizeVoicesByRegion(voices, targetLangCode) {
     });
 }
 
-// speakerVoices に未割り当てがある場合のみ、男女バランスを考慮して自動割り当てする。
+// Auto-assigns voices, balancing male/female, only when speakerVoices has no assignments at all.
 export function autoAssignDefaultVoices(speakerVoices, speakers, filteredVoices) {
     if (speakerVoices.some(v => v !== undefined) || filteredVoices.length === 0) return;
 
@@ -72,8 +72,8 @@ export function autoAssignDefaultVoices(speakerVoices, speakers, filteredVoices)
     }
 }
 
-// speakerIndex の候補音声リストを構築する。
-// 他スピーカーが使用中の音声はスキップし、割り当て済み音声を先頭に配置する。
+// Builds the candidate voice list for speakerIndex.
+// Skips voices already used by other speakers, and puts the assigned voice first.
 export function buildVoiceCandidates(speakerVoices, speakers, speakerIndex, filteredVoices) {
     const usedNames = new Set(
         speakerVoices.filter((v, i) => i !== speakerIndex && v).map(v => v.name)
@@ -83,7 +83,7 @@ export function buildVoiceCandidates(speakerVoices, speakers, speakerIndex, filt
     return preferred ? [preferred, ...rest] : rest;
 }
 
-// 単一の utterance を発話し、結果を Promise で返す非同期関数。
+// Speaks a single utterance and returns the result as a Promise.
 // options: { onstart, onboundary, onUtterance }
 // resolve: "ended" | "cancelled" | "synthesis-failed" | "error"
 function speakOne(text, langCode, rate, voice, options) {
@@ -106,9 +106,9 @@ function speakOne(text, langCode, rate, voice, options) {
     });
 }
 
-// candidates を vi 番目から順に試し、synthesis-failed の場合は自動的に次へリトライする。
+// Tries candidates in order starting from index vi, automatically retrying the next one on synthesis-failed.
 // options: { vi, onstart, onboundary, onUtterance, onVoiceSuccess }
-// onVoiceSuccess(voice) は発話開始時（成功確定時）に呼ばれる。呼び出し元で speakerVoices を更新すること。
+// onVoiceSuccess(voice) is called on speech start (once success is confirmed); the caller should update speakerVoices there.
 // resolve: "ended" | "cancelled" | "error"
 export async function speakWithRetry(text, langCode, rate, candidates, options) {
     const { vi = 0, onstart, onboundary, onUtterance, onVoiceSuccess } = options || {};

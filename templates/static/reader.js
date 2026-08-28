@@ -1,6 +1,6 @@
-// Multilingual Podcast Reader - 単一言語ページ用ロジック
-// page-config の JSON とテンプレートでレンダリングされた .line 要素を読み込み、
-// Web Speech API による読み上げ・話者別音声選択・動的ハイライトを提供する。
+// Multilingual Podcast Reader - logic for the single-language page
+// Loads the page-config JSON and the .line elements rendered by the template,
+// providing speech via the Web Speech API, per-speaker voice selection, and dynamic highlighting.
 
 import { getFilteredVoicesForLang, autoAssignDefaultVoices, buildVoiceCandidates, speakWithRetry } from './speech.js';
 
