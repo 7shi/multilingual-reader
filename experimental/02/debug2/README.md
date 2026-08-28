@@ -1,97 +1,97 @@
-# debug2: KV キャッシュ調査
+# debug2: KV cache investigation
 
-## 目的
+## Purpose
 
-`translate.py` の KV キャッシュが実際に効いているかを `prompt_eval_duration`（prefill 時間）で計測し、問題箇所を特定して修正した。
+Measured whether `translate.py`'s KV cache was actually effective via `prompt_eval_duration` (prefill time), identified the problem, and fixed it.
 
 ---
 
-## 調査方法
+## Investigation method
 
-`call_llm` の戻り値 `response.chunks[-1]` から `prompt_eval_count` / `prompt_eval_duration` を取得し、prefill 速度をログに出力するよう `translate.py` を拡張した。
+Extended `translate.py` to pull `prompt_eval_count` / `prompt_eval_duration` from the `call_llm` return value's `response.chunks[-1]` and log the prefill speed.
 
 ```
 prefill: 844 tokens, 0.42s, 1986 tps
 ```
 
-KV キャッシュが効いているかどうかは **duration** で判定できる。キャッシュが有効なら増分トークンだけ計算されるため 0.5s 以内に完了する。キャッシュミスの場合は全トークンを再計算するためトークン数に比例して長くなる（800〜1400 tokens で 3〜5s）。
+Whether the KV cache is working can be judged from **duration**. When the cache is effective, only the incremental tokens are computed, so it finishes within 0.5s. On a cache miss, all tokens must be recomputed, so duration scales with token count (3-5s for 800-1400 tokens).
 
-なお表示している tps はキャッシュ済みトークンを含む総トークン数から算出しているため、キャッシュヒット時は実際の計算量より大きく見える。差分トークン数で計算すると概ね 250 tps 前後（ハードウェアの実際の prefill 速度）になる。
+Note that the displayed tps is computed from the total token count including cached tokens, so it looks larger than the actual compute amount on a cache hit. Computing from the incremental token count instead gives roughly 250 tps (the hardware's actual prefill speed).
 
 ---
 
-## 発見した問題
+## Problem found
 
-修正前の `call_llm` では、`chat_history` からロール情報を除いてコンテンツ文字列だけを取り出していた：
+Before the fix, `call_llm` stripped the role information from `chat_history` and extracted only the content strings:
 
 ```python
 contents = [msg["content"] for msg in chat_history[1:]]
 generate_with_schema(contents, system_prompt=system_content, ...)
 ```
 
-`generate_with_schema`（旧版）は `contents: List[str]` を全て `role: user` として Ollama に送信していた。これにより：
+The (old) `generate_with_schema` sent all `contents: List[str]` to Ollama as `role: user`. As a result:
 
-- 翻訳応答（本来 `role: assistant`）が次リクエストで `role: user` として再送信される
-- Ollama のトークン列が変わり KV キャッシュが無効化される
-- サマリー生成後の翻訳が毎回全再評価（3〜5s）になっていた
+- Translation responses (which should be `role: assistant`) were resent as `role: user` in the next request
+- Ollama's token sequence changed, invalidating the KV cache
+- Translation after summary generation always required full re-evaluation (3-5s)
 
-### 修正前のログ（サマリー後に失速）
+### Log before the fix (slowdown after the summary)
 
 ```
 [Generating summary after translation 10]
-prefill: 1035 tokens, 0.68s   ← サマリー生成
-prefill: 1129 tokens, 4.31s   ← i=11: 全再評価（KV キャッシュ無効）
-prefill: 1181 tokens, 4.43s   ← i=12: 回復せず
-...以降ずっと 4〜5s
+prefill: 1035 tokens, 0.68s   ← summary generation
+prefill: 1129 tokens, 4.31s   ← i=11: full re-evaluation (KV cache invalid)
+prefill: 1181 tokens, 4.43s   ← i=12: no recovery
+...stays at 4-5s from here on
 ```
 
 ---
 
-## 修正
+## Fix
 
-`llm7shi` を v0.10.1 にアップデートし、`generate_with_schema` が `List[Dict[str, str]]`（OpenAI format）を受け取れるようになったことを確認。`chat_history` をそのまま渡すよう変更：
+Upgraded `llm7shi` to v0.10.1 and confirmed `generate_with_schema` can now accept `List[Dict[str, str]]` (OpenAI format). Changed the code to pass `chat_history` through as-is:
 
 ```python
-# 変更後
+# After the change
 generate_with_schema(chat_history, ...)
 ```
 
-`system` / `user` / `assistant` のロールがそのまま Ollama に渡り、前リクエストの応答トークン列と一致するため KV キャッシュが有効になった。
+The `system` / `user` / `assistant` roles are now passed to Ollama unchanged, matching the previous request's response token sequence, which activates the KV cache.
 
-### 修正後のログ
+### Log after the fix
 
 ```
 [Generating summary after translation 10]
-prefill: 1035 tokens, 0.68s   ← サマリー生成
-prefill: 1227 tokens, 0.22s   ← i=11: KV キャッシュ有効（0.2s 台）
-prefill: 1287 tokens, 0.32s   ← i=12: 継続して高速
+prefill: 1035 tokens, 0.68s   ← summary generation
+prefill: 1227 tokens, 0.22s   ← i=11: KV cache active (in the 0.2s range)
+prefill: 1287 tokens, 0.32s   ← i=12: stays fast
 ...
 [Compressing history after translation 15]
-prefill:  786 tokens, 3.00s   ← 圧縮直後のみ cold start（prefix 変化のため不可避）
-prefill:  883 tokens, 0.31s   ← 次の翻訳からは高速
+prefill:  786 tokens, 3.00s   ← cold start right after compression only (unavoidable due to prefix change)
+prefill:  883 tokens, 0.31s   ← fast again from the next translation onward
 ```
 
 ---
 
-## `--no-summary-history` オプションについて
+## About the `--no-summary-history` option
 
-調査中に「サマリーを `chat_history` に追加しない」`--no-summary-history` オプションも実装・比較した。
+During the investigation, we also implemented and compared a `--no-summary-history` option that "does not add the summary to `chat_history`."
 
-このオプションではサマリー削除後にコンテキストが縮小するため、Ollama がプレフィックス一致できずサマリー直後に毎回全再評価（3〜5s）が発生する。修正後の通常 glossary モードではサマリー直後も 0.2s なので、このオプションは不要と結論した。
+With this option, the context shrinks after the summary is dropped, so Ollama can't match the prefix and full re-evaluation (3-5s) occurs every time right after a summary. Since the fixed regular glossary mode also stays at 0.2s right after a summary, we concluded this option is unnecessary.
 
 ---
 
-## 評価結果（gemma3:27b）
+## Evaluation results (gemma3:27b)
 
-| バリアント | 評価（3回中央値） |
+| Variant | Score (median of 3) |
 |---|---|
-| `glossary` | 95点 |
-| `glossary-no-hist` | 96点 |
+| `glossary` | 95 points |
+| `glossary-no-hist` | 96 points |
 
-品質に差はなく、KV キャッシュ効率では `glossary` が優位。
+No difference in quality; `glossary` is superior in KV cache efficiency.
 
 ---
 
-## 残る cold start
+## Remaining cold start
 
-圧縮（スライド）直後の翻訳は prefix が変わるため常に cold start（約 3.5s）になる。これはアーキテクチャ上の固定コストで回避不可。
+Translation right after compression (the sliding step) always has a cold start (about 3.5s) since the prefix changes. This is a fixed architectural cost that cannot be avoided.

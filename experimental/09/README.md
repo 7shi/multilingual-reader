@@ -1,58 +1,58 @@
-# 実験09: 全言語への他者評価推敲の展開
+# Experiment 09: Expanding third-party-evaluation revision to all languages
 
-このディレクトリでは、実験07で確立した「他者評価アプローチ（翻訳と推敲の役割分離）」を、67言語全体へ展開します。各言語について複数モデルの翻訳結果から最高得点のベースラインを自動選定し、`qwen3.6` に行単位で推敲させます。
+This directory expands the "third-party evaluation approach (separating the roles of translation and revision)" established in Experiment 07 to all 67 languages. For each language, we automatically select the highest-scoring baseline among multiple models' translation results, and have `qwen3.6` revise it line by line.
 
-## 背景と目的
+## Background and purpose
 
-実験07ではオランダ語・チェコ語の2言語を対象に、`trtools`（gemma4）によるベースライン翻訳を `qwen3.6` で推敲する手法を検証しました。この手法が中リソース言語の品質改善に有効であることが確認されたため、全言語へと適用範囲を拡大します。
+Experiment 07 verified, for two languages (Dutch and Czech), a method of revising `trtools` (gemma4) baseline translations with `qwen3.6`. Since this method was confirmed to be effective for improving quality in medium-resource languages, we now expand its application to all languages.
 
-また、実験07では推敲対象のベースラインを `gemma4` に固定していましたが、本実験では `gemma4`・`gpt-oss`・`qwen3.6` の各モデルスコアを比較し、言語ごとに最高得点の翻訳を自動選定します。チェコ語（`cs`）のように gemma4 以外が最高得点となる言語も存在するため、より質の高いベースラインを起点に推敲できます。
+Also, whereas Experiment 07 fixed the revision baseline to `gemma4`, this experiment compares scores across `gemma4`, `gpt-oss`, and `qwen3.6`, automatically selecting the highest-scoring translation for each language. Since some languages — such as Czech (`cs`) — score highest with a model other than gemma4, we can start revision from a higher-quality baseline.
 
-## スクリプトの構成
+## Script structure
 
 - **`find_best.py`**:
-  `examples/tr/onde/` 以下の全モデルの `SCORES.txt` を比較し、言語コードごとに最高得点の翻訳ファイルを選出して TSV（言語コード・得点・ファイルパス・言語名）を標準出力します。言語名は `trtools.language.LANG_NAMES` から取得します。
+  Compares the `SCORES.txt` files of all models under `examples/tr/onde/`, selects the highest-scoring translation file for each language code, and outputs a TSV (language code, score, file path, language name) to standard output. Language names are obtained from `trtools.language.LANG_NAMES`.
 
 - **`review.py`**:
-  実験07の `review.py` をベースに本実験向けに拡張したもの。実験07からの主な変更点：用語TSVから話者名を対象言語に変換する機能の追加、`-f`/`-t` の言語コード化（言語名の代わりにコードを受け付ける）、`tqdm` から `rich` への移行とステータスバーの強化（全体の言語進捗・バッチ経過時間 / 個別の行進捗バー・経過時間）。
+  An extension of Experiment 07's `review.py` for this experiment. Main changes from Experiment 07: added a feature to convert speaker names to the target language using a terminology TSV; converted `-f`/`-t` to accept language codes (instead of language names); migrated from `tqdm` to `rich`, with enhanced status bars (overall language progress / batch elapsed time, plus per-line progress bar / elapsed time).
 
 - **`batch.sh`**:
-  `find_best.py` で TSV を生成した後、各言語について `review.py` で推敲・`trtools eval` で評価・`trtools agg` で集計までを全自動で行います。全67言語の実行には約38時間を要しました。
+  After generating the TSV with `find_best.py`, this fully automates revision with `review.py`, evaluation with `trtools eval`, and aggregation with `trtools agg` for each language. Running all 67 languages took about 38 hours.
 
 - **`compare.py`**:
-  `best.tsv`（推敲前スコア）と `SCORES.txt`（推敲後スコア）を比較し、言語コード順・推敲後降順の2表、サマリー統計、5点刻み集計、推敲が有効な言語一覧をMarkdown形式で標準出力します。`uv run compare.py > SCORES.md` で出力を生成できます。
+  Compares `best.tsv` (pre-revision scores) with `SCORES.txt` (post-revision scores), and outputs to standard output, in Markdown format: two tables (sorted by language code, and sorted descending by post-revision score), summary statistics, a breakdown in 5-point buckets, and a list of languages for which revision was effective. Run `uv run compare.py > SCORES.md` to generate the output.
 
-## 結果
+## Results
 
-全67言語の推敲後スコアと推敲前との比較は [SCORES.md](SCORES.md) を参照してください。
+See [SCORES.md](SCORES.md) for a comparison of post-revision scores against pre-revision scores across all 67 languages.
 
-改善30言語・悪化32言語・変化なし5言語（平均変化 −1.2点）という結果でした。バスク語（+42）・スロベニア語（+22）・エストニア語（+29）など低・中リソース言語で大幅な改善が見られた一方、テルグ語（−31）・アルバニア語（−26）・ネパール語（−28）では品質が低下しました。
+The results showed 30 languages improved, 32 languages degraded, and 5 languages unchanged (average change: -1.2 points). Low- and medium-resource languages such as Basque (+42), Slovene (+22), and Estonian (+29) showed large improvements, while quality dropped for Telugu (-31), Albanian (-26), and Nepali (-28).
 
-### 考察：推敲が有効な条件
+### Discussion: conditions under which revision is effective
 
-結果を整理すると、推敲の効果はベースライン訳の「状態」に強く依存します。
+Organizing the results shows that the effectiveness of revision strongly depends on the "state" of the baseline translation.
 
-- **有効なケース**: ベースライン訳が「意味は通っているが表現が粗い」状態のとき改善が顕著。ブルガリア語 80→97・ハンガリー語 83→96 など推敲前70〜85点台の中程度スコアで効果が出やすい。バスク語（45→87）・エストニア語（53→82）のように推敲前スコアが低くても、翻訳の構造が維持されていれば大幅に改善したケースもある。
-- **逆効果なケース**: 推敲前スコアが高い言語（日本語 97→80・アルメニア語 91→75）では、推敲モデルが余計な変更を加えて品質が低下した。
-- **効果なしのケース**: ベンガル語 54→39・クメール語 54→33・テルグ語 64→33 など、原文の構造を正確に捉えられていない翻訳は推敲でも改善できず、むしろ悪化する傾向が見られた。
+- **Effective cases**: Improvement is pronounced when the baseline translation is "semantically sound but roughly expressed." Effects tend to appear at moderate pre-revision scores in the 70-85 range, such as Bulgarian (80→97) and Hungarian (83→96). There were also cases of large improvement even from low pre-revision scores, as long as the translation's structure was preserved, such as Basque (45→87) and Estonian (53→82).
+- **Counterproductive cases**: For languages with high pre-revision scores (Japanese 97→80, Armenian 91→75), the revision model made unnecessary changes that degraded quality.
+- **No-effect cases**: For translations that failed to accurately capture the structure of the original — such as Bengali (54→39), Khmer (54→33), and Telugu (64→33) — revision could not improve them and, if anything, tended to make them worse.
 
-推敲は「誤りの修正」ではなく「表現の洗練」として機能するため、ベースライン訳が意味的に破綻している場合には効果が期待できません。
+Because revision functions as "refinement of expression" rather than "correction of errors," it cannot be expected to help when the baseline translation is semantically broken.
 
-## batch.sh の動作
+## How batch.sh works
 
-1. **ベースライン選定**
-   - `find_best.py` を実行し、結果を `best.tsv` に保存
-   - TSV の形式: `言語コード\t得点\tファイルパス\t言語名`
+1. **Baseline selection**
+   - Runs `find_best.py` and saves the result to `best.tsv`
+   - TSV format: `language_code\tscore\tfile_path\tlanguage_name`
 
-2. **推敲の実行**
-   - **入力**: 原文 `examples/onde-en.txt` と `best.tsv` で選定されたベースライン訳
-   - **推敲モデル**: `ollama:qwen3.6`（`--no-think`）
-   - **出力先**: `tr/onde-{lang}.txt`
+2. **Running the revision**
+   - **Input**: Original text `examples/onde-en.txt` and the baseline translation selected in `best.tsv`
+   - **Revision model**: `ollama:qwen3.6` (`--no-think`)
+   - **Output**: `tr/onde-{lang}.txt`
 
-3. **評価**
-   - **評価モデル**: `ollama:qwen3.6`
-   - 各言語の推敲後の訳文に対して `trtools eval` を3回ずつ実行
-   - **出力先**: `evals/onde-{lang}-{1,2,3}.json`
+3. **Evaluation**
+   - **Evaluation model**: `ollama:qwen3.6`
+   - Runs `trtools eval` 3 times for each language's revised translation
+   - **Output**: `evals/onde-{lang}-{1,2,3}.json`
 
-4. **集計**
-   - `trtools agg` で全評価ファイルの中央値を集計し、`SCORES.txt` に出力
+4. **Aggregation**
+   - Aggregates the median across all evaluation files with `trtools agg`, outputting to `SCORES.txt`

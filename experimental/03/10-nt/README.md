@@ -1,27 +1,27 @@
-# threshold=10・要約 CoT なし 試行
+# threshold=10, summary CoT disabled trial
 
-要約間隔 `--threshold 10`、再編成まで `--keep 5`、要約 CoT **なし**（`--no-think`）の設定で実施した試行です。
+A trial run with summary interval `--threshold 10`, reorganization at `--keep 5`, and summary CoT **disabled** (`--no-think`).
 
-翻訳3回 × 評価3回（各 run の中央値）。
+3 translation runs × 3 evaluation runs (median of each run).
 
-## 実験結果
+## Experimental results
 
-翻訳入力: [examples/finetuning-fr.txt](../../../examples/finetuning-fr.txt)（43行、フランス語ポッドキャスト）
-翻訳先: スペイン語（翻訳3回 × 評価3回、各 run の中央値）
+Translation input: [examples/finetuning-fr.txt](../../../examples/finetuning-fr.txt) (43 lines, French podcast)
+Target language: Spanish (3 translation runs × 3 evaluation runs, median of each run)
 
-### スコア一覧
+### Score summary
 
-| モデル | tr-1 | tr-2 | tr-3 |
+| Model | tr-1 | tr-2 | tr-3 |
 |---|:---:|:---:|:---:|
 | qwen3.6-27b | 96 | **86** | 94 |
 | gemma4-26b | 95 | **99** | 96 |
 | gemma4-e4b | 95 | 96 | **84** |
 
-参考: 参照訳（Gemini 2.5 Pro）= 97点（experimental/02 で計測済み）
+Reference: the reference translation (Gemini 2.5 Pro) scored 97 points (measured in experimental/02)
 
-各 run の評価3回の個別スコア:
+Individual scores of the 3 evaluation runs for each run:
 
-| モデル | run | eval-1 | eval-2 | eval-3 | 中央値 |
+| Model | run | eval-1 | eval-2 | eval-3 | Median |
 |---|:---:|:---:|:---:|:---:|:---:|
 | qwen3.6-27b | 1 | 98 | 96 | 95 | **96** |
 | qwen3.6-27b | 2 | 90 | 86 | 84 | **86** |
@@ -33,33 +33,33 @@
 | gemma4-e4b | 2 | 94 | 96 | 98 | **96** |
 | gemma4-e4b | 3 | 84 | 82 | 87 | **84** |
 
-### 主な問題と観察
+### Main issues and observations
 
-**gemma4-26b-2: 99点（ほぼ満点）**
+**gemma4-26b-2: 99 points (near-perfect)**
 
-全5項目が20点に極めて近い。eval-1 が満点（100点）で、eval-2・eval-3 も 97・99 点と評価ブレが最小。20/ の tr-3（100点）に次ぐ高スコアであり、gemma4-26b の安定した品質の高さを改めて示している。
+All 5 categories were very close to 20 points. eval-1 was a perfect score (100), and eval-2/eval-3 were 97 and 99 with minimal evaluation variance. This is the second-highest score after 20/'s tr-3 (100 points), further demonstrating gemma4-26b's stable, high quality.
 
-**qwen3.6-27b-2: 86点急落**
+**qwen3.6-27b-2: dropped to 86**
 
-fluency=16、terminology=16、readability=17 と複数項目で大幅な減点。主な問題：
+Large deductions across multiple items: fluency=16, terminology=16, readability=17. Main issues:
 
-- 文法エラー: `las informaciónes`（「情報」は不可算名詞で複数形なし）、`partías`（動詞の活用誤り）
-- 術語ブレ: `afinado`（fine-tuning の訳として非標準、`ajuste fino` が正しい）、`bachotage` → `aprendizaje de memoria`（「暗記学習」であり「詰め込み勉強」のニュアンスが薄い）
+- Grammar errors: `las informaciónes` ("information" is an uncountable noun with no plural), `partías` (incorrect verb conjugation)
+- Terminology drift: `afinado` (non-standard translation of fine-tuning; `ajuste fino` is correct), `bachotage` → `aprendizaje de memoria` ("rote learning," lacking the "cramming for an exam" nuance)
 
-3回の評価が 90・86・84 と全て低く、翻訳品質そのものの問題（評価ブレではない）。CoT は要約にのみ適用されるため術語ブレの直接原因ではなく、この run の glossary 初期蓄積のブレと見られる。
+All three evaluation scores (90, 86, 84) were consistently low, indicating an actual translation-quality problem (not evaluation variance). Since CoT only applies to the summary, it's not a direct cause of the terminology drift; this appears to be drift from this run's initial glossary accumulation.
 
-**gemma4-e4b-3: 84点急落**
+**gemma4-e4b-3: dropped to 84**
 
-terminology=14 が3評価すべてで一致（最も確実な問題）。主な誤訳：
+terminology=14 was consistent across all 3 evaluations (the most reliable issue). Main mistranslations:
 
-- `bachotage` → `atracón`（「暴食」「一気見」を意味し、「詰め込み勉強」とは無関係）
-- `grounding`（NLP/AI 文脈）→ 誤訳（電気工学の「接地」系の訳語）
+- `bachotage` → `atracón` (means "binge eating" or "binge-watching," unrelated to "cramming for an exam")
+- `grounding` (NLP/AI context) → mistranslated as an electrical-engineering "grounding/earthing" term
 
-contextual_adaptation=17（16・17・18）も低下。この術語誤訳が文脈の整合性にも悪影響を与えている。tr-1・tr-2（95・96点）では同様の問題が出ておらず、tr-3 の glossary 初期蓄積で誤訳が固定されたと見られる。
+contextual_adaptation=17 (16, 17, 18) also declined. This terminology mistranslation also negatively affected contextual coherence. tr-1/tr-2 (95, 96 points) didn't show this issue, suggesting the mistranslation got locked in through tr-3's initial glossary accumulation.
 
-### 総評
+### Overall assessment
 
-- **gemma4-26b** が最優秀。3 run とも 95〜99 点で、CoT なし要約でも高品質を安定維持。tr-2 の 99 点は experimental/02 Phase B の参照水準（97点）を超える。
-- **qwen3.6-27b** は tr-1・tr-3 では 94〜96 点と良好だが、tr-2 の 86 点急落が信頼性を損なう。文法エラーの発生は CoT なし要約で術語・文体一貫性を保つ難しさを示す。
-- **gemma4-e4b** は tr-1・tr-2 で 95〜96 点と優秀だが、tr-3 で 84 点まで急落。術語誤訳が3評価全てで一致していることから、翻訳品質そのものの問題であり、glossary 誤訳固定リスクが顕在化した。
-- CoT は要約生成にのみ適用され翻訳本体には影響しないため、10-nt と 10/ のスコア差は run 間のブレ（glossary 初期蓄積の違い）として解釈するのが妥当であり、CoT 有無の効果と断定するのは難しい。
+- **gemma4-26b** performed best. All 3 runs scored 95-99, maintaining high quality even with a no-CoT summary. tr-2's 99 points exceeds experimental/02 Phase B's reference level (97 points).
+- **qwen3.6-27b** was good (94-96 points) in tr-1/tr-3, but the drop to 86 in tr-2 undermines reliability. The grammar errors show the difficulty of maintaining terminology/style consistency with a no-CoT summary.
+- **gemma4-e4b** scored well (95-96 points) in tr-1/tr-2, but dropped to 84 in tr-3. Since the terminology mistranslation was consistent across all 3 evaluations, this reflects an actual translation-quality issue — the risk of glossary mistranslations getting locked in became apparent.
+- Since CoT only applies to summary generation and not to translation itself, it's more reasonable to interpret the score gap between 10-nt and 10/ as run-to-run variance (differences in initial glossary accumulation) rather than a definitive effect of CoT presence.

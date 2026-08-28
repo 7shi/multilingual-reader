@@ -10,19 +10,19 @@ from rich.text import Text
 from trtools.language import LANG_NAMES
 from trtools.llm import LLMClient
 
-parser = argparse.ArgumentParser(description="他者評価による翻訳推敲スクリプト")
-parser.add_argument("--original", required=True, help="原文テキストファイル")
-parser.add_argument("--translation", required=True, help="ベースライン翻訳テキストファイル")
-parser.add_argument("-f", "--from", dest="from_lang", required=True, help="原語（例: English）")
-parser.add_argument("-t", "--to", dest="to_lang", required=True, help="翻訳先言語（例: Dutch）")
-parser.add_argument("-o", "--output", required=True, help="推敲後出力ファイル名")
-parser.add_argument("-m", "--model", required=True, help="推敲に使用するモデル")
-parser.add_argument("--history", type=int, default=10, help="コンテキスト履歴数")
-parser.add_argument("--no-think", action="store_true", help="thinking処理を無効化")
-parser.add_argument("--lang-index", type=int, default=0, help="言語の通し番号（batch.shから渡す）")
-parser.add_argument("--lang-total", type=int, default=0, help="言語の総数（batch.shから渡す）")
-parser.add_argument("--batch-start", type=float, default=0.0, help="バッチ開始時刻（Unixタイムスタンプ）")
-parser.add_argument("--terms", help="用語対訳TSVファイル（話者名の変換に使用）")
+parser = argparse.ArgumentParser(description="Translation revision script using third-party evaluation")
+parser.add_argument("--original", required=True, help="Original text file")
+parser.add_argument("--translation", required=True, help="Baseline translation text file")
+parser.add_argument("-f", "--from", dest="from_lang", required=True, help="Source language (e.g. English)")
+parser.add_argument("-t", "--to", dest="to_lang", required=True, help="Target language (e.g. Dutch)")
+parser.add_argument("-o", "--output", required=True, help="Output file name for the revised text")
+parser.add_argument("-m", "--model", required=True, help="Model to use for revision")
+parser.add_argument("--history", type=int, default=10, help="Number of context history entries")
+parser.add_argument("--no-think", action="store_true", help="Disable thinking processing")
+parser.add_argument("--lang-index", type=int, default=0, help="Language sequence number (passed from batch.sh)")
+parser.add_argument("--lang-total", type=int, default=0, help="Total number of languages (passed from batch.sh)")
+parser.add_argument("--batch-start", type=float, default=0.0, help="Batch start time (Unix timestamp)")
+parser.add_argument("--terms", help="Terminology translation TSV file (used to convert speaker names)")
 args = parser.parse_args()
 
 if args.from_lang not in LANG_NAMES:
@@ -62,8 +62,8 @@ console = Console()
 
 
 class ConsoleStream:
-    """generate_with_schema の file= に渡す Rich コンソールラッパー。
-    改行単位でバッファリングし console.print() に転送する。"""
+    """Rich console wrapper passed to generate_with_schema's file= parameter.
+    Buffers by line and forwards to console.print()."""
 
     def __init__(self, console: Console):
         self._console = console
@@ -76,7 +76,7 @@ class ConsoleStream:
             self._console.print(line, highlight=False)
 
     def flush(self) -> None:
-        pass  # トークンごとの flush は無視。end() で残りを出力する
+        pass  # Ignore per-token flush; remaining content is output in end()
 
     def end(self) -> None:
         if self._buf.strip():
@@ -97,7 +97,7 @@ def _fmt_elapsed(seconds: float) -> str:
 
 
 class MofNParenColumn(ProgressColumn):
-    """行進捗を (xx/xx) 形式で表示するカラム。"""
+    """Column that displays line progress in (xx/xx) format."""
 
     def render(self, task) -> Text:
         completed = int(task.completed)
@@ -106,7 +106,7 @@ class MofNParenColumn(ProgressColumn):
 
 
 class LangMofNColumn(ProgressColumn):
-    """言語進捗を (xx/xx) 形式で表示するカラム。"""
+    """Column that displays language progress in (xx/xx) format."""
 
     def render(self, task) -> Text:
         if not args.lang_total:
@@ -115,7 +115,7 @@ class LangMofNColumn(ProgressColumn):
 
 
 class BatchTimeColumn(ProgressColumn):
-    """バッチ総経過時間を表示するカラム。"""
+    """Column that displays the total batch elapsed time."""
 
     def render(self, task) -> Text:
         if not args.batch_start:

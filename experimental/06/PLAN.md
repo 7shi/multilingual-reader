@@ -1,19 +1,19 @@
-# 今後のアクションプラン
+# Future Action Plan
 
-実験06（単純なスライディングコンテキスト方式を用いた2段階翻訳の有効性検証）の結果を踏まえ、今後は以下の計画に沿って改善を進めます。
+Based on the results of experiment 06 (verifying the effectiveness of two-stage translation using a simple sliding context approach), the plan going forward is as follows.
 
-## 実験07: サマリー圧縮方式＋KVキャッシュ最適化と2段階翻訳の統合
+## Experiment 07: Integrating the Summary-Compression Approach + KV-Cache Optimization with Two-Stage Translation
 
-実験06において、オランダ語ではスコアの引き上げ（78点→94点）に成功したものの、チェコ語では下訳の段階で品質が大きく低下（78点→56点）する現象が確認されました。
-これは、単純なスライディングコンテキスト方式では長文の文脈を保持できず、翻訳品質のベースライン自体が下がってしまうためと考えられます。
+In experiment 06, the simple sliding context approach succeeded in raising the score for Dutch (78 → 94 points), but for Czech, quality dropped significantly at the draft translation stage (78 → 56 points).
+This is presumably because a simple sliding context cannot retain long-range context, which lowers the baseline translation quality itself.
 
-そのため、次の実験07では、現在の `trtools translate` で既に採用されている**「サマリー圧縮方式および用語注入によるKVキャッシュ最適化」**の仕組みを2段階翻訳に統合します。
-これにより、文脈の維持による高いベースライン品質を確保しつつ、2段階翻訳による推敲効果を重ね合わせることで、処理効率と翻訳品質の両立を目指します。
+Therefore, in the next experiment (07), the **"summary-compression approach and KV-cache optimization via term injection"** mechanism already adopted in the current `trtools translate` will be integrated into two-stage translation.
+This aims to combine both a high baseline quality from better context retention and the refinement effect of two-stage translation, achieving both processing efficiency and translation quality.
 
-## 将来的な考慮事項: 他者評価（翻訳と評価モデルの分離）の検討
+## Future Consideration: Exploring Separate-Model Evaluation (Decoupling the Translation and Evaluation Models)
 
-現在の推敲プロセスは、翻訳モデル自身による「自己評価」で行っています。
-しかし、過去の検証（実験01等）で判明しているように、LLMには「評価・分析能力は高いが、生成（書く）能力には限界がある」という読み書き能力の非対称性が存在します。
+The current refinement process relies on "self-evaluation" by the translation model itself.
+However, as prior verification (experiment 01, etc.) has shown, LLMs exhibit an asymmetry between reading and writing ability: "evaluation/analysis capability is high, but generation (writing) capability is limited."
 
-これを踏まえ、将来的には**翻訳と評価（推敲指示）で別々のモデルを担当させるアプローチ（他者評価）**の有効性についても検討します。
-たとえば、翻訳生成は特定言語に強いモデルが行い、その推敲と修正提案は論理的検証能力に優れたモデル（qwen3.6など）が行うといったパイプラインの構築を視野に入れます。
+Given this, the effectiveness of an approach where **separate models are responsible for translation and evaluation (refinement instructions)** — i.e., other-model evaluation — will also be considered in the future.
+For example, this could take the form of a pipeline in which a model strong in a specific language performs the translation generation, while a model with superior logical verification ability (such as qwen3.6) handles the refinement and correction proposals.

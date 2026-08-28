@@ -1,4 +1,4 @@
-"""best.tsv（推敲前）と SCORES.txt（推敲後）のスコアを比較する"""
+"""Compares scores between best.tsv (pre-revision) and SCORES.txt (post-revision)."""
 
 import re
 
@@ -51,11 +51,11 @@ def main():
     a_w    = max(len(str(r[3])) for r in rows)
     d_w    = max(len(f"{r[4]:+d}") for r in rows)
 
-    print("# 推敲スコア比較（推敲前 vs 推敲後）")
+    print("# Revision Score Comparison (Pre-revision vs Post-revision)")
     print()
-    print("## 言語コード順")
+    print("## Sorted by language code")
     print()
-    print("| 言語 | 言語名 | 推敲前 | 推敲後 | 差分 |")
+    print("| Lang | Language | Pre | Post | Diff |")
     print("|---|---|---:|---:|---:|")
     for lang, name, b, a, d in rows:
         ds = f"{d:+d}" if d != 0 else "0"
@@ -65,20 +65,20 @@ def main():
     if rows:
         diffs = [r[4] for r in rows]
         avg = sum(diffs) / len(diffs)
-        print(f"改善: **{len(improved)}** 言語 / 悪化: **{len(degraded)}** 言語 / 変化なし: **{len(unchanged)}** 言語  ")
-        print(f"平均変化: **{avg:+.1f}** 点 / 最大改善: **+{max(diffs)}** 点 / 最大悪化: **{min(diffs)}** 点")
+        print(f"Improved: **{len(improved)}** languages / Degraded: **{len(degraded)}** languages / Unchanged: **{len(unchanged)}** languages  ")
+        print(f"Average change: **{avg:+.1f}** points / Max improvement: **+{max(diffs)}** points / Max degradation: **{min(diffs)}** points")
 
     print()
-    print("## 推敲後スコア降順")
+    print("## Sorted descending by post-revision score")
     print()
-    print("| 言語 | 言語名 | 推敲前 | **推敲後** | 差分 |")
+    print("| Lang | Language | Pre | **Post** | Diff |")
     print("|---|---|---:|---:|---:|")
     for lang, name, b, a, d in sorted(rows, key=lambda x: (-x[3], x[0])):
         ds = f"{d:+d}" if d != 0 else "0"
         print(f"| {lang:<{lang_w}} | {name:<{name_w}} | {b:>{b_w}} | **{a:>{a_w}}** | {ds:>{d_w}} |")
 
     print()
-    print("## 5点刻み集計")
+    print("## Breakdown by 5-point buckets")
     print()
     buckets = {}
     zeros = []
@@ -96,7 +96,7 @@ def main():
     )
     label_w = max(label_w, len("±0"))
 
-    print("| 範囲 | 言語 |")
+    print("| Range | Languages |")
     print("|---|---|")
     for key in sorted(buckets, reverse=True):
         lo, hi = key, key + 4
@@ -109,7 +109,7 @@ def main():
         print(f"| {'±0':<{label_w}} | {', '.join(sorted(zeros))} |")
 
     print()
-    print("## 推敲が有効な言語（差分 +6 以上）")
+    print("## Languages where revision was effective (diff +6 or more)")
     print()
     effective = sorted([(n, a, d) for _, n, _, a, d in rows if d >= 6], key=lambda x: (-x[1], x[0]))
     print("- " + ", ".join(f"{n} ({a}:{d:+d})" for n, a, d in effective))

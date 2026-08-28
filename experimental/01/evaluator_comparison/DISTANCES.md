@@ -1,16 +1,16 @@
-# 評価者間距離マトリクス
+# Inter-Evaluator Distance Matrix
 
-## ユークリッド距離
+## Euclidean Distance
 
-| 評価者 | gemini-2.5-flash | gpt-oss-20b | gpt-oss-120b |
+| Evaluator | gemini-2.5-flash | gpt-oss-20b | gpt-oss-120b |
 |:--| :--: | :--: | :--: |
 | gemini-2.5-flash |  | 536.5296 | 521.6033 |
 | gpt-oss-20b |  |  | 184.4885 |
 | gpt-oss-120b |  |  |  |
 
-## 二乗平均平方根誤差
+## Root Mean Square Error
 
-| 評価者 | gemini-2.5-flash | gpt-oss-20b | gpt-oss-120b |
+| Evaluator | gemini-2.5-flash | gpt-oss-20b | gpt-oss-120b |
 |:--| :--: | :--: | :--: |
 | gemini-2.5-flash |  | 20.0511 | 19.4932 |
 | gpt-oss-20b |  |  | 6.8947 |

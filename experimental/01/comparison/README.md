@@ -1,212 +1,212 @@
-# 翻訳品質比較分析：reasoning機能の効果
+# Translation Quality Comparison Analysis: Effect of the Reasoning Feature
 
-## 実験概要
+## Experiment Overview
 
-フランス語ポッドキャスト原稿をスペイン語に翻訳する際の、reasoning機能有無による品質差を分析しました。
+We analyzed the quality difference caused by enabling or disabling the reasoning feature when translating a French podcast transcript into Spanish.
 
-**翻訳対象：** `examples/finetuning-fr.txt`（AIの学習手法に関する技術的対話）
-**翻訳方向：** フランス語 → スペイン語
-**使用モデル：** `ollama:gemma3n:e4b`
+**Translation target:** `examples/finetuning-fr.txt` (a technical dialogue about AI training methods)
+**Translation direction:** French → Spanish
+**Model used:** `ollama:gemma3n:e4b`
 
-**生成ファイル：**
-- `comparison/0.txt`: reasoning level 0（基本翻訳）で生成
-- `comparison/1.txt`: reasoning level 1（推論プロセス付き翻訳）で生成
-- `comparison/2.txt`: reasoning level 2（2段階品質チェック翻訳）で生成
+**Generated files:**
+- `comparison/0.txt`: generated with reasoning level 0 (basic translation)
+- `comparison/1.txt`: generated with reasoning level 1 (translation with a reasoning process)
+- `comparison/2.txt`: generated with reasoning level 2 (two-stage quality-checked translation)
 
-## 評価結果（Gemma 3n E4Bによる翻訳）
+## Evaluation Results (translation by Gemma 3n E4B)
 
-| 条件 | 出力ファイル | スコア | 主な特徴 |
+| Condition | Output file | Score | Key characteristics |
 |------|-------------|--------|----------|
-| reasoning なし | `0.txt` | 75点 | 語彙選択の精度低下、文脈把握不完全 |
-| reasoning あり | `1.txt` | 88点 | 適切な語彙選択、自然な表現、一貫性 |
-| **2段階翻訳** | **`2.txt`** | **93点** | **最高品質、言語統一、軽微な冗長性のみ** |
+| Without reasoning | `0.txt` | 75 | Reduced accuracy in word choice, incomplete grasp of context |
+| With reasoning | `1.txt` | 88 | Appropriate word choice, natural expression, consistency |
+| **Two-stage translation** | **`2.txt`** | **93** | **Highest quality, unified language, only minor redundancy** |
 
-## 詳細分析
+## Detailed Analysis
 
-### reasoning なし（0.txt）の課題
-- **致命的誤訳**: 「C'est-à-dire ?」→「Quiero decir?」（会話文脈を破綻させる深刻な誤訳）
-- **重大な翻訳欠損**: フランス語特有表現の理解不足による表層的処理
-- **語彙選択**: 「bachotage」→「memorizar para un examen」（文脈に合わない直訳的表現）
-- **専門用語**: 「antisèche」→「libreta de consulta」（文化的適応の欠如）
-- **一貫性**: 言語混乱や文脈の断絶
+### Issues without reasoning (0.txt)
+- **Critical mistranslation**: "C'est-à-dire ?" → "Quiero decir?" (a serious mistranslation that breaks the conversational context)
+- **Major translation omissions**: shallow handling due to insufficient understanding of French-specific expressions
+- **Word choice**: "bachotage" → "memorizar para un examen" (a literal expression that doesn't fit the context)
+- **Terminology**: "antisèche" → "libreta de consulta" (lack of cultural adaptation)
+- **Consistency**: language confusion and breaks in context
 
-### reasoning あり（1.txt）の優位点
-- **正確な意訳**: 「C'est-à-dire ?」→「¿A qué te refieres?」（文脈に応じた適切な翻訳）
-- **語彙精度**: 「bachotage」→「bachotear」（自然で文脈に合うスペイン語表現）
-- **文化的適応**: 「antisèche」→「libreta de apuntes」（正確な文化的等価語）
-- **専門用語**: 技術概念の一貫した正確な翻訳
-- **思考プロセス**: Chain of Thought効果による文脈理解の深化
-- **軽微な課題**: 「donc」等の原文単語残存（校正で改善可能）
+### Advantages with reasoning (1.txt)
+- **Accurate free translation**: "C'est-à-dire ?" → "¿A qué te refieres?" (an appropriate translation suited to the context)
+- **Word-choice accuracy**: "bachotage" → "bachotear" (a natural Spanish expression that fits the context)
+- **Cultural adaptation**: "antisèche" → "libreta de apuntes" (an accurate cultural equivalent)
+- **Terminology**: consistent, accurate translation of technical concepts
+- **Thinking process**: deeper contextual understanding through the Chain of Thought effect
+- **Minor issue**: some original-language words such as "donc" remain (can be improved through proofreading)
 
-## 重要な発見
+## Key Findings
 
-### reasoning機能のメカニズム効果
+### Mechanism of the reasoning feature's effect
 
-**Chain of Thought（思考の連鎖）による品質向上:**
-1. **思考プロセスの言語化**: 翻訳前に原文の意味・文脈・文化的ニュアンス・話者意図を分析
-2. **多角的検討の強制**: 表層的解釈ではなく、慎重で深い文脈理解を促進
-3. **文脈理解の深化**: 単語レベルではなく概念レベルでの翻訳実現
-4. **文化的ニュアンス**: 言語固有の表現の適切な処理
-5. **一貫性向上**: 専門用語や概念の統一的な扱い
-6. **品質安定性**: より予測可能で信頼性の高い出力
+**Quality improvement through Chain of Thought:**
+1. **Verbalizing the thinking process**: analyzing the source text's meaning, context, cultural nuance, and speaker intent before translating
+2. **Forcing multi-angle consideration**: promoting careful, deep contextual understanding rather than a surface-level interpretation
+3. **Deeper contextual understanding**: achieving translation at the concept level rather than the word level
+4. **Cultural nuance**: appropriate handling of language-specific expressions
+5. **Improved consistency**: unified treatment of terminology and concepts
+6. **Quality stability**: more predictable, reliable output
 
-### 技術的含意とプロンプト設計戦略
-- **専門分野**: 技術文書や学術文書では reasoning が特に有効
-- **文化的要素**: 慣用表現や文化固有概念の翻訳精度が向上
-- **長文処理**: 文脈維持能力の明確な改善
-- **汎用性**: reasoning要求は翻訳以外の高度な言語タスクでも有効
+### Technical implications and prompt design strategy
+- **Specialized domains**: reasoning is especially effective for technical and academic documents
+- **Cultural elements**: improves translation accuracy for idiomatic expressions and culture-specific concepts
+- **Long-text handling**: clearly improves the ability to maintain context
+- **Versatility**: the reasoning requirement is also effective for advanced language tasks beyond translation
 
-## 統合的結論
+## Overall Conclusion
 
-reasoning機能は翻訳品質に **13点の有意な改善**をもたらし、思考プロセスの言語化がモデルの潜在能力を引き出すことが実証されました。特に：
+The reasoning feature brought a **significant 13-point improvement** in translation quality, demonstrating that verbalizing the thinking process draws out the model's latent capability. In particular:
 
-1. **専門的内容**での概念理解の深化
-2. **文化的ニュアンス**の適切な処理
-3. **語彙選択**の精度向上（直訳から文脈適応へ）
-4. **致命的誤訳の回避**（会話文脈の維持）
-5. **全体的一貫性**の確保
+1. Deeper conceptual understanding for **specialized content**
+2. Appropriate handling of **cultural nuance**
+3. Improved accuracy of **word choice** (from literal translation to context adaptation)
+4. **Avoidance of critical mistranslations** (maintaining conversational context)
+5. Ensuring **overall consistency**
 
-**プロンプト設計戦略としての価値:** reasoning要求は、モデルに多角的かつ慎重な検討を強制し、表層的解釈による誤訳リスクを大幅に軽減する非常に有効な戦略です。
+**Value as a prompt design strategy:** requiring reasoning forces the model to consider things from multiple angles and carefully, and is a highly effective strategy for greatly reducing the risk of mistranslation from surface-level interpretation.
 
-## 2段階翻訳の追加検証
+## Additional Verification of Two-Stage Translation
 
-新たに実装した2段階翻訳（reasoning level 2）の結果を評価しました。
+We evaluated the results of a newly implemented two-stage translation (reasoning level 2).
 
-### 2段階翻訳（2.txt）の優位性：93点
+### Advantages of two-stage translation (2.txt): 93 points
 
-**画期的な改善点:**
-- **完全な言語統一**: 言語混入が完全に解消
-- **表現の自然性**: より適切なスペイン語表現の選択
-- **品質安定性**: 一貫して高品質な翻訳を実現
+**Breakthrough improvements:**
+- **Complete language unification**: language mixing was fully eliminated
+- **Naturalness of expression**: more appropriate Spanish expressions were chosen
+- **Quality stability**: consistently high-quality translation was achieved
 
-**軽微な課題（-7点）:**
-- 重複表現や冗長性の残存（例：「¿es ahí donde se aplica... ¿O es ahí donde entra...?」）
-- 一部不自然な表現（「experto a tiempo completo/definitivo」）
+**Minor issues (-7 points):**
+- Some duplicate expressions and redundancy remain (e.g., "¿es ahí donde se aplica... ¿O es ahí donde entra...?")
+- Some unnatural expressions ("experto a tiempo completo/definitivo")
 
-### 翻訳手法の進化的改善
+### Evolutionary Improvement of Translation Methods
 
-| 手法 | スコア | 改善幅 | 主要効果 |
+| Method | Score | Improvement | Key effect |
 |------|--------|--------|----------|
-| reasoning なし | 75点 | - | ベースライン |
-| reasoning あり | 88点 | +13点 | 文脈理解の深化 |
-| **2段階翻訳** | **93点** | **+18点** | **品質チェック効果** |
+| Without reasoning | 75 | - | Baseline |
+| With reasoning | 88 | +13 | Deeper contextual understanding |
+| **Two-stage translation** | **93** | **+18** | **Quality-check effect** |
 
-### 2段階翻訳のメカニズム効果
+### Mechanism of the Two-Stage Translation Effect
 
-1. **下訳段階**: 初期翻訳の生成
-2. **品質チェック段階**: 誤訳・言語混入・不自然表現の特定
-3. **最終翻訳段階**: 問題点を修正した高品質翻訳
+1. **Draft stage**: generates an initial translation
+2. **Quality-check stage**: identifies mistranslations, language mixing, and unnatural expressions
+3. **Final translation stage**: produces a high-quality translation with the identified issues fixed
 
-この3段階プロセスにより、従来手法では見逃していた問題を体系的に修正し、**最高品質の翻訳を達成**しました。
+Through this three-stage process, issues that conventional methods overlooked were systematically corrected, **achieving the highest quality translation**.
 
-## 他モデルとの比較評価
+## Comparison with Other Models
 
-同じ条件（reasoning level 2の2段階翻訳）で、Gemma 3 4BとQwen3 4Bの翻訳性能を検証しました。
+Under the same condition (two-stage translation at reasoning level 2), we verified the translation performance of Gemma 3 4B and Qwen3 4B.
 
-### モデル別翻訳品質評価
+### Translation Quality Evaluation by Model
 
-| モデル | Claude評価 | Gemini評価 | 平均スコア | 特徴 |
+| Model | Claude score | Gemini score | Average score | Characteristics |
 |--------|------------|------------|------------|------|
-| **Gemma 3n E4B (2.txt)** | 88点 | 95点 | **91.5点** | **最高品質、技術文書に最適** |
-| **Gemma 3 4B** | 85点 | 80点 | **82.5点** | **自然な表現、一般向けに適合** |
-| **Qwen3 4B** | 78点 | 65点 | **71.5点** | **基本的翻訳可能、要修正** |
+| **Gemma 3n E4B (2.txt)** | 88 | 95 | **91.5** | **Highest quality, best suited for technical documents** |
+| **Gemma 3 4B** | 85 | 80 | **82.5** | **Natural expression, suited for general audiences** |
+| **Qwen3 4B** | 78 | 65 | **71.5** | **Basic translation is possible, but needs revision** |
 
-### 詳細分析結果
+### Detailed Analysis Results
 
-#### Gemma 3n E4B（オリジナル）：91.5点
-**統合評価での優位性:**
-- **専門用語の一貫性**: AI・機械学習用語の正確で統一された翻訳
-- **技術的正確性**: 概念説明の精密性と原文への忠実性
-- **構造化された表現**: 論理的で体系的な文章構成
+#### Gemma 3n E4B (original): 91.5 points
+**Advantages in the combined evaluation:**
+- **Terminology consistency**: accurate and consistent translation of AI/machine learning terms
+- **Technical accuracy**: precise explanation of concepts and faithfulness to the source text
+- **Structured expression**: logically and systematically organized sentences
 
-**両評価者共通の評価点:**
-- 「aprendizaje por transferencia」等の専門用語翻訳の秀逸さ
-- 技術的概念の正確な伝達
-- reasoning機能による品質安定性
+**Points both evaluators agreed on:**
+- Excellent translation of technical terms such as "aprendizaje por transferencia"
+- Accurate conveyance of technical concepts
+- Quality stability from the reasoning feature
 
-#### Gemma 3 4B：82.5点
-**特徴的な品質:**
-- **自然な会話調**: ポッドキャスト形式に適した流暢性
-- **読みやすさ**: 一般読者にとって最もアクセスしやすい表現
-- **意訳の適切性**: 文脈に応じた柔軟な翻訳
+#### Gemma 3 4B: 82.5 points
+**Notable qualities:**
+- **Natural conversational tone**: fluency well suited to a podcast format
+- **Readability**: the most accessible expression for a general audience
+- **Appropriateness of free translation**: flexible translation suited to context
 
-**課題点:**
-- 一部の意訳による原文ニュアンスの変化
-- 専門用語統一の不安定性
-- 文章末尾の省略（処理制限による）
+**Issues:**
+- Some free translations shift the nuance of the source text
+- Instability in terminology consistency
+- Omission at the end of the text (due to processing limits)
 
-#### Qwen3 4B：71.5点
-**基本性能:**
-- 主要概念の基本的理解は達成
-- 文章構造の維持
+#### Qwen3 4B: 71.5 points
+**Basic performance:**
+- Achieved a basic understanding of the main concepts
+- Maintained sentence structure
 
-**重大な問題点:**
-- **致命的誤訳**: 「antisèche」→「antiestática」（カンニングペーパー→静電気防止）
-- **語彙処理エラー**: 「bachotage」の未翻訳残存
-- **文法的不整合**: 動詞活用等の基本的文法エラー
+**Major issues:**
+- **Critical mistranslation**: "antisèche" → "antiestática" (cheat sheet → anti-static)
+- **Vocabulary processing error**: "bachotage" left untranslated
+- **Grammatical inconsistencies**: basic grammar errors such as verb conjugation
 
-### モデル選択指針
+### Model Selection Guidance
 
-#### 用途別推奨モデル
+#### Recommended Model by Use Case
 
-**技術文書・学術論文・公式文書:**
-- **第1選択**: Gemma 3n E4B（reasoning level 2）
-- 正確性と専門性を重視する場合の最適解
+**Technical documents, academic papers, official documents:**
+- **First choice**: Gemma 3n E4B (reasoning level 2)
+- The best solution when accuracy and specialization are the priority
 
-**一般向け記事・ブログ・マーケティング資料:**
-- **推奨**: Gemma 3 4B
-- 読みやすさと親しみやすさを重視する場合
+**General-audience articles, blogs, marketing materials:**
+- **Recommended**: Gemma 3 4B
+- When readability and approachability are the priority
 
-**下書き・参考翻訳・大量処理:**
-- **制限付き使用**: Qwen3 4B
-- 必ず人手による校正・修正が必要
+**Drafts, reference translations, bulk processing:**
+- **Limited use**: Qwen3 4B
+- Human proofreading and correction are always required
 
-#### コスト効率分析
+#### Cost-Efficiency Analysis
 
-| モデル | 品質 | 処理速度 | 修正コスト | 総合効率 |
+| Model | Quality | Processing speed | Correction cost | Overall efficiency |
 |--------|------|----------|------------|----------|
-| Gemma 3n E4B | 最高 | 中 | 最小 | **最優秀** |
-| Gemma 3 4B | 高 | 高 | 小 | 良好 |
-| Qwen3 4B | 中 | 最高 | 大 | 低い |
+| Gemma 3n E4B | Highest | Medium | Minimal | **Best** |
+| Gemma 3 4B | High | High | Low | Good |
+| Qwen3 4B | Medium | Highest | High | Low |
 
-### 統合的推奨事項
+### Overall Recommendations
 
-**用途別ガイドライン:**
-- **最高品質が必要**: Gemma 3n E4B（reasoning level 2）- 重要文書、公式文書
-- **標準的な高品質**: Gemma 3n E4B（reasoning level 1）- 専門文書、文化的内容
-- **読みやすさ重視**: Gemma 3 4B - 一般向けコンテンツ
-- **大量処理・速度重視**: reasoning なし（reasoning level 0）- 一般文書、下書き段階
-- **コスト効率**: 文書の重要度と処理量に応じてモデルとreasoningレベルを使い分け
+**Guidelines by use case:**
+- **When the highest quality is required**: Gemma 3n E4B (reasoning level 2) — important/official documents
+- **Standard high quality**: Gemma 3n E4B (reasoning level 1) — specialized documents, culturally sensitive content
+- **When readability is the priority**: Gemma 3 4B — general-audience content
+- **When bulk processing/speed is the priority**: without reasoning (reasoning level 0) — general documents, draft stage
+- **Cost efficiency**: choose the model and reasoning level according to document importance and processing volume
 
-**プロンプト設計の一般原則:**
-思考プロセスの言語化を要求することで、高度な言語タスクにおいてモデルの潜在能力を最大限に引き出すことができる。2段階翻訳は処理時間が増加するものの、**18点の品質向上**により、重要文書の翻訳において極めて有効な手法であることが実証されました。モデル選択においては、用途と求められる品質レベルに応じた適切な選択が重要です。
+**General principle for prompt design:**
+Requiring verbalization of the thinking process makes it possible to draw out a model's latent capability to the fullest in advanced language tasks. Although two-stage translation increases processing time, the **18-point quality improvement** demonstrates that it is an extremely effective method for translating important documents. In model selection, choosing appropriately according to the use case and the required quality level is important.
 
-### 構造化出力による実装の柔軟性
+### Implementation Flexibility Through Structured Output
 
-この実験の重要な技術的価値は、**構造化出力（Structured Output）を活用したスキーマベースの実装**にあります。
+An important technical value of this experiment lies in **a schema-based implementation that leverages structured output**.
 
-**技術的優位性:**
-- **スキーマのみでの機能切り替え**: コード変更なしで翻訳手法を変更可能
-- **動的な品質制御**: reasoning levelパラメータ一つで3つの翻訳戦略を選択
-- **拡張性**: 新しい翻訳手法もスキーマ追加のみで実装可能
-- **保守性**: 各翻訳モードが独立したスキーマクラスとして管理
+**Technical advantages:**
+- **Switching functionality via schema alone**: translation methods can be changed without code changes
+- **Dynamic quality control**: a single reasoning-level parameter selects among three translation strategies
+- **Extensibility**: new translation methods can be implemented simply by adding a schema
+- **Maintainability**: each translation mode is managed as an independent schema class
 
-**実装例:**
+**Implementation example:**
 ```python
-# Level 0: シンプルな翻訳のみ
+# Level 0: simple translation only
 class Translation(BaseModel):
     translation: str
 
-# Level 1: 推論プロセス付き
+# Level 1: with a reasoning process
 class Translation(BaseModel):
     reasoning: str
     translation: str
 
-# Level 2: 2段階品質チェック
+# Level 2: two-stage quality check
 class Translation(BaseModel):
     draft_translation: str
     quality_check: str
     translation: str
 ```
 
-この**スキーマドリブンなアプローチ**により、複雑な翻訳ロジックを明確に分離し、用途に応じた最適な翻訳手法を簡単に選択できます。構造化出力の威力を活用した、拡張性と保守性に優れた設計となっています。
+This **schema-driven approach** cleanly separates complex translation logic and allows the optimal translation method to be easily chosen for each use case. It is a design that takes full advantage of the power of structured output, with excellent extensibility and maintainability.

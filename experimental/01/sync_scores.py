@@ -1,21 +1,21 @@
 #!/usr/bin/env python3
 """
-SCORES.mdの表をREADME.mdに自動的に同期するスクリプト
+Script to automatically sync the tables in SCORES.md into README.md
 
-アルゴリズム:
-1. SCORES.mdの表をヘッダ行をキーとしてdictに格納
-2. README.mdを行ごとに走査して、表のヘッダが検出されればdictからマッチング
+Algorithm:
+1. Store the tables from SCORES.md in a dict, keyed by header row
+2. Scan README.md line by line, matching against the dict whenever a table header is detected
 """
 
 
 def extract_tables_from_scores(content: str) -> dict[str, list[str]]:
     """
-    SCORES.mdから表を抽出し、ヘッダ行をキーとしてdictに格納する
+    Extract the tables from SCORES.md and store them in a dict, keyed by header row.
 
-    キーが重複する場合は最初のものだけを保持する
+    When a key is duplicated, only the first occurrence is kept.
 
     Returns:
-        {ヘッダ行: [表の全行（ヘッダ、区切り、データ行）]}
+        {header row: [all rows of the table (header, separator, data rows)]}
     """
     lines = content.split('\n')
     tables = {}
@@ -24,27 +24,27 @@ def extract_tables_from_scores(content: str) -> dict[str, list[str]]:
     while i < len(lines):
         line = lines[i].strip()
 
-        # 表のヘッダ行を検出（| で始まる行）
+        # Detect a table header row (a line starting with |)
         if line.startswith('|'):
             header_line = line
             table_lines = [header_line]
             i += 1
 
-            # 表の残りの行を収集（| で始まる行が続く限り）
+            # Collect the remaining rows of the table (as long as lines keep starting with |)
             while i < len(lines):
                 next_line = lines[i].strip()
                 if next_line.startswith('|'):
                     table_lines.append(next_line)
                     i += 1
                 elif next_line == '':
-                    # 空行は表の終わりの可能性があるが、次の行もチェック
+                    # A blank line might mark the end of the table, but keep checking the next line
                     i += 1
                     break
                 else:
-                    # 表でない行が来たら表終了
+                    # A non-table line ends the table
                     break
 
-            # ヘッダ行をキーとして表を保存（重複時は最初のものを保持）
+            # Store the table keyed by header row (keep the first occurrence on duplicates)
             if header_line not in tables:
                 tables[header_line] = table_lines
         else:
@@ -55,7 +55,7 @@ def extract_tables_from_scores(content: str) -> dict[str, list[str]]:
 
 def sync_readme_with_scores(readme_content: str, tables_dict: dict[str, list[str]]) -> str:
     """
-    README.mdの内容を走査し、表のヘッダが見つかったらSCORES.mdの表で置き換える
+    Scan the content of README.md and replace any matched table header with the corresponding table from SCORES.md
     """
     lines = readme_content.split('\n')
     result = []
@@ -67,49 +67,49 @@ def sync_readme_with_scores(readme_content: str, tables_dict: dict[str, list[str
         line = lines[i]
         line_stripped = line.strip()
 
-        # 表のヘッダ行を検出
+        # Detect a table header row
         if line_stripped.startswith('|'):
             table_count += 1
             header_preview = line_stripped[:60] + '...' if len(line_stripped) > 60 else line_stripped
 
             if line_stripped in tables_dict:
-                # マッチした場合
+                # On a match
                 matched_count += 1
-                print(f"  ✓ 表 #{table_count}: マッチしました")
-                print(f"    ヘッダ: {header_preview}")
+                print(f"  ✓ Table #{table_count}: matched")
+                print(f"    Header: {header_preview}")
 
-                # SCORES.mdから対応する表を取得
+                # Get the corresponding table from SCORES.md
                 new_table = tables_dict[line_stripped]
                 result.extend(new_table)
                 i += 1
 
-                # README.mdの古い表をスキップ
+                # Skip the old table in README.md
                 while i < len(lines):
                     next_line = lines[i].strip()
                     if next_line.startswith('|'):
                         i += 1
                     elif next_line == '':
-                        # 空行も追加してスキップ
+                        # Keep and skip the blank line too
                         result.append('')
                         i += 1
                         break
                     else:
-                        # 表でない行が来たら終了
+                        # A non-table line ends this loop
                         break
             else:
-                # マッチしなかった場合
-                print(f"  × 表 #{table_count}: マッチしませんでした（そのまま保持）")
-                print(f"    ヘッダ: {header_preview}")
+                # No match
+                print(f"  × Table #{table_count}: no match (left unchanged)")
+                print(f"    Header: {header_preview}")
 
-                # 通常の行はそのまま追加
+                # Keep the line as is
                 result.append(line)
                 i += 1
         else:
-            # 通常の行はそのまま追加
+            # Keep the line as is
             result.append(line)
             i += 1
 
-    print(f"\n  合計: {table_count} 個の表を検出、{matched_count} 個を更新しました")
+    print(f"\n  Total: detected {table_count} table(s), updated {matched_count}")
     return '\n'.join(result)
 
 
@@ -117,39 +117,39 @@ def main():
     import argparse
     from pathlib import Path
 
-    parser = argparse.ArgumentParser(description='SCORES.mdの表をREADME.mdに同期するスクリプト')
-    parser.add_argument('scores_path', type=Path, help='SCORES.mdファイルのパス')
+    parser = argparse.ArgumentParser(description='Script to sync the tables in SCORES.md into README.md')
+    parser.add_argument('scores_path', type=Path, help='Path to the SCORES.md file')
     args = parser.parse_args()
 
-    # ファイルパス
+    # File paths
     scores_path = args.scores_path
     readme_path = Path(__file__).parent / 'README.md'
 
-    # 存在確認
+    # Existence check
     if not scores_path.exists():
-        print(f"エラー: {scores_path} が見つかりません")
+        print(f"Error: {scores_path} not found")
         return 1
 
     if not readme_path.exists():
-        print(f"エラー: {readme_path} が見つかりません")
+        print(f"Error: {readme_path} not found")
         return 1
 
-    # ファイル読み込み
+    # Read the files
     scores_content = scores_path.read_text(encoding='utf-8')
     readme_content = readme_path.read_text(encoding='utf-8')
 
-    # SCORES.mdから表を抽出
-    print("SCORES.mdから表を抽出しています...")
+    # Extract the tables from SCORES.md
+    print("Extracting tables from SCORES.md...")
     tables_dict = extract_tables_from_scores(scores_content)
-    print(f"  {len(tables_dict)} 個の表を検出しました")
+    print(f"  Detected {len(tables_dict)} table(s)")
 
-    # README.mdを更新
-    print("README.mdの表を更新しています...")
+    # Update README.md
+    print("Updating tables in README.md...")
     updated_content = sync_readme_with_scores(readme_content, tables_dict)
 
-    # README.mdに書き込み
+    # Write README.md
     readme_path.write_text(updated_content, encoding='utf-8')
-    print("完了しました！")
+    print("Done!")
 
     return 0
 

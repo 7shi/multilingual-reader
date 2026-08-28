@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-# 作業ディレクトリに移動して実行パスを解決しやすくする
+# Move to the working directory to simplify resolving execution paths
 cd "$(dirname "$0")"/../..
 BASE_DIR="experimental/07"
 
@@ -11,7 +11,7 @@ REVIEWER="ollama:qwen3.6"
 EVALUATOR="ollama:qwen3.6"
 ORIGINAL_FILE="examples/onde-en.txt"
 
-# 対象言語
+# Target languages
 LANGS=(
     "nl:Dutch"
     "cs:Czech"

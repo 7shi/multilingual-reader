@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-評価者間比較レポート生成スクリプト
+Inter-evaluator comparison report generation script
 
-stats.jsonを元に、包括的なマークダウンレポートを作成する。
+Creates a comprehensive Markdown report based on stats.json.
 """
 
 import json
@@ -14,59 +14,59 @@ OUTPUT_MD = 'REPORT.md'
 
 
 def load_data():
-    """stats.jsonを読み込む"""
+    """Load stats.json"""
     json_path = Path(__file__).parent / INPUT_JSON
     with open(json_path, 'r', encoding='utf-8') as f:
         return json.load(f)
 
 
 def format_table_row(cells, alignment='left'):
-    """テーブルの行を整形"""
+    """Format a table row"""
     if alignment == 'center':
         return '| ' + ' | '.join(str(c).center(15) for c in cells) + ' |'
     return '| ' + ' | '.join(str(c) for c in cells) + ' |'
 
 
 def generate_executive_summary(data):
-    """エグゼクティブサマリーを生成"""
+    """Generate the executive summary"""
     md = []
-    md.append("## エグゼクティブサマリー")
+    md.append("## Executive Summary")
     md.append("")
 
     metadata = data['metadata']
     decision = data['migration_decision']
 
     judgment_labels = {
-        'possible': '✅ 移行可能',
-        'conditional': '⚠️ 条件付き移行可能',
-        'impossible': '❌ 移行不可',
+        'possible': '✅ Migration possible',
+        'conditional': '⚠️ Conditional migration possible',
+        'impossible': '❌ Migration not recommended',
     }
 
-    md.append(f"- **分析対象**: {metadata['num_entries']}項目の翻訳評価結果")
-    md.append(f"- **評価者**: {', '.join(metadata['evaluators'])}")
-    md.append(f"- **移行判定**: {judgment_labels[decision['judgment']]}")
+    md.append(f"- **Scope of analysis**: translation evaluation results for {metadata['num_entries']} items")
+    md.append(f"- **Evaluators**: {', '.join(metadata['evaluators'])}")
+    md.append(f"- **Migration decision**: {judgment_labels[decision['judgment']]}")
     md.append("")
 
-    # 主な結論
-    md.append("### 主な結論")
+    # Key conclusion
+    md.append("### Key Conclusion")
     md.append("")
 
     if decision['judgment'] == 'possible':
-        md.append("Gemini-2.5-flashからgpt-oss-120bへの完全移行が**可能**です。")
-        md.append("主要な評価指標がすべて基準を満たしており、追加の補正なしで代替できます。")
+        md.append("A full migration from Gemini-2.5-flash to gpt-oss-120b is **possible**.")
+        md.append("All key evaluation metrics meet the criteria, so it can serve as a replacement without additional correction.")
     elif decision['judgment'] == 'conditional':
-        md.append("Gemini-2.5-flashからgpt-oss-120bへの**条件付き移行が可能**です。")
-        md.append("モデルファミリー別のオフセット補正を適用することで、実用的な代替が可能です。")
+        md.append("A **conditional migration** from Gemini-2.5-flash to gpt-oss-120b is possible.")
+        md.append("Applying an offset correction per model family enables a practical replacement.")
     else:
-        md.append("Gemini-2.5-flashからgpt-oss-120bへの移行は**推奨できません**。")
-        md.append("評価傾向の差が大きすぎるため、別の評価手法を検討する必要があります。")
+        md.append("Migration from Gemini-2.5-flash to gpt-oss-120b is **not recommended**.")
+        md.append("The difference in evaluation tendencies is too large, so an alternative evaluation method should be considered.")
 
     md.append("")
 
-    # 主要指標のサマリー
-    md.append("### 主要指標")
+    # Summary of key metrics
+    md.append("### Key Metrics")
     md.append("")
-    md.append("| 指標 | 値 | 基準 | 判定 |")
+    md.append("| Metric | Value | Criterion | Result |")
     md.append("|------|-----|------|------|")
 
     spearman = decision['spearman_correlation']
@@ -81,24 +81,24 @@ def generate_executive_summary(data):
         else:
             return "❌"
 
-    md.append(f"| スピアマン順位相関係数 | {spearman:.3f} | ≥0.85 (可), ≥0.70 (条件付き) | {judge_icon(spearman, 0.85, 0.70)} |")
-    md.append(f"| 上位10%モデル一致率 | {top10:.1%} | ≥75% (可), ≥60% (条件付き) | {judge_icon(top10, 0.75, 0.60)} |")
-    md.append(f"| ±10点範囲内一致率 | {within10:.1%} | ≥70% (可), ≥60% (条件付き) | {judge_icon(within10, 0.70, 0.60)} |")
-    md.append(f"| 最大モデルファミリー別バイアス | {decision['max_family_bias']:.1f}点 | ≤15点 (補正容易) | {judge_icon(15 - decision['max_family_bias'], 0, -100)} |")
+    md.append(f"| Spearman rank correlation | {spearman:.3f} | >=0.85 (pass), >=0.70 (conditional) | {judge_icon(spearman, 0.85, 0.70)} |")
+    md.append(f"| Top-10% model agreement rate | {top10:.1%} | >=75% (pass), >=60% (conditional) | {judge_icon(top10, 0.75, 0.60)} |")
+    md.append(f"| Agreement rate within +/-10 points | {within10:.1%} | >=70% (pass), >=60% (conditional) | {judge_icon(within10, 0.70, 0.60)} |")
+    md.append(f"| Max per-model-family bias | {decision['max_family_bias']:.1f} pts | <=15 pts (easily correctable) | {judge_icon(15 - decision['max_family_bias'], 0, -100)} |")
 
     md.append("")
     return '\n'.join(md)
 
 
 def generate_basic_stats(data):
-    """基本統計セクションを生成"""
+    """Generate the basic statistics section"""
     md = []
-    md.append("## 基本統計")
+    md.append("## Basic Statistics")
     md.append("")
 
-    md.append("### 評価者ごとの基本統計量")
+    md.append("### Basic Statistics per Evaluator")
     md.append("")
-    md.append("| 評価者 | 平均 | 中央値 | 標準偏差 | 最小値 | 最大値 | Q25 | Q75 |")
+    md.append("| Evaluator | Mean | Median | Std Dev | Min | Max | Q25 | Q75 |")
     md.append("|--------|------|--------|----------|--------|--------|-----|-----|")
 
     basic_stats = data['basic_stats']
@@ -107,9 +107,9 @@ def generate_basic_stats(data):
                  f"{stats['min']} | {stats['max']} | {stats['q25']:.2f} | {stats['q75']:.2f} |")
 
     md.append("")
-    md.append("### スコアレンジ別の分布")
+    md.append("### Distribution by Score Range")
     md.append("")
-    md.append("| 評価者 | 0-20点 | 21-40点 | 41-60点 | 61-80点 | 81-100点 |")
+    md.append("| Evaluator | 0-20 | 21-40 | 41-60 | 61-80 | 81-100 |")
     md.append("|--------|--------|---------|---------|---------|----------|")
 
     for name, stats in basic_stats.items():
@@ -118,9 +118,9 @@ def generate_basic_stats(data):
                  f"{ranges['61-80']} | {ranges['81-100']} |")
 
     md.append("")
-    md.append("### 高得点帯の分布（95点以上）")
+    md.append("### Distribution of High-Score Band (95 and above)")
     md.append("")
-    md.append("| 評価者 | 95点以上 | 96点以上 | 97点以上 | 98点以上 | 99点以上 | 100点 |")
+    md.append("| Evaluator | >=95 | >=96 | >=97 | >=98 | >=99 | 100 |")
     md.append("|--------|----------|----------|----------|----------|----------|-------|")
 
     for name, stats in basic_stats.items():
@@ -134,14 +134,14 @@ def generate_basic_stats(data):
 
 
 def generate_correlation_analysis(data):
-    """相関分析セクションを生成"""
+    """Generate the correlation analysis section"""
     md = []
-    md.append("## 相関分析")
+    md.append("## Correlation Analysis")
     md.append("")
 
-    md.append("### 評価者間の相関係数")
+    md.append("### Correlation Coefficients Between Evaluators")
     md.append("")
-    md.append("| ペア | 共通項目数 | ピアソンr | p値 | スピアマンρ | p値 |")
+    md.append("| Pair | Common Items | Pearson r | p-value | Spearman rho | p-value |")
     md.append("|------|-----------|----------|-----|-------------|-----|")
 
     correlations = data['correlations']
@@ -151,25 +151,25 @@ def generate_correlation_analysis(data):
 
     md.append("")
 
-    # 相関係数の解釈
-    md.append("### 相関係数の解釈")
+    # Interpretation of correlation coefficients
+    md.append("### Interpretation of Correlation Coefficients")
     md.append("")
-    md.append("- **gpt-oss-20b vs gpt-oss-120b**: 非常に高い相関（ρ≈0.91）で、ほぼ同等の評価傾向")
-    md.append("- **gemini vs gpt-oss系**: 中程度の相関（ρ≈0.67）で、体系的な差異が存在")
+    md.append("- **gpt-oss-20b vs gpt-oss-120b**: very high correlation (rho≈0.91), nearly equivalent evaluation tendencies")
+    md.append("- **gemini vs gpt-oss family**: moderate correlation (rho≈0.67), systematic differences exist")
     md.append("")
 
     return '\n'.join(md)
 
 
 def generate_agreement_analysis(data):
-    """一致度分析セクションを生成"""
+    """Generate the agreement analysis section"""
     md = []
-    md.append("## 一致度分析")
+    md.append("## Agreement Analysis")
     md.append("")
 
-    md.append("### 評価者間の一致度指標")
+    md.append("### Agreement Metrics Between Evaluators")
     md.append("")
-    md.append("| ペア | MAE | RMSE | ±5点以内 | ±10点以内 | 上位10%一致率 | 平均差 | 標準偏差 |")
+    md.append("| Pair | MAE | RMSE | Within +/-5 | Within +/-10 | Top-10% Agreement | Mean Diff | Std Dev |")
     md.append("|------|-----|------|----------|-----------|---------------|--------|----------|")
 
     agreement = data['agreement']
@@ -183,15 +183,15 @@ def generate_agreement_analysis(data):
 
 
 def generate_systematic_bias_analysis(data):
-    """系統的バイアス分析セクションを生成"""
+    """Generate the systematic bias analysis section"""
     md = []
-    md.append("## 系統的バイアスの分析")
+    md.append("## Systematic Bias Analysis")
     md.append("")
 
-    md.append("### モデルファミリー別の偏り")
+    md.append("### Bias by Model Family")
     md.append("")
 
-    md.append("| モデルファミリー | Gemini平均 | GPT-OSS-120B平均 | 差分(Gemini-GPT120B) |")
+    md.append("| Model Family | Gemini Mean | GPT-OSS-120B Mean | Diff (Gemini-GPT120B) |")
     md.append("|-----------------|-----------|-----------------|---------------------|")
 
     family_data = data['systematic_bias']['by_model_family']
@@ -204,10 +204,10 @@ def generate_systematic_bias_analysis(data):
 
     md.append("")
 
-    # 推論レベル別
-    md.append("### 推論レベル別の影響")
+    # By inference level
+    md.append("### Impact by Inference Level")
     md.append("")
-    md.append("| 推論レベル | Gemini平均 | GPT-OSS-120B平均 | 差分 |")
+    md.append("| Inference Level | Gemini Mean | GPT-OSS-120B Mean | Diff |")
     md.append("|-----------|-----------|-----------------|------|")
 
     level_data = data['systematic_bias']['by_inference_level']
@@ -219,10 +219,10 @@ def generate_systematic_bias_analysis(data):
 
     md.append("")
 
-    # 温度設定別
-    md.append("### 温度設定別の影響")
+    # By temperature setting
+    md.append("### Impact by Temperature Setting")
     md.append("")
-    md.append("| 温度 | Gemini平均 | GPT-OSS-120B平均 | 差分 |")
+    md.append("| Temperature | Gemini Mean | GPT-OSS-120B Mean | Diff |")
     md.append("|------|-----------|-----------------|------|")
 
     temp_data = data['systematic_bias']['by_temperature']
@@ -237,17 +237,17 @@ def generate_systematic_bias_analysis(data):
 
 
 def generate_problem_cases(data):
-    """問題ケース分析セクションを生成"""
+    """Generate the problem cases analysis section"""
     md = []
-    md.append("## 問題ケースの詳細")
+    md.append("## Problem Case Details")
     md.append("")
 
     problem_cases = data['problem_cases']
 
-    # 乖離が大きいケース
-    md.append("### 乖離が大きいケース TOP30")
+    # Cases with a large discrepancy
+    md.append("### Top 30 Cases with the Largest Discrepancy")
     md.append("")
-    md.append("| 順位 | モデル名 | Geminiスコア | GPT-OSS-120Bスコア | 差分 |")
+    md.append("| Rank | Model | Gemini Score | GPT-OSS-120B Score | Diff |")
     md.append("|------|----------|-------------|-------------------|------|")
 
     for idx, case in enumerate(problem_cases['large_discrepancy'][:30], 1):
@@ -256,60 +256,60 @@ def generate_problem_cases(data):
 
     md.append("")
 
-    # 0点評価ケース
-    md.append("### 0点評価ケース")
+    # Zero-score cases
+    md.append("### Zero-Score Cases")
     md.append("")
 
     if problem_cases['zero_scores']:
-        md.append("| モデル名 | 評価者 |")
+        md.append("| Model | Evaluator |")
         md.append("|----------|--------|")
 
         for case in problem_cases['zero_scores']:
             md.append(f"| {case['model']} | {case['evaluator']} |")
 
         md.append("")
-        md.append("**注意**: qwen3-30b-nt系列がgpt-oss系で0点評価されているのは特に注目すべき問題です。")
+        md.append("**Note**: it is particularly notable that the qwen3-30b-nt family is scored 0 by the gpt-oss family.")
     else:
-        md.append("0点評価のケースはありません。")
+        md.append("There are no zero-score cases.")
 
     md.append("")
 
-    # 逆転ケース
-    md.append("### 逆転ケース（評価が真逆）")
+    # Reversal cases
+    md.append("### Reversal Cases (opposite evaluations)")
     md.append("")
 
     if problem_cases['reversals']:
-        md.append("| モデル名 | Geminiスコア | GPT-OSS-120Bスコア | 差分 |")
+        md.append("| Model | Gemini Score | GPT-OSS-120B Score | Diff |")
         md.append("|----------|-------------|-------------------|------|")
 
         for case in problem_cases['reversals']:
             md.append(f"| {case['model']} | {case['gemini_score']} | "
                      f"{case['gpt120b_score']} | {case['diff']:+d} |")
     else:
-        md.append("逆転ケースはありません。")
+        md.append("There are no reversal cases.")
 
     md.append("")
     return '\n'.join(md)
 
 
 def generate_migration_decision(data):
-    """移行判定セクションを生成"""
+    """Generate the migration decision section"""
     md = []
-    md.append("## 移行判定")
+    md.append("## Migration Decision")
     md.append("")
 
     decision = data['migration_decision']
 
     judgment_labels = {
-        'possible': '✅ 移行可能',
-        'conditional': '⚠️ 条件付き移行可能',
-        'impossible': '❌ 移行不可',
+        'possible': '✅ Migration possible',
+        'conditional': '⚠️ Conditional migration possible',
+        'impossible': '❌ Migration not recommended',
     }
 
-    md.append(f"### 判定結果: **{judgment_labels[decision['judgment']]}**")
+    md.append(f"### Decision: **{judgment_labels[decision['judgment']]}**")
     md.append("")
 
-    md.append("### 判定基準との照合")
+    md.append("### Comparison Against Decision Criteria")
     md.append("")
 
     for reason in decision['reasons']:
@@ -317,32 +317,32 @@ def generate_migration_decision(data):
 
     md.append("")
 
-    # 推奨事項
-    md.append("### 推奨事項")
+    # Recommendations
+    md.append("### Recommendations")
     md.append("")
 
     if decision['judgment'] == 'possible':
-        md.append("gpt-oss-120bは Gemini-2.5-flash の代替として使用できます。")
+        md.append("gpt-oss-120b can be used as a replacement for Gemini-2.5-flash.")
         md.append("")
-        md.append("**移行手順**:")
-        md.append("1. batch.sh 内の評価モデルを `gpt-oss-120b` に変更")
-        md.append("2. 既存の評価結果と比較検証を実施")
-        md.append("3. 問題がなければ完全移行")
+        md.append("**Migration steps**:")
+        md.append("1. Change the evaluation model in batch.sh to `gpt-oss-120b`")
+        md.append("2. Compare against and validate the existing evaluation results")
+        md.append("3. Complete the full migration if there are no issues")
 
     elif decision['judgment'] == 'conditional':
-        md.append("モデルファミリー別のオフセット補正を適用することで、gpt-oss-120bを代替として使用できます。")
+        md.append("Applying an offset correction per model family allows gpt-oss-120b to be used as a replacement.")
         md.append("")
-        md.append("### 補正式")
+        md.append("### Correction Formula")
         md.append("")
         md.append("```python")
-        md.append("# モデルファミリー別オフセット補正")
+        md.append("# Offset correction per model family")
         md.append("def apply_correction(model_name: str, gpt_oss_score: int) -> int:")
         md.append("    family = extract_model_family(model_name)")
         md.append("    ")
-        md.append("    # オフセット値 (Gemini平均 - GPT-OSS平均)")
+        md.append("    # Offset values (Gemini mean - GPT-OSS mean)")
         md.append("    offsets = {")
 
-        # 補正値を計算
+        # Compute correction values
         family_data = data['systematic_bias']['by_model_family']
         for family, stats in sorted(family_data.items(), key=lambda x: x[1].get('gemini_gpt120b_diff', 0)):
             if 'gemini_gpt120b_diff' in stats:
@@ -357,61 +357,61 @@ def generate_migration_decision(data):
         md.append("```")
         md.append("")
 
-        md.append("**移行手順**:")
-        md.append("1. 上記の補正関数を実装")
-        md.append("2. gpt-oss-120bでの評価結果に補正を適用")
-        md.append("3. 補正後の結果がGeminiと一致することを確認")
-        md.append("4. 問題がなければ補正付きで移行")
+        md.append("**Migration steps**:")
+        md.append("1. Implement the correction function above")
+        md.append("2. Apply the correction to gpt-oss-120b's evaluation results")
+        md.append("3. Verify that the corrected results match Gemini")
+        md.append("4. Migrate with the correction applied if there are no issues")
 
     else:
-        md.append("gpt-oss-120bは Gemini-2.5-flash の代替として推奨できません。")
+        md.append("gpt-oss-120b is not recommended as a replacement for Gemini-2.5-flash.")
         md.append("")
-        md.append("**代替案**:")
-        md.append("1. より大規模なgpt-ossモデルを試す（もし利用可能なら）")
-        md.append("2. 複数の評価者（gpt-oss-20b, gpt-oss-120b）の平均を使用")
-        md.append("3. Gemini-2.5-flashを継続使用し、コスト最適化を他の方法で実施")
+        md.append("**Alternatives**:")
+        md.append("1. Try a larger gpt-oss model (if available)")
+        md.append("2. Use the average of multiple evaluators (gpt-oss-20b, gpt-oss-120b)")
+        md.append("3. Continue using Gemini-2.5-flash and pursue cost optimization by other means")
 
     md.append("")
     return '\n'.join(md)
 
 
 def generate_footer(data):
-    """フッターを生成"""
+    """Generate the footer"""
     md = []
-    md.append("## 詳細データ")
+    md.append("## Detailed Data")
     md.append("")
-    md.append(f"- 統計データ: [{INPUT_JSON}]({INPUT_JSON})")
+    md.append(f"- Statistics data: [{INPUT_JSON}]({INPUT_JSON})")
     md.append("")
     md.append("---")
     md.append("")
-    md.append(f"生成日時: {data['metadata']['generated_at']}")
+    md.append(f"Generated at: {data['metadata']['generated_at']}")
     md.append("")
     return '\n'.join(md)
 
 
 def main():
-    """メイン処理"""
+    """Main process"""
     print("=" * 60)
-    print("評価者間比較レポート生成")
+    print("Inter-evaluator comparison report generation")
     print("=" * 60)
 
-    # データ読み込み
-    print(f"\n[1] {INPUT_JSON} を読み込み中...")
+    # Load data
+    print(f"\n[1] Loading {INPUT_JSON}...")
     data = load_data()
-    print(f"  ✓ 読み込み完了")
+    print(f"  ✓ Load complete")
 
-    # レポート生成
-    print(f"\n[2] マークダウンレポートを生成中...")
+    # Generate report
+    print(f"\n[2] Generating Markdown report...")
 
     md_sections = []
 
-    # ヘッダー
-    md_sections.append("# 評価者間比較分析レポート")
+    # Header
+    md_sections.append("# Inter-Evaluator Comparison Analysis Report")
     md_sections.append("")
-    md_sections.append(f"生成日時: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    md_sections.append(f"Generated at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     md_sections.append("")
 
-    # 各セクション
+    # Each section
     md_sections.append(generate_executive_summary(data))
     md_sections.append(generate_basic_stats(data))
     md_sections.append(generate_correlation_analysis(data))
@@ -423,21 +423,21 @@ def main():
 
     report_content = '\n'.join(md_sections)
 
-    # ファイル保存
+    # Save file
     output_path = Path(__file__).parent / OUTPUT_MD
     with open(output_path, 'w', encoding='utf-8') as f:
         f.write(report_content)
 
-    print(f"  ✓ レポート生成完了: {output_path}")
+    print(f"  ✓ Report generation complete: {output_path}")
 
-    # 統計情報表示
-    print(f"\n[3] レポート統計:")
-    print(f"  - 総行数: {len(report_content.split(chr(10)))}")
-    print(f"  - 総文字数: {len(report_content)}")
-    print(f"  - セクション数: {len(md_sections)}")
+    # Display statistics
+    print(f"\n[3] Report statistics:")
+    print(f"  - Total lines: {len(report_content.split(chr(10)))}")
+    print(f"  - Total characters: {len(report_content)}")
+    print(f"  - Sections: {len(md_sections)}")
 
     print("\n" + "=" * 60)
-    print("レポート生成完了")
+    print("Report generation complete")
     print("=" * 60)
 
 

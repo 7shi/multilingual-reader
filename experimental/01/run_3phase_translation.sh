@@ -1,9 +1,9 @@
 #!/bin/bash
-# 3段階多モデル翻訳実行スクリプト
+# 3-phase multi-model translation execution script
 
 if [ "$#" -ne 5 ]; then
-    echo "使用法: $0 <入力ファイル> <原語> <翻訳先言語> <出力ファイル> <品質チェックモデル>"
-    echo "例: $0 input.txt French Spanish output.txt ollama:qwen2.5:7b"
+    echo "Usage: $0 <input file> <source language> <target language> <output file> <quality check model>"
+    echo "Example: $0 input.txt French Spanish output.txt ollama:qwen2.5:7b"
     exit 1
 fi
 
@@ -13,46 +13,46 @@ TO_LANG="$3"
 OUTPUT_FILE="$4"
 CHECKER_MODEL="$5"
 
-echo "3段階多モデル翻訳を開始: $FROM_LANG → $TO_LANG"
-echo "入力: $INPUT_FILE"
-echo "出力: $OUTPUT_FILE"
-echo "品質チェックモデル: $CHECKER_MODEL"
+echo "Starting 3-phase multi-model translation: $FROM_LANG → $TO_LANG"
+echo "Input: $INPUT_FILE"
+echo "Output: $OUTPUT_FILE"
+echo "Quality check model: $CHECKER_MODEL"
 echo
 
-# フェーズ1: 初回翻訳
-echo "=== フェーズ1: 初回翻訳 ==="
+# Phase 1: Initial translation
+echo "=== Phase 1: Initial translation ==="
 python translate.py phase1 "$INPUT_FILE" -f "$FROM_LANG" -t "$TO_LANG" -o "$OUTPUT_FILE"
 if [ $? -ne 0 ]; then
-    echo "エラー: フェーズ1が失敗しました"
+    echo "Error: Phase 1 failed"
     exit 1
 fi
 
-# 中間ファイル名を生成
+# Generate intermediate file names
 BASE_NAME="${OUTPUT_FILE%.*}"
 DRAFT_FILE="${BASE_NAME}_draft.json"
 CHECK_FILE="${BASE_NAME}_check.json"
 
 echo
-# フェーズ2: 品質チェック
-echo "=== フェーズ2: 品質チェック (モデル: $CHECKER_MODEL) ==="
+# Phase 2: Quality check
+echo "=== Phase 2: Quality check (model: $CHECKER_MODEL) ==="
 python translate.py phase2 -o "$OUTPUT_FILE" --draft-file "$DRAFT_FILE" -c "$CHECKER_MODEL"
 if [ $? -ne 0 ]; then
-    echo "エラー: フェーズ2が失敗しました"
+    echo "Error: Phase 2 failed"
     exit 1
 fi
 
 echo
-# フェーズ3: 修正反映
-echo "=== フェーズ3: 修正反映 ==="
+# Phase 3: Apply corrections
+echo "=== Phase 3: Apply corrections ==="
 python translate.py phase3 -o "$OUTPUT_FILE" --draft-file "$DRAFT_FILE" --check-file "$CHECK_FILE"
 if [ $? -ne 0 ]; then
-    echo "エラー: フェーズ3が失敗しました"
+    echo "Error: Phase 3 failed"
     exit 1
 fi
 
 echo
-echo "=== 3段階翻訳完了 ==="
-echo "最終結果: $OUTPUT_FILE"
-echo "中間ファイル:"
-echo "  - 初回翻訳: $DRAFT_FILE"
-echo "  - 品質チェック: $CHECK_FILE"
+echo "=== 3-phase translation complete ==="
+echo "Final result: $OUTPUT_FILE"
+echo "Intermediate files:"
+echo "  - Initial translation: $DRAFT_FILE"
+echo "  - Quality check: $CHECK_FILE"

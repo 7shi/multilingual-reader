@@ -24,7 +24,7 @@ mkdir -p "${BASE_DIR}/tr" "${BASE_DIR}/evals" "${BASE_DIR}/tr-rev" "${BASE_DIR}/
 
 BATCH_START=$(date +%s.%N)
 
-# 1. 翻訳
+# 1. Translation
 for i in "${!LANGS[@]}"; do
     LANG_CODE="${LANGS[$i]}"
     LANG_INDEX=$((i + 1))
@@ -44,7 +44,7 @@ for i in "${!LANGS[@]}"; do
     fi
 done
 
-# 2. 翻訳評価（3回）
+# 2. Translation evaluation (3 runs)
 for i in "${!LANGS[@]}"; do
     LANG_CODE="${LANGS[$i]}"
     LANG_INDEX=$((i + 1))
@@ -68,7 +68,7 @@ for i in "${!LANGS[@]}"; do
     done
 done
 
-# 3. 推敲
+# 3. Review
 for i in "${!LANGS[@]}"; do
     LANG_CODE="${LANGS[$i]}"
     LANG_INDEX=$((i + 1))
@@ -89,7 +89,7 @@ for i in "${!LANGS[@]}"; do
     fi
 done
 
-# 4. 推敲後評価（3回）
+# 4. Post-review evaluation (3 runs)
 for i in "${!LANGS[@]}"; do
     LANG_CODE="${LANGS[$i]}"
     LANG_INDEX=$((i + 1))

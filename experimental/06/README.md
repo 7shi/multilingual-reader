@@ -1,62 +1,62 @@
-# 実験06: 中リソース言語における2段階翻訳の検証
+# Experiment 06: Verifying Two-Stage Translation for Medium-Resource Languages
 
-このディレクトリでは、中リソース言語（オランダ語、チェコ語など）の翻訳品質を向上させるアプローチとして、「行単位での推敲・2段階翻訳（ミクロレベル）」の有効性を検証します。
+This directory verifies the effectiveness of "line-level refinement / two-stage translation (micro-level)" as an approach to improving translation quality for medium-resource languages (Dutch, Czech, etc.).
 
-## 背景と目的
+## Background and Purpose
 
-現在の中リソース言語（例：オランダ語、チェコ語など、70〜85点帯）は、「直訳調」や「隣接言語の干渉」など、文法崩壊を伴わない表現上の問題でスコアが伸び悩んでいます。
-過去の実験（`experimental/01`）では、推論付き翻訳や2段階翻訳などの複雑なプロセスは逆効果になりやすいという結果になりました。しかし、それは検証対象の**フランス語→スペイン語が「高リソース言語ペア」であり、直接翻訳の段階ですでに天井に近い高品質なスコアが出ていたから**であると考えられます。
-そこで、直接翻訳では70〜85点帯で伸び悩む「中リソース言語」に対して翻訳結果を見直して修正を加える「2段階的なアプローチ（推敲）」を適用した場合、表現上の問題を解消してスコアを底上げできるのではないか、という仮説を立てました。
-まずは最もシンプルな検証として、過去に実装した「行単位の2段階翻訳」を適用し、中リソース言語のスコアが実際に引き上がるかを検証します。
+Current medium-resource languages (e.g., Dutch, Czech — in the 70–85 point range) tend to plateau due to expression-level issues that don't involve grammatical breakdown, such as "literal-sounding phrasing" or "interference from neighboring languages."
+In a previous experiment (`experimental/01`), complex processes such as reasoning-augmented translation and two-stage translation tended to backfire. However, this is likely because the language pair examined there — French → Spanish — was a "high-resource language pair," where direct translation already produced near-ceiling quality scores.
+So we hypothesized that applying a "two-stage approach (refinement)" — reviewing and revising the translation output — to "medium-resource languages," which plateau at 70–85 points under direct translation, could resolve expression-level issues and raise the score.
+As the simplest first test, we apply the previously implemented "line-level two-stage translation" and check whether it actually raises scores for medium-resource languages.
 
-本実験では、下訳（Draft）と推敲後（Final）の訳文の両方を保存・評価し、推敲プロセスが実際にスコア改善に寄与しているかを定量的に比較します。
+This experiment saves and evaluates both the draft translation (Draft) and the refined translation (Final), quantitatively comparing whether the refinement process actually contributes to score improvement.
 
-## 比較対象（ベースライン）
+## Comparison Baseline
 
-`examples/tr/onde/gemma4/` における通常の一括直接翻訳（Level 0相当、サマリー圧縮・用語注入あり）のスコアと比較します。
-- オランダ語: **78点**
-- チェコ語: **78点**
+Compared against the score of standard one-pass direct translation (equivalent to Level 0, with summary compression and term injection) under `examples/tr/onde/gemma4/`.
+- Dutch: **78 points**
+- Czech: **78 points**
 
-## スクリプトの構成
+## Script Structure
 
 - **`translate.py`**:
-  本検証のために `experimental/01/translate.py` から2段階翻訳機能のみを抽出し、再構成した専用スクリプトです。各行の翻訳時に「下訳 → 品質評価・改善提案 → 改善された翻訳」というプロセスを実行し、下訳（Draft）と最終結果（Final）を同時に出力します。※文脈保持は直近5行の単純なスライディングコンテキスト方式です。
+  A dedicated script for this verification, extracting and restructuring just the two-stage translation functionality from `experimental/01/translate.py`. For each line, it runs a "draft translation → quality assessment/improvement suggestions → improved translation" process, outputting both the draft (Draft) and the final result (Final) simultaneously. Context is retained via a simple sliding context of the most recent 5 lines only.
 - **`batch.sh`**:
-  翻訳の実行から、下訳および最終訳の評価、集計までを全自動で行うバッチスクリプトです。
+  A batch script that fully automates translation, evaluation of both the draft and final translations, and aggregation.
 
-## batch.sh の動作
+## batch.sh Behavior
 
-1. **翻訳（2段階翻訳）**
-   - **入力**: `examples/onde-en.txt`
-   - **対象言語**: オランダ語 (`nl`)、チェコ語 (`cs`)
-   - **翻訳モデル**: `ollama:gemma4:26b`
-   - **出力先** (計4ファイル): 
-     - 下訳: `tr/onde-{lang}-draft.txt`
-     - 最終訳: `tr/onde-{lang}-final.txt`
+1. **Translation (two-stage translation)**
+   - **Input**: `examples/onde-en.txt`
+   - **Target languages**: Dutch (`nl`), Czech (`cs`)
+   - **Translation model**: `ollama:gemma4:26b`
+   - **Output** (4 files total):
+     - Draft: `tr/onde-{lang}-draft.txt`
+     - Final: `tr/onde-{lang}-final.txt`
 
-2. **評価**
-   - **評価モデル**: `ollama:qwen3.6`
-   - 各言語の下訳と最終訳それぞれに対して `trtools eval` を3回ずつ実行し、スコアのブレを考慮できるようにします (2言語 × 2種類 × 3回 = 計12回の評価)。
-   - **出力先**: 
-     - 下訳の評価: `evals/onde-{lang}-draft-{1,2,3}.json`
-     - 最終訳の評価: `evals/onde-{lang}-final-{1,2,3}.json`
+2. **Evaluation**
+   - **Evaluation model**: `ollama:qwen3.6`
+   - `trtools eval` is run 3 times each for both the draft and final translations of each language, to account for score variance (2 languages × 2 types × 3 runs = 12 evaluations total).
+   - **Output**:
+     - Draft evaluations: `evals/onde-{lang}-draft-{1,2,3}.json`
+     - Final evaluations: `evals/onde-{lang}-final-{1,2,3}.json`
 
-3. **集計**
-   - `trtools agg` を使用して全12ファイルの評価結果の中央値を集計し、結果を `SCORES.txt` に出力します。
+3. **Aggregation**
+   - `trtools agg` aggregates the median across all 12 evaluation result files, and writes the results to `SCORES.txt`.
 
-## 実行結果と分析
+## Results and Analysis
 
-バッチスクリプトを実行し、以下のスコアを得ました。
+Running the batch script produced the following scores.
 
-| 言語 | ベースライン (一括直接翻訳) | 下訳 (Draft) | 推敲後 (Final) |
+| Language | Baseline (one-pass direct translation) | Draft | Final (refined) |
 | :--- | :---: | :---: | :---: |
-| オランダ語 (nl) | 78点 | 86点 | **94点** |
-| チェコ語 (cs) | 78点 | 56点 | **72点** |
+| Dutch (nl) | 78 pts | 86 pts | **94 pts** |
+| Czech (cs) | 78 pts | 56 pts | **72 pts** |
 
-### 考察
-* **オランダ語**: 下訳の段階で既にベースラインを上回り、推敲プロセスを経ることで **94点** と大幅に改善し、目標の90点台に到達しました。行単位の2段階翻訳が非常に有効に機能しています。
-* **チェコ語**: 下訳の段階で 56点 とベースライン（78点）を大きく下回ってしまいました。推敲によって 72点 まで回復していますが、それでも一括直接翻訳には及びませんでした。
+### Discussion
+* **Dutch**: Already exceeded the baseline at the draft stage, and improved substantially to **94 points** after refinement, reaching the target 90s range. Line-level two-stage translation works very effectively here.
+* **Czech**: The draft fell well below the baseline (78 points), scoring only 56 points. Refinement recovered it to 72 points, but this still fell short of one-pass direct translation.
 
-**文脈保持の重要性**
-チェコ語の下訳が大きく崩れた原因は、今回の `translate.py` が「直近5行のみの単純なスライディングコンテキスト」で動作しているためだと考えられます。ベースライン（78点）は `trtools translate` による「サマリー圧縮＋用語注入」による文脈保持が行われた結果です。
-このことから、**推敲（2段階翻訳）は一定の効果（チェコ語で56点→72点）があるものの、それ以前にKVキャッシュ（サマリー圧縮）と用語注入による文脈保持が不可欠である**ことが分かりました。
+**The Importance of Context Retention**
+The likely cause of the Czech draft's sharp quality drop is that this `translate.py` operates with only a "simple sliding context of the most recent 5 lines." The baseline (78 points) was achieved by `trtools translate`, which retains context via "summary compression + term injection."
+This shows that **while refinement (two-stage translation) does provide some benefit (56 → 72 points for Czech), context retention via KV-cache (summary compression) and term injection is essential before that.**

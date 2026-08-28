@@ -1,547 +1,547 @@
 # translate-json.py
 
-JSON形式の転写テキストをLLMを使用して翻訳するスクリプト。
+A script that translates JSON-format transcription text using an LLM.
 
-## 特徴
+## Features
 
-- 翻訳履歴をコンテキストとして保持し、一貫性のある翻訳を実現
-- **2種類のサマリー方式**:
-  - `patterns`: 翻訳パターンを抽出（固有名詞・用語の一貫性重視）
-  - `summary`: 内容を英語で要約（表現の多様性重視）
-- **キャッシュ効率最適化**:
-  - 履歴を完全に削除せず、常に直近5-15件を保持
-  - サマリー生成タイミングを最適化し、キャッシュヒット率を最大化
-- **累積サマリー**: 過去のサマリーと新規履歴を統合して一貫性を維持
-- 任意の言語ペアで翻訳可能
-- 使用するLLMモデルを指定可能
-- 元のテキストと翻訳を両方含むJSONファイルを出力
+- Retains translation history as context to achieve consistent translation
+- **Two summary methods**:
+  - `patterns`: extract translation patterns (emphasizes consistency of proper nouns/terminology)
+  - `summary`: summarize the content in English (emphasizes expressive variety)
+- **Cache-efficiency optimization**:
+  - Never fully deletes history; always keeps the most recent 5-15 entries
+  - Optimizes summary-generation timing to maximize cache hit rate
+- **Cumulative summary**: merges past summaries with new history to maintain consistency
+- Can translate between any language pair
+- Lets you specify which LLM model to use
+- Outputs a JSON file containing both the original text and the translation
 
-## 使用方法
+## Usage
 
 ```bash
 python translate-json.py INPUT_FILE -o OUTPUT_FILE -s SOURCE_LANG -t TARGET_LANG [-m MODEL] [--threshold N] [--keep K] [--summary TYPE] [--no-think]
 ```
 
-## 引数とオプション
+## Arguments and options
 
-### `INPUT_FILE` (必須)
-翻訳する入力JSONファイルのパス
+### `INPUT_FILE` (required)
+Path to the input JSON file to translate
 
-### `-o, --output OUTPUT_FILE` (必須)
-翻訳結果を保存する出力JSONファイルのパス
+### `-o, --output OUTPUT_FILE` (required)
+Path to the output JSON file to save the translation results
 
-### `-s, --source-lang SOURCE_LANG` (必須)
-ソース言語を指定します。
+### `-s, --source-lang SOURCE_LANG` (required)
+Specifies the source language.
 
-- 例: `-s French`, `-s English`, `-s Japanese`
+- Examples: `-s French`, `-s English`, `-s Japanese`
 
-### `-t, --target-lang TARGET_LANG` (必須)
-ターゲット言語を指定します。
+### `-t, --target-lang TARGET_LANG` (required)
+Specifies the target language.
 
-- 例: `-t Japanese`, `-t English`, `-t French`
+- Examples: `-t Japanese`, `-t English`, `-t French`
 
 ### `-m, --model MODEL`
-翻訳に使用するLLMモデルを指定します。
+Specifies the LLM model to use for translation.
 
-- デフォルト: `gpt-oss:120b`
-- 例: `-m gpt-oss:20b`, `-m gemma3`, `-m llama3`
+- Default: `gpt-oss:120b`
+- Examples: `-m gpt-oss:20b`, `-m gemma3`, `-m llama3`
 
 ### `--threshold N`
-要約生成の間隔（翻訳ペア数）を指定します。
+Specifies the interval (in translation pairs) between summary generations.
 
-- デフォルト: `10`
-- この間隔ごとに翻訳履歴をLLMで要約します
-- 例: `--threshold 20` で20ペアごとに要約
+- Default: `10`
+- The translation history is summarized by the LLM at this interval
+- Example: `--threshold 20` summarizes every 20 pairs
 
 ### `--keep K`
-要約後〜再編成までの翻訳ペア数を指定します。
+Specifies the number of translation pairs between a summary and reorganization.
 
-- デフォルト: `5`
-- 要約生成後K件の翻訳を経てから履歴を再編成します（履歴を0にしない）
-- 例: `--keep 8` で要約後8ペア翻訳してから再編成
+- Default: `5`
+- History is reorganized after K translations following a summary (history is never reduced to zero)
+- Example: `--keep 8` reorganizes history after 8 translations following a summary
 
 ### `--summary TYPE`
-サマリー生成方式を指定します。
+Specifies the summary generation method.
 
-- デフォルト: 指定なし（サマリーを生成せず、最速）
-- 選択肢:
-  - `patterns`: 翻訳パターンを抽出
-    - 固有名詞と翻訳の対応
-    - 専門用語の訳語
-    - 話者の口調パターン
-    - 一貫性を保つべき表現
-    - **利点**: 固有名詞・用語の一貫性が高い
-    - **欠点**: 表現パターンも固定化され、文体が画一的になる可能性
-  - `summary`: 内容を英語で要約
-    - 翻訳された内容と文脈のみに焦点
-    - 翻訳パターンや口調は抽出しない
-    - **利点**: 表現の多様性が保たれる
-    - **欠点**: 固有名詞の一貫性がやや低下する可能性
-- 使用例: `--summary patterns` または `--summary summary`
+- Default: unspecified (no summary generated, fastest)
+- Choices:
+  - `patterns`: extract translation patterns
+    - Proper-noun-to-translation mappings
+    - Translations of technical terms
+    - Each speaker's tone-of-voice patterns
+    - Expressions that should remain consistent
+    - **Pros**: high consistency of proper nouns/terminology
+    - **Cons**: expression patterns can also become fixed, potentially making the style uniform
+  - `summary`: summarize the content in English
+    - Focuses only on the translated content and context
+    - Does not extract translation patterns or tone
+    - **Pros**: preserves expressive variety
+    - **Cons**: may slightly reduce proper-noun consistency
+- Usage examples: `--summary patterns` or `--summary summary`
 
 ### `--no-think`
-思考モードを無効化します。
+Disables thinking mode.
 
-- デフォルト: 思考モード有効（`think=True`）
-- このフラグを指定すると `generate_content` に `think=False` が渡されます
-- 思考プロセスをスキップして応答を高速化したい場合に使用
-- 使用例: `--no-think`
+- Default: thinking mode enabled (`think=True`)
+- Passes `think=False` to `generate_content` when this flag is specified
+- Use this to skip the thought process and speed up the response
+- Usage example: `--no-think`
 
-## 使用例
+## Examples
 
-### デフォルト設定で実行（フランス語→日本語）
+### Run with default settings (French → Japanese)
 ```bash
 python translate-json.py proust-duras.json -o proust-duras-translated.json -s French -t Japanese
 ```
-- ソース言語: French
-- ターゲット言語: Japanese
-- モデル: `gpt-oss:120b`
-- 要約間隔: 10ペア
-- 保持件数: 5ペア
-- サマリー: なし（最速モード）
+- Source language: French
+- Target language: Japanese
+- Model: `gpt-oss:120b`
+- Summary interval: 10 pairs
+- Kept entries: 5 pairs
+- Summary: none (fastest mode)
 
-### patternsモードで実行（固有名詞・用語の一貫性重視）
+### Run in patterns mode (emphasizes consistency of proper nouns/terminology)
 ```bash
 python translate-json.py proust-duras.json -o output.json -s French -t Japanese --summary patterns
 ```
-- 翻訳パターンを抽出
-- 固有名詞や専門用語の一貫性が高い
-- 表現が画一的になる可能性がある
+- Extracts translation patterns
+- High consistency for proper nouns and technical terms
+- Expressions may become uniform
 
-### summaryモードで実行（表現の多様性重視）
+### Run in summary mode (emphasizes expressive variety)
 ```bash
 python translate-json.py proust-duras.json -o output.json -s French -t Japanese --summary summary
 ```
-- 内容を英語で要約
-- 表現の多様性が保たれる
-- 固有名詞の一貫性がやや低下する可能性
+- Summarizes the content in English
+- Preserves expressive variety
+- Proper-noun consistency may be slightly reduced
 
-### 英語から日本語に翻訳
+### Translate from English to Japanese
 ```bash
 python translate-json.py input.json -o output.json -s English -t Japanese
 ```
 
-### 小さいモデルで実行
+### Run with a smaller model
 ```bash
 python translate-json.py proust-duras.json -o output.json -s French -t Japanese -m gpt-oss:20b
 ```
 
-### 圧縮閾値を変更（20ペアで圧縮）
+### Change the compression threshold (compress every 20 pairs)
 ```bash
 python translate-json.py proust-duras.json -o output.json -s French -t Japanese --threshold 20
 ```
 
-### 保持件数を増やす（8ペア保持）
+### Increase the number of kept entries (keep 8 pairs)
 ```bash
 python translate-json.py proust-duras.json -o output.json -s French -t Japanese --keep 8
 ```
 
-### カスタム設定（20ペアで圧縮、8ペア保持）
+### Custom settings (compress every 20 pairs, keep 8 pairs)
 ```bash
 python translate-json.py proust-duras.json -o output.json -s French -t Japanese --threshold 20 --keep 8
 ```
 
-### モデルと設定を全て指定
+### Specify model and all settings
 ```bash
 python translate-json.py proust-duras.json -o output.json -s French -t Japanese -m gemma3 --threshold 25 --keep 10 --summary summary
 ```
 
-### 思考モードを無効化して高速化
+### Disable thinking mode for speed
 ```bash
 python translate-json.py proust-duras.json -o output.json -s French -t Japanese --no-think
 ```
 
-### 思考モード無効化 + サマリー
+### Disable thinking mode + summary
 ```bash
 python translate-json.py proust-duras.json -o output.json -s French -t Japanese --summary summary --no-think
 ```
 
-## 入力・出力
+## Input/output
 
-### 入力ファイル形式
+### Input file format
 ```json
 {
   "transcriptions": [
     {
       "time": "00:20",
       "speaker": "Narrator",
-      "transcription": "ソース言語のテキスト"
+      "transcription": "Text in the source language"
     }
   ]
 }
 ```
 
-### 出力ファイル形式
+### Output file format
 ```json
 {
   "transcriptions": [
     {
       "time": "00:20",
       "speaker": "Narrator",
-      "original": "ソース言語のテキスト",
-      "translation": "ターゲット言語の翻訳"
+      "original": "Text in the source language",
+      "translation": "Translation in the target language"
     }
   ]
 }
 ```
 
-## 動作の仕組み
+## How it works
 
-### 基本フロー
+### Basic flow
 
-1. JSONファイルから転写テキストを読み込み
-2. 各エントリーを順番に翻訳
-3. 翻訳のたびに、履歴に追加
-4. 次の翻訳時に、system prompt + サマリー（あれば）+ 履歴 + 現在のリクエストをLLMに送信
-5. メッセージペア数が閾値に達したら圧縮を実行
-6. 全ての翻訳が完了したら結果をJSONファイルに保存
+1. Read the transcription text from the JSON file
+2. Translate each entry in order
+3. Add each translation to history
+4. For each subsequent translation, send system prompt + summary (if any) + history + current request to the LLM
+5. Perform compression once the message pair count reaches the threshold
+6. Once all translations are done, save the results to a JSON file
 
-### 履歴圧縮の仕組み
+### How history compression works
 
-**デフォルト設定（threshold=10, keep=5）の場合:**
+**With default settings (threshold=10, keep=5):**
 
 ```
-翻訳1-15:   履歴が0→15ペアに増加（キャッシュ効率最大）
-翻訳16完了: 圧縮実行
-            - 最初の10ペア（20メッセージ）をLLMで要約
-            - 翻訳パターン、固有名詞、用語、口調などを抽出
-            - 最新5ペアは完全な形で保持
-            コンテキスト: [system, サマリー, 5ペア]
+Translations 1-15:   history grows from 0 to 15 pairs (maximum cache efficiency)
+Translation 16 done: compression executed
+            - the first 10 pairs (20 messages) are summarized by the LLM
+            - translation patterns, proper nouns, terminology, tone, etc. are extracted
+            - the most recent 5 pairs are kept in full
+            Context: [system, summary, 5 pairs]
 
-翻訳17-26:  履歴が5→15ペアに増加（キャッシュ効率維持）
-翻訳27完了: 再圧縮
-            - 既存サマリー + 最初の10ペアを累積要約
-            - 最新5ペアは完全な形で保持
-            コンテキスト: [system, 累積サマリー, 5ペア]
+Translations 17-26:  history grows from 5 to 15 pairs (cache efficiency maintained)
+Translation 27 done: re-compression
+            - existing summary + first 10 pairs are cumulatively summarized
+            - the most recent 5 pairs are kept in full
+            Context: [system, cumulative summary, 5 pairs]
 
-以降:       10回ごとに圧縮を繰り返し（16, 26, 36, 46, ...）
+From here on:       compression repeats every 10 rounds (16, 26, 36, 46, ...)
 ```
 
-**重要なポイント:**
-- 履歴は決して0にならない（常に直近5-15ペアを保持）
-- サマリーは累積的に更新（過去の情報が失われない）
-- キャッシュ効率を維持（プレフィックスの変化を最小限に）
+**Key points:**
+- History never reaches zero (always keeps the most recent 5-15 pairs)
+- The summary is updated cumulatively (past information is never lost)
+- Cache efficiency is maintained (prefix changes are minimized)
 
-### コンテキスト管理
+### Context management
 
-**コンポーネント:**
-- `system_message`: システムプロンプト（常に含まれる）
-- `compressed_summary`: 圧縮された過去の翻訳パターン（圧縮後に追加）
-- `messages`: 最新の翻訳履歴（5-15ペア、完全な形）
+**Components:**
+- `system_message`: the system prompt (always included)
+- `compressed_summary`: the compressed past translation patterns (added after compression)
+- `messages`: the most recent translation history (5-15 pairs, in full)
 
-**LLMへの送信:**
+**Sent to the LLM:**
 ```python
 [system_message] + [compressed_summary] + messages + [current_user_message]
 ```
 
-**サマリーの内容:**
+**Summary content:**
 
-`--summary patterns`の場合:
-- 固有名詞の翻訳パターン（人名、地名、作品名）
-- 重要な専門用語とその翻訳
-- 話者別の口調やトーンのパターン
-- 一貫性を保つべき表現やスタイル
+For `--summary patterns`:
+- Proper-noun translation patterns (people, places, work titles)
+- Key technical terms and their translations
+- Each speaker's tone-of-voice patterns
+- Expressions/style that should remain consistent
 
-`--summary summary`の場合:
-- 翻訳された内容の英語要約
-- 議論されたトピックや文脈
-- 翻訳パターンや口調は含まない
+For `--summary summary`:
+- An English summary of the translated content
+- Topics and context discussed
+- Does not include translation patterns or tone
 
-### コード構造
+### Code structure
 
-**主要な関数:**
+**Main functions:**
 
-- `call_llm(prompt)`: LLMを呼び出すラッパー関数
-  - プロンプトを受け取り、自動的に `chat_history` に追加
-  - `generate_content()` を呼び出し（グローバル変数 `MODEL` と `THINK` を使用）
-  - レスポンスを自動的に `chat_history` に追加
-  - `(response_text, user_message, assistant_message)` を返す
+- `call_llm(prompt)`: wrapper function that calls the LLM
+  - Takes a prompt and automatically appends it to `chat_history`
+  - Calls `generate_content()` (using the global variables `MODEL` and `THINK`)
+  - Automatically appends the response to `chat_history`
+  - Returns `(response_text, user_message, assistant_message)`
 
-- `summarize_messages(summary_type)`: サマリー生成関数
-  - サマリータイプ（`patterns` または `summary`）に基づいてプロンプトを構築
-  - 内部で `call_llm()` を使用（chat_history への追加は自動）
-  - `(summary_text, user_message, assistant_message)` を返す
+- `summarize_messages(summary_type)`: summary generation function
+  - Builds the prompt based on the summary type (`patterns` or `summary`)
+  - Uses `call_llm()` internally (appending to `chat_history` is automatic)
+  - Returns `(summary_text, user_message, assistant_message)`
 
-**グローバル変数:**
-- `MODEL`: 使用するLLMモデル名
-- `THINK`: 思考モードの有効/無効（`--no-think` で制御）
-- `chat_history`: 完全なチャット履歴（システムメッセージ、サマリー、翻訳履歴を含む）
-- `translation_messages`: 累積翻訳メッセージ（削除なし）
-- `summary_messages`: 累積サマリーメッセージ（最新の2メッセージのみ使用）
+**Global variables:**
+- `MODEL`: the LLM model name in use
+- `THINK`: whether thinking mode is enabled/disabled (controlled by `--no-think`)
+- `chat_history`: the full chat history (includes the system message, summary, and translation history)
+- `translation_messages`: cumulative translation messages (never deleted)
+- `summary_messages`: cumulative summary messages (only the latest 2 messages are used)
 
-## 実装の詳細
+## Implementation details
 
-### 実装方式：改良版階層的サマリー with 最適化されたキャッシュ戦略
+### Implementation approach: improved hierarchical summary with optimized caching strategy
 
-このスクリプトは、LLMキャッシュを最大限に活用する改良版の階層的サマリー方式を実装しています。
+This script implements an improved hierarchical summary approach that maximizes use of the LLM cache.
 
-#### 実装の特徴
+#### Implementation features
 
-1. **履歴を0にしない**: 常に直近5-15ペアを完全な形で保持
-2. **累積サマリー**: 既存サマリーと新規履歴を統合して再要約
-3. **2種類のサマリー方式**:
-   - `patterns`: 翻訳パターン抽出（一貫性重視、表現固定化のリスクあり）
-   - `summary`: 内容要約（多様性重視、一貫性やや低下）
-4. **サマリー生成タイミングの最適化**:
-   - 10ペア到達時に生成（翻訳直後でキャッシュヒット率最大）
-   - 15ペア到達時に適用（生成済みサマリーを使用）
-5. **10回ごとの圧縮**: キャッシュヒット率90%を維持
+1. **History never reaches zero**: always keeps the most recent 5-15 pairs in full
+2. **Cumulative summary**: re-summarizes by merging the existing summary with new history
+3. **Two summary methods**:
+   - `patterns`: extract translation patterns (favors consistency, risk of fixed expressions)
+   - `summary`: summarize content (favors variety, slightly reduced consistency)
+4. **Optimized summary-generation timing**:
+   - Generated upon reaching 10 pairs (right after translation, for maximum cache hit rate)
+   - Applied upon reaching 15 pairs (uses the already-generated summary)
+5. **Compression every 10 rounds**: maintains a 90% cache hit rate
 
-#### 動作フロー
+#### Operation flow
 
-**`--summary`指定時（threshold=10, keep=5）の場合:**
+**With `--summary` specified (threshold=10, keep=5):**
 
 ```
-翻訳1-9:    chat_history = [S, U1, A1, ..., U9, A9]
+Translations 1-9:    chat_history = [S, U1, A1, ..., U9, A9]
             translation_messages = [U1, A1, ..., U9, A9]
 
-翻訳10完了後: i % THRESHOLD == 0  (10 % 10 == 0)
-            → next_compression = 15 を設定
-            → サマリー生成（次の圧縮15まで到達可能なため）
-            - サマリーリクエストを chat_history に追加
+After translation 10: i % THRESHOLD == 0  (10 % 10 == 0)
+            → sets next_compression = 15
+            → generates summary (since compression 15 is reachable next)
+            - adds the summary request to chat_history
             - context = [S, U1, A1, ..., U10, A10, U-Sum]
-            - 直前の翻訳10の context = [S, U1, A1, ..., U10, A10] の延長
-            - キャッシュヒット率ほぼ100%！
-            - サマリー応答を chat_history と summary_messages に追加
+            - an extension of the previous translation-10 context [S, U1, A1, ..., U10, A10]
+            - cache hit rate near 100%!
+            - adds the summary response to chat_history and summary_messages
             chat_history = [S, U1, A1, ..., U10, A10, U-Sum, A-Sum]
 
-翻訳11-14:  chat_history = [S, U1, ..., U10, A10, U-Sum, A-Sum, U11, A11, ..., U14, A14]
-            → サマリー以降は全てキャッシュヒット
+Translations 11-14:  chat_history = [S, U1, ..., U10, A10, U-Sum, A-Sum, U11, A11, ..., U14, A14]
+            → everything after the summary is a cache hit
 
-翻訳15完了後: i == next_compression  (15 == 15)
-            → 圧縮実行（chat_history再構築）
+After translation 15: i == next_compression  (15 == 15)
+            → compression executed (chat_history rebuilt)
             chat_history = [S, U-Sum, A-Sum, U11, A11, ..., U15, A15]
-            → U1-10を削除、サマリーは残る（キャッシュ継続！）
+            → U1-10 removed, summary stays (cache continues!)
 
             i % THRESHOLD == 0  (15 % 10 == 0)
-            → next_compression = 20 を設定
-            → サマリー生成
+            → sets next_compression = 20
+            → generates summary
 
-翻訳16-19:  chat_history = [S, U-Sum, A-Sum, U11, ..., U15, A15, U16, A16, ..., U19, A19]
-            → サマリーは既にcontextにあるのでキャッシュ継続
+Translations 16-19:  chat_history = [S, U-Sum, A-Sum, U11, ..., U15, A15, U16, A16, ..., U19, A19]
+            → summary already in context, cache continues
 
-翻訳20完了後: i % THRESHOLD == 0  (20 % 10 == 0)
-            → next_compression = 25 を設定
-            → サマリー生成（次の圧縮25まで到達可能なため）
+After translation 20: i % THRESHOLD == 0  (20 % 10 == 0)
+            → sets next_compression = 25
+            → generates summary (since compression 25 is reachable next)
             chat_history = [S, U-Sum1, A-Sum1, U11, ..., U20, A20, U-Sum2, A-Sum2]
-            → 累積サマリー（既存サマリーを参照可能）
+            → cumulative summary (can reference the existing summary)
 
-翻訳21-24:  通常翻訳（キャッシュヒット）
+Translations 21-24:  normal translation (cache hit)
 
-翻訳25完了後: i == next_compression  (25 == 25)
-            → 圧縮実行
+After translation 25: i == next_compression  (25 == 25)
+            → compression executed
             chat_history = [S, U-Sum2, A-Sum2, U16, A16, ..., U25, A25]
-            → 最新サマリーのみ保持
+            → only the latest summary is kept
 
             i % THRESHOLD == 0  (25 % 10 == 0)
-            → next_compression = 30 を設定
+            → sets next_compression = 30
 
-以降:       10, 20, 30, 40... でサマリー生成
-            15, 30, 45, 60... で圧縮実行（サマリー生成と同時）
+From here on:       summary generated at 10, 20, 30, 40...
+            compression executed at 15, 30, 45, 60... (same time as summary generation)
 ```
 
-**全体が22件の場合（サマリー無駄チェック）:**
+**With 22 total entries (checking for a wasted summary):**
 
 ```
-翻訳10完了後: next_compression = 15 → サマリー生成
-翻訳15完了後: 圧縮実行、next_compression = 20 → サマリー生成
-翻訳20完了後: next_compression = None (25 > 22)
-            → サマリー生成スキップ（無駄になるため）
-翻訳21-22:  圧縮なし（next_compression = None のため）
+After translation 10: next_compression = 15 → summary generated
+After translation 15: compression executed, next_compression = 20 → summary generated
+After translation 20: next_compression = None (25 > 22)
+            → summary generation skipped (would be wasted)
+Translations 21-22:  no compression (since next_compression = None)
 ```
 
-**サマリーなし（デフォルト）の場合:**
+**Without a summary (default):**
 
 ```
-翻訳1-9:    履歴が0→9ペアに増加（キャッシュ効率最大）
+Translations 1-9:    history grows from 0 to 9 pairs (maximum cache efficiency)
 
-翻訳10完了後: i % THRESHOLD == 0
-            → next_compression = 15 を設定
-            → サマリー生成なし（SUMMARY_TYPE is None）
+After translation 10: i % THRESHOLD == 0
+            → sets next_compression = 15
+            → no summary generated (SUMMARY_TYPE is None)
 
-翻訳11-14:  通常翻訳（キャッシュヒット）
+Translations 11-14:  normal translation (cache hit)
 
-翻訳15完了後: i == next_compression
-            → 圧縮実行
-            - サマリー生成なし
-            - 最初の10ペア（20メッセージ）を単純削除
-            - 最新5ペアは完全な形で保持
+After translation 15: i == next_compression
+            → compression executed
+            - no summary generated
+            - the first 10 pairs (20 messages) are simply deleted
+            - the most recent 5 pairs are kept in full
             chat_history = [S, U11, A11, ..., U15, A15]
 
-            next_compression = 30 を設定
+            sets next_compression = 30
 
-翻訳16-29:  通常翻訳（キャッシュヒット）
+Translations 16-29:  normal translation (cache hit)
 
-翻訳30完了後: 圧縮実行、next_compression = 45
+After translation 30: compression executed, next_compression = 45
 
-以降:       15, 30, 45, 60... で圧縮実行
+From here on:        compression executed at 15, 30, 45, 60...
 ```
 
-**重要なポイント:**
-- **インデックスベース管理**: ループ変数 `i` と `next_compression` でタイミングを管理
-- **圧縮タイミング**: 翻訳完了後に実行（15, 30, 45...）、以前のように次の翻訳前ではない
-- **サマリー無駄チェック**: 次の圧縮まで到達しない場合はサマリー生成をスキップ
-- **履歴管理**:
-  - `translation_messages`: 累積（削除なし）
-  - `summary_messages`: 累積（最新の2メッセージのみ使用）
-  - `chat_history`: 圧縮時に再構築
-- **サマリーをチャット履歴として管理**: 通常のユーザー/アシスタントメッセージとして扱う
-- **キャッシュ継続性の確保**:
-  - サマリー生成後、すぐにchat_historyに追加
-  - 次の翻訳から既にcontextにサマリーが含まれる
-  - 圧縮後もサマリーはcontextに残るため、キャッシュが分断されない
+**Key points:**
+- **Index-based management**: timing is managed via the loop variable `i` and `next_compression`
+- **Compression timing**: executed after a translation completes (15, 30, 45...), not before the next translation as previously
+- **Wasted-summary check**: skips summary generation if the next compression point won't be reached
+- **History management**:
+  - `translation_messages`: cumulative (never deleted)
+  - `summary_messages`: cumulative (only the latest 2 messages are used)
+  - `chat_history`: rebuilt at compression time
+- **Summary managed as chat history**: treated as an ordinary user/assistant message
+- **Ensuring cache continuity**:
+  - Immediately appended to chat_history after summary generation
+  - The summary is already in context from the next translation onward
+  - The summary remains in context even after compression, so the cache is never broken
 
-### キャッシュ効率の分析
+### Cache efficiency analysis
 
-#### プレフィックスの変化パターン（改良版）
+#### Prefix change pattern (improved version)
 
 ```
-翻訳1-9:   [S] → [S, U1-A1] → ... → [S, U1-A1, ..., U9-A9]
-           ← プレフィックス拡大（完全キャッシュヒット）
+Translations 1-9:  [S] → [S, U1-A1] → ... → [S, U1-A1, ..., U9-A9]
+           ← prefix grows (full cache hit)
 
-翻訳10:    [S, U1-A1, ..., U9-A9, U10-A10, U-Sum, A-Sum]
-           ← 翻訳10完了後にU-Sum追加（キャッシュヒット）
+Translation 10:    [S, U1-A1, ..., U9-A9, U10-A10, U-Sum, A-Sum]
+           ← U-Sum added after translation 10 completes (cache hit)
 
-翻訳11-14: [S, U1-A1, ..., U10-A10, U-Sum, A-Sum, U11-A11, ..., U14-A14]
-           ← プレフィックス拡大（完全キャッシュヒット）
+Translations 11-14: [S, U1-A1, ..., U10-A10, U-Sum, A-Sum, U11-A11, ..., U14-A14]
+           ← prefix grows (full cache hit)
 
-翻訳15:    [S, U-Sum, A-Sum, U11-A11, ..., U15-A15]
-           ← 翻訳15完了後に圧縮でU1-10削除、だがU-Sumは残る（キャッシュ継続！）
-           その後U-Sum2追加
+Translation 15:    [S, U-Sum, A-Sum, U11-A11, ..., U15-A15]
+           ← after translation 15 completes, compression removes U1-10, but U-Sum stays (cache continues!)
+           U-Sum2 is added afterward
 
-翻訳16-19: [S, U-Sum, A-Sum, U11-A11, ..., U15-A15, U16-A16, ..., U19-A19]
-           ← プレフィックス拡大（完全キャッシュヒット）
+Translations 16-19: [S, U-Sum, A-Sum, U11-A11, ..., U15-A15, U16-A16, ..., U19-A19]
+           ← prefix grows (full cache hit)
 
-翻訳20:    [S, U-Sum1, A-Sum1, U11-A11, ..., U20-A20, U-Sum2, A-Sum2]
-           ← 翻訳20完了後にU-Sum2追加（キャッシュヒット）
+Translation 20:    [S, U-Sum1, A-Sum1, U11-A11, ..., U20-A20, U-Sum2, A-Sum2]
+           ← U-Sum2 added after translation 20 completes (cache hit)
 
-翻訳21-24: [S, U-Sum1, A-Sum1, U11-A11, ..., U20-A20, U-Sum2, A-Sum2, U21-A21, ..., U24-A24]
-           ← プレフィックス拡大（完全キャッシュヒット）
+Translations 21-24: [S, U-Sum1, A-Sum1, U11-A11, ..., U20-A20, U-Sum2, A-Sum2, U21-A21, ..., U24-A24]
+           ← prefix grows (full cache hit)
 
-翻訳25:    [S, U-Sum2, A-Sum2, U16-A16, ..., U25-A25]
-           ← 翻訳25完了後に圧縮でU11-20とU-Sum1削除、だがU-Sum2は残る（キャッシュ継続！）
+Translation 25:    [S, U-Sum2, A-Sum2, U16-A16, ..., U25-A25]
+           ← after translation 25 completes, compression removes U11-20 and U-Sum1, but U-Sum2 stays (cache continues!)
 ```
 
-**改善点:**
-- サマリーをcontextに含めることで、圧縮後もキャッシュが継続
-- 圧縮タイミングを翻訳完了後にすることで、タイミング管理が明確に
-- 従来: 圧縮時にキャッシュミス → 改良版: 圧縮後もキャッシュヒット
+**Improvements:**
+- Keeping the summary in context lets the cache continue even after compression
+- Compression timing right after translation makes timing management clearer
+- Old: cache miss at compression → improved: cache hit even after compression
 
-### パフォーマンス実測値
+### Performance measurements
 
-> **測定環境**: モデルサイズや種類により処理時間は大きく変わる可能性があります。
+> **Measurement environment**: processing time can vary significantly depending on model size and type.
 
-#### 87エントリーでの実測結果（gpt-oss:120b）
+#### Results with 87 entries (gpt-oss:120b)
 
-| 方式 | 処理時間 | 完全保持比 | スライディング比 | キャッシュヒット率 |
+| Method | Processing time | Ratio to full retention | Ratio to sliding | Cache hit rate |
 |------|---------|-----------|----------------|------------------|
-| 完全保持（LIMIT=0） | 42m59.885s | 100% | 195% | 100% |
-| スライディング（LIMIT=20） | 22m0.269s | 51% | 100% | ~30% |
+| Full retention (LIMIT=0) | 42m59.885s | 100% | 195% | 100% |
+| Sliding (LIMIT=20) | 22m0.269s | 51% | 100% | ~30% |
 | `--summary patterns` | 25m8.318s | 58% | 114% | ~90% |
-| `--summary summary` (旧版) | 15m54.388s | 37% | 72% | ~90% |
-| **`--summary summary` (改良版)** | **13m35.046s** | **32%** | **62%** | **~90%** |
-| **サマリーなし（デフォルト）** | **12m21.729s** | **29%** | **56%** | **~90%** |
+| `--summary summary` (old version) | 15m54.388s | 37% | 72% | ~90% |
+| **`--summary summary` (improved)** | **13m35.046s** | **32%** | **62%** | **~90%** |
+| **No summary (default)** | **12m21.729s** | **29%** | **56%** | **~90%** |
 
-**改良版の改善点:**
-- インデックスベース管理による最適化
-- サマリー無駄チェック（次の圧縮まで到達しない場合はスキップ）
-- 圧縮タイミングの最適化（翻訳完了後に実行）
-- **結果（gpt-oss:120b）**: 旧版から約2分20秒（約15%）の改善
+**Improvements in the improved version:**
+- Optimization via index-based management
+- Wasted-summary check (skips generation if the next compression point won't be reached)
+- Optimized compression timing (executed right after translation completes)
+- **Result (gpt-oss:120b)**: about 2 minutes 20 seconds (~15%) faster than the old version
 
-#### 87エントリーでの実測結果（gemma3:27b）
+#### Results with 87 entries (gemma3:27b)
 
-| 方式 | 処理時間 | 旧版比 | 改善率 |
+| Method | Processing time | Ratio to old version | Improvement |
 |------|---------|--------|--------|
-| `--summary summary` (旧版) | 12m22.931s | 100% | - |
-| **`--summary summary` (改良版)** | **10m0.996s** | **81%** | **-19%** |
+| `--summary summary` (old version) | 12m22.931s | 100% | - |
+| **`--summary summary` (improved)** | **10m0.996s** | **81%** | **-19%** |
 
-**改良版の改善点（gemma3:27b）:**
-- **結果**: 旧版から約2分22秒（約19%）の改善
-- gpt-oss:120bの15%改善よりもさらに効果が大きい
-- より小型のモデルでは最適化の効果がより顕著に現れる
+**Improvements in the improved version (gemma3:27b):**
+- **Result**: about 2 minutes 22 seconds (~19%) faster than the old version
+- An even bigger improvement than gpt-oss:120b's 15%
+- Smaller models show a more pronounced effect from the optimization
 
-#### 主な発見
+#### Key findings
 
-**速度面:**
-- サマリーなし（デフォルト）: **最速** - スライディングより約10分速い（-44%）
-- `--summary summary` (改良版): スライディングより約8.5分速い（-38%）
-  - **予想外の結果**: patternsより約11.5分速い（-46%）
-  - 理由: サマリーがシンプルな内容要約のみで、生成時間が短い
-  - 改良版の最適化による改善:
-    - **gpt-oss:120b**: 旧版から約2分20秒（-15%）の改善
-    - **gemma3:27b**: 旧版から約2分22秒（-19%）の改善
-  - より小型のモデルでは最適化の効果がより顕著
-- `--summary patterns`: スライディングより約3分遅い（+14%）
-  - 詳細な翻訳パターン抽出のため、サマリー生成に時間がかかる
-- 完全保持: 最も遅いが最高品質
+**Speed:**
+- No summary (default): **fastest** - about 10 minutes faster than sliding (-44%)
+- `--summary summary` (improved): about 8.5 minutes faster than sliding (-38%)
+  - **Unexpected result**: about 11.5 minutes faster than patterns (-46%)
+  - Reason: the summary is a simple content summary, so generation is quick
+  - Improvements from the improved optimization:
+    - **gpt-oss:120b**: about 2 minutes 20 seconds (-15%) faster than the old version
+    - **gemma3:27b**: about 2 minutes 22 seconds (-19%) faster than the old version
+  - Smaller models show a more pronounced optimization effect
+- `--summary patterns`: about 3 minutes slower than sliding (+14%)
+  - Detailed translation-pattern extraction takes longer to generate
+- Full retention: slowest, but highest quality
 
-**キャッシュ効率:**
-- すべての方式で約90%のキャッシュヒット率
-  - 10回に1回だけプレフィックス変化
-  - 残り9回は完全キャッシュヒット
-  - サマリー生成タイミングの最適化により、サマリーあり・なしで同等のキャッシュ効率
-- スライディング: 約30%（21回目以降はほぼ0%）
-  - 毎回プレフィックスが変化
-  - キャッシュが機能しない
+**Cache efficiency:**
+- About 90% cache hit rate across all methods
+  - Prefix changes only once every 10 rounds
+  - The other 9 rounds are full cache hits
+  - Thanks to optimized summary-generation timing, summary and no-summary modes have comparable cache efficiency
+- Sliding: about 30% (nearly 0% after the 21st entry)
+  - The prefix changes every time
+  - The cache doesn't work
 
-**品質面:**
-- `--summary patterns`: 累積サマリーで全履歴の文脈を保持
-  - 固有名詞・用語の一貫性維持
-  - 話者の口調やスタイル保持
-  - **欠点**: 表現パターンも固定化され、文体が画一的になる（例: 「～のです。」の多用）
-- `--summary summary`: 内容要約で文脈を保持
-  - 翻訳された内容の文脈を維持
-  - 表現の多様性が保たれる
-  - **欠点**: 固有名詞の一貫性がやや低下する可能性
-- サマリーなし（デフォルト）: 5-15件の履歴は保持
-  - 短期的な一貫性は維持
-  - 長期的な一貫性は低下
-  - 表現の多様性が保たれる
+**Quality:**
+- `--summary patterns`: cumulative summary preserves context across all history
+  - Maintains consistency of proper nouns/terminology
+  - Preserves each speaker's tone and style
+  - **Downside**: expression patterns also become fixed, making the style uniform (e.g., overuse of "~nano desu.")
+- `--summary summary`: content summary preserves context
+  - Maintains context of the translated content
+  - Preserves expressive variety
+  - **Downside**: proper-noun consistency may be slightly reduced
+- No summary (default): keeps 5-15 entries of history
+  - Maintains short-term consistency
+  - Long-term consistency degrades
+  - Preserves expressive variety
 
-**patternsモードの潜在的な問題点:**
-- サマリーが特定の翻訳パターン（語尾、言い回しなど）を抽出・固定化する
-- 結果として表現が画一的になる可能性がある（例: 「～のです。」が多用される）
-- 特に同じ文体が連続する文書では顕著
-- 一貫性と表現の多様性はトレードオフの関係
-- `summary`モードまたはサマリーなしを使用すると、この問題は軽減される
+**Potential issues with patterns mode:**
+- The summary extracts and fixes specific translation patterns (endings, phrasing, etc.)
+- As a result, expressions can become uniform (e.g., overuse of "~nano desu.")
+- Particularly noticeable in documents with a consistent style throughout
+- Consistency and expressive variety are a trade-off
+- Using `summary` mode or no summary mitigates this issue
 
-#### 推奨用途
+#### Recommended use cases
 
-| 方式 | 推奨シーン |
+| Method | Recommended scenario |
 |------|----------|
-| **サマリーなし（デフォルト）** | 速度最優先。短い文書（<100エントリー）。表現の多様性重視 |
-| **--summary summary** | **中〜長文書で推奨**。表現の多様性と文脈の一貫性を両立。速度も良好（改良版で15%高速化） |
-| **--summary patterns** | 固有名詞・用語の一貫性が最重要。表現の画一化は許容。処理時間は長め |
-| 完全保持 | 最高品質重視。短い文書のみ実用的 |
-| スライディング | 非推奨（デフォルトより遅く品質も低い） |
+| **No summary (default)** | Speed priority. Short documents (<100 entries). Favors expressive variety |
+| **--summary summary** | **Recommended for medium-to-long documents**. Balances expressive variety with contextual consistency. Also fast (15% faster with the improved version) |
+| **--summary patterns** | When proper-noun/terminology consistency is paramount. Uniform expression is acceptable. Takes longer to process |
+| Full retention | Highest quality priority. Only practical for short documents |
+| Sliding | Not recommended (slower than default and lower quality) |
 
-### 設定のガイドライン
+### Configuration guidelines
 
-| 文書の長さ | threshold | keep | 理由 |
+| Document length | threshold | keep | Reason |
 |----------|-----------|------|------|
-| 短い（<50件） | 15 | 8 | 要約頻度を下げる |
-| 中程度（50-200件） | 10 | 5 | デフォルト設定 |
-| 長い（200-500件） | 10 | 5 | キャッシュ効率重視 |
-| 非常に長い（>500件） | 8 | 4 | 要約頻度を上げる |
+| Short (<50 entries) | 15 | 8 | Lowers summary frequency |
+| Medium (50-200 entries) | 10 | 5 | Default settings |
+| Long (200-500 entries) | 10 | 5 | Emphasizes cache efficiency |
+| Very long (>500 entries) | 8 | 4 | Increases summary frequency |
 
-**メモリ使用量:**
-- サマリーなし: 5-15ペア（一定）
-- サマリーあり: サマリー + 5-15ペア（一定）
+**Memory usage:**
+- No summary: 5-15 pairs (constant)
+- With summary: summary + 5-15 pairs (constant)
 
-### 各モードの詳細比較
+### Detailed comparison of each mode
 
-| 項目 | サマリーなし（デフォルト） | `--summary summary` | `--summary patterns` |
+| Item | No summary (default) | `--summary summary` | `--summary patterns` |
 |------|------------------------|-------------------|---------------------|
-| **速度** | 最速（12m） | 高速（16m） | 中速（25m） |
-| **固有名詞の一貫性** | 低 | 中 | 高 |
-| **表現の多様性** | 高 | 高 | 低 |
-| **長期的文脈保持** | 低 | 中 | 高 |
-| **語尾固定化リスク** | なし | なし | あり |
-| **推奨文書長** | <100件 | 50-500件（推奨） | すべて（一貫性最重要時） |
-| **キャッシュ効率** | 90% | 90% | 90% |
-| **総合評価** | 短文書向け | **バランス型** | 一貫性重視 |
+| **Speed** | Fastest (12m) | Fast (16m) | Medium (25m) |
+| **Proper-noun consistency** | Low | Medium | High |
+| **Expressive variety** | High | High | Low |
+| **Long-term context retention** | Low | Medium | High |
+| **Risk of fixed endings** | None | None | Present |
+| **Recommended document length** | <100 entries | 50-500 entries (recommended) | Any (when consistency matters most) |
+| **Cache efficiency** | 90% | 90% | 90% |
+| **Overall assessment** | Good for short documents | **Balanced** | Consistency-focused |
 
-## ヘルプの表示
+## Showing help
 
 ```bash
 python translate-json.py -h

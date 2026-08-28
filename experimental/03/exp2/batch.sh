@@ -16,7 +16,7 @@ declare -A MODEL_ID=(
 
 mkdir -p tr evals
 
-# --- 翻訳（モデル × 翻訳run = 9 ファイル） ---
+# --- Translation (model x translation run = 9 files) ---
 for model in "${MODELS[@]}"; do
     for trrun in 1 2 3; do
         out="tr/$model-$trrun.txt"
@@ -30,7 +30,7 @@ for model in "${MODELS[@]}"; do
     done
 done
 
-# --- 評価（モデル × 翻訳run × 評価run = 27 ファイル） ---
+# --- Evaluation (model x translation run x evaluation run = 27 files) ---
 for model in "${MODELS[@]}"; do
     for trrun in 1 2 3; do
         out="tr/$model-$trrun.txt"
@@ -50,7 +50,7 @@ for model in "${MODELS[@]}"; do
     done
 done
 
-# --- 集約（翻訳 run 単位で集約） ---
+# --- Aggregation (aggregated per translation run) ---
 : > SCORES.txt
 for model in "${MODELS[@]}"; do
     for trrun in 1 2 3; do

@@ -1,233 +1,233 @@
-# 評価者間比較分析ツール
+# Inter-Evaluator Comparison Analysis Tools
 
-このディレクトリには、3つの翻訳評価者（Gemini-2.5-flash、gpt-oss-20b、gpt-oss-120b）の評価結果を比較分析するツールが含まれています。
+This directory contains tools for comparing and analyzing the evaluation results of three translation evaluators (Gemini-2.5-flash, gpt-oss-20b, and gpt-oss-120b).
 
-## 📁 ファイル一覧
+## 📁 File List
 
-### 実行スクリプト（4つ）
+### Execution Scripts (4)
 
 #### 1. `compare_evaluators.py`
-**統計分析スクリプト**
+**Statistical analysis script**
 
-**機能**:
-- 3つの評価者のSCORES.txtを読み込み
-- 基本統計量の算出（平均、中央値、標準偏差）
-- 相関分析（ピアソン、スピアマン順位相関）
-- 一致度分析（MAE、RMSE、±5/10点範囲内一致率）
-- モデルファミリー別・推論レベル別・温度別の系統的バイアス検出
-- 問題ケースの抽出（乖離TOP30、0点評価、逆転ケース）
-- 移行判定の自動実行
+**Functionality**:
+- Reads the SCORES.txt files of the three evaluators
+- Computes basic statistics (mean, median, standard deviation)
+- Correlation analysis (Pearson, Spearman rank correlation)
+- Agreement analysis (MAE, RMSE, agreement rate within ±5/10 points)
+- Detects systematic bias by model family, reasoning level, and temperature
+- Extracts problem cases (top 30 discrepancies, zero-point evaluations, reversal cases)
+- Automatically runs the migration decision
 
-**入力**:
-- `../gemini-2.5-flash/SCORES.txt` (716項目)
-- `../gpt-oss-20b/SCORES.txt` (716項目)
-- `../gpt-oss-120b/SCORES.txt` (716項目)
+**Input**:
+- `../gemini-2.5-flash/SCORES.txt` (716 entries)
+- `../gpt-oss-20b/SCORES.txt` (716 entries)
+- `../gpt-oss-120b/SCORES.txt` (716 entries)
 
-**出力**:
-- `stats.json` - 詳細統計データ（JSON形式）
+**Output**:
+- `stats.json` - Detailed statistical data (JSON format)
 
-**実行方法**:
+**How to run**:
 ```bash
 cd evaluator_comparison
 uv run compare_evaluators.py
 ```
 
 #### 2. `generate_evaluator_report.py`
-**レポート生成スクリプト**
+**Report generation script**
 
-**機能**:
-- stats.jsonからマークダウンレポートを生成
-- エグゼクティブサマリー、詳細統計、移行判定、推奨事項を含む
+**Functionality**:
+- Generates a Markdown report from stats.json
+- Includes an executive summary, detailed statistics, migration decision, and recommendations
 
-**出力**:
-- `REPORT.md` - 包括的分析レポート（244行、13セクション）
+**Output**:
+- `REPORT.md` - Comprehensive analysis report (244 lines, 13 sections)
 
-**実行方法**:
+**How to run**:
 ```bash
 uv run generate_evaluator_report.py
 ```
 
 #### 3. `compute_euclidean_distances.py`
-**距離マトリクス生成スクリプト**
+**Distance matrix generation script**
 
-**機能**:
-- 3つの評価者のSCORES.txtを読み込み
-- 各評価者ペアのユークリッド距離と次元あたりRMSEを計算
-- 対角より上を空欄とした下三角マトリクス形式で `DISTANCES.md` を生成
+**Functionality**:
+- Reads the SCORES.txt files of the three evaluators
+- Computes the Euclidean distance and per-dimension RMSE for each evaluator pair
+- Generates `DISTANCES.md` as a lower-triangular matrix with the upper triangle left blank
 
-**出力**:
-- `DISTANCES.md` - ユークリッド距離＆RMSEマトリクス
+**Output**:
+- `DISTANCES.md` - Euclidean distance & RMSE matrix
 
-**実行方法**:
+**How to run**:
 ```bash
 uv run compute_euclidean_distances.py
 ```
 
 #### 4. `analyze_eval_variance.py`
-**評価変動分析スクリプト**
+**Evaluation variance analysis script**
 
-**機能**:
-- 評価者ごとの3回評価内変動を定量化
-- 平均レンジ、σ統計、観点別変動を算出
+**Functionality**:
+- Quantifies the variance across three evaluation runs for each evaluator
+- Computes the average range, sigma statistics, and variance by criterion
 
-**実行方法**:
+**How to run**:
 ```bash
 cd evaluator_comparison
-python analyze_eval_variance.py [評価者ID ...]
-# 例: python analyze_eval_variance.py gpt-oss-120b gemma-4-31b gemini-2.5-flash
+python analyze_eval_variance.py [evaluator ID ...]
+# Example: python analyze_eval_variance.py gpt-oss-120b gemma-4-31b gemini-2.5-flash
 ```
 
-### 自動生成データ
+### Auto-Generated Data
 
 #### 3. `stats.json`
-**詳細統計データ（JSON形式）**
+**Detailed statistical data (JSON format)**
 
-**内容**:
-- メタデータ（716項目、3評価者、生成日時）
-- 基本統計量（各評価者の平均、中央値、標準偏差、スコアレンジ分布）
-- 相関分析（ピアソンr、スピアマンρ、p値）
-- 一致度指標（MAE、RMSE、±5/10点一致率、上位10%一致率）
-- 系統的バイアス（モデルファミリー別、推論レベル別、温度別）
-- 問題ケース（乖離TOP30、0点評価リスト、逆転ケース）
-- 移行判定結果（判定、スコア、理由）
+**Contents**:
+- Metadata (716 entries, 3 evaluators, generation timestamp)
+- Basic statistics (mean, median, standard deviation, and score-range distribution for each evaluator)
+- Correlation analysis (Pearson r, Spearman ρ, p-values)
+- Agreement metrics (MAE, RMSE, agreement rate within ±5/10 points, top-10% agreement rate)
+- Systematic bias (by model family, reasoning level, temperature)
+- Problem cases (top 30 discrepancies, list of zero-point evaluations, reversal cases)
+- Migration decision result (verdict, score, reasoning)
 
-**サイズ**: 約50KB
+**Size**: approx. 50KB
 
-**利用目的**:
-- レポート生成の元データ
-- 詳細分析用の生データ
+**Purpose**:
+- Source data for report generation
+- Raw data for detailed analysis
 
 #### 4. `REPORT.md`
-**包括的分析レポート（自動生成）**
+**Comprehensive analysis report (auto-generated)**
 
-- `stats.json` を元に `generate_evaluator_report.py` で自動生成
-- エグゼクティブサマリー、基本統計、相関分析、一致度分析、系統的バイアス、問題ケース、移行判定を含む
+- Automatically generated from `stats.json` by `generate_evaluator_report.py`
+- Includes an executive summary, basic statistics, correlation analysis, agreement analysis, systematic bias, problem cases, and migration decision
 
-評価者選定の経緯は [memo/evaluators.md](../memo/evaluators.md) を参照。
+For the background on evaluator selection, see [memo/evaluators.md](../memo/evaluators.md).
 
-## 🚀 実行手順
+## 🚀 Execution Steps
 
-### 1回限りのセットアップ
+### One-Time Setup
 
 ```bash
-# ディレクトリに移動
+# Move to the directory
 cd experimental/01/evaluator_comparison
 
-# 依存ライブラリのインストール
+# Install dependencies
 uv add numpy scipy
 ```
 
-### 完全な分析の実行
+### Running the Full Analysis
 
 ```bash
-# 1. 統計分析
+# 1. Statistical analysis
 uv run compare_evaluators.py
 
-# 2. レポート生成
+# 2. Report generation
 uv run generate_evaluator_report.py
 ```
 
-### 結果の確認
+### Checking the Results
 
 ```bash
-# メインレポート
+# Main report
 cat REPORT.md
 
-# 統計データ
+# Statistical data
 jq '.' stats.json
 ```
 
-## 📊 確定結果
+## 📊 Final Results
 
-### 評価者選定の結論
+### Conclusion of Evaluator Selection
 
-**qwen3.6 を正式評価者として採用（単独運用）**。
+**qwen3.6 was adopted as the official evaluator (used on its own)**.
 
-| 評価者 | 結論 |
+| Evaluator | Conclusion |
 |--------|------|
-| **qwen3.6** | **正式評価者に採用。中央値で全716件をランキング** |
-| gemma-4-31b | 一次フィルターとしても不要。廃止 |
-| gpt-oss-120b | 天井効果あり。廃止 |
-| gemini-2.5-flash | 不安定。廃止 |
+| **qwen3.6** | **Adopted as the official evaluator. Ranks all 716 entries by median** |
+| gemma-4-31b | Unnecessary even as a first-pass filter. Discontinued |
+| gpt-oss-120b | Exhibits a ceiling effect. Discontinued |
+| gemini-2.5-flash | Unstable. Discontinued |
 
-### 評価者別スコア分布（qwen3.6 採用判定時点）
+### Score Distribution by Evaluator (at the time qwen3.6 was adopted)
 
-| 指標 | GPT-OSS 120B | gemma-4-31b | qwen3.6 |
+| Metric | GPT-OSS 120B | gemma-4-31b | qwen3.6 |
 |------|-------------|-------------|---------|
-| 平均 | 78.61点 | 76.28点 | 66.92点 |
-| 標準偏差 | 16.90点 | 24.30点 | 25.98点 |
-| 最高点 | 92点 | 100点 | 98点 |
-| 90点以上 | 0% | 37.6% | 23.7% |
-| 95点以上 | 0% | 27.2% | 8.1% |
-| 100点 | 0件 | 13件 | 0件 |
+| Mean | 78.61 | 76.28 | 66.92 |
+| Standard deviation | 16.90 | 24.30 | 25.98 |
+| Highest score | 92 | 100 | 98 |
+| 90+ | 0% | 37.6% | 23.7% |
+| 95+ | 0% | 27.2% | 8.1% |
+| 100 | 0 | 13 | 0 |
 
-### 評価者の特性
+### Characteristics of Each Evaluator
 
-| 評価者 | 強み | 弱点 |
+| Evaluator | Strength | Weakness |
 |--------|------|------|
-| gemma-4-31b | 破綻テキストの確実な検出 | 固有名詞誤訳・未翻訳・術語誤りを見逃す |
-| gpt-oss-120b | 中程度の内容チェック | CoT を無効化できない（→ [memo/README.md](../memo/README.md)「GPT-OSS 120B の特性と活用方針」） |
-| gemini-2.5-flash | 内容エラーの検出力は高い | 同一翻訳への評価が3回で大きくばらつく |
-| qwen3.6 | CoT による論理的な欠陥特定 | 平均レンジ14.11点（最大）だが大半は孤立型外れ値で中央値に影響しない |
+| gemma-4-31b | Reliably detects broken text | Misses mistranslated/untranslated proper nouns and terminology errors |
+| gpt-oss-120b | Moderate content checking | Cannot disable CoT (→ see "Characteristics and usage policy for GPT-OSS 120B" in [memo/README.md](../memo/README.md)) |
+| gemini-2.5-flash | High detection power for content errors | Evaluations of the same translation vary greatly across 3 runs |
+| qwen3.6 | Logical defect identification through CoT | Average range of 14.11 points (largest), but mostly isolated outliers that don't affect the median |
 
-### 安定性と精度
+### Stability and Accuracy
 
-| 評価者 | 安定性 | 精度 |
+| Evaluator | Stability | Accuracy |
 |--------|:------:|:----:|
-| gemma-4-31b | ◎ | △（内容エラー見逃し） |
-| GPT-OSS 120B | ○ | △（天井効果・MoE判断力） |
-| gemini-2.5-flash | ✕ | ○（内容エラー検出力高） |
+| gemma-4-31b | ◎ | △ (misses content errors) |
+| GPT-OSS 120B | ○ | △ (ceiling effect, MoE judgment ability) |
+| gemini-2.5-flash | ✕ | ○ (high detection power for content errors) |
 
-### モデル別最高スコアランキング（qwen3.6・中〜大型）
+### Highest-Score Ranking by Model (qwen3.6, mid-to-large models)
 
-| ランク | モデル | 最高点 | 最良設定 | 備考 |
+| Rank | Model | Highest score | Best setting | Notes |
 |--------|--------|------:|---------|------|
-| 1 | gemma3-27b | 98 | 設定0 | tr4/tr5 でも97点・非常に安定 |
-| 1 | gpt-oss-120b | 98 | 設定0 | 複数設定で96点・最も安定 |
-| 3 | aya-expanse-32b | 97 | tr4 | 設定0で95点 |
-| 4 | command-r-35b | 96 | tr4 | 設定0で93点 |
-| 4 | ministral-3-8b | 96 | 設定0 | 設定2で95点 |
-| 4 | mistral-small3.2 | 96 | tr4 | 複数設定で94-95点・安定 |
-| 4 | qwen3-30b | 96 | 設定1, 1-nt | tr系（非構造化）は全0点 |
-| 4 | qwen3-32b | 96 | tr4 | 設定3-nt/4 で95点 |
-| 9 | gpt-oss-20b | 95 | 設定1,4 | 複数設定で安定 |
-| 9 | gemma3-12b | 95 | 設定0 | 設定1で壊滅（11点）|
-| 9 | llama3.3 | 95 | 設定0, tr4 | tr6で94点 |
-| 9 | llama4-scout | 95 | 設定0 | tr5で94点、設定2以降は低い |
-| 9 | ministral-3-14b | 95 | 設定0, tr5 | 設定1以降は不安定 |
-| 9 | qwen3-14b | 95 | 設定4, 3 | 設定別のばらつきが大きい |
+| 1 | gemma3-27b | 98 | setting 0 | Also 97 on tr4/tr5 — very stable |
+| 1 | gpt-oss-120b | 98 | setting 0 | 96 on multiple settings — most stable |
+| 3 | aya-expanse-32b | 97 | tr4 | 95 on setting 0 |
+| 4 | command-r-35b | 96 | tr4 | 93 on setting 0 |
+| 4 | ministral-3-8b | 96 | setting 0 | 95 on setting 2 |
+| 4 | mistral-small3.2 | 96 | tr4 | 94-95 on multiple settings — stable |
+| 4 | qwen3-30b | 96 | setting 1, 1-nt | tr series (unstructured) all score 0 |
+| 4 | qwen3-32b | 96 | tr4 | 95 on setting 3-nt/4 |
+| 9 | gpt-oss-20b | 95 | settings 1,4 | Stable on multiple settings |
+| 9 | gemma3-12b | 95 | setting 0 | Collapses on setting 1 (11 points) |
+| 9 | llama3.3 | 95 | setting 0, tr4 | 94 on tr6 |
+| 9 | llama4-scout | 95 | setting 0 | 94 on tr5, low from setting 2 onward |
+| 9 | ministral-3-14b | 95 | setting 0, tr5 | Unstable from setting 1 onward |
+| 9 | qwen3-14b | 95 | settings 4, 3 | Large variance across settings |
 
-### 設定タイプ別スコア統計
+### Score Statistics by Setting Type
 
-| 設定 | 件数 | 中央値 | 最高 | 評価 |
+| Setting | Count | Median | Highest | Assessment |
 |------|-----:|------:|-----:|------|
-| 設定0（tr0） | 123 | 83.0 | 98 | ◎ 基本設定として最安定 |
-| 設定2-nt | 18 | 83.5 | 95 | ◎ |
-| 設定0-nt | 23 | 78.0 | 95 | ○ |
-| tr4 | 96 | 78.5 | 97 | ○ 上位モデルで高スコア |
-| 設定2 | 98 | 77.0 | 96 | ○ |
-| tr5 | 72 | 75.0 | 97 | △ ばらつき大 |
-| tr6 | 72 | 71.5 | 96 | △ ばらつき大 |
-| 設定1（推論付き構造化） | 98 | 59.0 | 96 | ✗ 大部分のモデルで逆効果 |
+| Setting 0 (tr0) | 123 | 83.0 | 98 | ◎ Most stable as the basic setting |
+| Setting 2-nt | 18 | 83.5 | 95 | ◎ |
+| Setting 0-nt | 23 | 78.0 | 95 | ○ |
+| tr4 | 96 | 78.5 | 97 | ○ High scores for top-tier models |
+| Setting 2 | 98 | 77.0 | 96 | ○ |
+| tr5 | 72 | 75.0 | 97 | △ High variance |
+| tr6 | 72 | 71.5 | 96 | △ High variance |
+| Setting 1 (structured with reasoning) | 98 | 59.0 | 96 | ✗ Counterproductive for most models |
 
-分析の経緯は [memo/evaluators.md](../memo/evaluators.md) を参照。
+For the background of the analysis, see [memo/evaluators.md](../memo/evaluators.md).
 
-## 🔧 技術仕様
+## 🔧 Technical Specifications
 
-### 依存ライブラリ
-- `numpy`: 数値計算、統計処理
-- `scipy`: 相関係数計算（stats.pearsonr, stats.spearmanr）
+### Dependencies
+- `numpy`: numerical computation, statistical processing
+- `scipy`: correlation coefficient computation (stats.pearsonr, stats.spearmanr)
 
-### データフォーマット
+### Data Format
 
-#### SCORES.txt形式
+#### SCORES.txt format
 ```
-1→aya-expanse-8b-0-05: 88/100点
-2→aya-expanse-8b-0-10: 70/100点
+aya-expanse-8b-0-05: 88
+aya-expanse-8b-0-10: 70
 ...
 ```
 
-#### stats.json形式
+#### stats.json format
 ```json
 {
   "metadata": {
@@ -244,23 +244,23 @@ jq '.' stats.json
 }
 ```
 
-## 📚 関連ドキュメント
+## 📚 Related Documents
 
-- [../README.md](../README.md) - 実験全体の概要
-- [REPORT.md](REPORT.md) - 包括的分析レポート
-- [stats.json](stats.json) - 詳細統計データ
+- [../README.md](../README.md) - Overview of the whole experiment
+- [REPORT.md](REPORT.md) - Comprehensive analysis report
+- [stats.json](stats.json) - Detailed statistical data
 
-## トラブルシューティング
+## Troubleshooting
 
-### エラー: ModuleNotFoundError
+### Error: ModuleNotFoundError
 ```bash
-# 解決策: 依存ライブラリをインストール
+# Solution: install dependencies
 uv add numpy scipy
 ```
 
-### エラー: FileNotFoundError (SCORES.txt)
+### Error: FileNotFoundError (SCORES.txt)
 ```bash
-# 解決策: 正しいディレクトリで実行
+# Solution: run from the correct directory
 cd experimental/01/evaluator_comparison
 uv run compare_evaluators.py
 ```

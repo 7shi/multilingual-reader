@@ -1,93 +1,93 @@
-# 実験の流れ
+# Course of the Experiments
 
-本ドキュメントでは、長文翻訳における文脈維持と用語の一貫性、および処理効率（KVキャッシュの最適化など）を向上させるために実施した一連の実験（01〜10）の軌跡を記録しています。
+This document records the trajectory of a series of experiments (01–10) conducted to improve context retention and terminology consistency in long-form translation, as well as processing efficiency (e.g., KV cache optimization).
 
-初期の「スライディングウィンドウ方式」から始まり、文脈を要約して保持する「サマリー圧縮方式」、推論（CoT）の有無を動的に切り替える「ハイブリッドモード」、そして「用語の事前抽出方式」へと段階的にアプローチを洗練させ、最終的に現在の `trtools` の安定した翻訳パイプラインへと統合されるまでのプロセスを概観します。
+Starting from the initial "sliding window" approach, the process progressively refines toward a "summary compression" approach that retains context by summarizing it, a "hybrid mode" that dynamically switches reasoning (CoT) on and off, and a "term pre-extraction" approach, before finally converging into the current stable translation pipeline of `trtools`.
 
-## translate.py: 実験系列の起源
+## translate.py: Origin of the Experimental Series
 
-ルートにあった [translate.py](../obsolete/translate.py) が experimental 系列の出発点。構造化出力（`generate_with_schema` + Pydantic）で推論レベル 0〜2 を実装し、直近5件のスライディング方式で文脈を管理。
+[translate.py](../obsolete/translate.py), originally at the repository root, is the starting point of the experimental series. It implemented reasoning levels 0–2 with structured output (`generate_with_schema` + Pydantic) and managed context using a sliding window of the last 5 entries.
 
-## 初期試行（OBSOLETE）
+## Early Trials (OBSOLETE)
 
-`translate.py` の成果をベースに `translate-exp.py`・`translate2.py`・`translate3.py` を作成し、多モデル協調（Phase 2a）を試みた段階。👉[詳細](01/OBSOLETE.md)
+The stage where `translate-exp.py`, `translate2.py`, and `translate3.py` were built on the results of `translate.py`, attempting multi-model collaboration (Phase 2a). 👉[Details](01/OBSOLETE.md)
 
-**評価言語の選定**:
-- **英語↔西欧語**は LLM の学習データが最も充実しており最高精度が「当たり前」のため、モデル間差異が出にくく評価軸として不適切
-- **ロマンス語間**（fr↔es）は言語距離が適度に近く、術語・慣用表現・文化的ローカライズで差が出やすい。97〜100点帯での細かい差別化が可能
-- 翻訳タスクは**フランス語→スペイン語**（fr→es）を基準軸に採用。
+**Evaluation language selection**:
+- **English↔Western European languages** have the richest LLM training data, so top accuracy is "a given," making them unsuitable as an evaluation axis since differences between models rarely show up
+- **Between Romance languages** (fr↔es), the linguistic distance is moderately close, so differences readily appear in terminology, idioms, and cultural localization. Fine-grained differentiation is possible even in the 97–100 point range
+- **French→Spanish** (fr→es) was adopted as the baseline axis for the translation task
 
-**試みた手法**:
-- Phase 1: gemma3n:e4b で初回翻訳
-- Phase 2a: qwen2.5:7b で品質チェック＋修正を統合実行
-- 最終的に `translate3.py`（一気通貫版）が「92点」として最推奨に
+**Approaches tried**:
+- Phase 1: Initial translation with gemma3n:e4b
+- Phase 2a: Quality check and correction combined in one pass with qwen2.5:7b
+- Ultimately, `translate3.py` (a single end-to-end version) became the top recommendation at "92 points"
 
-**行き詰まりと仕切り直しの理由**:
-- 評価が Claude Code による主観的な1回評価で、採点基準・rubric なし
-- 評価の根拠が不明確なため、スコアの信頼性に疑惑が生じた
-- ad hoc な手法の積み上げで体系的な比較が困難
-- → experimental/ として評価方式から設計し直すことになった
+**Reasons for hitting a dead end and starting over**:
+- Evaluation was a single subjective pass by Claude Code, with no scoring criteria or rubric
+- The basis for evaluation was unclear, casting doubt on the reliability of the scores
+- Systematic comparison was difficult due to the accumulation of ad hoc methods
+- → Led to redesigning from the evaluation method up, as the `experimental/` series
 
-## アーキテクチャの絞り込み
+## Narrowing Down the Architecture
 
-- **[01/](01/)**: 推論レベル（0〜4）が翻訳品質に与える影響を体系的に分析。評価方式を5項目・複数回に刷新。
-  - レベル0（直接翻訳）が最も安定・高品質。レベル1（構造化推論）の中央値59点が全体最低、CoT は翻訳に逆効果
-  - スライディング履歴では古い履歴が押し出されると用語ブレ、プロンプト先頭変化で KV キャッシュが無効
-  - 評価者として qwen3.6 を採用（GPT-OSS 120B は天井効果で廃止）
+- **[01/](01/)**: Systematically analyzed the impact of reasoning level (0–4) on translation quality. Overhauled the evaluation method into 5 criteria across multiple passes.
+  - Level 0 (direct translation) was the most stable and highest quality. Level 1 (structured reasoning) had the lowest median score overall at 59 points; CoT was counterproductive for translation
+  - With sliding history, terminology drifted once older history was pushed out, and changes at the start of the prompt invalidated the KV cache
+  - Adopted qwen3.6 as the evaluator (GPT-OSS 120B was retired due to a ceiling effect)
 
-- **[02/](02/)**: 01 の課題（用語ブレ・KV キャッシュ無効）を解決するサマリー圧縮アーキテクチャを検証。
-  - `system + summary + 直近N件` の固定構造で KV キャッシュを有効化。`--no-think` + 構造化出力廃止を基本設定に
-  - 34モデルの本番実験（Phase B）で上位モデルが 95〜97点を達成（qwen3.6 評価者での実質上限）
-  - **gemma4-26b** が最優秀：スコア安定性最高（範囲1）、構造的欠陥ゼロ
+- **[02/](02/)**: Validated a summary-compression architecture to solve 01's issues (terminology drift, KV cache invalidation).
+  - Enabled the KV cache with a fixed structure of `system + summary + last N entries`. `--no-think` and dropping structured output became the default settings
+  - In a full-scale experiment across 34 models (Phase B), top models achieved 95–97 points (effectively the ceiling under the qwen3.6 evaluator)
+  - **gemma4-26b** was the best performer: highest score stability (range of 1), zero structural defects
 
-- **[03/](03/)**: 要約を翻訳履歴から除外し、スタイル干渉を回避しつつ KV キャッシュ効率を維持するハイブリッドモードを実装。
-  - 翻訳本体は CoT なし、要約生成のみ CoT あり。gemma4-26b が全 run で急落なし（96/100/96点）
-  - 急落は glossary 初期蓄積のブレによる確率的発生で設定依存ではない
-  - 推奨設定：threshold=10・CoT なし（処理時間最短、品質劣化なし）
+- **[03/](03/)**: Implemented a hybrid mode that excludes summaries from the translation history, avoiding style interference while maintaining KV cache efficiency.
+  - The translation itself runs without CoT; only summary generation uses CoT. gemma4-26b showed no sharp drops across all runs (96/100/96 points)
+  - Sharp drops occurred stochastically due to drift in the initial glossary accumulation, independent of configuration
+  - Recommended settings: threshold=10, no CoT (shortest processing time, no quality degradation)
 
-- **[04/](04/)**: 用語集を翻訳前に確定・校正可能にし、人手介入ワークフローを実現する用語事前抽出方式を実装。
-  - gemma4-26b: 96/96/99点（安定維持）、gemma4-e4b: 95/96/92点（急落が85→92点に軽減）
-  - run 間で用語ブレが残存（`affinage` の訳語が `refinamiento` / `ajuste fino` に分かれるなど）
+- **[04/](04/)**: Implemented a term pre-extraction approach that fixes and allows proofreading of the glossary before translation, enabling a human-intervention workflow.
+  - gemma4-26b: 96/96/99 points (remained stable), gemma4-e4b: 95/96/92 points (sharp drop reduced from 85→92 points)
+  - Terminology drift persisted across runs (e.g., the translation of `affinage` split between `refinamiento` / `ajuste fino`)
 
-- **[05/](05/)**: 用語抽出を `trtools term` として分離・校正し、全 run が共有用語辞書を参照することで run 間のブレを排除。
-  - 共有用語辞書により gemma4-e4b の急落が解消（94〜95点で安定）、gemma4-26b は 95〜97点で安定維持
-  - qwen3.6 の評価精度に限界あり（発言者消失を3回中2回見落とし）
+- **[05/](05/)**: Split term extraction out as `trtools term` for separate proofreading, eliminating drift across runs by having every run reference a shared glossary.
+  - The shared glossary resolved gemma4-e4b's sharp drops (stabilized at 94–95 points); gemma4-26b remained stable at 95–97 points
+  - qwen3.6's evaluation accuracy had limits (missed speaker loss in 2 of 3 cases)
 
-01/ 〜 04/ の知見を反映した翻訳・評価ツールを `trtools` パッケージとして実装・整備。
+Translation and evaluation tools reflecting the findings from 01–04 were implemented and consolidated into the `trtools` package.
 
-- `trtools translate`: 03 の推奨設定（threshold=10・CoT なし・サマリー圧縮）をベースに、用語注入・スキップ付き空行保持を実装。構造化出力・スライディング履歴といった旧設計は廃止
-- `trtools term extract/translate`: 用語抽出・訳語確定を翻訳ループから分離。校正済み TSV を全 run で共有することで run 間の用語ブレを排除
-- `trtools eval / agg`: 5項目×20点・3回評価の中央値集計
-- `trtools batch`: 翻訳→評価→集約を一括実行。入力ファイルをオプションなし引数で列挙し、ファイル名から topic・言語コードを自動導出。`examples/tr-fr/Makefile` から呼び出す形で本番運用に移行
+- `trtools translate`: Based on 03's recommended settings (threshold=10, no CoT, summary compression), implementing term injection and skip-aware blank line preservation. Legacy designs such as structured output and sliding history were dropped
+- `trtools term extract/translate`: Split term extraction and translation-fixing out of the translation loop. Sharing a proofread TSV across all runs eliminates terminology drift between runs
+- `trtools eval / agg`: Median aggregation over 5 criteria × 20 points, 3 evaluation passes
+- `trtools batch`: Runs translation → evaluation → aggregation in one pass. Input files are listed as bare positional arguments, with topic and language code auto-derived from the filename. Moved into production use, invoked from `examples/tr-fr/Makefile`
 
-## 中リソース言語への展開と他者評価による推敲プロセスの確立
+## Expansion to Medium-Resource Languages and Establishing a Third-Party-Review Refinement Process
 
-- **[06/](06/)**: 直接翻訳では伸び悩む中リソース言語（オランダ語・チェコ語）に対して2段階翻訳（推敲）を適用し、品質向上の可否を検証。
-  - オランダ語：ベースライン78点 → 下訳86点 → 推敲後94点（目標の90点台に到達）
-  - チェコ語：ベースライン78点 → 下訳56点（単純スライディングで文脈崩壊） → 推敲後72点
-  - 実用化にはサマリー圧縮方式および用語注入との統合が必要
+- **[06/](06/)**: Applied two-stage translation (refinement) to medium-resource languages (Dutch, Czech) where direct translation plateaus, to test whether it improves quality.
+  - Dutch: baseline 78 points → draft translation 86 points → 94 points after refinement (reached the target 90s)
+  - Czech: baseline 78 points → draft translation 56 points (context collapsed under simple sliding) → 72 points after refinement
+  - Practical use requires integration with the summary-compression approach and term injection
 
-- **[07/](07/)**: 翻訳と推敲の役割を分離し、trtools の高品質ベースラインを qwen3.6 が行単位で推敲する他者評価アプローチを検証。
-  - ベースライン78点から、オランダ語は97点・チェコ語は94点へ大幅改善（いずれも90点台に到達）
-  - 高品質ベースライン（文脈保持）× 評価能力に長けた別モデル（推敲）の分離が中リソース言語で有効
+- **[07/](07/)**: Separated the roles of translation and refinement, testing a third-party-review approach where qwen3.6 refines trtools' high-quality baseline line by line.
+  - From a baseline of 78 points, Dutch improved substantially to 97 points and Czech to 94 points (both reached the 90s)
+  - Separating a high-quality baseline (context retention) from a separate model skilled at evaluation (refinement) proved effective for medium-resource languages
 
-- **[08/](08/)**: 実験07の2ステップ方式を最適化するため、CoT を用いた1ステップへの統合を検証。
-  - CoT有効（1ステップ）：nl 96点・cs 86点。チェコ語で空出力、分析がチャット履歴に残らず文脈一貫性が低下
-  - CoT無効（1ステップ）：nl 75点・cs 59点。推敲として機能せず、言語混入多発
-  - フォールバック検証：チェコ語ベースラインの `meteen`（オランダ語干渉）問題を発見。フォールバックでスコアがさらに低下（86→74点）
-  - **結論**：分析結果をチャット履歴に蓄積する2ステップ方式が推敲に不可欠。実験07の方式を最終推敲プロセスとして採用
+- **[08/](08/)**: Tested consolidating experiment 07's two-step approach into a single step using CoT, to optimize it.
+  - CoT enabled (single step): nl 96 points, cs 86 points. Czech produced empty output, and without the analysis persisting in chat history, context consistency dropped
+  - CoT disabled (single step): nl 75 points, cs 59 points. Did not function as refinement, with frequent language mixing
+  - Fallback verification: discovered a `meteen` (Dutch interference) problem in the Czech baseline. The fallback further lowered the score (86→74 points)
+  - **Conclusion**: The two-step approach, which accumulates analysis results in chat history, is essential for refinement. Adopted experiment 07's approach as the final refinement process
 
-- **[09/](09/)**: 実験07の他者評価アプローチを全67言語へ展開。各言語で gemma4・gpt-oss・qwen3.6 の中から最高得点のベースラインを自動選定して推敲する。詳細スコアは [09/SCORES.md](09/SCORES.md) を参照。
-  - `find_best.py` が全モデルの `SCORES.txt` を比較し、言語ごとの最高得点ファイルを TSV で出力
-  - 推敲は実験07の `review.py` をベースに拡張（話者名変換・言語コード化・Rich によるステータスバー強化）
-  - 改善30言語・悪化32言語・変化なし5言語（平均変化 −1.2点）。バスク語（+42）・エストニア語（+29）・スロベニア語（+22）などで大幅改善
-  - 推敲は「表現の洗練」として機能するため、意味が通っているが表現が粗い翻訳で有効。翻訳が構造的に破綻している場合は改善できず悪化する傾向、完成度が高い場合は余計な変更で逆効果になるケースもある
-  - 推敲が有効（差分 +6 以上かつ推敲後 80点以上）: Bulgarian (97:+17), Hungarian (96:+13), Slovene (95:+22), Azerbaijani (91:+13), Czech (89:+9), Basque (87:+42), Estonian (82:+29), Latvian (82:+17), Macedonian (82:+6), Belarusian (81:+12)
+- **[09/](09/)**: Expanded experiment 07's third-party-review approach to all 67 languages. For each language, automatically selects the highest-scoring baseline among gemma4, gpt-oss, and qwen3.6 to refine. See [09/SCORES.md](09/SCORES.md) for detailed scores.
+  - `find_best.py` compares `SCORES.txt` across all models and outputs the highest-scoring file per language as a TSV
+  - Refinement was extended from experiment 07's `review.py` (speaker-name conversion, language-code handling, enhanced status bar via Rich)
+  - 30 languages improved, 32 declined, 5 unchanged (average change −1.2 points). Large gains in Basque (+42), Estonian (+29), Slovene (+22), and others
+  - Refinement functions as "polishing expression," so it is effective for translations that make sense but are rough in expression. When a translation is structurally broken, refinement tends to fail to improve it and can make it worse; when quality is already high, unnecessary changes can also backfire
+  - Cases where refinement was effective (delta of +6 or more and post-refinement score of 80 or above): Bulgarian (97:+17), Hungarian (96:+13), Slovene (95:+22), Azerbaijani (91:+13), Czech (89:+9), Basque (87:+42), Estonian (82:+29), Latvian (82:+17), Macedonian (82:+6), Belarusian (81:+12)
 
-実験06〜09の成果を受け、他者評価アプローチを `trtools review` として `trtools` に統合。
+Building on the results of experiments 06–09, the third-party-review approach was integrated into `trtools` as `trtools review`.
 
-- **[10/](10/)**: 実験09で推敲効果が高かった5言語（bg・eu・et・sl・hu）で translate → eval → review → eval のフルパイプラインを動作検証する（実行時間約3時間半）。
-  - `review.py` をサブコマンド方式に移植し、`ConsoleStream`・`StatusLine` を共通モジュールとして整備
-  - `translate`・`eval`・`review` が `--label`・`--start` メインオプションで統一されたプログレスバーを共有
-  - ベーススコアが低くても推敲が有効に機能することを確認（eu: 17→59、hu: 26→89、sl: 56→83、et: 30→51）
-  - ベーススコアが高い bg（88点）は微減（-1）。実験09の知見（高スコアでは推敲が逆効果になる傾向）と整合
+- **[10/](10/)**: Verifies the full translate → eval → review → eval pipeline (roughly 3.5 hours of run time) on the 5 languages (bg, eu, et, sl, hu) where refinement was most effective in experiment 09.
+  - Ported `review.py` to a subcommand style, and consolidated `ConsoleStream` and `StatusLine` into shared modules
+  - `translate`, `eval`, and `review` now share a unified progress bar via the `--label` / `--start` main options
+  - Confirmed that refinement works effectively even when the base score is low (eu: 17→59, hu: 26→89, sl: 56→83, et: 30→51)
+  - bg, which had a high base score (88 points), saw a slight decline (-1). Consistent with the finding from experiment 09 that refinement tends to backfire on already-high scores

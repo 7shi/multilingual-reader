@@ -1,14 +1,14 @@
-# 指定ファイルをローカルLLMで翻訳（自由記述式推論テスト）
+# Translate the specified file using a local LLM (free-form reasoning test)
 
 import argparse
-parser = argparse.ArgumentParser(description="対話テキストを1:1で翻訳（自由記述式推論テスト）")
-parser.add_argument("input_file", help="翻訳対象のテキストファイル")
-parser.add_argument("-f", "--from", dest="from_lang", required=True, help="原語（例: English, French, Japanese）")
-parser.add_argument("-t", "--to", dest="to_lang", required=True, help="翻訳先言語（例: English, French, Japanese）")
-parser.add_argument("-o", "--output", dest="output_file", required=True, help="出力ファイル名")
-parser.add_argument("-m", "--model", required=True, help="翻訳に使用するモデル")
-parser.add_argument("--history", type=int, default=5, help="コンテキストに含める過去の対話履歴数 (デフォルト: 5)")
-parser.add_argument("--no-think", action="store_true", help="reasoning処理を無効化（Qwen3モデル用）")
+parser = argparse.ArgumentParser(description="Translate dialogue text 1:1 (free-form reasoning test)")
+parser.add_argument("input_file", help="Text file to translate")
+parser.add_argument("-f", "--from", dest="from_lang", required=True, help="Source language (e.g. English, French, Japanese)")
+parser.add_argument("-t", "--to", dest="to_lang", required=True, help="Target language (e.g. English, French, Japanese)")
+parser.add_argument("-o", "--output", dest="output_file", required=True, help="Output file name")
+parser.add_argument("-m", "--model", required=True, help="Model to use for translation")
+parser.add_argument("--history", type=int, default=5, help="Number of past dialogue turns to include in context (default: 5)")
+parser.add_argument("--no-think", action="store_true", help="Disable reasoning processing (for Qwen3 models)")
 args = parser.parse_args()
 
 with open(args.input_file, "r", encoding="utf-8") as f:
@@ -20,16 +20,16 @@ from llm7shi import bold
 from tqdm import tqdm
 
 def normalize(text):
-    # ord(ch)<32の文字をすべてスペースに変換
+    # Convert all characters with ord(ch)<32 to spaces
     normalized = ''.join(' ' if ord(ch) < 32 else ch for ch in text)
-    # スペースの連続を1個にまとめる
+    # Collapse consecutive spaces into one
     normalized = re.sub(r' +', ' ', normalized)
     return normalized.strip()
 
 
 def generate_with_retry(system_prompt, prompts, model):
-    """リトライ機能付きのLLM生成関数"""
-    multiplier = 2  # 倍数の初期値
+    """LLM generation function with retry capability"""
+    multiplier = 2  # initial multiplier value
     for j in range(5):
         if j:
             print(f"Retry: {j}")
@@ -52,34 +52,34 @@ def generate_with_retry(system_prompt, prompts, model):
             else:
                 raise
 
-context_history = []  # 文脈保持用
+context_history = []  # for keeping context
 
-# 翻訳対象行を事前に抽出
+# Extract the lines to translate in advance
 translation_lines = [l for line in lines if (l := line.strip()) and ":" in l]
 
-# 1行ずつ翻訳
-for line in tqdm(translation_lines, desc="翻訳処理"):
+# Translate line by line
+for line in tqdm(translation_lines, desc="Translating"):
     print("\n\n" + bold(f"[{args.from_lang}]"), line + "\n")
-    
-    # 話者を分離
+
+    # Separate the speaker
     speaker, text = line.split(":", 1)
     speaker = speaker.strip()
     text = text.strip()
-    
-    # 文脈作成（直前のhistory個の翻訳結果）
+
+    # Build context (translation results from the last `history` turns)
     context_lines = []
     if context_history and args.history > 0:
         context_lines.append("Previous conversation context:")
         context_lines.append("")
         for ctx in context_history[-args.history:]:
-            # 対訳形式で提供
+            # Provide in bilingual format
             context_lines.append(f"Original: {ctx['speaker']}: {ctx['original']}")
             context_lines.append(f"Translation: {ctx['speaker']}: {ctx['translation']}")
             context_lines.append("")
-    
+
     context = "\n".join(context_lines) if context_lines else "(No context)"
-    
-    # システムプロンプトとユーザープロンプトの作成（常に推論モード）
+
+    # Create the system prompt and user prompt (always in reasoning mode)
     system_prompt = f"""You are a professional translator. Please translate {args.from_lang} to {args.to_lang}.
 
 First, provide detailed translation reasoning covering:
@@ -91,30 +91,30 @@ First, provide detailed translation reasoning covering:
 
 Then provide your final translation on the last line."""
     prompt = f"Analyze and translate the following {args.from_lang} text into {args.to_lang}:\n{line}"
-    
-    # 翻訳実行
+
+    # Run translation
     output_text = generate_with_retry(system_prompt, [context, prompt], args.model)
-    
-    # 翻訳結果を抽出（常に推論モードなので抽出処理を実行）
+
+    # Extract the translation result (always in reasoning mode, so extraction is always run)
     print("\n" + bold(f"[{args.to_lang}]"), end=" ")
     extraction_system_prompt = "Output only the requested translation text."
     extraction_prompt = f"Extract only the final {args.to_lang} translation from the following text. Look for the actual translation result, not the reasoning or analysis sections. Output only the {args.to_lang} translation without any explanations, alternatives, or formatting in any language. If the entire translation is wrapped in quotation marks, remove only the outer quotation marks:\n\n{output_text}"
-    
-    # 抽出実行
+
+    # Run extraction
     translated_text = generate_with_retry(extraction_system_prompt, [extraction_prompt], args.model)
     translated_text = normalize(translated_text).removeprefix(speaker + ":").strip()
     print()
-    
-    # 文脈履歴に追加
+
+    # Add to context history
     context_history.append({
         'speaker': speaker,
         'original': text,
         'translation': translated_text
     })
 
-# 結果を保存
+# Save results
 with open(args.output_file, "w", encoding="utf-8") as f:
     for ctx in context_history:
         f.write(f"{ctx['speaker']}: {ctx['translation']}\n")
 
-print(f"翻訳完了: {args.from_lang} → {args.to_lang} ({args.output_file})")
+print(f"Translation complete: {args.from_lang} → {args.to_lang} ({args.output_file})")

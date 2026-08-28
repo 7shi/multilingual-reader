@@ -1,20 +1,20 @@
-# trtools translate を用いた翻訳実験
+# Translation Experiment Using trtools translate
 
-[experimental/04](../04/) の用語事前抽出方式を踏襲しつつ、翻訳スクリプトを `trtools translate` に移行した実験ディレクトリです。
+This experiment directory builds on the term pre-extraction approach from [experimental/04](../04/), but migrates the translation script to `trtools translate`.
 
-## 背景と動機
+## Background and Motivation
 
-experimental/04 では用語抽出・訳語確定・翻訳が一体化したスクリプトでしたが、用語 TSV の校正ワークフロー（抽出 → 人手確認・編集 → 翻訳）を確立するため `trtools term extract/translate` として分離しました。
+In experimental/04, term extraction, translation fixing, and translation itself were all handled by a single integrated script. To establish a proofreading workflow for the term TSV (extract → human review/edit → translate), this was split into `trtools term extract/translate`.
 
-experimental/05 では:
+In experimental/05:
 
-- **用語は事前に `trtools term` で抽出・校正済み**（`examples/terms/finetuning-fr.tsv`）
-- **翻訳は `trtools translate` で実行**（共有用語ファイルを参照）
-- experimental/04 と同一の threshold=10・keep=5・CoT なし設定
+- **Terms are extracted and proofread beforehand with `trtools term`** (`examples/terms/finetuning-fr.tsv`)
+- **Translation is run with `trtools translate`** (referencing the shared term file)
+- Same threshold=10, keep=5, no-CoT settings as experimental/04
 
-これにより、複数の翻訳 run が同じ校正済み用語辞書を共有するため、run 間の用語ブレ（`affinage` → `refinamiento` / `ajuste fino` のような揺れ）を原理的に排除できます。
+Because multiple translation runs share the same proofread term dictionary, this fundamentally eliminates run-to-run terminology drift (variation such as `affinage` → `refinamiento` / `ajuste fino`).
 
-## 翻訳システム
+## Translation System
 
 ### trtools translate
 
@@ -22,26 +22,26 @@ experimental/05 では:
 uv run trtools translate <input_file> -f <from_lang> -t <to_lang> -o <output> -m <model> [options]
 ```
 
-**主要オプション:**
+**Main options:**
 
-| オプション | 値 | 説明 |
+| Option | Value | Description |
 |---|---|---|
-| `--threshold` | 10 | 要約生成の間隔（行数） |
-| `--keep` | 5 | 圧縮後に保持する翻訳ペア数 |
-| `--no-think` | （フラグ） | CoT 無効化（翻訳品質への影響なし、速度向上） |
-| `--terms-json` | `examples/terms/finetuning-fr.json` | 用語チャンクマップ |
-| `--terms-tsv` | `examples/terms/finetuning-fr.tsv` | 用語訳語対応表 |
+| `--threshold` | 10 | Interval (in lines) for generating a summary |
+| `--keep` | 5 | Number of translation pairs kept after compression |
+| `--no-think` | (flag) | Disable CoT (no impact on translation quality, faster) |
+| `--terms-json` | `examples/terms/finetuning-fr.json` | Term chunk map |
+| `--terms-tsv` | `examples/terms/finetuning-fr.tsv` | Term-to-translation mapping |
 
-### 用語ファイル
+### Term File
 
-`examples/terms/finetuning-fr.tsv` は `trtools term extract/translate` で生成・校正済みの TSV。
-全 run が同じ用語辞書を共有するため、run 間の用語ブレが発生しない。
+`examples/terms/finetuning-fr.tsv` is a TSV generated and proofread with `trtools term extract/translate`.
+Since all runs share the same term dictionary, no run-to-run terminology drift occurs.
 
-| 言語 | 列 |
+| Language | Column |
 |---|---|
-| French（原語） | 列1 |
-| English | 列2 |
-| Spanish（翻訳先） | 列3 |
+| French (source) | Column 1 |
+| English | Column 2 |
+| Spanish (target) | Column 3 |
 
 ### batch.sh
 
@@ -49,66 +49,66 @@ uv run trtools translate <input_file> -f <from_lang> -t <to_lang> -o <output> -m
 bash batch.sh
 ```
 
-MODELS.txt の2モデル（gemma4-26b、gemma4-e4b）について **翻訳3回 × 評価3回** を実行します。
+For the two models in MODELS.txt (gemma4-26b, gemma4-e4b), this runs **3 translations × 3 evaluations**.
 
-**ファイル命名:**
+**File naming:**
 
 ```
-tr/<model>-<trrun>.txt              例: tr/gemma4-26b-1.txt
+tr/<model>-<trrun>.txt              e.g. tr/gemma4-26b-1.txt
 evals/<model>-<trrun>-eval-<evrun>.json
 ```
 
-experimental/04 と異なり、tr/ に `-terms.json` ファイルは生成されません（用語は共有ファイルを使用）。
+Unlike experimental/04, no `-terms.json` file is generated under tr/ (a shared term file is used instead).
 
-## 対象モデル
+## Target Models
 
-experimental/03 や experimental/04 と同じ2モデル。
+Same two models as experimental/03 and experimental/04.
 
-| モデル | experimental/04 スコア | 選定理由 |
+| Model | experimental/04 score | Reason for selection |
 |---|:---:|---|
-| gemma4-26b | 96 / 96 / 99 | 全 run で急落なし、最安定 |
-| gemma4-e4b | 95 / 96 / 92 | リソース制約がある場合の代替 |
+| gemma4-26b | 96 / 96 / 99 | No sharp drops in any run, most stable |
+| gemma4-e4b | 95 / 96 / 92 | Alternative for resource-constrained settings |
 
-## 評価システム
+## Evaluation System
 
-experimental/04 と同じパイプライン。
+Same pipeline as experimental/04.
 
-- 評価者: `ollama:qwen3.6`
-- 5項目 × 20点 = 100点満点
-- 集計: 3回評価の中央値
+- Evaluator: `ollama:qwen3.6`
+- 5 criteria × 20 points = 100 points total
+- Aggregation: median of 3 evaluations
 
-## 試行
+## Trials
 
-| 試行 | threshold | 結果 |
+| Trial | threshold | Result |
 |---|:---:|---|
-| [tr/](tr/) | 10 | gemma4-26b: 95/96/97、gemma4-e4b: 95/95/94 |
+| [tr/](tr/) | 10 | gemma4-26b: 95/96/97, gemma4-e4b: 95/95/94 |
 
-## 比較結果
+## Comparison Results
 
-experimental/04（run ごとに用語抽出）との比較（差分: 用語辞書の共有有無のみ）:
+Comparison against experimental/04 (terms extracted per run) — the only difference is whether the term dictionary is shared:
 
-| モデル | experimental/04 | experimental/05 |
+| Model | experimental/04 | experimental/05 |
 |---|:---:|:---:|
 | gemma4-26b run 1 | 96 | 95 |
 | gemma4-26b run 2 | 96 | 96 |
 | gemma4-26b run 3 | 99 | 97 |
 | gemma4-e4b run 1 | 95 | 95 |
 | gemma4-e4b run 2 | 96 | 95 |
-| gemma4-e4b run 3 | **92**（急落） | 94 |
+| gemma4-e4b run 3 | **92** (sharp drop) | 94 |
 
-**観察:**
+**Observations:**
 
-- **gemma4-e4b の急落が解消**: 92点 → 94点。急落なし。共有用語辞書により run 間の用語ブレが排除された効果が確認できた
-- **gemma4-26b**: 上限が 99→97 に微減したが、95〜97 の範囲で安定維持
-- **全体**: 両モデルとも 94〜97 の範囲に収束。qwen3.6 評価者の実質上限（97点）を踏まえると、校正済み共有用語辞書は安定性向上に寄与している
+- **gemma4-e4b's sharp drop is resolved**: 92 → 94 points, no sharp drop. This confirms the effect of eliminating run-to-run terminology drift via the shared term dictionary
+- **gemma4-26b**: the ceiling dipped slightly, 99 → 97, but it remains stable in the 95–97 range
+- **Overall**: both models converge into the 94–97 range. Given the practical ceiling of the qwen3.6 evaluator (97 points), the proofread shared term dictionary is contributing to improved stability
 
-## 減点分析
+## Deduction Analysis
 
-評価ログ全18件（各モデル9件）を分析した結果。
+Analysis of all 18 evaluation logs (9 per model).
 
-### gemma4-26b（9件）
+### gemma4-26b (9 logs)
 
-| 項目 | 平均 | 最低 |
+| Criterion | Average | Minimum |
 |---|:---:|:---:|
 | information_completeness | 19.89 | 19 |
 | contextual_adaptation | 19.22 | 19 |
@@ -116,14 +116,14 @@ experimental/04（run ごとに用語抽出）との比較（差分: 用語辞�
 | readability | 18.89 | 18 |
 | fluency | 18.67 | 17 |
 
-**減点パターン:**
-- `antisèche`（カンニングペーパー）の訳が `acordeón` — 地域によっては通じるが普遍的でない（`chuleta` が推奨）。用語辞書に含めていないため run によって揺れる
-- fluency の -3 点（run 1 eval-2）は `acordeón` およびわずかな不自然な表現の組み合わせ
-- 構造的欠陥はなし
+**Deduction patterns:**
+- The translation of `antisèche` ("cheat sheet") as `acordeón` — understood in some regions but not universal (`chuleta` is recommended). Since this is not in the term dictionary, it varies between runs
+- The -3 fluency deduction (run 1, eval-2) came from a combination of `acordeón` and slightly unnatural phrasing
+- No structural defects
 
-### gemma4-e4b（9件）
+### gemma4-e4b (9 logs)
 
-| 項目 | 平均 | 最低 |
+| Criterion | Average | Minimum |
 |---|:---:|:---:|
 | terminology | 19.11 | 18 |
 | readability | 18.78 | 18 |
@@ -131,10 +131,10 @@ experimental/04（run ごとに用語抽出）との比較（差分: 用語辞�
 | contextual_adaptation | 18.78 | 17 |
 | information_completeness | 19.44 | 18 |
 
-**減点パターン:**
-- **run 2**: 二人称の不統一（`Vean más bien: usted no le enseñaría...` — 同一文内で ustedes 命令形と usted 単数形が混在）。地域変種（ラテンアメリカ vs. スペイン）を明示しないとモデルが揺れる
-- **run 3**: 発言者ラベルの消失（`Camille: Elle oublie tout.` → `Olvida todo.`）および `antisèche → sinopsis`（「あらすじ」への誤訳）が重なり、評価者 1回が readability・contextual_adaptation・information_completeness の複数項目で計 7点減点。ただし 3回中 2回（eval-1・eval-3）は見落とし（93〜94点）
+**Deduction patterns:**
+- **Run 2**: inconsistent formal register (`Vean más bien: usted no le enseñaría...` — the plural "ustedes" imperative and the singular "usted" form appear mixed within a single sentence). Without specifying the regional variant (Latin American vs. Spain), the model drifts
+- **Run 3**: a dropped speaker label (`Camille: Elle oublie tout.` → `Olvida todo.`) combined with a mistranslation of `antisèche → sinopsis` ("summary/synopsis") caused one evaluator to deduct a total of 7 points across the readability, contextual_adaptation, and information_completeness criteria. However, 2 of the 3 evaluations (eval-1, eval-3) missed this (scoring 93–94)
 
-### まとめ
+### Summary
 
-gemma4-26b の減点はほぼ `antisèche` の訳語選択という単一の様式的問題に収束しており、構造的欠陥はない。gemma4-e4b はリソース制約がある環境向けの代替として割り切って使う位置付けであり、run によっては発言者消失や人称不統一といった軽微な構造的問題が出る点を許容する。gemma4-26b が利用できる場合は引き続き第一推奨。
+For gemma4-26b, deductions almost entirely trace back to a single stylistic choice — the translation of `antisèche` — with no structural defects. gemma4-e4b is treated as a fallback for resource-constrained environments, where occasional minor structural issues such as dropped speakers or inconsistent formal register are considered acceptable trade-offs. gemma4-26b remains the primary recommendation whenever it is available.

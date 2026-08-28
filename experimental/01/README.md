@@ -1,123 +1,123 @@
-# ローカルLLM翻訳実験：推論レベル別性能分析と実用指針
+# Local LLM Translation Experiment: Performance Analysis by Reasoning Level and Practical Guidelines
 
-フランス語からスペイン語にポッドキャストの翻訳を行い、LLMによる客観評価を実施。構造化出力と推論レベルが翻訳品質に与える影響を体系的に分析しました。
+Translated a podcast from French to Spanish and conducted objective evaluation using an LLM. Systematically analyzed the effect of structured output and reasoning level on translation quality.
 
-※ 推論レベルが高くなるほど、詳細なreasoningを行うように構造化出力で誘導。具体的なスキーマは各セクションで説明。
+※ As the reasoning level increases, structured output is used to guide the model toward more detailed reasoning. The specific schema is explained in each section.
 
-## 実験の背景と設計思想
+## Background and Design Philosophy of the Experiment
 
-### 構造化出力による推論制御の理論的背景
+### Theoretical Background of Reasoning Control via Structured Output
 
-**基本仮説**: スキーマフィールド順序でモデルの処理順序を制御できる
+**Basic hypothesis**: The order of schema fields can control the model's processing order
 
-構造化出力のスキーマ設計により、`reasoning_level`パラメーターで翻訳手法を動的に切り替える柔軟なシステムを実装。モデルの思考プロセスを制御し、段階的な品質向上を実現することを目指しました。
+Through schema design for structured output, we implemented a flexible system that dynamically switches the translation method via a `reasoning_level` parameter. The aim was to control the model's thought process and achieve stepwise quality improvement.
 
-### 評価手法の変遷
+### Evolution of the Evaluation Method
 
-#### 初期評価（Claude Codeによる評価）
-| 手法 | スコア | 改善幅 | 主要効果 |
+#### Initial evaluation (evaluation by Claude Code)
+| Method | Score | Improvement | Key Effect |
 |:---|:---:|:---:|:---|
-| レベル0 (直接翻訳) | 65点 | - | ベースライン |
-| レベル1 (推論付き) | 85点 | +20点 | 思考の連鎖 |
-| レベル2 (2段階翻訳) | 93点 | +28点 | 自己品質チェック |
+| Level 0 (direct translation) | 65 pts | - | Baseline |
+| Level 1 (with reasoning) | 85 pts | +20 pts | Chain of thought |
+| Level 2 (two-stage translation) | 93 pts | +28 pts | Self quality check |
 
-詳細👉[comparison/README.md](comparison/README.md)
+Details 👉 [comparison/README.md](comparison/README.md)
 
-**問題点**: 評価項目を決めずに漠然と評価するため、評価の根拠が不明確
+**Problem**: Because the evaluation criteria were not defined and evaluation was done vaguely, the basis for the evaluation was unclear.
 
-#### 評価項目を定めた評価
-同じ出力を5項目評価で測定：
+#### Evaluation with defined criteria
+The same output was measured using 5 evaluation criteria:
 
-- **5項目体系的評価**: 読みやすさ、流暢性、専門用語、文脈適応、情報完全性
-- **複数回評価による信頼性**: 3回評価の中央値で評価ブレを排除
+- **Systematic 5-criteria evaluation**: readability, fluency, terminology, contextual adaptation, informational completeness
+- **Reliability through repeated evaluation**: eliminated evaluation variance by using the median of 3 evaluation runs
 
-**初期評価と異なる結果が判明**:
-- **従来の仮説**: 複雑な推論システム → 高品質翻訳
-- **客観評価による新発見**: 適切なモデル選択 → シンプルな直接出力 = 最高効率
+**Findings different from the initial evaluation**:
+- **Conventional hypothesis**: complex reasoning system → high-quality translation
+- **New discovery via objective evaluation**: appropriate model selection → simple direct output = highest efficiency
 
-#### 評価者の変遷
+#### Evolution of the Evaluator
 
-GPT-OSS 120B による初期評価（本稿のスコア）を経て、天井効果（最高92点）の問題から評価者を変更：
+After an initial evaluation by GPT-OSS 120B (the scores in this document), the evaluator was changed due to a ceiling-effect problem (maximum score of 92):
 
-- **GPT-OSS 120B**: 初期評価者。天井効果あり・MoE特性で判断力が弱い（評価者として廃止）
-- **gemma-4-31b**: 候補調査。甘すぎる（97点以上が18%）・内容の正確性を見逃す（不採用）
-- **qwen3.6**: **評価者として正式採用**。CoTによる論理的検証で技術的欠陥を正しく特定し、単独運用が最も信頼性が高いと結論。
+- **GPT-OSS 120B**: initial evaluator. Ceiling effect present; weak judgment due to MoE characteristics (discontinued as an evaluator)
+- **gemma-4-31b**: candidate evaluated. Too lenient (18% of scores 97 or above); misses content accuracy issues (not adopted)
+- **qwen3.6**: **officially adopted as evaluator**. Logical verification via CoT correctly identifies technical flaws, and it was concluded that operating it alone offers the highest reliability.
 
-詳細👉[evaluator_comparison/README.md](evaluator_comparison/README.md)
+Details 👉 [evaluator_comparison/README.md](evaluator_comparison/README.md)
 
-## 評価システムの技術詳細
+## Technical Details of the Evaluation System
 
-### trtools eval: 翻訳品質評価ツール
+### trtools eval: translation quality evaluation tool
 
-**概要**: LLMを使用した5項目翻訳品質評価システム（[trtools/evaluate.py](../trtools/evaluate.py)）
+**Overview**: An LLM-based 5-criteria translation quality evaluation system ([trtools/evaluate.py](../trtools/evaluate.py))
 
-- **評価基準**: 5項目各20点満点（計100点）👉[EVAL.md](EVAL.md)
-  1. **読みやすさと理解しやすさ**: 目標言語読者の理解容易性
-  2. **流暢さと自然さ**: ネイティブスピーカーにとっての自然性
-  3. **専門用語の適切性**: 技術用語の正確性と一貫性
-  4. **文脈適応性**: 原文の意図と文化的背景の適切な反映
-  5. **情報の完全性**: 情報の欠落・追加なく簡潔明瞭な伝達
-- **統計的信頼性**: 3回評価の中央値を使用（`trtools agg`）
-- **評価結果**: [SCORES.txt](SCORES.txt)
+- **Evaluation criteria**: 5 criteria, 20 points each (100 points total) 👉 [EVAL.md](EVAL.md)
+  1. **Readability and comprehensibility**: ease of understanding for readers of the target language
+  2. **Fluency and naturalness**: naturalness for native speakers
+  3. **Appropriateness of terminology**: accuracy and consistency of technical terms
+  4. **Contextual adaptability**: appropriate reflection of the original text's intent and cultural background
+  5. **Completeness of information**: concise and clear communication without missing or added information
+- **Statistical reliability**: uses the median of 3 evaluation runs (`trtools agg`)
+- **Evaluation results**: [SCORES.txt](SCORES.txt)
 
-**使用方法**:
+**Usage**:
 ```bash
-uv run trtools eval --original 原文.txt --translation 翻訳文.txt \
-  -m ollama:qwen3.6 -f French -t Spanish -o 評価結果.json
+uv run trtools eval --original original.txt --translation translation.txt \
+  -m ollama:qwen3.6 -f French -t Spanish -o result.json
 ```
 
-**出力形式**: 各項目の詳細な推論と点数、総合評価コメント
+**Output format**: detailed reasoning and score for each criterion, plus an overall evaluation comment
 
-### trtools agg: 評価結果集約ツール
+### trtools agg: evaluation result aggregation tool
 
-**概要**: 複数回評価の統計的集約により信頼性の高い品質測定を実現（[trtools/aggregate.py](../trtools/aggregate.py)）
+**Overview**: Achieves reliable quality measurement through statistical aggregation of repeated evaluations ([trtools/aggregate.py](../trtools/aggregate.py))
 
-**主な機能**:
-- **3回評価の自動検出**: `ファイル名-{1,2,3}.json`パターンを認識
-- **統計値計算**: 中央値、平均値、標準偏差を項目別・総合別に算出
-- **信頼性向上**: 評価のブレを統計的に補正
+**Main features**:
+- **Automatic detection of 3 evaluation runs**: recognizes the `filename-{1,2,3}.json` pattern
+- **Statistical value calculation**: computes median, mean, and standard deviation per criterion and overall
+- **Improved reliability**: statistically corrects for evaluation variance
 
-**使用方法**:
+**Usage**:
 ```bash
-# 詳細表示
+# Detailed display
 uv run trtools agg evaluation-*-*.json --verbose
 
-# 簡潔表示（中央値のみ）
+# Concise display (median only)
 uv run trtools agg evaluation-*-*.json
 ```
 
-**統計的意義**: 単発評価の主観的ブレを3回評価の中央値で排除し、客観的品質測定を実現
+**Statistical significance**: eliminates the subjective variance of a single evaluation via the median of 3 evaluation runs, achieving objective quality measurement
 
-### 実験の実行とスコア取得方法
-翻訳と評価の実行は`batch.sh`で一斉処理され、最終的にスコア集約まで自動化されています：
+### Running the experiment and obtaining scores
+Translation and evaluation are batch-processed via `batch.sh`, which automates the whole pipeline through to score aggregation:
 
 ```bash
 sh batch.sh
 ```
 
-各翻訳結果に対して自動的に3回評価を実行し、統計的信頼性を確保します。
+Three evaluation runs are automatically performed for each translation result to ensure statistical reliability.
 
-**評価後の集計フロー**:
-- `trtools agg`: 最終的なスコアを集約し、`SCORES.txt`に保存
-- `generate_scores_md.py`: `SCORES.txt`から`SCORES.md`を生成
-- `sync_scores.py`: `SCORES.md`の表を`README.md`に自動同期
+**Aggregation flow after evaluation**:
+- `trtools agg`: aggregates the final scores and saves them to `SCORES.txt`
+- `generate_scores_md.py`: generates `SCORES.md` from `SCORES.txt`
+- `sync_scores.py`: automatically syncs the tables in `SCORES.md` into `README.md`
 
-### 翻訳システムの構成
-- [translate.py](translate.py): 構造化出力による5段階推論レベル
-- [translate4.py](translate4.py): 非構造化直接翻訳
-- [translate5.py](translate5.py): 非構造化簡略推論
-- [translate6.py](translate6.py): 非構造化詳細推論
+### Composition of the Translation System
+- [translate.py](translate.py): 5-level reasoning via structured output
+- [translate4.py](translate4.py): unstructured direct translation
+- [translate5.py](translate5.py): unstructured simplified reasoning
+- [translate6.py](translate6.py): unstructured detailed reasoning
 
-### 凡例
-- 表中のボールドは行ごとの最高点
-- (t): `--translated-context`オプション（履歴に翻訳文のみ提供）
-- (nt): `--no-think`オプション（reasoningモデルでの無効化）
-  - Ollamaの制約により構造化出力利用時はreasoningが無効化され、(nt)と同様の効果
+### Legend
+- Bold in the tables indicates the highest score in each row
+- (t): `--translated-context` option (only the translated text is provided in the history)
+- (nt): `--no-think` option (disables reasoning on reasoning models)
+  - Due to an Ollama limitation, reasoning is disabled when structured output is used, giving the same effect as (nt)
 
-## 推論レベル別システム設計と実験スコア
-[translate.py](translate.py)の `-r` オプションで推論レベル指定（すべて構造化出力）
+## System Design by Reasoning Level and Experimental Scores
+Reasoning level specified via the `-r` option of [translate.py](translate.py) (all structured output)
 
-| モデル | 0 | 1 | 2 | 3 | 4 |
+| Model | 0 | 1 | 2 | 3 | 4 |
 |:---|:---:|:---:|:---:|:---:|:---:|
 | **aya-expanse-8b** | **81** | 73 | 73 | 41 | 40 |
 | **aya-expanse-32b** | **87** | 83 | 85 | 60 | 73 |
@@ -148,25 +148,25 @@ sh batch.sh
 | **qwen3-32b** | 93 | 77 | 77 | 94 | **95** |
 | **qwen3-32b (nt)** | 92 | 90 | 94 | **95** | 91 |
 
-- **レベル0（直接翻訳）**: 最も安定。高性能モデル（gemma3-27b, gpt-oss-120b）で非常に高得点。
-- **レベル1（推論付き翻訳）**: 構造化制約下で指示が複雑化し、多くのモデルで顕著に劣化（中央値59点）。次期アーキテクチャでは廃止予定。
-- **レベル2（2段階翻訳）**: aya-expanse-8b、command-r-35b など一部モデルの底上げに有効だが、劣化するモデルも多い。
-- **レベル3・4**: Qwen3系など一部モデルで高得点（95点）を記録するが、推論による複雑化の悪影響が出やすく、非構造化出力が必須となるケース（qwen3-30b）も存在するため扱いにくい。
+- **Level 0 (direct translation)**: the most stable. High-performing models (gemma3-27b, gpt-oss-120b) score very highly.
+- **Level 1 (translation with reasoning)**: instructions become more complex under structured constraints, causing a marked degradation for many models (median 59 points). Planned for removal in the next-generation architecture.
+- **Level 2 (two-stage translation)**: effective at boosting some models such as aya-expanse-8b and command-r-35b, but many models also degrade.
+- **Levels 3 and 4**: some models, such as the Qwen3 series, record high scores (95 points), but the adverse effects of reasoning-induced complexity tend to appear, and there are cases (qwen3-30b) where unstructured output is essential, making these levels hard to handle.
 
-**結論**: 分析・運用の主軸は0。推論付き構造化出力（レベル1）は逆効果となるため廃止。
+**Conclusion**: Level 0 remains the primary axis for analysis and operation. Reasoning-augmented structured output (Level 1) is counterproductive and is therefore discontinued.
 
-### レベル0: 直接翻訳
-**特徴**: 最もシンプルな翻訳方式
+### Level 0: Direct Translation
+**Characteristics**: the simplest translation method
 ```python
 class Translation(BaseModel):
     translation: str = Field(description=f"Direct translation from {args.from_lang} to {args.to_lang}")
 ```
 
-[translate.py](translate.py)の `--history` オプションでコンテキストに含める履歴数を指定（省略時のデフォルト値は5）
+The `--history` option of [translate.py](translate.py) specifies the number of history entries to include in the context (default is 5 if omitted)
 
-- 0-20は2回測定して変動を調査（他の項目もこの程度の変動はあると考えられる）
+- 0-20 was measured twice to check for variation (other entries are believed to have similar variation)
 
-| モデル | 0-05 | 0-10 | 0-15 | 0-20 | 0-20-a | 0-20-b | 0-25 |
+| Model | 0-05 | 0-10 | 0-15 | 0-20 | 0-20-a | 0-20-b | 0-25 |
 |:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
 | **aya-expanse-8b** | 70 | 75 | - | - | 74 | **79** | - |
 | **aya-expanse-32b** | 79 | 93 | - | - | 92 | **95** | - |
@@ -199,47 +199,47 @@ class Translation(BaseModel):
 | **qwen3-32b** | 78 | 91 | - | - | 93 | **94** | - |
 | **qwen3-32b (nt)** | **94** | 84 | - | - | 82 | 91 | - |
 
-- **(t)**: 一貫した改善は確認できず。実用性は限定的のため、次期アーキテクチャでは廃止。
-- 履歴最適値はモデル依存。高性能モデル（gemma3-27b、gpt-oss-120b）は履歴5でも既に高得点に到達するが、履歴20でさらに最高点を記録するケースもある（gpt-oss-120b: 0-20-bで98点）。
-- ただし、スライディングコンテキストによる履歴の忘却（用語のブレ）が客観評価により確認されたため、履歴数（--history）を増やすアプローチ自体に限界があることが判明。
+- **(t)**: no consistent improvement was observed. Practical value is limited, so it is discontinued in the next-generation architecture.
+- The optimal history value depends on the model. High-performing models (gemma3-27b, gpt-oss-120b) already reach high scores at history 5, but in some cases they record their highest score at history 20 (gpt-oss-120b: 98 points at 0-20-b).
+- However, objective evaluation confirmed forgetting of history (terminology drift) caused by the sliding context, revealing an inherent limit to the approach of simply increasing the history count (--history).
 
-**結論**:
-- コンテキスト履歴（--history）をスライディングさせる現行方式は廃止し、次期アーキテクチャでは「用語集付きサマリー圧縮」へ移行する。
-- --translated-context (t) は廃止。
+**Conclusion**:
+- The current approach of sliding the context history (--history) is discontinued; the next-generation architecture will move to "glossary-augmented summary compression."
+- --translated-context (t) is discontinued.
 
-## コンテキスト履歴（--history）オプション詳細
+## The Context History (--history) Option in Detail
 
-### 概要
-`--history N`オプションは過去N件の翻訳履歴をコンテキストとして提供し、対話の一貫性と翻訳品質を向上させます。
+### Overview
+The `--history N` option provides the past N translation entries as context, improving dialogue consistency and translation quality.
 
-### 設定値と効果
-- **デフォルト値**: `--history 5`（省略時）
-- **推奨設定**: `--history 10`（中・低性能モデルで大幅改善）
-- **履歴形式**: 原文と翻訳文の対訳形式でコンテキストに含める
+### Settings and Effects
+- **Default value**: `--history 5` (when omitted)
+- **Recommended setting**: `--history 10` (significant improvement for mid/low-performing models)
+- **History format**: included in the context as source–translation pairs
 
-### 実装詳細
+### Implementation Details
 ```python
-# 直前の5つ（またはN個）の翻訳結果をコンテキストとして追加
+# Add the last 5 (or N) translation results as context
 context_lines = []
 if context_history:
     context_lines.append("Previous conversation context:")
     context_lines.append("")
-    for ctx in context_history[-N:]:  # Nは--historyで指定
+    for ctx in context_history[-N:]:  # N is specified via --history
         context_lines.append(f"Original: {ctx['speaker']}: {ctx['original']}")
         context_lines.append(f"Translation: {ctx['speaker']}: {ctx['translation']}")
         context_lines.append("")
 ```
 
-### モデル別効果
-- **高性能モデル** (Gemma3 27B, GPT-OSS 120B): 履歴5でも既に95点以上の高得点に到達し、追加履歴による底上げは少ないが、20まで増やすとさらに最高点を記録することがある（gpt-oss-120bは0-20-bで98点）。
-- **コンテキスト把握力が高いモデル** (Phi4): **劇的改善（62点→90点、+28点）**。履歴情報により翻訳の一貫性が大幅に向上し、中型ながら高性能モデルに匹敵するスコアに到達。
-- **履歴増で不安定化するモデル** (Qwen3 4B, Gemma3 4B): 履歴を増やすとスコアが低下したり変動が激しくなる傾向がある。
+### Effect by Model
+- **High-performing models** (Gemma3 27B, GPT-OSS 120B): already reach high scores of 95+ at history 5, with little further boost from additional history, but can record their highest score when increased to 20 (gpt-oss-120b scored 98 at 0-20-b).
+- **Models with strong context comprehension** (Phi4): **dramatic improvement (62 → 90 points, +28 points)**. History information greatly improves translation consistency, reaching a score comparable to larger, higher-performing models despite its mid size.
+- **Models destabilized by more history** (Qwen3 4B, Gemma3 4B): tend to show lower or more volatile scores as history is increased.
 
-### スライディングコンテキストの限界
-現在の `--history` オプションは一定数を超えた古い履歴を破棄する「スライディング方式」だが、評価により「古い履歴にある用語が忘れられ、新しい訳語にブレる」現象が定量的に確認された。これを解決するため、履歴パラメータ自体を廃止し、今後はサマリー圧縮方式へ移行する。
+### Limits of the Sliding Context
+The current `--history` option uses a "sliding" approach that discards old history beyond a fixed count, but evaluation quantitatively confirmed the phenomenon that "terms in old history are forgotten and drift toward new wording." To address this, the history parameter itself is discontinued, and future work will move to a summary compression approach.
 
-### レベル1: 推論付き翻訳
-**特徴**: 5項目詳細推論（構文解析、文脈解釈、語彙選択、文化的配慮、翻訳根拠）
+### Level 1: Translation with Reasoning
+**Characteristics**: detailed reasoning across 5 criteria (syntactic analysis, contextual interpretation, vocabulary choice, cultural consideration, translation rationale)
 ```python
 class Translation(BaseModel):
     reasoning: str = Field(description="""Detailed translation reasoning process:
@@ -251,7 +251,7 @@ class Translation(BaseModel):
     translation: str = Field(description="Translation result")
 ```
 
-| モデル | 1-05 | 1-10 | 1-15 | 1-20 | 1-25 |
+| Model | 1-05 | 1-10 | 1-15 | 1-20 | 1-25 |
 |:---|:---:|:---:|:---:|:---:|:---:|
 | **aya-expanse-8b** | 59 | **93** | - | 27 | - |
 | **aya-expanse-32b** | **93** | 86 | - | 90 | - |
@@ -284,17 +284,17 @@ class Translation(BaseModel):
 | **qwen3-32b** | 70 | **90** | - | 79 | - |
 | **qwen3-32b (nt)** | 28 | **48** | - | 22 | - |
 
-- **(t)**: 出力形式は安定化するが、得点向上は不安定。
-- 履歴による改善は限定的で、レベル0の直接翻訳を超えるケースはほとんどない。
-- **高得点を維持できるモデル**: gpt-oss-120b（94〜95点）、gpt-oss-20b（91〜95点）、qwen3-30b（94〜96点）、gemma3-27b（93〜96点）など、推論制約下でも耐えられる一部の強力モデルに限られる。
-- **大幅劣化が顕著**: gemma3-12b（0〜6点、出力崩壊）、ministral-3-3b/8b（5〜21点）、llama4-scout（18〜27点）など、構造化推論と相性が悪くスコアが致命的に低下するモデルが多数存在する。
-- **中型以上は安定傾向**: aya-expanse-32b、mistral-small3.2、mixtral-8x22b は履歴によっては80点台後半〜90点台を維持。
+- **(t)**: the output format becomes more stable, but the score improvement is unstable.
+- Improvement from history is limited, and it rarely exceeds Level 0's direct translation.
+- **Models that maintain high scores**: gpt-oss-120b (94–95), gpt-oss-20b (91–95), qwen3-30b (94–96), gemma3-27b (93–96), etc. — limited to a few powerful models that can withstand the reasoning constraint.
+- **Marked degradation**: gemma3-12b (0–6, output collapse), ministral-3-3b/8b (5–21), llama4-scout (18–27), etc. — many models are incompatible with structured reasoning and their scores drop critically.
+- **Mid-size and above tend to be stable**: aya-expanse-32b, mistral-small3.2, mixtral-8x22b maintain scores in the mid-80s to 90s depending on history.
 
-**結論**:
-- 構造化推論（レベル1）は全体として翻訳品質に対して逆効果（中央値59点）となるため、次期アーキテクチャへの移行に伴い廃止する。
+**Conclusion**:
+- Structured reasoning (Level 1) is counterproductive to translation quality overall (median 59 points), and is therefore discontinued as part of the move to the next-generation architecture.
 
-### レベル2: 2段階翻訳
-**特徴**: 直接翻訳後、推敲して翻訳文を生成する2段階翻訳
+### Level 2: Two-Stage Translation
+**Characteristics**: two-stage translation that revises after a direct translation to produce the final translation
 ```python
 class Translation(BaseModel):
     draft_translation: str = Field(description="First draft translation")
@@ -303,7 +303,7 @@ class Translation(BaseModel):
     improved_translation: str = Field(description="Improved translation based on assessment")
 ```
 
-| モデル | 2-05 | 2-10 | 2-15 | 2-20 | 2-25 |
+| Model | 2-05 | 2-10 | 2-15 | 2-20 | 2-25 |
 |:---|:---:|:---:|:---:|:---:|:---:|
 | **aya-expanse-8b** | **85** | 71 | - | 84 | - |
 | **aya-expanse-32b** | 61 | 63 | - | **79** | - |
@@ -336,20 +336,20 @@ class Translation(BaseModel):
 | **qwen3-32b** | 90 | 86 | - | **93** | - |
 | **qwen3-32b (nt)** | **94** | 93 | - | 90 | - |
 
-- 中〜小型の一部で底上げに有効。特に ministral-3-8b（95点）、qwen3-14b（90点）が顕著な高得点を示す。
-- 高性能モデルはレベル0と同等水準を維持: gpt-oss-120b（95〜96点）、gpt-oss-20b（88〜94点）。
-- aya-expanse-8b は履歴5で85点と改善を見せる一方、phi4 はレベル0（90点）からレベル2（88点）へ若干低下するなど、モデルにより効果が分かれる。
-- 履歴増で劣化するモデルも存在: gemma3n-e4b は履歴5で91点だが、履歴増で低下。
-- ministral-3 は8bのみ高得点、3b/14bは低迷。
-- **(t)** は qwen3-4b で効果が不安定。
+- Effective at boosting mid-to-small models in some cases. In particular, ministral-3-8b (95 points) and qwen3-14b (90 points) show notable high scores.
+- High-performing models maintain a level comparable to Level 0: gpt-oss-120b (95–96), gpt-oss-20b (88–94).
+- Effects vary by model: aya-expanse-8b shows improvement at history 5 (85 points), while phi4 drops slightly from Level 0 (90 points) to Level 2 (88 points).
+- Some models degrade with more history: gemma3n-e4b scores 91 at history 5 but declines with more history.
+- Among the ministral-3 series, only 8b scores well; 3b/14b lag behind.
+- **(t)** has an unstable effect on qwen3-4b.
 
-**結論**: 品質向上効果が明確なモデルではレベル2の採用余地があるが、レベル0（直接翻訳）で十分な品質に達するモデルが多いため、速度・コストの観点からレベル0を優先する。
+**Conclusion**: Level 2 is worth adopting for models where the quality-improvement effect is clear, but since many models already reach sufficient quality at Level 0 (direct translation), Level 0 is prioritized from a speed and cost perspective.
 
-### 翻訳改善効果の検証（レベル0 vs レベル2）
+### Verifying the Translation Improvement Effect (Level 0 vs Level 2)
 
-レベル0（直接翻訳）とレベル2（2段階翻訳）の性能比較により、2段階翻訳による改善効果を検証
+Verified the improvement effect of two-stage translation by comparing the performance of Level 0 (direct translation) and Level 2 (two-stage translation)
 
-| モデル | 0-05 | 0-10 | 0-20-a | 0-20-b | 2-05 | 2-10 | 2-20 |
+| Model | 0-05 | 0-10 | 0-20-a | 0-20-b | 2-05 | 2-10 | 2-20 |
 |:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
 | **aya-expanse-8b** | 70 | 75 | 74 | 79 | **85** | 71 | 84 |
 | **aya-expanse-32b** | 79 | 93 | 92 | **95** | 61 | 63 | 79 |
@@ -380,18 +380,18 @@ class Translation(BaseModel):
 | **qwen3-32b** | 78 | 91 | 93 | **94** | 90 | 86 | 93 |
 | **qwen3-32b (nt)** | **94** | 84 | - | - | **94** | 93 | 90 |
 
-- **レベル2で明確に改善**: command-r-35b（0-10: 71点→2-10: 95点、+24点）、qwen3-14b（0-10: 67点→2-10: 90点、+23点）、aya-expanse-8b（0-10: 75点→2-05: 85点、+10点）。
-- **高得点モデルは同等**: gpt-oss-120b（0-10: 95点、2-10: 96点）、qwen3-30b（0-10: 88点→2-05: 95点と改善）。
-- **レベル0が優位**: llama4-scout（0-05: 95点→2-05: 29点、-66点）、ministral-3-14b（0-05: 95点→2-10: 22点、-73点）、llama3.3（0-10: 94点→2-10: 72点、-22点）など、推論を挟むことで大幅に劣化するモデルが目立つ。
-- **履歴依存の最適化**: gemma2-9bはレベル2-20で94点と高得点だが、レベル0では87点が最高。
-- gemma3-4bは2段階化で劣化（0-10: 42点、2-10: 34点と低迷）。
-- gemma3n-e4bは履歴5でレベル2が優位（0-10: 78点→2-05: 91点）。
+- **Clear improvement at Level 2**: command-r-35b (0-10: 71 → 2-10: 95, +24), qwen3-14b (0-10: 67 → 2-10: 90, +23), aya-expanse-8b (0-10: 75 → 2-05: 85, +10).
+- **High-scoring models about the same**: gpt-oss-120b (0-10: 95, 2-10: 96), qwen3-30b (0-10: 88 → 2-05: 95, an improvement).
+- **Level 0 is superior**: llama4-scout (0-05: 95 → 2-05: 29, -66), ministral-3-14b (0-05: 95 → 2-10: 22, -73), llama3.3 (0-10: 94 → 2-10: 72, -22), etc. — several models degrade sharply when reasoning is interposed.
+- **History-dependent optimum**: gemma2-9b scores 94 at Level 2-20, its highest, while its Level 0 best is 87.
+- gemma3-4b degrades with the two-stage process (0-10: 42, 2-10: 34, both low).
+- gemma3n-e4b favors Level 2 at history 5 (0-10: 78 → 2-05: 91).
 
-**結論**: 一部のモデル（command-r-35b, qwen3-14b など）で劇的な改善が見られる一方、llama系など推論を挟むことで壊滅的に劣化するモデルも多い。全体としては直接翻訳（レベル0）の汎用性が高く、レベル2の採用はモデルごとの適性確認が必須。
+**Conclusion**: Some models (command-r-35b, qwen3-14b, etc.) show dramatic improvement, while many models such as the llama family degrade catastrophically when reasoning is interposed. Overall, direct translation (Level 0) has broad general applicability, and adopting Level 2 requires checking each model's individual suitability.
 
-### レベル3: 推論付き2段階翻訳
+### Level 3: Two-Stage Translation with Reasoning
 
-**特徴**: レベル1の推論とレベル2の2段階翻訳を統合
+**Characteristics**: integrates Level 1's reasoning with Level 2's two-stage translation
 ```python
 class Translation(BaseModel):
     reasoning: str = Field(description="Detailed translation reasoning process...")
@@ -400,81 +400,81 @@ class Translation(BaseModel):
     improvement_suggestions: str = Field(description="Provide specific suggestions...")
     improved_translation: str = Field(description="Based on the quality assessment...")
 ```
-- **処理**: 推論→下訳→品質評価→改善提案→最終翻訳
-- **利点**: 最も詳細な処理、全プロセス可視化
-- **用途**: 研究目的、品質分析
-- **実験結果**: レベル2に比べて明確な改善が認められない
+- **Process**: reasoning → draft → quality assessment → improvement suggestions → final translation
+- **Advantage**: the most detailed process, with full visibility into every step
+- **Use case**: research purposes, quality analysis
+- **Experimental result**: no clear improvement compared to Level 2
 
-### レベル4: 推論付き2段階翻訳の分割
+### Level 4: Split Two-Stage Translation with Reasoning
 
-**特徴**: レベル3を2つのステージに分割実行
+**Characteristics**: Level 3 split into two separately executed stages
 ```python
-# 第1段階
+# First stage
 class FirstStageTranslation(BaseModel):
     reasoning: str = Field(description="Detailed translation reasoning process...")
     draft_translation: str = Field(description="First draft translation")
 
-# 第2段階
+# Second stage
 class SecondStageTranslation(BaseModel):
     quality_assessment: str = Field(description="Analyze the draft translation for errors...")
     improvement_suggestions: str = Field(description="Provide specific suggestions...")
     improved_translation: str = Field(description="Based on the quality assessment...")
 ```
-- **処理**: ステージ1（推論+下訳）→ステージ2（品質評価+改善）
-- **利点**: 段階的制御、メモリ効率化
-- **用途**: 大規模翻訳、実験的処理
-- **実験結果**: レベル3に比べて劣化傾向（コンテキスト分断の悪影響）
+- **Process**: stage 1 (reasoning + draft) → stage 2 (quality assessment + improvement)
+- **Advantage**: stepwise control, memory efficiency
+- **Use case**: large-scale translation, experimental processing
+- **Experimental result**: tends to degrade relative to Level 3 (adverse effect of context fragmentation)
 
-## 複雑な推論の逆効果メカニズム
+## The Mechanism Behind the Counterproductive Effect of Complex Reasoning
 
-客観評価により判明した、複雑推論による品質悪化の原因：
+Causes of quality degradation from complex reasoning, revealed by objective evaluation:
 
-### 1. 翻訳選択肢の増加による混乱
-- 推論プロセスで複数の翻訳候補を検討
-- 選択肢が増えることで決定が不安定化
-- 結果として一貫性のない翻訳が生成
+### 1. Confusion from an increased number of translation options
+- Multiple translation candidates are considered during the reasoning process
+- More options destabilize the decision
+- The result is a less consistent translation
 
-### 2. 一貫性よりも局所最適化の優先
-- 各段階で最適化を図るが全体最適を見失う
-- 部分的な改善が全体品質を損なう
-- フェーズ間での情報ロスが発生
+### 2. Prioritizing local optimization over consistency
+- Optimization is attempted at each stage but the overall optimum is lost sight of
+- Partial improvements harm overall quality
+- Information is lost between phases
 
-### 3. 複雑な思考プロセスによる判断の不安定化
-- 推論が深くなるほど迷いが生じる
-- 自己評価による混乱が品質低下を招く
-- シンプルな直接翻訳の方が安定した結果
+### 3. Destabilized judgment from a complex thought process
+- Deeper reasoning tends to produce more hesitation
+- Confusion from self-evaluation causes quality to drop
+- A simple, direct translation produces more stable results
 
-**補足**: CoT の有効性はタスク依存である。翻訳のような暗黙的判断を要するタスクでは逆効果だが、評価（分析的タスク）では CoT による論理的検証が極めて有効に機能する（評価者 qwen3.6 の CoT で実証）。
+**Supplementary note**: the effectiveness of CoT is task-dependent. For tasks requiring implicit judgment, such as translation, it is counterproductive, but for evaluation (an analytical task), logical verification via CoT works extremely effectively (as demonstrated by the CoT of the evaluator qwen3.6).
 
-## translate4.py: 非構造化直接翻訳による構造化制約の検証
+## translate4.py: Verifying Structured-Output Constraints via Unstructured Direct Translation
 
-構造化出力（translate.py -r 0）と非構造化出力（translate4.py）の直接翻訳性能を比較し、構造化制約の影響を検証しました。
+Compared the direct-translation performance of structured output (translate.py -r 0) and unstructured output (translate4.py) to verify the impact of the structured constraint.
 
-### 核心的な発見
+### Core Finding
 
-**構造化出力vs非構造化出力の比較実験**により、モデル特性に応じた個別最適化の重要性が判明：
+**A comparative experiment between structured and unstructured output** revealed the importance of individual optimization according to model characteristics:
 
-| 推論方式 | 構造化出力 | 非構造化出力 | 性能差（例：Gemma3 12B, h05） |
+| Reasoning Method | Structured Output | Unstructured Output | Score Difference (e.g., Gemma3 12B, h05) |
 |:---|:---|:---|:---|
-| **直接翻訳** | レベル0: 89点 | translate4: 79点 | **-10点** |
+| **Direct translation** | Level 0: 89 pts | translate4: 79 pts | **-10 pts** |
 
-### 重要な結論
+### Key Conclusions
 
-1. **構造化出力の効果はモデル依存**: 全般的悪影響は存在せず、モデル・履歴数の組み合わせに強く依存
-2. **個別最適化の重要性**: 画一的判断を避け、モデル特性に応じた設定が必要
-3. **Reasoning制御の価値**: reasoning処理の制御が構造化出力制約よりも性能に大きく影響
-4. **実行時安定性の考慮**: 評価スコアと実際の安定性が一致しない場合があり、実用性重視の選択が重要
+1. **The effect of structured output is model-dependent**: there is no general adverse effect; it strongly depends on the combination of model and history count
+2. **The importance of individual optimization**: uniform judgments should be avoided; settings need to match model characteristics
+3. **The value of controlling reasoning**: controlling the reasoning process has a larger performance impact than the structured-output constraint itself
+4. **Consideration of runtime stability**: evaluation scores do not always align with actual stability, so choices should prioritize practical usability
 
-**最適化戦略**: 
-- **構造化出力優位**: Gemma3 12B、Gemma3 4B、Qwen3 14B（3/7モデル、43%）
-- **非構造化出力優位**: Gemma2 9B、Gemma3n E4B、Phi4（3/7モデル、43%）
-- **高得点での均衡**: 90点以上では構造化・非構造化が拮抗（各50%）
+**Optimization strategy**:
+- **Structured output favored**: Gemma3 12B, Gemma3 4B, Qwen3 14B (3/7 models, 43%)
+- **Unstructured output favored**: Gemma2 9B, Gemma3n E4B, Phi4 (3/7 models, 43%)
+- **Balanced at high scores**: at 90 points and above, structured and unstructured are roughly evenly matched (50% each)
 
-### 直接翻訳における構造化出力の影響調査（レベル0 vs tr4）
+### Investigating the Impact of Structured Output on Direct Translation (Level 0 vs tr4)
 
-[translate.py](translate.py) の `-r 0` オプションで構造化出力、[translate4.py](translate4.py) で非構造化出力
+Structured output via the `-r 0` option of [translate.py](translate.py); unstructured output via [translate4.py](translate4.py)
 
-| モデル | 0-05 | 0-10 | 0-20-a | 0-20-b | tr4-05 | tr4-10 | tr4-20 |
+| Model | 0-05 | 0-10 | 0-20-a | 0-20-b | tr4-05 | tr4-10 | tr4-20 |
 |:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
 | **aya-expanse-8b** | 70 | 75 | 74 | **79** | 64 | 75 | 61 |
 | **aya-expanse-32b** | 79 | 93 | 92 | 95 | **97** | 96 | 94 |
@@ -505,22 +505,22 @@ class SecondStageTranslation(BaseModel):
 | **qwen3-32b** | 78 | 91 | 93 | 94 | 82 | **96** | 85 |
 | **qwen3-32b (nt)** | **94** | 84 | - | - | 82 | 69 | 83 |
 
-- **構造化出力優位**: ministral-3-8b（0-10: 90点→tr4-10: 78点、-12点）、qwen3-30b（0-10: 88点→tr4-05: 37点、大幅低下）。
-- **非構造化出力優位**: llama3.3（0-05: 78点→tr4-05: 92点、+14点）、qwen3-14b (nt)（0-10: 76点→tr4-10: 93点、+17点）、command-r-35b（0-05: 93点→tr4-05: 96点、+3点）、aya-expanse-32b（0-10: 93点→tr4-10: 96点、+3点）。
-- **同等水準**: gemma3-27b（両方式で97点）、gpt-oss-120b（0-05: 95点、tr4-05: 94点）、mistral-small3.2（0-10: 95点、tr4-10: 96点）、phi4（両方式で90点前後）。
-- **重要な発見**: qwen3-30b (nt) はtr4で完全に失敗（0点）。JSON等の構造化制約がガードレールとして機能しており、非構造化では出力が破綻する。
-- **(nt)**: Ollamaでの推論無効化モデルでは、非構造化出力（tr4）で大幅に改善するケースがある（qwen3-14b）。
-- mixtral-8x7b は構造化出力が優位（0-10: 81点→tr4-10: 17点、-64点）。
+- **Structured output favored**: ministral-3-8b (0-10: 90 → tr4-10: 78, -12), qwen3-30b (0-10: 88 → tr4-05: 37, a large drop).
+- **Unstructured output favored**: llama3.3 (0-05: 78 → tr4-05: 92, +14), qwen3-14b (nt) (0-10: 76 → tr4-10: 93, +17), command-r-35b (0-05: 93 → tr4-05: 96, +3), aya-expanse-32b (0-10: 93 → tr4-10: 96, +3).
+- **Equivalent levels**: gemma3-27b (97 with both methods), gpt-oss-120b (0-05: 95, tr4-05: 94), mistral-small3.2 (0-10: 95, tr4-10: 96), phi4 (around 90 with both methods).
+- **Important finding**: qwen3-30b (nt) fails completely with tr4 (0 points). The structured constraint such as JSON functions as a guardrail, without which unstructured output breaks down.
+- **(nt)**: for models with reasoning disabled in Ollama, unstructured output (tr4) can improve significantly in some cases (qwen3-14b).
+- mixtral-8x7b favors structured output (0-10: 81 → tr4-10: 17, -64).
 
-**結論**: 構造化制約の有無による影響はモデル特性に強く依存する。llama系、command-r-35b、qwen3-14b (nt) などは非構造化（tr4）が優位。一方、qwen3-30bなどは構造化必須。同等性能であればパース安定性から構造化（レベル0）を優先する。
+**Conclusion**: the impact of the structured constraint depends strongly on model characteristics. The llama family, command-r-35b, and qwen3-14b (nt) favor unstructured output (tr4). qwen3-30b, on the other hand, requires structured output. When performance is equivalent, structured output (Level 0) is preferred for parsing stability.
 
-## translate5.py: 自由記述式推論による構造化出力制約の検証
+## translate5.py: Verifying the Structured-Output Constraint via Free-Form Reasoning
 
-レベル1での壊滅的失敗（gemma3-12b: 11点）に対処するため、構造化出力の制約を除去した自由記述式推論実験を実施しました。
+To address the catastrophic failure at Level 1 (gemma3-12b: 11 points), we ran a free-form reasoning experiment with the structured-output constraint removed.
 
-※ gemma3-12b 以外のモデルでの結果は tr6 との比較を参照
+※ For results of models other than gemma3-12b, see the comparison with tr6
 
-### 推論プロンプト
+### Reasoning Prompt
 
 ```
 First, briefly analyze the text for:
@@ -531,35 +531,35 @@ First, briefly analyze the text for:
 Then provide your final translation on the last line.
 ```
 
-### 実験結果 (gemma3-12b)
+### Experimental Results (gemma3-12b)
 
-**構造化 vs 非構造化推論の対比実験**により、同じ推論プロセスでも実装方法で劇的に性能が変わることを実証：
+**A comparative experiment between structured and unstructured reasoning** demonstrated that even the same reasoning process can produce dramatically different performance depending on the implementation:
 
-| 推論方式 | 構造化出力 | 非構造化出力 | 性能差 |
+| Reasoning Method | Structured Output | Unstructured Output | Score Difference |
 |:---|:---|:---|:---|
-| **直接翻訳** | レベル0: 95点 | translate4: 79点 | **-16点** |
-| **推論付き翻訳** | レベル1: 11点 | translate5: 93点 | **+82点** |
+| **Direct translation** | Level 0: 95 pts | translate4: 79 pts | **-16 pts** |
+| **Translation with reasoning** | Level 1: 11 pts | translate5: 93 pts | **+82 pts** |
 
-1. **構造化出力制約の有害性実証**: レベル1（11点）→ translate5（93点）の+82点改善
-2. **推論プロセス自体の限界**: レベル0（95点）に対してtranslate5（93点）は-2点の軽微な劣化
-3. **言語化によるオーバーヘッド**: 明示的分析が注意容量を圧迫し翻訳品質を阻害
-4. **後付け説明方式の優位性**: 品質とのトレードオフを回避する設計原則を提示
+1. **Demonstrated harm of the structured-output constraint**: a +82-point improvement from Level 1 (11) to translate5 (93)
+2. **A limit inherent to the reasoning process itself**: translate5 (93) is a slight -2-point degradation from Level 0 (95)
+3. **Overhead from verbalization**: explicit analysis consumes attention capacity and hampers translation quality
+4. **The advantage of an after-the-fact explanation design**: presents a design principle that avoids the quality trade-off
 
-**結論**: 翻訳タスクにおいては直接翻訳（レベル0）が最適解。推論プロセスは構造化制約下では有害、自由記述式では品質をほぼ維持するが、コストパフォーマンスで直接翻訳に劣る。
+**Conclusion**: for the translation task, direct translation (Level 0) is the optimal solution. The reasoning process is harmful under structured constraints, and while it nearly preserves quality in free form, it is inferior to direct translation in terms of cost-performance.
 
-## translate6.py: 改良された自由記述式推論による比較実験
+## translate6.py: A Comparative Experiment with Improved Free-Form Reasoning
 
-translate5.pyの推論プロンプトを改良し、レベル1との公平な比較を実現するバージョンです。
+An improved version of translate5.py's reasoning prompt, enabling a fair comparison with Level 1.
 
-### 改造の目的
+### Purpose of the Modification
 
-translate5.pyの初期実験では、推論内容がレベル1と異なっていたため、公平な比較ができませんでした。translate6.pyは以下の改良を実施：
+In translate5.py's initial experiment, the reasoning content differed from that of Level 1, preventing a fair comparison. translate6.py makes the following improvements:
 
-1. **推論内容の統一**: translate.py -r 1と同じ5項目の詳細推論を実装
-2. **翻訳選択肢の検討**: 重要語彙や慣用表現の翻訳オプション評価を追加
-3. **根拠の明確化**: 最終的な翻訳選択の正当化プロセスを強化
+1. **Unified reasoning content**: implements the same detailed 5-criteria reasoning as translate.py -r 1
+2. **Consideration of translation options**: adds evaluation of translation options for key vocabulary and idiomatic expressions
+3. **Clarification of rationale**: strengthens the process of justifying the final translation choice
 
-### 改良された推論プロンプト
+### Improved Reasoning Prompt
 
 ```
 First, provide detailed translation reasoning covering:
@@ -572,15 +572,15 @@ First, provide detailed translation reasoning covering:
 Then provide your final translation on the last line.
 ```
 
-### 実験の価値
+### Value of the Experiment
 
-translate6.pyにより、構造化出力制約の影響をより正確に測定し、レベル1との真の性能差を検証可能になります。特に「どのように翻訳するか」という視点を含む完全な推論プロセスの比較が実現されます。
+translate6.py allows for more accurate measurement of the impact of the structured-output constraint, making it possible to verify the true performance difference from Level 1. In particular, it enables comparison of a complete reasoning process that includes the perspective of "how to translate."
 
-### 推論付き翻訳における構造化出力の影響調査（レベル1 vs tr6）
+### Investigating the Impact of Structured Output on Translation with Reasoning (Level 1 vs tr6)
 
-[translate.py](translate.py) の `-r 1` オプションで構造化出力、[translate6.py](translate6.py) で非構造化出力
+Structured output via the `-r 1` option of [translate.py](translate.py); unstructured output via [translate6.py](translate6.py)
 
-| モデル | 1-05 | 1-10 | 1-20 | tr6-05 | tr6-10 | tr6-20 |
+| Model | 1-05 | 1-10 | 1-20 | tr6-05 | tr6-10 | tr6-20 |
 |:---|:---:|:---:|:---:|:---:|:---:|:---:|
 | **aya-expanse-8b** | 59 | **93** | 27 | 70 | 68 | 81 |
 | **aya-expanse-32b** | 93 | 86 | 90 | 90 | **96** | 92 |
@@ -611,19 +611,19 @@ translate6.pyにより、構造化出力制約の影響をより正確に測定�
 | **qwen3-32b** | 70 | 90 | 79 | 92 | **94** | 69 |
 | **qwen3-32b (nt)** | 28 | 48 | 22 | 68 | **88** | 78 |
 
-- **tr6で劇的改善**: gemma3-12b（1-10: 6点→tr6-10: 83点、+77点）、phi4（1-10: 25点→tr6-10: 90点、+65点）、llama4-scout（1-10: 18点→tr6-05: 89点、+71点）、ministral-3-3b（1-10: 6点→tr6-20: 68点、+62点）、ministral-3-8b（1-10: 16点→tr6-10: 76点、+60点）、qwen3-32b (nt)（1-10: 48点→tr6-10: 88点、+40点）。
-- **高性能モデルは同等〜構造化優位**: gpt-oss-120b（両方式で95点）、gpt-oss-20b（1-10: 95点→tr6-05: 94点、微減）。
-- **構造化が優位**: qwen3-30b（1-10: 96点→tr6-10: 9点、-87点、tr6で暴走）。
-- **重要な発見**: qwen3-30b (nt) はtr6で完全に失敗（0点）。構造化（1系）がガードレールとして必須。
-- mixtral-8x7bは両方式で低迷だが、構造化が相対的にマシ（1-20: 51点、tr6-10: 8点）。
+- **Dramatic improvement with tr6**: gemma3-12b (1-10: 6 → tr6-10: 83, +77), phi4 (1-10: 25 → tr6-10: 90, +65), llama4-scout (1-10: 18 → tr6-05: 89, +71), ministral-3-3b (1-10: 6 → tr6-20: 68, +62), ministral-3-8b (1-10: 16 → tr6-10: 76, +60), qwen3-32b (nt) (1-10: 48 → tr6-10: 88, +40).
+- **High-performing models are equivalent or favor structured output**: gpt-oss-120b (95 with both methods), gpt-oss-20b (1-10: 95 → tr6-05: 94, a slight decrease).
+- **Structured output favored**: qwen3-30b (1-10: 96 → tr6-10: 9, -87, tr6 goes off the rails).
+- **Important finding**: qwen3-30b (nt) fails completely with tr6 (0 points). Structured output (the 1-series) is essential as a guardrail.
+- mixtral-8x7b performs poorly under both methods, but structured output is relatively better (1-20: 51, tr6-10: 8).
 
-**結論**: 構造化推論（レベル1）で大幅劣化・崩壊するモデル（gemma3-12b、llama4-scout、phi4など）では、自由記述式の推論（tr6）が極めて有効な回避策となる。逆に qwen3-30b のように自由記述では出力が破綻し構造化が必須なモデルもあるため、推論プロセスの可視化にはモデル適性の見極めが必要。
+**Conclusion**: for models that degrade or collapse sharply under structured reasoning (Level 1) — such as gemma3-12b, llama4-scout, and phi4 — free-form reasoning (tr6) is an extremely effective workaround. Conversely, some models, such as qwen3-30b, break down in free form and require structured output, so making the reasoning process visible requires careful assessment of model suitability.
 
-### 自由記述式推論比較（tr5 vs tr6）
+### Free-Form Reasoning Comparison (tr5 vs tr6)
 
-[translate5.py](translate5.py) は簡略推論、[translate6.py](translate6.py) は詳細推論
+[translate5.py](translate5.py) uses simplified reasoning, and [translate6.py](translate6.py) uses detailed reasoning
 
-| モデル | tr5-05 | tr5-10 | tr5-20 | tr6-05 | tr6-10 | tr6-20 |
+| Model | tr5-05 | tr5-10 | tr5-20 | tr6-05 | tr6-10 | tr6-20 |
 |:---|:---:|:---:|:---:|:---:|:---:|:---:|
 | **aya-expanse-8b** | 52 | 53 | 54 | 70 | 68 | **81** |
 | **aya-expanse-32b** | 88 | 86 | 82 | 90 | **96** | 92 |
@@ -654,18 +654,18 @@ translate6.pyにより、構造化出力制約の影響をより正確に測定�
 | **qwen3-32b** | 74 | 84 | 89 | 92 | **94** | 69 |
 | **qwen3-32b (nt)** | 80 | **90** | 87 | 68 | 88 | 78 |
 
-- **tr6で改善**: aya-expanse-32b（tr5-10: 86点→tr6-10: 96点、+10点）、gpt-oss-20b（tr5-10: 92点→tr6-05: 94点、+2点）、llama3.3（tr5-20: 92点→tr6-20: 94点、+2点）。
-- **tr5で優位**: llama4-scout（tr5-05: 94点→tr6-05: 89点、-5点）、ministral-3-14b（tr5-20: 95点→tr6-20: 79点、-16点）、ministral-3-8b（tr5-05: 82点→tr6-10: 76点、-6点）、gemma3-4b（tr5-05: 81点→tr6-05: 61点、-20点）、gemma3-12b（tr5-05: 88点→tr6-05: 84点、-4点）。
-- **同等水準**: gemma3-27b（両方式で96点）、gpt-oss-120b（95〜96点）、phi4（両方式で85〜90点）。
-- **両方式で失敗**: qwen3-30b（tr5/tr6ともに10点以下、ntで0点）、mixtral-8x7b（両方式で10点前後と低迷）。
+- **tr6 improves things**: aya-expanse-32b (tr5-10: 86 → tr6-10: 96, +10), gpt-oss-20b (tr5-10: 92 → tr6-05: 94, +2), llama3.3 (tr5-20: 92 → tr6-20: 94, +2).
+- **tr5 favored**: llama4-scout (tr5-05: 94 → tr6-05: 89, -5), ministral-3-14b (tr5-20: 95 → tr6-20: 79, -16), ministral-3-8b (tr5-05: 82 → tr6-10: 76, -6), gemma3-4b (tr5-05: 81 → tr6-05: 61, -20), gemma3-12b (tr5-05: 88 → tr6-05: 84, -4).
+- **Equivalent levels**: gemma3-27b (96 with both methods), gpt-oss-120b (95–96), phi4 (85–90 with both methods).
+- **Fails with both methods**: qwen3-30b (10 points or below for both tr5/tr6, 0 with nt), mixtral-8x7b (poor with both methods, around 10 points).
 
-**結論**: 詳細な推論（tr6）が有効なモデル（aya-expanse-32bなど）もあるが、推論プロセスを簡略化（tr5）した方が品質が安定するモデル（ministral-3-14b、llama4-scout、gemma3-12bなど）も多い。推論の複雑さが翻訳品質を阻害する逆効果メカニズムがここでも確認できる。
+**Conclusion**: while detailed reasoning (tr6) works well for some models (e.g. aya-expanse-32b), simplifying the reasoning process (tr5) produces more stable quality for many models (ministral-3-14b, llama4-scout, gemma3-12b, etc.). The same counterproductive mechanism, where reasoning complexity hampers translation quality, can be observed here as well.
 
-## モデル別実用設定一覧
+## List of Practical Settings by Model
 
-各モデルの上位3項目（90点以上）または最高点1項目をリストアップ。
+Lists each model's top 3 entries (90 points or above) or single highest-scoring entry.
 
-| モデル | スコア | 設定 |
+| Model | Score | Settings |
 |:---|:---:|:---|
 | **gemma3-27b** | 98 | 0 |
 | **gemma3-27b** | 97 | 0-05, 0-10, tr4-05, tr4-10, tr5-05 |
@@ -720,81 +720,81 @@ translate6.pyにより、構造化出力制約の影響をより正確に測定�
 | **qwen3-4b (nt)** | 74 | 4-nt |
 | **command-r7b** | 71 | tr5-10 |
 
-※ 85 点未満は実用には不向きです。
+※ Scores below 85 are not suitable for practical use.
 
-## 推奨モデルと設定
+## Recommended Models and Settings
 
-最新のqwen3.6単独評価（716件）と、構造化出力・非構造化出力（自由記述式）の比較検証結果を踏まえた、実用システム構築のための推奨モデルと設定です。
+Recommended models and settings for building a practical system, based on the latest standalone evaluation by qwen3.6 (716 cases) and comparative verification of structured vs. unstructured (free-form) output.
 
-**注意**: Gemma 3 以前と Llama は生成物にライセンス上の制約があります。Gemma 4 は Apache 2.0 ライセンスに緩和されました。Cohere 社のモデル (Command R, Aya Expanse) は商用利用不可です。
+**Note**: Gemma 3 and earlier, as well as Llama, have license restrictions on generated content. Gemma 4 has been relaxed to the Apache 2.0 license. Models from Cohere (Command R, Aya Expanse) are not available for commercial use.
 
-### モデル選択の優先順位と方針
+### Priority and Policy for Model Selection
 
-1. **品質と安定性の両立（最優先）**: `gpt-oss` シリーズ（120b/20b）、`mistral-small3.2`、`qwen3` シリーズ（30b/32b）、`ministral` シリーズ（3-8b/3-14b）。ライセンス制約を許容する場合は `gemma3-27b` が最高品質（98点）。
-2. **非構造化出力（直接翻訳 tr4）の活用**: `llama` シリーズや `command-r-35b`、`aya-expanse-32b`、`qwen3-32b` など、構造化制約を外すことで本来の性能が引き出されるモデルを運用する場合。
-3. **教育・分析用途（推論プロセス可視化）**: 自由記述による詳細推論（`tr6`）で高品質を維持できるモデル（`aya-expanse-32b`, `gpt-oss` 系など）の採用。構造化推論（Level 1）は原則廃止。
-
----
-
-### CPU 実行環境（軽量モデル）
-
-1. **gemma3n-e4b** (最高 91点):
-   - **Level 2 (h05)**: 2段階翻訳（履歴5）で最高スコア（91点）を記録。軽量ながら健闘。
-
-メモリが 32GB 以上ある場合は、以下の MoE モデルも対象となります。
-
-1. **qwen3-30b (nt)** (最高 96点):
-   - **Level 1-nt (h20)**: **構造化出力必須**。非構造化（tr4/tr5/tr6）では出力が完全に暴走（0点）するため、JSONスキーマをガードレールとして必ず使用すること。Level 0でも93〜95点と安定。
-2. **gpt-oss-20b** (最高 95点):
-   - **Level 0 / tr4**: 高品質と高汎用性を両立。Level 0-10で94点、tr6-05でも94点と複数設定で安定した高得点を記録。
+1. **Balancing quality and stability (top priority)**: the `gpt-oss` series (120b/20b), `mistral-small3.2`, the `qwen3` series (30b/32b), and the `ministral` series (3-8b/3-14b). If license restrictions are acceptable, `gemma3-27b` offers the highest quality (98 points).
+2. **Leveraging unstructured output (direct translation via tr4)**: for operating models whose true performance is unlocked by removing the structured constraint, such as the `llama` series, `command-r-35b`, `aya-expanse-32b`, and `qwen3-32b`.
+3. **Educational/analytical use (visualizing the reasoning process)**: adopting models that maintain high quality with detailed free-form reasoning (`tr6`), such as `aya-expanse-32b` and the `gpt-oss` family. Structured reasoning (Level 1) is discontinued in principle.
 
 ---
 
-### GPU 実行環境（高性能モデル）
+### CPU Execution Environment (Lightweight Models)
 
-1. **gemma3-27b** (最高 98点):
-   - **Level 0 / tr4**: 構造化・非構造化を問わず、全設定で極めて安定した最高品質。
-   - **tr5 / tr6**: 自由記述推論でも高品質（96点）を維持。最も堅牢なモデル。
-2. **gpt-oss-120b** (最高 98点):
-   - **Level 0**: 高速処理と最高品質の両立。API（Groq/Cerebras等）経由での運用が強力。
-3. **aya-expanse-32b** (最高 97点):
-   - **tr4**: 構造化制約を外した直接翻訳で最高スコア。
-   - **tr6**: 詳細推論（96点）と非常に相性が良く、教育・分析用途に最適。
-4. **command-r-35b** (最高 96点):
-   - **tr4**: 構造化制約を外すことで性能が劇的に向上（Level 0-10: 71点 → tr4-05: 96点）。
-5. **mistral-small3.2** (最高 96点):
-   - **tr4-10**: 非構造化直接翻訳で最高スコア。Level 0でも94〜95点と高い安定性を示す。
-6. **qwen3-30b / qwen3-30b (nt)** (最高 96点):
-   - **Level 0 / Level 1**: **構造化出力必須**。非構造化（tr4/tr5/tr6）では出力が完全に暴走（0点）するため、JSONスキーマをガードレールとして必ず使用すること。
-7. **qwen3-32b / qwen3-32b (nt)** (最高 96点):
-   - **tr4-10**: 非構造化直接翻訳で最高スコア。Level 0でも91〜94点と安定。qwen3-30bと異なり非構造化でも動作可能。
-8. **ministral-3-8b** (最高 96点):
-   - **0-20-b / 2-10**: 8Bクラスながら上位モデルに匹敵するスコアを記録。Level 0でも90〜94点と安定。
+1. **gemma3n-e4b** (max 91 points):
+   - **Level 2 (h05)**: records its highest score (91 points) with two-stage translation (history 5). A strong performer despite its lightweight size.
+
+If you have 32 GB or more of memory, the following MoE models are also candidates.
+
+1. **qwen3-30b (nt)** (max 96 points):
+   - **Level 1-nt (h20)**: **structured output is essential**. Unstructured output (tr4/tr5/tr6) causes complete runaway output (0 points), so the JSON schema must always be used as a guardrail. Level 0 is also stable at 93–95 points.
+2. **gpt-oss-20b** (max 95 points):
+   - **Level 0 / tr4**: combines high quality and high general applicability. Records stable high scores across multiple settings — 94 points at Level 0-10 and 94 points at tr6-05.
 
 ---
 
-## 実用システム構築の指針
+### GPU Execution Environment (High-Performance Models)
 
-### 最適化戦略の総括
+1. **gemma3-27b** (max 98 points):
+   - **Level 0 / tr4**: extremely stable top quality across all settings, structured or unstructured.
+   - **tr5 / tr6**: maintains high quality (96 points) even with free-form reasoning. The most robust model.
+2. **gpt-oss-120b** (max 98 points):
+   - **Level 0**: combines fast processing and top quality. Operation via API (Groq/Cerebras, etc.) is powerful.
+3. **aya-expanse-32b** (max 97 points):
+   - **tr4**: achieves its top score with direct translation once the structured constraint is removed.
+   - **tr6**: performs very well with detailed reasoning (96 points), making it ideal for educational and analytical use.
+4. **command-r-35b** (max 96 points):
+   - **tr4**: performance improves dramatically once the structured constraint is removed (Level 0-10: 71 → tr4-05: 96).
+5. **mistral-small3.2** (max 96 points):
+   - **tr4-10**: achieves its top score with unstructured direct translation. Also highly stable at 94–95 points with Level 0.
+6. **qwen3-30b / qwen3-30b (nt)** (max 96 points):
+   - **Level 0 / Level 1**: **structured output is essential**. Unstructured output (tr4/tr5/tr6) causes complete runaway output (0 points), so the JSON schema must always be used as a guardrail.
+7. **qwen3-32b / qwen3-32b (nt)** (max 96 points):
+   - **tr4-10**: achieves its top score with unstructured direct translation. Also stable at 91–94 points with Level 0. Unlike qwen3-30b, it can also operate without structured output.
+8. **ministral-3-8b** (max 96 points):
+   - **0-20-b / 2-10**: an 8B-class model that records scores comparable to larger models. Also stable at 90–94 points with Level 0.
 
-1. **基本は「直接翻訳」**: 複雑な推論システム = 高品質翻訳 という従来仮説は否定されました。余計な思考プロセスを挟まない「直接翻訳（Level 0 または tr4）」が最高効率かつ最高品質です。
-2. **構造化制約 vs 自由記述の適性確認**: 採用するモデルが構造化出力（JSON等）で性能を発揮するタイプか（例: qwen3-30b）、非構造化テキスト出力の方が優れているタイプか（例: llama系, command-r-35b）を見極める個別最適化が必須です。
-3. **サマリー圧縮方式への移行**: コンテキスト履歴（`--history`）のスライディング方式による「用語の忘却・ブレ」が定量的に確認されたため、次期アーキテクチャでは履歴を「用語集＋要約」として圧縮・保持する方式へ移行します。
+---
 
-## 結論
+## Guidelines for Building a Practical System
 
-客観評価による包括的な検証の結果、「適切なモデル選択」と「モデルの特性に合わせたシンプルな直接出力の採用」が、翻訳タスクにおける最善のアプローチであることが実証されました。推論プロセスの言語化（CoT）や構造化制約は、教育的価値やシステム連携の確実性をもたらす一方で、モデルによっては認知負荷となり翻訳品質を著しく阻害する「逆効果メカニズム」も明らかになりました。
+### Summary of the Optimization Strategy
 
-これらの知見は、翻訳以外の言語タスク（文章要約、コード生成、創作支援など）にも広く応用可能であり、常に**シンプルな直接出力の有効性を第一に検証すること**が重要です。
+1. **The basis is "direct translation"**: the conventional hypothesis that complex reasoning systems = high-quality translation has been refuted. "Direct translation" (Level 0 or tr4), which avoids extra thinking steps, is both the most efficient and the highest quality.
+2. **Checking suitability for structured constraints vs. free form**: it is essential to individually optimize by identifying whether the adopted model performs better with structured output (JSON, etc., e.g. qwen3-30b) or with unstructured text output (e.g. the llama family, command-r-35b).
+3. **Moving to summary compression**: because the "forgetting/drift of terminology" caused by the sliding approach of the context history (`--history`) was quantitatively confirmed, the next-generation architecture will move to an approach that compresses and retains history as a "glossary + summary."
 
-## その他の実験ツール一覧
+## Conclusion
 
-以下のPythonスクリプトは研究開発過程で作成された実験的ツールです。詳細な実装内容と評価結果については [OBSOLETE.md](OBSOLETE.md) を参照してください。
+Through comprehensive verification via objective evaluation, it was demonstrated that "appropriate model selection" combined with "adopting simple direct output suited to the model's characteristics" is the best approach for the translation task. While verbalizing the reasoning process (CoT) and structured constraints bring educational value and reliability of system integration, it was also revealed that, depending on the model, they can become a cognitive burden and a "counterproductive mechanism" that significantly hampers translation quality.
 
-- **translate-exp.py**: サブコマンド方式の多段階翻訳システム（Phase 1/2/2a/3対応）
-- **translate2.py**: 3段階多モデル翻訳 一気通貫版
-- **translate3.py**: Phase 2a統合システム 一気通貫版（推奨）
-- **draft_to_text.py**: JSON形式中間データからテキスト抽出ユーティリティ
-- **analyze_2stage_diff.py**: 翻訳手法別品質差分析ツール
+These findings are broadly applicable to language tasks beyond translation (text summarization, code generation, creative writing assistance, etc.), and it is important to always **first verify the effectiveness of simple direct output**.
 
-これらのツールは実験的性質が強く、客観的評価によりレベル0（直接翻訳）の優位性が判明したため、研究記録として保持されています。
+## List of Other Experimental Tools
+
+The following Python scripts are experimental tools created during research and development. For detailed implementation and evaluation results, see [OBSOLETE.md](OBSOLETE.md).
+
+- **translate-exp.py**: a subcommand-based, multi-stage translation system (supporting Phase 1/2/2a/3)
+- **translate2.py**: a self-contained, single-pass version of 3-stage multi-model translation
+- **translate3.py**: a self-contained, single-pass version of the integrated Phase 2a system (recommended)
+- **draft_to_text.py**: a utility for extracting text from JSON-format intermediate data
+- **analyze_2stage_diff.py**: a tool for analyzing quality differences by translation method
+
+These tools are highly experimental in nature, and since objective evaluation revealed the superiority of Level 0 (direct translation), they are retained as research records.

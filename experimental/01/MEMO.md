@@ -1,69 +1,69 @@
-# プロジェクトメモ
+# Project Memo
 
-このファイルには、翻訳実験プロジェクトにおける設計意図、モデル特性の分析、評価タスクの変遷、および今後の開発タスク（TODO）をまとめています。客観評価のスコア表や実用設定の結論については `README.md` を参照してください。
+This file records the design intentions, model characteristic analysis, evaluation task history, and future development tasks (TODO) for the translation experiment project. For the objective evaluation score tables and conclusions on practical settings, see `README.md`.
 
 ---
 
-## 1. 評価タスク：評価者選定
+## 1. Evaluation Task: Choosing an Evaluator
 
-### 評価者の変遷と結論
+### Evaluator History and Conclusion
 
-- **GPT-OSS 120B**: 初期評価者。最高点が92点で頭打ちとなる「天井効果」が発生し、上位モデルの差別化が不可能になった。MoE特性により知識量はあっても判断力が弱いことが原因と推定され、評価者として廃止。
-- **gemma-4-31b**: 候補として調査。高得点側に寄りやすく「絶対評価的」。97点以上が18%も出るなど甘すぎる傾向があり、表面的な流暢さに引きずられ、専門用語のブレや文脈の欠落（固有名詞・術語・フォーマットの正確性）を見逃すことが多いため不採用。
-- **qwen3.6**: **正式評価者として採用**。70〜90点台に広く分散し「相対・審美評価的」。CoTを用いて論理的矛盾や用語のブレを厳密に特定し、重大な技術的欠陥として適切に減点する。単独運用が最も信頼性が高いと結論づけた。
+- **GPT-OSS 120B**: The initial evaluator. It hit a "ceiling effect" where the highest score plateaued at 92 points, making it impossible to differentiate between top-tier models. This is presumed to be due to its MoE characteristics giving it plenty of knowledge but weak judgment, so it was discontinued as an evaluator.
+- **gemma-4-31b**: Investigated as a candidate. It tends to skew toward high scores, evaluating in an "absolute" manner. With 18% of scores at 97 or above, it proved too lenient, often getting swept up by superficial fluency and missing terminology inconsistencies and contextual omissions (accuracy of proper nouns, terminology, and formatting), so it was not adopted.
+- **qwen3.6**: **Adopted as the official evaluator.** Scores are widely distributed in the 70s-90s range, evaluating in a "relative, aesthetic" manner. Using CoT, it rigorously identifies logical inconsistencies and terminology inconsistencies, appropriately deducting points for serious technical flaws. We concluded that running it alone is the most reliable approach.
 
-### 評価タスクにおける CoT の有効性
-翻訳という「直感的・暗黙的タスク」においてはCoT（推論の言語化）が逆効果になる現象が確認されたが、評価という「分析的タスク」においては、CoTによる論理的な検証が極めて有効に機能することがqwen3.6の検証で実証された。
+### Effectiveness of CoT in Evaluation Tasks
+While translation—an "intuitive, implicit task"—showed CoT (verbalized reasoning) to be counterproductive, evaluation, which is an "analytical task," was demonstrated through testing with qwen3.6 to benefit greatly from logical verification via CoT.
 
-### CoT 制御の試みと断念
+### Attempts to Control CoT, and Why They Were Abandoned
 
-- **qwen3.6 --no-think**: OllamaのバグによりCoT無効時にスキーマ構造が崩れる（`ReasoningAndScore` のネスト構造がフラットな整数に変化）ため断念。CoTありのみ運用。
-- **gemma4:31b（thinking あり）**: 処理が遅すぎて全件評価に1週間程度かかる見込みのため断念。gemma4 は評価者として不採用。
-- **gemma4:26b（MoE）**: 動作が不安定で構造化出力が頻繁に失敗するため断念。
+- **qwen3.6 --no-think**: Abandoned due to an Ollama bug where disabling CoT breaks the schema structure (the nested structure of `ReasoningAndScore` collapses into a flat integer). We operate with CoT enabled only.
+- **gemma4:31b (with thinking)**: Abandoned because processing was too slow, estimated to take about a week for a full evaluation run. gemma4 was not adopted as an evaluator.
+- **gemma4:26b (MoE)**: Abandoned due to unstable behavior, with structured output frequently failing.
 
-### クラウド API の活用方針
+### Cloud API Utilization Strategy
 
-ローカル機器が別タスクで占有されている場合にクラウドAPIで並行処理する戦略：
+Strategy for running parallel processing via cloud APIs when local hardware is occupied by another task:
 
-| モデル | API | 速度 | コスト | 用途 |
+| Model | API | Speed | Cost | Use case |
 |--------|-----|------|--------|------|
-| GPT-OSS 120B | Groq / Cerebras | 高速 | 有料 | 速度重視のタスク |
-| gemma-4-31b | Gemini API | 中程度 | 無料枠あり | ローカル機器が埋まっているときの代替 |
-| gemini-2.5-flash | Gemini API | 高速 | 無料枠縮小・有料 | 高品質評価（過去に使用） |
+| GPT-OSS 120B | Groq / Cerebras | Fast | Paid | Speed-focused tasks |
+| gemma-4-31b | Gemini API | Moderate | Free tier available | Substitute when local hardware is busy |
+| gemini-2.5-flash | Gemini API | Fast | Free tier reduced / paid | High-quality evaluation (used previously) |
 
 ---
 
-## 2. 翻訳タスク：構造化出力と非構造化出力
+## 2. Translation Task: Structured vs. Unstructured Output
 
-構造化出力は求める結果を確実に取り出せる反面、フォーマット適合を強制することで品質が低下する懸念があり、両方式の特性を対比した。
+Structured output reliably extracts the desired result, but forcing conformance to a format raises concerns about degraded quality; we compared the characteristics of both approaches.
 
-| 観点 | 構造化出力 (Level 0/1/2) | 非構造化出力 (tr4/tr5/tr6) |
+| Aspect | Structured output (Level 0/1/2) | Unstructured output (tr4/tr5/tr6) |
 |------|-----------|-------------|
-| 品質安定性 | 不要な出力が抑制され安定 | モデル・設定依存で不安定 |
-| 暴走・途中切れ対応 | パース失敗で機械的にリトライ可 | 回答前の暴走でハルシネーション危険 |
-| フォーマット制約の影響 | 一部モデルで品質崩壊（→ 非構造化が有効） | 一部モデルで暴走（→ 構造化が必須） |
+| Quality stability | Suppresses unwanted output, stable | Unstable, depends on model/settings |
+| Handling runaway or truncated output | Parse failures can be retried mechanically | Runaway generation before the answer risks hallucination |
+| Impact of format constraints | Quality collapses for some models (→ unstructured output is effective) | Some models run away (→ structured output is essential) |
 
-※ スコアへの具体的な影響（構造化制約の有害性や推論の複雑化による逆効果）の分析結果は `README.md` を参照。
+* For the analysis of the concrete score impact (the harm of structured constraints and the counterproductive effect of increased reasoning complexity), see `README.md`.
 
-### 非構造化出力を使う場合：2段構えアプローチ
-構造化出力で品質が出ないモデルに対しては、第1段階で自由出力させ、第2段階で翻訳結果のみを抽出する手法が有効。抽出専用に軽量モデルを固定採用したり、多数決で正解抽出するアプローチも考えられる。
-ただし、第1段階で翻訳が生成されなかったり、抽出時に語句が意図せず修正されたりする運用上の課題がある。
+### Using Unstructured Output: A Two-Stage Approach
+For models that don't produce good quality with structured output, an effective method is to generate freely in the first stage, then extract only the translation result in the second stage. Approaches such as fixing a lightweight model dedicated to extraction, or using majority voting to extract the correct answer, are also conceivable.
+However, there are operational challenges, such as the first stage failing to produce a translation, or wording being unintentionally altered during extraction.
 
-### 処理環境の前提とモデルの選択
-デスクトップまたはクラウド環境を前提とする。VRAMが十分にあれば、MoEモデルは小型denseモデルと同等の速度で動作するため、敢えて小型モデルを選ぶ必要性は薄い。
-ただし、評価や翻訳など判断力を要するタスクにはdenseモデルが有利であり、MoEは知識量を活かせる用途（用語確認・背景知識補完など）や速度重視の場面に適している。
+### Assumptions About the Processing Environment and Model Selection
+We assume a desktop or cloud environment. Given sufficient VRAM, MoE models run at speeds comparable to small dense models, so there's little need to deliberately choose a small model.
+However, dense models have the advantage for tasks requiring judgment, such as evaluation and translation, while MoE is better suited to use cases that leverage breadth of knowledge (e.g., terminology verification, background knowledge supplementation) or scenarios where speed is the priority.
 
 ---
 
-## 3. 次期アーキテクチャ：KVキャッシュとサマリー圧縮
+## 3. Next-Generation Architecture: KV Cache and Summary Compression
 
-現在の翻訳実験（`translate.py`）はスライディングコンテキスト方式を採用しており、コンテキストの始点が毎回スライドするため KV キャッシュが有効に機能しない。
+The current translation experiment (`translate.py`) uses a sliding-context approach, where the starting point of the context shifts every time, so the KV cache doesn't function effectively.
 
-一方、全履歴を保持して積み上げる方式では、履歴が40件付近に達した時点で非実用的なほど遅延し推論品質も低下する（TransformerのSelf-Attentionの計算量がコンテキスト長に対して2乗で増大するため）。
+On the other hand, an approach that accumulates the entire history becomes impractically slow once the history reaches around 40 entries, and inference quality also degrades (because the computational cost of a Transformer's self-attention grows quadratically with context length).
 
-したがって、スライディング方式の「忘却（用語のブレ）」を解決しつつ計算量を抑えるためには、古い履歴を高密度なトークンに圧縮する**サマリー方式が構造的な必然**となる。
+Therefore, to resolve the "forgetting" (terminology drift) inherent in the sliding approach while keeping computational cost down, a **summary-based approach that compresses old history into dense tokens is structurally inevitable**.
 
-### 新アーキテクチャの設計方針
-- **システムプロンプトの固定分離**：会話履歴とは独立して常に先頭に置くことで、常時キャッシュを有効化。
-- **固定先頭によるサマリー圧縮**：一定件数に達したら古い履歴を「用語集＋要約」として圧縮し、`system + summary + 直近 N 件` という固定構造に再構築。これによりコンテキスト始点が安定し、KV キャッシュが再利用される。
-- **圧縮タイミングの最適化**：サマリー生成を圧縮直前に行うことで、圧縮後も直近 N 件のキャッシュが引き続き有効な状態を維持する。
+### Design Policy for the New Architecture
+- **Fixed separation of the system prompt**: By keeping it always at the head, independent of the conversation history, caching stays enabled at all times.
+- **Summary compression with a fixed head**: Once a certain number of entries is reached, old history is compressed into a "glossary + summary," rebuilding the structure into a fixed `system + summary + most recent N entries` layout. This stabilizes the context starting point, allowing the KV cache to be reused.
+- **Optimizing the timing of compression**: By generating the summary right before compression, the cache for the most recent N entries remains valid even after compression.

@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-# 作業ディレクトリに移動して実行パスを解決しやすくする
+# Move to the working directory to simplify resolving execution paths
 cd "$(dirname "$0")"/../..
 BASE_DIR="experimental/09"
 
@@ -11,7 +11,7 @@ REVIEWER="ollama:qwen3.6"
 EVALUATOR="ollama:qwen3.6"
 ORIGINAL_FILE="examples/onde-en.txt"
 
-# 言語ごとの最高得点翻訳をTSVに保存
+# Save the highest-scoring translation per language to a TSV
 TSV_FILE="${BASE_DIR}/best.tsv"
 uv run "${BASE_DIR}/find_best.py" > "${TSV_FILE}"
 echo "Generated: ${TSV_FILE}"

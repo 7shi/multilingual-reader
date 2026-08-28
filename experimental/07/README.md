@@ -1,68 +1,68 @@
-# 実験07: 他者評価による既存翻訳の推敲・修正
+# Experiment 07: Revising and correcting existing translations via third-party evaluation
 
-このディレクトリでは、すでに `trtools` で出力された高品質なベースライン訳文（KVキャッシュ最適化・用語注入済み）を入力とし、論理的検証・評価能力に優れた `qwen3.6` に行単位で推敲させる「他者評価アプローチ」の有効性を検証します。
+This directory verifies the effectiveness of a "third-party evaluation approach," in which high-quality baseline translations already output by `trtools` (with KV-cache optimization and terminology injection) are used as input, and `qwen3.6` — a model with strong logical verification and evaluation capabilities — revises them line by line.
 
-## 背景と目的
+## Background and purpose
 
-実験06では、翻訳モデル自身に自己評価・推敲させる「2段階翻訳」を試みました。しかし、LLMには「評価・分析能力は高いが、生成（書く）能力には限界がある」という読み書き能力の非対称性が存在します。自己評価ではこの限界に引きずられるリスクがあり、また単純なスライディングコンテキストによるベースライン品質の低下が課題となりました。
+In Experiment 06, we tried "two-stage translation," in which the translation model itself self-evaluates and revises its own output. However, LLMs exhibit an asymmetry in reading/writing ability: "evaluation and analysis ability is high, but generation (writing) ability has limits." Self-evaluation risks being dragged down by this limitation, and the degradation of baseline quality caused by a simple sliding context was also an issue.
 
-そこで、本実験では**「翻訳」と「評価（推敲指示）」の役割を分離するアプローチ**を検証します。
-すでに文脈が保持されたベースライン（trtools出力）を推敲専用のモデルに見直させることで、中リソース言語の表現上の問題（直訳調や干渉）が効果的に解消され、スコアが目標の90点台へ引き上がるかを確認します。
+Therefore, this experiment verifies **an approach that separates the roles of "translation" and "evaluation (revision instructions)."**
+By having a revision-dedicated model re-examine a baseline (trtools output) whose context has already been preserved, we check whether expression-level issues in medium-resource languages (literal-translation tone, interference) are effectively resolved, and whether scores rise into the target 90s.
 
-## スコープと前提
+## Scope and assumptions
 
-- **対象**: `trtools` によって出力済みの翻訳テキスト（オランダ語、チェコ語など）。
-- **推敲モデル**: `ollama:qwen3.6`
-- **アプローチ**: 行ごとに原文と翻訳文のペアを入力し、段階的なプロンプトで評価・修正を行う。
-- **文脈管理**: `qwen3.6` は構造上KVキャッシュの利用効率が悪いため、サマリー圧縮などの複雑な仕組みは用いず、**スコープ10行の単純なスライディングコンテキスト方式**を採用する。
+- **Target**: Translated text already output by `trtools` (Dutch, Czech, etc.).
+- **Revision model**: `ollama:qwen3.6`
+- **Approach**: Feed pairs of the original and translated lines one line at a time, and evaluate/correct using a staged prompt.
+- **Context management**: Since `qwen3.6` is structurally inefficient at using the KV cache, we avoid complex mechanisms like summary compression and instead adopt a **simple sliding-context method with a scope of 10 lines**.
 
-## スクリプトの構成と段階的プロンプト
+## Script structure and staged prompts
 
 - **`review.py`**:
-  原文と `trtools` で出力済みの翻訳文を読み込み、`qwen3.6` などの評価用モデルを使って行単位で以下の2つのプロンプトを発行する推敲専用スクリプトです。構造化出力による制約を避け、モデルの分析力を最大限に引き出すために自由記述方式（非構造化）を採用しています。
-  1. **問題点の洗い出し (Prompt 1)**: 直訳調、隣接言語の干渉などの問題点があれば自由に指摘させ、チャット履歴に追加する。
-  2. **修正訳の生成 (Prompt 2)**: 指摘された問題点を解消した最終的な訳文のみを出力させる。
+  A revision-dedicated script that reads the original text and the translation already output by `trtools`, and issues the following two prompts line by line using an evaluation model such as `qwen3.6`. It adopts a free-form (unstructured) approach, avoiding the constraints of structured output, in order to draw out the model's analytical ability to the fullest.
+  1. **Identifying issues (Prompt 1)**: Freely point out any issues such as literal-translation tone or interference from neighboring languages, and add them to the chat history.
+  2. **Generating the corrected translation (Prompt 2)**: Output only the final translation with the pointed-out issues resolved.
 - **`batch.sh`**:
-  `review.py` を用いた推敲から、生成された修正訳の評価、集計までを全自動で行うバッチスクリプトです。
+  A batch script that fully automates everything from revision using `review.py`, through evaluation of the generated corrected translations, to aggregation.
 
-## batch.sh の動作
+## How batch.sh works
 
-1. **推敲の実行**
-   - **入力**: 
-     - 原文: `examples/onde-en.txt`
-     - ベースライン訳: `examples/tr/onde/gemma4/tr/onde-{lang}.txt`
-   - **対象言語**: オランダ語 (`nl`)、チェコ語 (`cs`)
-   - **推敲モデル**: `ollama:qwen3.6`
-   - **出力先** (計2ファイル): 
-     - 推敲後: `tr/onde-{lang}-reviewed.txt`
+1. **Running the revision**
+   - **Input**:
+     - Original text: `examples/onde-en.txt`
+     - Baseline translation: `examples/tr/onde/gemma4/tr/onde-{lang}.txt`
+   - **Target languages**: Dutch (`nl`), Czech (`cs`)
+   - **Revision model**: `ollama:qwen3.6`
+   - **Output** (2 files total):
+     - Revised: `tr/onde-{lang}-reviewed.txt`
 
-2. **評価**
-   - **評価モデル**: `ollama:qwen3.6`
-   - 各言語の推敲後の訳文に対して `trtools eval` を3回ずつ実行します (2言語 × 3回 = 計6回の評価)。
-   - **出力先**: `evals/onde-{lang}-reviewed-{1,2,3}.json`
+2. **Evaluation**
+   - **Evaluation model**: `ollama:qwen3.6`
+   - Runs `trtools eval` 3 times for each language's revised translation (2 languages × 3 = 6 evaluations total).
+   - **Output**: `evals/onde-{lang}-reviewed-{1,2,3}.json`
 
-3. **集計**
-   - `trtools agg` を使用して全6ファイルの評価結果の中央値を集計し、結果を `SCORES.txt` に出力します。
+3. **Aggregation**
+   - Uses `trtools agg` to aggregate the median of the evaluation results across all 6 files, outputting the result to `SCORES.txt`.
 
-### 推敲プロセスにおける `--no-think` の妥当性
+### Validity of `--no-think` in the revision process
 
-推敲スクリプトの実行時には `--no-think` オプションを指定し、明示的な内部推論（CoT: `<think>` タグ）を無効化しています。
-これは、`qwen3.6` のような論理的検証に優れたモデルに対し、「問題点を洗い出せ（analyze... point out...）」と自由記述で指示を出した場合、**出力テキストそのものを使って段階的な思考（擬似CoT / In-context reasoning）を自発的に展開する**ためです。
-明示的な `<think>` とテキスト出力での分析が二重に行われると処理時間が膨大になるため、`--no-think` を指定することで、分析の質を落とさずに推敲プロセスを高速化しています。
+When running the revision script, we specify the `--no-think` option to disable explicit internal reasoning (CoT: the `<think>` tag).
+This is because, for a model like `qwen3.6` that excels at logical verification, when given a free-form instruction such as "identify issues (analyze... point out...)", **it spontaneously develops staged reasoning (pseudo-CoT / in-context reasoning) using the output text itself.**
+If explicit `<think>` and text-output analysis both occur, processing time becomes enormous, so specifying `--no-think` speeds up the revision process without lowering the quality of the analysis.
 
-## 実行結果と分析
+## Results and analysis
 
-バッチスクリプトを実行し（所要時間: 56m7.696s）、以下のスコアを得ました。
-※ベースラインは `examples/tr/onde/gemma4/SCORES.txt` の結果（trtoolsによる一括直接翻訳・サマリー圧縮あり）です。
+We ran the batch script (elapsed time: 56m7.696s) and obtained the following scores.
+*The baseline is the result from `examples/tr/onde/gemma4/SCORES.txt` (batch direct translation via trtools, with summary compression).
 
-| 言語 | ベースライン (一括直接翻訳) | 推敲後 (Reviewed) |
+| Language | Baseline (batch direct translation) | Revised |
 | :--- | :---: | :---: |
-| オランダ語 (nl) | 78点 | **97点** |
-| チェコ語 (cs) | 78点 | **94点** |
+| Dutch (nl) | 78 pts | **97 pts** |
+| Czech (cs) | 78 pts | **94 pts** |
 
-### 考察
-* **オランダ語**: ベースラインの78点から **97点** へと大幅に改善しました。実験06の自己評価（最終訳94点）と比較してもさらに高いスコアが出ており、高品質なベースラインを評価能力に長けたモデルに推敲させるアプローチの有効性が確認できました。
-* **チェコ語**: ベースラインの78点から **94点** へと劇的に改善し、目標の90点台に到達しました。これは、文脈保持されたベースラインを出発点とし、論理的検証に優れたモデルに表現上の問題（直訳調や干渉）を修正させた結果です。
+### Discussion
+* **Dutch**: Improved dramatically from a baseline of 78 points to **97 points**. This score is even higher than Experiment 06's self-evaluation (final translation: 94 points), confirming the effectiveness of the approach of having a model with strong evaluation ability revise a high-quality baseline.
+* **Czech**: Improved dramatically from a baseline of 78 points to **94 points**, reaching the target 90s range. This is the result of starting from a context-preserved baseline and having a model with strong logical verification correct expression-level issues (literal-translation tone, interference).
 
-**結論**
-「翻訳（文脈保持の徹底）」と「推敲（論理的検証・他者評価）」の役割を分離するアプローチは、中リソース言語の品質改善において非常に有効な手段であることが証明されました。ベースラインでは70点台で伸び悩んでいた言語も、この推敲プロセスを経ることで、高品質言語と同水準（90点台半ば）に到達させることが可能です。
+**Conclusion**
+The approach of separating the roles of "translation (thorough context preservation)" and "revision (logical verification / third-party evaluation)" has proven to be a highly effective means of improving quality in medium-resource languages. Even languages that had been stuck in the 70s under the baseline can, through this revision process, reach the same level as high-quality languages (mid-90s).

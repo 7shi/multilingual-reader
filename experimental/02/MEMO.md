@@ -1,32 +1,32 @@
-# メモ
+# Memo
 
-## デバッグ記録
+## Debug records
 
-- **[`debug1/`](debug1/)**: 方式選定。4モデル（gemma3:27b, gpt-oss:120b, gemma4:31b, qwen3.6）× 4バリアント（none, none-schema, glossary, glossary-schema）を実行。`--schema` は複数モデルで有害（特に gemma4:31b の glossary-schema=62点）、`--summary glossary` は gpt-oss:120b では逆効果、gemma4:31b（no-think）は 1点差（97 vs 98）で他モデルは同等以上。Phase B の方針（glossary・schema なし・Qwen3/Gemma4 は no-think）を確定。
-- **[`debug2/`](debug2/)**: KV キャッシュ調査。`llm7shi` が旧バージョンのままで `generate_with_schema` がロールを保持できていなかった問題を特定し、v0.10.1 へのアップデートと `chat_history` をそのまま渡す修正で解決。`prefill duration` で KV キャッシュ効果を計測し、修正後はサマリー生成後も 0.2s 台を維持することを確認。
+- **[`debug1/`](debug1/)**: Method selection. Ran 4 models (gemma3:27b, gpt-oss:120b, gemma4:31b, qwen3.6) × 4 variants (none, none-schema, glossary, glossary-schema). `--schema` was harmful for multiple models (notably gemma4:31b's glossary-schema=62 points), `--summary glossary` was counterproductive for gpt-oss:120b, and gemma4:31b (no-think) differed by only 1 point (97 vs 98) while other models were equal or better. Finalized the Phase B policy (no glossary/schema, Qwen3/Gemma4 use no-think).
+- **[`debug2/`](debug2/)**: KV cache investigation. Identified that `llm7shi` was on an outdated version and `generate_with_schema` was failing to preserve roles, resolved by upgrading to v0.10.1 and passing `chat_history` through as-is. Measured KV cache effectiveness via `prefill duration`, confirming the fix keeps it around 0.2s even after summary generation.
 
 ---
 
-## ハイブリッドモード（experimental/03 予定）
+## Hybrid mode (planned for experimental/03)
 
-CoT 対応モデル（Qwen3/Gemma4 系）向けの発展的な方式。`--hybrid` オプションを追加し、翻訳ループは CoT なし、要約生成のみ CoT ありで実行する。
+An advanced approach for CoT-capable models (Qwen3/Gemma4 series). Adds a `--hybrid` option so the translation loop runs without CoT while only summary generation uses CoT.
 
-- 翻訳本体は CoT なしで速度・安定性を確保
-- 要約生成は CoT ありで精度を向上（頻度が低いためコスト増は限定的）
-- 要約の CoT はその呼び出し内で完結し、翻訳履歴には要約テキストだけが残るため KV キャッシュを汚染しない
+- Translation itself runs without CoT to ensure speed and stability
+- Summary generation uses CoT to improve accuracy (since it's infrequent, the extra cost is limited)
+- The summary's CoT is self-contained within that call, and only the summary text remains in the translation history, so it does not pollute the KV cache
 
-**動作フロー（threshold=15, keep=5 の場合）:**
+**Operation flow (threshold=15, keep=5):**
 
 ```
-1〜10 翻訳（CoT なし）→ 要約1生成（CoT あり）→ 履歴に要約を含めない
-11〜15 翻訳継続（KV キャッシュ有効、要約の影響なし）
-15 の後でコンテキスト圧縮: [要約1, 11〜15]
-16〜20 翻訳（CoT なし）→ 要約2生成（CoT あり）→ 履歴から要約を削除
-21〜25 翻訳継続
-25 の後でコンテキスト圧縮: [要約2, 21〜25]
+Translate 1-10 (no CoT) → generate summary 1 (with CoT) → summary not included in history
+Continue translating 11-15 (KV cache active, unaffected by the summary)
+Compress context after 15: [summary 1, 11-15]
+Translate 16-20 (no CoT) → generate summary 2 (with CoT) → summary removed from history
+Continue translating 21-25
+Compress context after 25: [summary 2, 21-25]
 ...
 ```
 
-要約生成後は履歴から要約を削除して翻訳を継続するため、KV キャッシュが維持されると同時に、要約に釣られる挙動（要約の表現が翻訳に影響する）が発生しない。要約は圧縮タイミングで初めてコンテキストに注入される。
+After generating a summary, it's removed from history before translation continues, which keeps the KV cache intact while avoiding the behavior where the summary's phrasing influences the translation. The summary is only injected into the context at compression time.
 
-CoT による要約はコストが高いため、現在の `threshold - keep`（例: 10行ごと）よりも間隔を空ける調整も検討する。
+Since CoT-based summarization is costly, we're also considering widening the interval beyond the current `threshold - keep` (e.g., every 10 lines).

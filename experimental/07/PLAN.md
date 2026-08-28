@@ -1,17 +1,17 @@
-# 今後のアクションプラン
+# Future Action Plan
 
-実験07（他者評価アプローチによる推敲）の成功を踏まえ、今後は以下の計画に沿って推敲プロセスの最適化と適用範囲の拡大を進めます。
+Building on the success of Experiment 07 (revision via third-party evaluation), we will proceed with the following plan to optimize the revision process and expand its scope of application.
 
-## 実験08: CoTを用いた1ステップ推敲の検証
+## Experiment 08: Verifying single-step revision using CoT
 
-実験07では、評価モデルに自由記述で問題点を分析させ（Prompt 1）、その結果を踏まえて修正訳を出力させる（Prompt 2）という2ステップ方式を採用し、CoT自体は無効化（`--no-think`）していました。
-これを、**CoT（`<think>` タグ）を有効にした上で「分析と修正訳の出力を1回のプロンプトで行う（1ステップ方式）」アプローチ**と比較検討します。
+In Experiment 07, we adopted a two-step approach in which the evaluation model freely analyzes issues (Prompt 1) and then outputs a corrected translation based on that analysis (Prompt 2), with CoT itself disabled (`--no-think`).
+We will compare this against **an approach that enables CoT (the `<think>` tag) and performs "analysis and output of the corrected translation in a single prompt" (single-step approach)**.
 
-このアプローチでは、思考過程（分析）がチャット履歴のコンテキストに通常のテキストとして残らず、隠された `<think>` ブロック内のみに留まるという違いが生じます。
-これが推敲の品質や文脈の一貫性にどの程度影響を与えるか、また処理時間の観点でどちらが実用的かを実験08で調査します。
+In this approach, the thought process (analysis) is not retained as normal text in the chat history context, but remains only within the hidden `<think>` block — a key difference.
+Experiment 08 investigates how much this affects revision quality and contextual consistency, and which approach is more practical in terms of processing time.
 
-## 中リソース言語への適用範囲拡大
+## Expanding scope to medium-resource languages
 
-実験08において「2ステップ方式（擬似CoT）」と「1ステップ方式（ネイティブCoT）」の比較を行い、より優れた（品質・速度のバランスが良い）推敲プロセスを決定します。
+In Experiment 08, we will compare the "two-step approach (pseudo-CoT)" and the "single-step approach (native CoT)" to determine the superior revision process (with a good balance of quality and speed).
 
-プロセスが確定した段階で、オランダ語・チェコ語以外の**70〜85点帯で伸び悩んでいる他の中リソース言語（カタルーニャ語、ブルガリア語、ノルウェー語など）**へと対象言語数を拡大し、本アプローチの汎用性と安定性を大規模に検証する予定です。
+Once the process is finalized, we plan to expand the number of target languages beyond Dutch and Czech to **other medium-resource languages that have been stuck in the 70-85 point range (Catalan, Bulgarian, Norwegian, etc.)**, to broadly verify the generality and stability of this approach.

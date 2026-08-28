@@ -1,8 +1,8 @@
-# 推敲スコア比較（推敲前 vs 推敲後）
+# Revision Score Comparison (Pre-revision vs Post-revision)
 
-## 言語コード順
+## Sorted by language code
 
-| 言語 | 言語名 | 推敲前 | 推敲後 | 差分 |
+| Lang | Language | Pre | Post | Diff |
 |---|---|---:|---:|---:|
 | af | Afrikaans   |  82 | 87 |  +5 |
 | ar | Arabic      |  96 | 97 |  +1 |
@@ -72,12 +72,12 @@
 | vi | Vietnamese  |  97 | 97 |   0 |
 | zh | Chinese     |  96 | 89 |  -7 |
 
-改善: **30** 言語 / 悪化: **32** 言語 / 変化なし: **5** 言語  
-平均変化: **-1.2** 点 / 最大改善: **+42** 点 / 最大悪化: **-31** 点
+Improved: **30** languages / Degraded: **32** languages / Unchanged: **5** languages  
+Average change: **-1.2** points / Max improvement: **+42** points / Max degradation: **-31** points
 
-## 推敲後スコア降順
+## Sorted descending by post-revision score
 
-| 言語 | 言語名 | 推敲前 | **推敲後** | 差分 |
+| Lang | Language | Pre | **Post** | Diff |
 |---|---|---:|---:|---:|
 | uk | Ukrainian   |  93 | **98** |  +5 |
 | ar | Arabic      |  96 | **97** |  +1 |
@@ -147,9 +147,9 @@
 | si | Sinhala     |  33 | **33** |   0 |
 | te | Telugu      |  64 | **33** | -31 |
 
-## 5点刻み集計
+## Breakdown by 5-point buckets
 
-| 範囲 | 言語 |
+| Range | Languages |
 |---|---|
 | +41～+45 | Basque (+42) |
 | +26～+30 | Estonian (+29) |
@@ -167,6 +167,6 @@
 | -30～-26 | Albanian (-26), Nepali (-28) |
 | -35～-31 | Telugu (-31) |
 
-## 推敲が有効な言語（差分 +6 以上）
+## Languages where revision was effective (diff +6 or more)
 
 - Bulgarian (97:+17), Hungarian (96:+13), Slovene (95:+22), Azerbaijani (91:+13), Czech (89:+9), Basque (87:+42), Estonian (82:+29), Latvian (82:+17), Macedonian (82:+6), Belarusian (81:+12), Greek (77:+11), Welsh (70:+18), Irish (47:+17)

@@ -1,20 +1,20 @@
-# ハイブリッドモード翻訳実験
+# Hybrid Mode Translation Experiment
 
-[experimental/02](../02/) のサマリー圧縮方式を発展させ、CoT 対応モデル向けの **ハイブリッドモード** を実装した実験ディレクトリです。
+An experiment directory that extends the [experimental/02](../02/) summary compression method by implementing **hybrid mode** for CoT-capable models.
 
-## 背景と動機
+## Background and motivation
 
-experimental/02 で `--no-think` を採用した理由は、CoT による履歴肥大とキャッシュミスの回避でした。一方で、要約生成は「複数情報の統合判断」が必要なため CoT が活きる場面です。本実験では：
+experimental/02 adopted `--no-think` to avoid history bloat and cache misses from CoT. Meanwhile, summary generation is a scenario where CoT shines, since it requires "synthesizing multiple pieces of information into a judgment." In this experiment:
 
-- **翻訳本体**: CoT なし（速度・安定性確保）
-- **要約生成**: CoT あり（精度向上、頻度が低いためコスト増は限定的）
-- **要約は履歴から除外**: 翻訳履歴は要約に汚染されず純粋な翻訳ペアのみで構成される。要約は再編成タイミングで初めて注入される
+- **Translation itself**: no CoT (ensures speed and stability)
+- **Summary generation**: with CoT (improves accuracy; since it's infrequent, the extra cost is limited)
+- **The summary is excluded from history**: the translation history is never polluted by the summary and consists purely of translation pairs. The summary is only injected at the reorganization point
 
-これにより、CoT による推敲を要約に集中させつつ、翻訳ループの KV キャッシュ効率を維持します。
+This lets CoT-driven refinement concentrate on the summary while maintaining KV cache efficiency in the translation loop.
 
-## 翻訳システム
+## Translation system
 
-スクリプト実行は必ず `uv run` を使うこと。
+Scripts must always be run with `uv run`.
 
 ### translate.py
 
@@ -22,33 +22,33 @@ experimental/02 で `--no-think` を採用した理由は、CoT による履歴�
 uv run translate.py <input_file> -f <from_lang> -t <to_lang> -o <output> -m <model> [options]
 ```
 
-**オプション:**
+**Options:**
 
-| オプション | デフォルト | 説明 |
+| Option | Default | Description |
 |---|---|---|
-| `--threshold` | 20 | 要約生成の間隔（翻訳ペア数） |
-| `--keep` | 5 | 要約後〜再編成までの翻訳ペア数 |
-| `--no-think` | なし | 要約生成の CoT を無効化（翻訳は常に CoT なし） |
+| `--threshold` | 20 | Interval (in translation pairs) between summary generations |
+| `--keep` | 5 | Number of translation pairs between a summary and reorganization |
+| `--no-think` | none | Disable CoT for summary generation (translation always runs without CoT) |
 
-experimental/02 の `--summary` / `--schema` / `--no-summary-history` は廃止し固定動作としました。glossary・要約履歴削除は常に有効です。
+experimental/02's `--summary` / `--schema` / `--no-summary-history` were dropped and replaced with fixed behavior. Glossary and removing the summary from history are now always active.
 
-### 動作仕様（threshold=20, keep=5）
+### Operating spec (threshold=20, keep=5)
 
-| 翻訳 i | 動作 |
+| Translation i | Behavior |
 |---|---|
-| 1〜20 | 翻訳（CoT なし）。chat_history に蓄積 |
-| 20 完了直後 | **要約生成（CoT あり）→ 履歴から削除**（chat_history は翻訳 1〜20 のまま） |
-| 21〜25 | 翻訳継続。要約に汚染されないので KV キャッシュ有効 |
-| 25 完了直後 | **再編成**: `chat_history = [system, summary1, 21〜25 の 5 ペア]` |
-| 26〜40 | 翻訳継続（再編成された履歴に追加） |
-| 40 完了直後 | 要約生成（前回 summary1 を統合）→ 履歴から削除 |
-| 41〜45 | 翻訳継続 |
-| 45 完了直後 | 再編成: `[system, summary2, 41〜45]` |
+| 1-20 | Translate (no CoT). Accumulates in chat_history |
+| Right after 20 completes | **Generate summary (with CoT) → remove from history** (chat_history stays as translations 1-20) |
+| 21-25 | Translation continues. Unpolluted by the summary, so KV cache stays active |
+| Right after 25 completes | **Reorganize**: `chat_history = [system, summary1, the 5 pairs 21-25]` |
+| 26-40 | Translation continues (appends to the reorganized history) |
+| Right after 40 completes | Generate summary (merging the previous summary1) → remove from history |
+| 41-45 | Translation continues |
+| Right after 45 completes | Reorganize: `[system, summary2, 41-45]` |
 | ... | ... |
 
-- 要約タイミング: `i % threshold == 0` → 20, 40, 60, ...
-- 再編成タイミング: 要約から `keep` 行後 → 25, 45, 65, ...
-- 末尾近くで再編成が翻訳数を超える場合（`i + keep > len(entries)`）は要約をスキップ
+- Summary timing: `i % threshold == 0` → 20, 40, 60, ...
+- Reorganization timing: `keep` lines after the summary → 25, 45, 65, ...
+- If a reorganization near the end would exceed the entry count (`i + keep > len(entries)`), the summary is skipped
 
 ### batch.sh
 
@@ -56,100 +56,100 @@ experimental/02 の `--summary` / `--schema` / `--no-summary-history` は廃止�
 bash batch.sh
 ```
 
-[MODELS.txt](MODELS.txt) の3モデル（qwen3.6-27b、gemma4-26b、gemma4-e4b）について、**翻訳3回 × 評価3回** を実行します。experimental/02 では翻訳1回 × 評価3回で「評価ブレ」のみを測っていましたが、本実験ではモデル絞り込みで時間に余裕ができるため、翻訳のブレも測定します。
+Runs **3 translation runs × 3 evaluation runs** for the 3 models in [MODELS.txt](MODELS.txt) (qwen3.6-27b, gemma4-26b, gemma4-e4b). experimental/02 measured only "evaluation variance" with 1 translation run × 3 evaluations, but this experiment also measures translation variance since narrowing down the model list left more time budget.
 
-**ファイル命名:**
+**File naming:**
 
 ```
-tr/<model>-<trrun>.txt                     例: tr/qwen3.6-27b-1.txt
-evals/<model>-<trrun>-eval-<evrun>.json    例: evals/qwen3.6-27b-1-eval-1.json
+tr/<model>-<trrun>.txt                     e.g. tr/qwen3.6-27b-1.txt
+evals/<model>-<trrun>-eval-<evrun>.json    e.g. evals/qwen3.6-27b-1-eval-1.json
 ```
 
-3モデル × 翻訳3回 × 評価3回 = 27 評価ファイルが生成され、翻訳 run 単位で集約して [SCORES.txt](SCORES.txt) に出力します。
+3 models × 3 translation runs × 3 evaluation runs = 27 evaluation files are generated, then aggregated per translation run into [SCORES.txt](SCORES.txt).
 
-## 対象モデル
+## Target models
 
-experimental/02 の Phase B 結果から、上位3モデルに絞り込みました。いずれも CoT 対応かつ実用的なリソース範囲に収まります。
+Narrowed down to the top 3 models based on experimental/02's Phase B results. All support CoT and fit within a practical resource range.
 
-| モデル | experimental/02 スコア | 特徴 |
+| Model | experimental/02 score | Characteristics |
 |---|:---:|---|
-| qwen3.6-27b | 97 | think モードでの精度が高い |
-| gemma4-26b | 97 | スコア安定性が最高（範囲1）、構造的欠陥ゼロ |
-| gemma4-e4b | 95 | 軽量モデルながら情報完全性3回満点 |
+| qwen3.6-27b | 97 | High accuracy in think mode |
+| gemma4-26b | 97 | Highest score stability (range of 1), zero structural flaws |
+| gemma4-e4b | 95 | Lightweight, yet perfect information completeness across all 3 evaluations |
 
-experimental/02 スコアは Phase B（`--summary glossary`・`--no-think`・翻訳1回・評価3回の中央値）の値。詳細は [experimental/02/README.md](../02/README.md) を参照。
+The experimental/02 score is from Phase B (`--summary glossary`, `--no-think`, 1 translation run, median of 3 evaluations). See [experimental/02/README.md](../02/README.md) for details.
 
-### KV キャッシュの挙動
+### KV cache behavior
 
-- **gemma4 系（26b・e4b）**: KV キャッシュ有効。翻訳ループの prefill が高速。
-  - **要約直後（CoT あり）**: KV キャッシュが無効になる。実測値は [20/README.md](20/README.md) を参照。
-  - **要約直後（CoT なし）**: 要約後もキャッシュが継続して有効。実測値（gemma4-26b: 翻訳10が 0.33s → 翻訳11が 0.12s、gemma4-e4b: 翻訳10が 0.08s → 翻訳11が 0.05s）で確認済み（10-nt 試行）。
-- **qwen3.6-27b**: 挙動が不明。1〜7 は cold（キャッシュなし）で duration がトークン数に比例して増加し、8 以降は急にキャッシュが効き始める。ただしその後も duration は線形増加が続く。（CoT の切り替えに内部タグを使う関係？）
+- **gemma4 series (26b, e4b)**: KV cache active. Fast prefill during the translation loop.
+  - **Right after the summary (with CoT)**: the KV cache becomes inactive. See [20/README.md](20/README.md) for measured values.
+  - **Right after the summary (without CoT)**: the cache stays active even after the summary. Confirmed with measured values (gemma4-26b: translation 10 at 0.33s → translation 11 at 0.12s; gemma4-e4b: translation 10 at 0.08s → translation 11 at 0.05s) in the 10-nt trial.
+- **qwen3.6-27b**: behavior unclear. Translations 1-7 are cold (no cache), with duration scaling with token count, then the cache suddenly kicks in from 8 onward. However, duration still keeps increasing linearly afterward. (Possibly related to using internal tags to switch CoT modes?)
 
-## 評価システム
+## Evaluation system
 
-[experimental/01](../01/) の評価パイプラインをそのまま使用します。詳細は [experimental/02/README.md](../02/README.md) を参照。
+Uses the [experimental/01](../01/) evaluation pipeline as-is. See [experimental/02/README.md](../02/README.md) for details.
 
-- 評価者: `ollama:qwen3.6`
-- 5項目 × 20点 = 100点満点
-- 集計: 3回評価の中央値
+- Evaluator: `ollama:qwen3.6`
+- 5 items × 20 points = 100 points max
+- Aggregation: median of 3 evaluation runs
 
-## 試行
+## Trials
 
-| 試行 | スクリプト | threshold | 要約 CoT | 結果 |
+| Trial | Script | threshold | Summary CoT | Result |
 |---|---|:---:|:---:|---|
-| [20/](20/) | translate.py | 20 | あり | gemma4-26b が最安定（96・96・100点）。glossary 初期誤訳固定リスクを確認 |
-| [10/](10/) | translate.py | 10 | あり | qwen3.6-27b の急落が解消（95・94・95点）。gemma4-e4b は低迷（88・87・92点） |
-| [10-nt/](10-nt/) | translate.py | 10 | なし | gemma4-26b が最優秀（95・99・96点）。qwen3.6・e4b で急落 run あり |
-| [exp2/](exp2/) | experimental/02/translate.py | 10 | なし | experimental/02 設定での比較用試行。qwen3.6・e4b で急落 run あり |
+| [20/](20/) | translate.py | 20 | yes | gemma4-26b most stable (96, 96, 100). Confirmed the risk of glossary early-mistranslation lock-in |
+| [10/](10/) | translate.py | 10 | yes | qwen3.6-27b's plunge resolved (95, 94, 95). gemma4-e4b underperformed (88, 87, 92) |
+| [10-nt/](10-nt/) | translate.py | 10 | no | gemma4-26b performed best (95, 99, 96). Plunge runs occurred for qwen3.6/e4b |
+| [exp2/](exp2/) | experimental/02/translate.py | 10 | no | comparison trial using experimental/02 settings. Plunge runs occurred for qwen3.6/e4b |
 
-## 比較結果
+## Comparison of results
 
-全試行のスコアをまとめる（急落 run を太字）:
+Summary of scores across all trials (plunge runs in bold):
 
-| モデル | exp2/（th=10） | 20/（th=20） | 10/（th=10） | 10-nt/（th=10） |
+| Model | exp2/ (th=10) | 20/ (th=20) | 10/ (th=10) | 10-nt/ (th=10) |
 |---|:---:|:---:|:---:|:---:|
 | qwen3.6-27b | **84** / 96 / 95 | 95 / 94 / **87** | 95 / 94 / 95 | 96 / **86** / 94 |
 | gemma4-26b | 96 / **98** / 96 | 96 / 96 / **100** | **97** / 94 / **97** | 95 / **99** / 96 |
 | gemma4-e4b | 95 / **83** / 94 | 96 / **68** / 94 | 88 / 87 / 92 | 95 / 96 / **84** |
 
-gemma4-26b の太字は高スコア run。他モデルの太字は急落 run。
+For gemma4-26b, bold marks a high-score run; for the other models, bold marks a plunge run.
 
-### 設定間の比較
+### Comparison across configurations
 
-急落はどの設定でも発生しており、特定の設定に依存しない。exp2/（experimental/02 設定）でも qwen3.6-27b と gemma4-e4b で急落が起きており、glossary 初期蓄積のブレによるランダムな現象と確認できた。
+Plunges occurred in every configuration, so they don't depend on a specific setting. exp2/ (experimental/02's settings) also had plunges for qwen3.6-27b and gemma4-e4b, confirming this is a random phenomenon caused by variance in initial glossary accumulation.
 
-- **qwen3.6-27b**: 各試行で1 run が 84〜87 点に急落している。急落のない run は 94〜96 点で安定しており、水準自体は高い。
-- **gemma4-26b**: 全試行・全 run で急落なし。スコアは 94〜100 点の範囲で推移しており、設定の違いによる差は誤差の範囲。
-- **gemma4-e4b**: どの設定でも急落リスクがある。threshold=20（20/）では 68 点という最も極端な急落が発生しており、他の設定より急落時のダメージが大きい傾向が見られる。ただし exp2/（threshold=15）でも eval-1 が 68 点の run が存在しており、threshold の違いよりも glossary 初期蓄積の確率的なブレが支配的と考えられる。threshold=10（10/）は急落が消えた代わりに全体的に低迷（87〜92点）しており、急落リスクと平均品質のトレードオフがある。
+- **qwen3.6-27b**: 1 run plunged to 84-87 points in every trial. The runs without a plunge stayed at 94-96 points, so the underlying quality is high.
+- **gemma4-26b**: no plunges in any trial or run. Scores ranged 94-100, with differences between configurations within the margin of error.
+- **gemma4-e4b**: plunge risk exists in every configuration. threshold=20 (20/) produced the most extreme plunge (68 points), suggesting the damage from a plunge is larger there than in other configurations. However, exp2/ (threshold=15) also had a run with an eval-1 of 68 points, suggesting the probabilistic variance of initial glossary accumulation dominates over differences in threshold. threshold=10 (10/) eliminated the plunges but underperformed overall (87-92 points), showing a trade-off between plunge risk and average quality.
 
-CoT は要約生成にのみ適用され翻訳本体には影響しないため、要約 CoT の有無（10/ vs 10-nt/）は翻訳品質に対して有意な差を生まない。
+Since CoT only applies to summary generation and never to translation itself, the presence or absence of summary CoT (10/ vs 10-nt/) produces no meaningful difference in translation quality.
 
-### experimental/02 との比較（要約履歴削除の効果）
+### Comparison with experimental/02 (effect of removing the summary from history)
 
-exp2/ は experimental/02 と同じ設定（要約を翻訳履歴に含める）で3回翻訳した結果。10-nt/（要約を履歴から除外）との比較で、ハイブリッドモードの効果を対等に検証できる:
+exp2/ used the same settings as experimental/02 (keeping the summary in translation history), translated 3 times. Comparing it with 10-nt/ (summary excluded from history) provides a fair test of hybrid mode's effect:
 
-| モデル | exp2/（履歴に含める） | 10-nt/（履歴から除外） |
+| Model | exp2/ (kept in history) | 10-nt/ (excluded from history) |
 |---|:---:|:---:|
 | qwen3.6-27b | **84** / 96 / 95 | 96 / **86** / 94 |
 | gemma4-26b | 96 / **98** / 96 | 95 / **99** / 96 |
 | gemma4-e4b | 95 / **83** / 94 | 95 / 96 / **84** |
 
-- **qwen3.6-27b・gemma4-26b**: 急落の深さも水準も同等で、差は見られない。
-- **gemma4-e4b**: exp2/ の急落 run（83点）は eval-1 が 68点を含む一方、10-nt/ の急落 run（84点）の最低 eval は 82点。要約という異質なテキストを翻訳履歴に挟むことでスタイルが乱れやすくなるという理論的な予測と一致する兆候が見られる。ただし run 数が3回では断定するには少なく、傾向として留める。
+- **qwen3.6-27b, gemma4-26b**: the depth and level of plunges are comparable, no visible difference.
+- **gemma4-e4b**: exp2/'s plunge run (83 points) includes an eval-1 of 68 points, while 10-nt/'s plunge run (84 points) has a minimum eval of 82 points. This is consistent with the theoretical prediction that inserting a stylistically different summary text into the translation history makes the style more prone to disruption. However, with only 3 runs, this is too small a sample to be conclusive and should be treated as a trend.
 
-KV キャッシュ効率の向上というハイブリッドモードの設計上の利点が、品質のトレードオフなしに（あるいは小型モデルでは改善の兆しとともに）得られることが確認できた。
+The KV cache efficiency benefit that is hybrid mode's design goal was achieved without a quality trade-off (and even with a hint of improvement for the smaller model).
 
-## 結論
+## Conclusion
 
-threshold・CoT 有無による翻訳品質の有意な差は見られない。急落はどの設定でも glossary 初期蓄積のブレによって確率的に発生する。要約を翻訳履歴から除外するハイブリッドモード（10-nt）は、gemma4-e4b で急落時のダメージが小さい兆候があり、理論的にも翻訳スタイルへの干渉を避ける点で合理的である。唯一の例外として、gemma4-e4b は threshold=20 で急落時のダメージが最大になっており、小型モデルへの長文脈負荷の影響が疑われる。
+No significant difference in translation quality was found based on threshold or the presence of CoT. Plunges occur probabilistically in every configuration due to variance in initial glossary accumulation. Hybrid mode, which excludes the summary from translation history (10-nt), shows a hint of smaller damage during plunges for gemma4-e4b, and is also theoretically sound in avoiding interference with translation style. The one exception is gemma4-e4b, where plunge damage was largest at threshold=20, suggesting a possible impact of long-context load on smaller models.
 
-処理時間の観点から、**threshold=10・CoT なし（10-nt）を推奨**とする。翻訳本体は常に CoT なしで動作し、要約も CoT なしにすることで要約生成が速くなる。品質面での不利はなく、KV キャッシュ効率も維持される。
+From a processing-time standpoint, **threshold=10 with no CoT (10-nt) is recommended**. Translation always runs without CoT, and disabling CoT for the summary as well speeds up summary generation. There's no quality downside, and KV cache efficiency is maintained.
 
-モデル別の推奨:
+Recommendations by model:
 
-- **gemma4-26b**: 第一推奨。全設定で安定して高品質かつ急落なし。評価者が qwen3.6 系（異なるアーキテクチャ）であることから、この高評価は独立した判断として信頼性が高い。
-- **gemma4-e4b**: リソース制約がある場合の代替。急落リスクは残るが threshold=10 で一定の品質を確保できる。
-- **qwen3.6-27b**: 採用する積極的な理由に乏しい。急落リスクがあり、KV キャッシュが効かず処理時間も長い。
+- **gemma4-26b**: top recommendation. Stable and high-quality across every configuration with no plunges. Since the evaluator is from the qwen3.6 family (a different architecture), this high rating is a reliable, independent judgment.
+- **gemma4-e4b**: an alternative under resource constraints. Plunge risk remains, but threshold=10 secures reasonable quality.
+- **qwen3.6-27b**: little compelling reason to adopt. Carries plunge risk, doesn't benefit from the KV cache, and takes longer to process.
 
-各試行のサンプル数（翻訳3回）は統計的な断定には少なく、スコアの差異を設定の効果と言い切るには根拠が薄い。ただし experimental/02 の段階では見えていなかった理論的な論点——要約を翻訳履歴に残すことによるスタイル干渉のリスク、小型モデルへの長文脈負荷——が本実験を通して浮かび上がった点に意義がある。
+The sample size of each trial (3 translation runs) is too small for statistical certainty, and it's hard to definitively attribute score differences to configuration effects. That said, this experiment surfaced theoretical points not visible at the experimental/02 stage — the risk of style interference from keeping the summary in translation history, and long-context load on smaller models — which is itself meaningful.

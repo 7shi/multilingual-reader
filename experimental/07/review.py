@@ -3,15 +3,15 @@ import time
 from tqdm import tqdm
 from trtools.llm import LLMClient
 
-parser = argparse.ArgumentParser(description="他者評価による翻訳推敲スクリプト")
-parser.add_argument("--original", required=True, help="原文テキストファイル")
-parser.add_argument("--translation", required=True, help="ベースライン翻訳テキストファイル")
-parser.add_argument("-f", "--from", dest="from_lang", required=True, help="原語（例: English）")
-parser.add_argument("-t", "--to", dest="to_lang", required=True, help="翻訳先言語（例: Dutch）")
-parser.add_argument("-o", "--output", required=True, help="推敲後出力ファイル名")
-parser.add_argument("-m", "--model", required=True, help="推敲に使用するモデル")
-parser.add_argument("--history", type=int, default=10, help="コンテキスト履歴数")
-parser.add_argument("--no-think", action="store_true", help="thinking処理を無効化")
+parser = argparse.ArgumentParser(description="Translation revision script using third-party evaluation")
+parser.add_argument("--original", required=True, help="Original text file")
+parser.add_argument("--translation", required=True, help="Baseline translation text file")
+parser.add_argument("-f", "--from", dest="from_lang", required=True, help="Source language (e.g. English)")
+parser.add_argument("-t", "--to", dest="to_lang", required=True, help="Target language (e.g. Dutch)")
+parser.add_argument("-o", "--output", required=True, help="Output file name for the revised text")
+parser.add_argument("-m", "--model", required=True, help="Model to use for revision")
+parser.add_argument("--history", type=int, default=10, help="Number of context history entries")
+parser.add_argument("--no-think", action="store_true", help="Disable thinking processing")
 args = parser.parse_args()
 
 with open(args.original, "r", encoding="utf-8") as f:
@@ -71,7 +71,7 @@ for i, (orig_line, tr_line) in enumerate(zip(orig_lines, tr_lines)):
     chat_history.append({"role": "user", "content": prompt1})
     
     print("\nAnalysis:")
-    # リアルタイムにストリーミング出力されるため、戻り値のprintは不要
+    # Streamed in real time, so no need to print the return value
     analysis = client.call(chat_history)
     print()
     chat_history.append({"role": "assistant", "content": analysis})
@@ -87,7 +87,7 @@ for i, (orig_line, tr_line) in enumerate(zip(orig_lines, tr_lines)):
         chat_history.append({"role": "user", "content": prompt2})
 
         print("\nRefined:")
-        # リアルタイムにストリーミング出力されるため、戻り値のprintは不要
+        # Streamed in real time, so no need to print the return value
         improved_tr = client.call(chat_history)
         improved_tr = improved_tr.strip()
 

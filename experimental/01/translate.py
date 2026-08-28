@@ -1,16 +1,16 @@
-# 指定ファイルをローカルLLMで英語と日本語に翻訳（1行ずつ処理、文脈付き）
+# Translate the specified file into English and Japanese using a local LLM (processed line by line, with context)
 
 import argparse
-parser = argparse.ArgumentParser(description="対話テキストを1:1で翻訳")
-parser.add_argument("input_file", help="翻訳対象のテキストファイル")
-parser.add_argument("-f", "--from", dest="from_lang", required=True, help="原語（例: English, French, Japanese）")
-parser.add_argument("-t", "--to", dest="to_lang", required=True, help="翻訳先言語（例: English, French, Japanese）")
-parser.add_argument("-o", "--output", dest="output_file", required=True, help="出力ファイル名")
-parser.add_argument("-m", "--model", required=True, help="翻訳に使用するモデル")
-parser.add_argument("-r", "--reasoning-level", type=int, default=2, choices=[0, 1, 2, 3, 4], help="推論レベル: 0=推論なし, 1=標準推論, 2=2段階翻訳, 3=3段階翻訳, 4=分割3段階翻訳")
-parser.add_argument("--history", type=int, default=5, help="コンテキストに含める過去の対話履歴数 (デフォルト: 5)")
-parser.add_argument("--translated-context", action="store_true", help="履歴コンテキストに翻訳文のみを提供（対訳形式ではなく）")
-parser.add_argument("--no-think", action="store_true", help="thinking処理を無効化（Qwen3モデル用）")
+parser = argparse.ArgumentParser(description="Translate dialogue text 1:1")
+parser.add_argument("input_file", help="Text file to translate")
+parser.add_argument("-f", "--from", dest="from_lang", required=True, help="Source language (e.g. English, French, Japanese)")
+parser.add_argument("-t", "--to", dest="to_lang", required=True, help="Target language (e.g. English, French, Japanese)")
+parser.add_argument("-o", "--output", dest="output_file", required=True, help="Output file name")
+parser.add_argument("-m", "--model", required=True, help="Model to use for translation")
+parser.add_argument("-r", "--reasoning-level", type=int, default=2, choices=[0, 1, 2, 3, 4], help="Reasoning level: 0=no reasoning, 1=standard reasoning, 2=two-stage translation, 3=three-stage translation, 4=split three-stage translation")
+parser.add_argument("--history", type=int, default=5, help="Number of past dialogue turns to include in context (default: 5)")
+parser.add_argument("--translated-context", action="store_true", help="Provide only translated text in the history context (instead of the bilingual format)")
+parser.add_argument("--no-think", action="store_true", help="Disable thinking processing (for Qwen3 models)")
 args = parser.parse_args()
 
 with open(args.input_file, "r", encoding="utf-8") as f:
@@ -53,30 +53,30 @@ elif args.reasoning_level == 3:
         improvement_suggestions: str = improvement_suggestions_field
         improved_translation: str = improved_translation_field
 elif args.reasoning_level == 4:
-    # 第1段階：推論と初回翻訳
+    # Stage 1: reasoning and initial translation
     class FirstStageTranslation(BaseModel):
         reasoning: str = reasoning_field
         draft_translation: str = draft_translation_field
-    
-    # 第2段階：品質評価と改善翻訳
+
+    # Stage 2: quality assessment and improved translation
     class SecondStageTranslation(BaseModel):
         quality_assessment: str = quality_assessment_field
         improvement_suggestions: str = improvement_suggestions_field
         improved_translation: str = improved_translation_field
-    
-    Translation = FirstStageTranslation  # デフォルトは第1段階
+
+    Translation = FirstStageTranslation  # Default is stage 1
 
 json_descriptions = create_json_descriptions_prompt(Translation)
 
 def normalize(text):
-    # ord(ch)<32の文字をすべてスペースに変換
+    # Convert all characters with ord(ch)<32 to spaces
     normalized = ''.join(' ' if ord(ch) < 32 else ch for ch in text)
-    # スペースの連続を1個にまとめる
+    # Collapse consecutive spaces into one
     normalized = re.sub(r' +', ' ', normalized)
     return normalized.strip()
 
 def generate_with_retry(prompts, schema, model, stage_name=""):
-    """リトライ機能付きのLLM生成関数"""
+    """LLM generation function with retry capability"""
     descriptions = create_json_descriptions_prompt(schema)
     for j in range(5):
         if j:
@@ -97,58 +97,58 @@ def generate_with_retry(prompts, schema, model, stage_name=""):
             else:
                 raise
 
-context_history = []  # 文脈保持用
+context_history = []  # for keeping context
 
-# 翻訳対象行を事前にカウント
+# Count the lines to translate in advance
 translation_lines = [line for line in lines if line.strip() and ":" in line.strip()]
 
-# 1行ずつ翻訳
-for i, line in enumerate(tqdm(lines, desc="翻訳処理")):
+# Translate line by line
+for i, line in enumerate(tqdm(lines, desc="Translating")):
     line = line.strip()
-    
-    # 話者が分離できなければスキップ
+
+    # Skip if the speaker cannot be separated
     if ":" not in line:
         continue
-    
+
     print()
     print(line)
-    
-    # 話者を分離
+
+    # Separate the speaker
     speaker, text = line.split(":", 1)
     speaker = speaker.strip()
     text = text.strip()
-    
-    # 文脈作成（直前のhistory個の翻訳結果）
+
+    # Build context (translation results from the last `history` turns)
     context_lines = []
     if context_history and args.history > 0:
         context_lines.append("Previous conversation context:")
         context_lines.append("")
         for ctx in context_history[-args.history:]:
             if args.translated_context:
-                # 翻訳文のみを提供
+                # Provide only the translated text
                 context_lines.append(f"{ctx['speaker']}: {ctx['translation']}")
             else:
-                # 対訳形式で提供（デフォルト）
+                # Provide in bilingual format (default)
                 context_lines.append(f"Original: {ctx['speaker']}: {ctx['original']}")
                 context_lines.append(f"Translation: {ctx['speaker']}: {ctx['translation']}")
                 context_lines.append("")
-    
+
     context = "\n".join(context_lines) if context_lines else "(No context)"
-    
-    # プロンプト作成（話者情報を含める）
+
+    # Create the prompt (including speaker information)
     prompt = f"Translate the following {args.from_lang} text spoken by {speaker} into {args.to_lang}:\n{text}"
-    
-    # 実際の翻訳実行
+
+    # Run the actual translation
     if args.reasoning_level == 4:
-        # レベル4：2段階に分割した処理
-        # 第1段階：推論と初回翻訳
+        # Level 4: processing split into two stages
+        # Stage 1: reasoning and initial translation
         first_parsed = generate_with_retry([context, prompt], FirstStageTranslation, args.model, "Stage 1")
-        
-        # 第2段階：品質評価と改善翻訳
+
+        # Stage 2: quality assessment and improved translation
         second_stage_prompt = f"Review and improve this {args.from_lang} to {args.to_lang} translation:\n\nOriginal: {text}\nDraft translation: {first_parsed['draft_translation']}"
         second_parsed = generate_with_retry([context, second_stage_prompt], SecondStageTranslation, args.model, "Stage 2")
-        
-        # 結果を統合
+
+        # Merge the results
         parsed = {
             'reasoning': first_parsed['reasoning'],
             'draft_translation': first_parsed['draft_translation'],
@@ -157,10 +157,10 @@ for i, line in enumerate(tqdm(lines, desc="翻訳処理")):
             'improved_translation': second_parsed['improved_translation']
         }
     else:
-        # 従来の1回呼び出し処理
+        # Legacy single-call processing
         parsed = generate_with_retry([context, prompt], Translation, args.model)
-    
-    # 文脈履歴に追加
+
+    # Add to context history
     if args.reasoning_level in [2, 3, 4]:
         translated_text = normalize(parsed['improved_translation'])
     else:
@@ -172,9 +172,9 @@ for i, line in enumerate(tqdm(lines, desc="翻訳処理")):
     })
     
 
-# 結果を保存
+# Save results
 with open(args.output_file, "w", encoding="utf-8") as f:
     for ctx in context_history:
         f.write(f"{ctx['speaker']}: {ctx['translation']}\n")
 
-print(f"翻訳完了: {args.from_lang} → {args.to_lang} ({args.output_file})")
+print(f"Translation complete: {args.from_lang} → {args.to_lang} ({args.output_file})")

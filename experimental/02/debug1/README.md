@@ -1,10 +1,10 @@
-# debug1: 方式選定
+# debug1: method selection
 
-## 目的
+## Purpose
 
-4モデル × 4バリアント（none, none-schema, glossary, glossary-schema）を実行し、Phase B で採用する方式を1つに絞る。
+Run 4 models × 4 variants (none, none-schema, glossary, glossary-schema) to narrow down Phase B to a single method.
 
-| モデル | オプション |
+| Model | Options |
 |---|---|
 | `gemma3:27b` | |
 | `gpt-oss:120b` | |
@@ -13,31 +13,31 @@
 
 ---
 
-## 実行
+## Execution
 
 ```bash
 bash batch.sh
 ```
 
-既存ファイルはスキップされるため、途中から再開可能。結果は `{model}/SCORES.txt` に出力される。
+Existing files are skipped, so the run can be resumed from any point. Results are output to `{model}/SCORES.txt`.
 
-スクリプトは翻訳→評価→集約の3フェーズに分離している。翻訳モデルと評価モデル（qwen3.6）を連続稼働させることでモデル切り替えのオーバーヘッドを避けるため、全モデルの翻訳をまとめて実行してから評価に移る。
+The script splits into three phases: translation, evaluation, and aggregation. To avoid the overhead of switching models, translation for all models is run first, keeping the translation model and the evaluation model (qwen3.6) each running continuously, before moving on to evaluation.
 
 ---
 
-## 経緯
+## Background
 
-初期動作確認（gemma3:27b の none/glossary）は、`llm7shi` v0.10.1 アップデート前後で以下のスコア変化があった：
+During the initial functional check (gemma3:27b's none/glossary), scores changed as follows before and after the `llm7shi` v0.10.1 update:
 
-| バリアント | アップデート前 | アップデート後 |
+| Variant | Before update | After update |
 |---|---|---|
-| `none` | 98点 | 95点 |
-| `glossary` | 96点 | 98点 |
+| `none` | 98 points | 95 points |
+| `glossary` | 96 points | 98 points |
 
-`llm7shi` v0.10.1 でロール変換問題が修正され（詳細は `../debug2/README.md`）、`glossary` が `none` を上回ることが確認された。本ディレクトリではさらに schema あり/なしの差も検証した。
+`llm7shi` v0.10.1 fixed a role-conversion issue (details in `../debug2/README.md`), confirming that `glossary` now outperforms `none`. This directory also verifies the effect of enabling/disabling schema.
 
 ---
 
-## 結果・結論
+## Results and conclusion
 
-全工程完了。スコアおよび方式選定の結論は `../README.md`（debug1 セクション）を参照。
+All work complete. See `../README.md` (debug1 section) for the scores and the resulting method-selection conclusion.

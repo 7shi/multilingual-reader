@@ -23,7 +23,7 @@ declare -A VARIANT_OPTS=(
     [glossary-schema]="--summary glossary --schema"
 )
 
-# --- 翻訳（モデルごとにまとめて実行）---
+# --- Translation (run together per model) ---
 for model in "${MODELS[@]}"; do
     mkdir -p "$model"
     for variant in "${VARIANTS[@]}"; do
@@ -38,7 +38,7 @@ for model in "${MODELS[@]}"; do
     done
 done
 
-# --- 評価（評価者モデルをまとめて実行）---
+# --- Evaluation (run together per evaluator model) ---
 for model in "${MODELS[@]}"; do
     for variant in "${VARIANTS[@]}"; do
         out="$model/$variant.txt"
@@ -58,7 +58,7 @@ for model in "${MODELS[@]}"; do
     done
 done
 
-# --- 集約 ---
+# --- Aggregation ---
 tmpdir=$(mktemp -d)
 for model in "${MODELS[@]}"; do
     for f in "$model"/*-eval-*.json; do

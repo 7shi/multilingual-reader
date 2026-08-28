@@ -1,8 +1,9 @@
-# 対話テキスト翻訳（サマリー圧縮方式）
-# experimental/01/translate.py（スライディング）の入出力互換を保ちつつ、
-# experimental/01/translate-json.py のサマリー圧縮アーキテクチャを踏襲する。
-# chat_history を system + summary + 直近 KEEP ペア の固定構造に維持することで
-# KV キャッシュを有効化する。
+# Dialogue text translation (summary compression method)
+# Keeps I/O compatibility with experimental/01/translate.py (sliding window)
+# while following the summary compression architecture of
+# experimental/01/translate-json.py.
+# Activates the KV cache by keeping chat_history in a fixed
+# system + summary + most recent KEEP pairs structure.
 
 import argparse
 import json
@@ -10,20 +11,20 @@ import time
 from pydantic import BaseModel, Field
 from llm7shi.compat import generate_with_schema
 
-parser = argparse.ArgumentParser(description="対話テキストをサマリー圧縮方式で翻訳")
-parser.add_argument("input_file", help="翻訳対象のテキストファイル")
-parser.add_argument("-f", "--from", dest="from_lang", required=True, help="原語（例: French, English, Japanese）")
-parser.add_argument("-t", "--to", dest="to_lang", required=True, help="翻訳先言語（例: Spanish, Japanese）")
-parser.add_argument("-o", "--output", dest="output_file", required=True, help="出力ファイル名")
-parser.add_argument("-m", "--model", required=True, help="翻訳モデル")
-parser.add_argument("--threshold", type=int, default=10, help="要約生成の間隔（翻訳ペア数）（デフォルト: 10）")
-parser.add_argument("--keep", type=int, default=5, help="圧縮後に保持する直近ペア数（デフォルト: 5）")
+parser = argparse.ArgumentParser(description="Translate dialogue text using the summary compression method")
+parser.add_argument("input_file", help="Text file to translate")
+parser.add_argument("-f", "--from", dest="from_lang", required=True, help="Source language (e.g. French, English, Japanese)")
+parser.add_argument("-t", "--to", dest="to_lang", required=True, help="Target language (e.g. Spanish, Japanese)")
+parser.add_argument("-o", "--output", dest="output_file", required=True, help="Output file name")
+parser.add_argument("-m", "--model", required=True, help="Translation model")
+parser.add_argument("--threshold", type=int, default=10, help="Interval (in translation pairs) between summary generations (default: 10)")
+parser.add_argument("--keep", type=int, default=5, help="Number of most recent pairs kept after compression (default: 5)")
 parser.add_argument("--summary", choices=["glossary"], default=None,
-                    help="サマリー方式: glossary=固有名詞+内容要約。未指定で単純削除（最速）")
-parser.add_argument("--no-think", action="store_true", help="thinking処理を無効化（Qwen3モデル用）")
-parser.add_argument("--schema", action="store_true", help="構造化出力（JSONスキーマ）を有効化")
+                    help="Summary method: glossary=proper nouns + content summary. If unspecified, simple deletion (fastest)")
+parser.add_argument("--no-think", action="store_true", help="Disable thinking (for Qwen3 models)")
+parser.add_argument("--schema", action="store_true", help="Enable structured output (JSON schema)")
 parser.add_argument("--no-summary-history", action="store_true",
-                    help="サマリーを chat_history に残さない（圧縮時のみ注入）")
+                    help="Do not keep the summary in chat_history (only inject it at compression time)")
 args = parser.parse_args()
 
 MODEL = args.model
@@ -42,7 +43,7 @@ SCHEMA = Translation if args.schema else None
 with open(args.input_file, "r", encoding="utf-8") as f:
     lines = f.readlines()
 
-# 話者分離可能な行のみを翻訳対象とする
+# Only lines where a speaker can be split off are translated
 entries = []
 for line in lines:
     line = line.strip()
@@ -63,7 +64,7 @@ system_message = {
 
 
 def call_llm(prompt, schema=None):
-    """chat_history に prompt を追加して LLM を呼び出し、応答も history に追加する。"""
+    """Append prompt to chat_history, call the LLM, and add the response to history as well."""
     user_message = {"role": "user", "content": prompt}
     chat_history.append(user_message)
 
@@ -94,7 +95,7 @@ def call_llm(prompt, schema=None):
 
 
 def summarize_messages(summary_type):
-    """サマリー生成。chat_history への追加は call_llm が行う。"""
+    """Generate a summary. Appending to chat_history is handled by call_llm."""
     if summary_type == "glossary":
         summary_content = (
             "Please compress the translation history above into a concise summary "
@@ -116,9 +117,9 @@ def summarize_messages(summary_type):
     return call_llm(summary_content)
 
 
-translation_messages = []       # 累積翻訳 (U, A) ペア（削除しない台帳）
-summary_messages = []           # 累積サマリー (U, A) ペア
-chat_history = [system_message] # LLM に実際に渡すコンテキスト
+translation_messages = []       # Cumulative translation (U, A) pairs (never-deleted ledger)
+summary_messages = []           # Cumulative summary (U, A) pairs
+chat_history = [system_message] # The context actually passed to the LLM
 next_compression = None
 
 translations = []
@@ -139,7 +140,7 @@ for i, (speaker, text) in enumerate(entries, 1):
 
     translations.append((speaker, translated_text))
 
-    # サマリー生成予約: 翻訳 10, 20, 30, ... 完了後
+    # Schedule summary generation: after completing translation 10, 20, 30, ...
     if i % THRESHOLD == 0:
         next_compression = i + KEEP if i + KEEP <= len(entries) else None
 
@@ -152,7 +153,7 @@ for i, (speaker, text) in enumerate(entries, 1):
             summary_messages.append(sum_req)
             summary_messages.append(sum_res)
 
-    # 圧縮: 翻訳 15, 25, 35, ... 完了後
+    # Compression: after completing translation 15, 25, 35, ...
     if next_compression is not None and i == next_compression:
         print(f"[Compressing history after translation {i}: keeping {KEEP} pairs]")
         if SUMMARY_TYPE is None:
@@ -166,5 +167,5 @@ with open(args.output_file, "w", encoding="utf-8") as f:
     for speaker, translation in translations:
         f.write(f"{speaker}: {translation}\n")
 
-print(f"\n翻訳完了: {args.from_lang} → {args.to_lang} ({args.output_file})")
-print(f"処理時間: {elapsed:.1f}秒 ({elapsed/60:.1f}分)")
+print(f"\nTranslation complete: {args.from_lang} → {args.to_lang} ({args.output_file})")
+print(f"Processing time: {elapsed:.1f}s ({elapsed/60:.1f} min)")

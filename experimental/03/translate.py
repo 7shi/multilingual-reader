@@ -1,26 +1,26 @@
-# 対話テキスト翻訳（ハイブリッドモード）
-# experimental/02/translate.py をベースに、以下を固定化：
-# - 翻訳本体は CoT なし
-# - 要約生成は CoT あり（--no-think で CoT なしに切り替え可）
-# - サマリー方式は glossary 固定
-# - 要約は履歴に残さず、再編成タイミングで初めて注入
-# - 構造化出力（schema）は不使用
+# Dialogue text translation (hybrid mode)
+# Based on experimental/02/translate.py, with the following fixed:
+# - Translation itself runs without CoT
+# - Summary generation uses CoT (can be switched to no-CoT with --no-think)
+# - Summary method is fixed to glossary
+# - The summary is not kept in history; it's injected only at reorganization time
+# - Structured output (schema) is not used
 #
-# サイクル長 = THRESHOLD（要約間隔）。再編成は要約から KEEP 行後。
+# Cycle length = THRESHOLD (summary interval). Reorganization happens KEEP lines after the summary.
 
 import argparse
 import time
 from llm7shi.compat import generate_with_schema
 
-parser = argparse.ArgumentParser(description="対話テキストをハイブリッドモード（翻訳=CoTなし、要約=CoTあり）で翻訳")
-parser.add_argument("input_file", help="翻訳対象のテキストファイル")
-parser.add_argument("-f", "--from", dest="from_lang", required=True, help="原語（例: French, English, Japanese）")
-parser.add_argument("-t", "--to", dest="to_lang", required=True, help="翻訳先言語（例: Spanish, Japanese）")
-parser.add_argument("-o", "--output", dest="output_file", required=True, help="出力ファイル名")
-parser.add_argument("-m", "--model", required=True, help="翻訳モデル")
-parser.add_argument("--threshold", type=int, default=20, help="要約生成の間隔（デフォルト: 20）")
-parser.add_argument("--keep", type=int, default=5, help="要約後〜再編成までの翻訳ペア数（デフォルト: 5）")
-parser.add_argument("--no-think", action="store_true", help="要約生成の CoT を無効化（翻訳は常に CoT なし）")
+parser = argparse.ArgumentParser(description="Translate dialogue text in hybrid mode (translation=no CoT, summary=with CoT)")
+parser.add_argument("input_file", help="Text file to translate")
+parser.add_argument("-f", "--from", dest="from_lang", required=True, help="Source language (e.g. French, English, Japanese)")
+parser.add_argument("-t", "--to", dest="to_lang", required=True, help="Target language (e.g. Spanish, Japanese)")
+parser.add_argument("-o", "--output", dest="output_file", required=True, help="Output file name")
+parser.add_argument("-m", "--model", required=True, help="Translation model")
+parser.add_argument("--threshold", type=int, default=20, help="Interval between summary generations (default: 20)")
+parser.add_argument("--keep", type=int, default=5, help="Number of translation pairs between summary and reorganization (default: 5)")
+parser.add_argument("--no-think", action="store_true", help="Disable CoT for summary generation (translation always runs without CoT)")
 args = parser.parse_args()
 
 MODEL = args.model
@@ -51,7 +51,7 @@ system_message = {
 
 
 def call_llm(prompt, think):
-    """chat_history に prompt を追加して LLM を呼び出し、応答も history に追加する。"""
+    """Append prompt to chat_history, call the LLM, and add the response to history as well."""
     user_message = {"role": "user", "content": prompt}
     chat_history.append(user_message)
 
@@ -81,7 +81,7 @@ def call_llm(prompt, think):
 
 
 def summarize_messages():
-    """glossary サマリーを生成（CoT は THINK_SUMMARY で制御）。"""
+    """Generate a glossary summary (CoT is controlled by THINK_SUMMARY)."""
     summary_content = (
         "Please compress the translation history above into a concise summary "
         "with two parts.\n\n"
@@ -99,9 +99,9 @@ def summarize_messages():
     return call_llm(summary_content, think=THINK_SUMMARY)
 
 
-translation_messages = []       # 累積翻訳 (U, A) ペア（削除しない台帳）
-summary_messages = []           # 累積サマリー (U, A) ペア
-chat_history = [system_message] # LLM に実際に渡すコンテキスト
+translation_messages = []       # Cumulative translation (U, A) pairs (never-deleted ledger)
+summary_messages = []           # Cumulative summary (U, A) pairs
+chat_history = [system_message] # The context actually passed to the LLM
 next_compression = None
 
 translations = []
@@ -121,8 +121,8 @@ for i, (speaker, text) in enumerate(entries, 1):
 
     translations.append((speaker, translated_text))
 
-    # 要約生成（CoT あり）→ 履歴から削除
-    # 末尾近くで再編成が翻訳数を超える場合はスキップ
+    # Generate summary (with CoT) → remove from history
+    # Skip if reorganization would exceed the entry count near the end
     if i % THRESHOLD == 0 and i + KEEP <= total:
         print(f"[Generating summary after translation {i}]")
         saved_len = len(chat_history)
@@ -132,7 +132,7 @@ for i, (speaker, text) in enumerate(entries, 1):
         summary_messages.append(sum_res)
         next_compression = i + KEEP
 
-    # 再編成: [system, 最新サマリー, 直近 KEEP ペア]
+    # Reorganize: [system, latest summary, most recent KEEP pairs]
     if next_compression is not None and i == next_compression:
         print(f"[Compressing history after translation {i}: keeping {KEEP} pairs]")
         chat_history = [system_message] + summary_messages[-2:] + translation_messages[-KEEP * 2:]
@@ -144,5 +144,5 @@ with open(args.output_file, "w", encoding="utf-8") as f:
     for speaker, translation in translations:
         f.write(f"{speaker}: {translation}\n")
 
-print(f"\n翻訳完了: {args.from_lang} → {args.to_lang} ({args.output_file})")
-print(f"処理時間: {elapsed:.1f}秒 ({elapsed/60:.1f}分)")
+print(f"\nTranslation complete: {args.from_lang} → {args.to_lang} ({args.output_file})")
+print(f"Processing time: {elapsed:.1f}s ({elapsed/60:.1f} min)")

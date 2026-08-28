@@ -53,7 +53,7 @@ needs_no_think() {
 
 mkdir -p tr evals
 
-# --- 翻訳 ---
+# --- Translation ---
 for model in "${MODELS[@]}"; do
     out="tr/$model.txt"
     if [ -f "$out" ]; then
@@ -67,7 +67,7 @@ for model in "${MODELS[@]}"; do
       -o "$out" -m ${MODEL_ID[$model]} --summary glossary $extra || true
 done
 
-# --- 評価 ---
+# --- Evaluation ---
 for model in "${MODELS[@]}"; do
     out="tr/$model.txt"
     if [ ! -f "$out" ]; then
@@ -85,7 +85,7 @@ for model in "${MODELS[@]}"; do
     done
 done
 
-# --- 集約 ---
+# --- Aggregation ---
 jsons=(evals/*.json)
 if [ -e "${jsons[0]}" ]; then
     echo -e "\nAggregating all models ..."

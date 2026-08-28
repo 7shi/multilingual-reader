@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """
-評価者間比較分析スクリプト
+Inter-evaluator comparison analysis script
 
-3つの評価者(Gemini-2.5-flash, gpt-oss-20b, gpt-oss-120b)の評価結果を比較し、
-統計的指標を計算してGeminiからgpt-oss-120bへの移行可否を判定する。
+Compares the evaluation results of three evaluators (Gemini-2.5-flash, gpt-oss-20b,
+gpt-oss-120b), computes statistical metrics, and determines whether migration from
+Gemini to gpt-oss-120b is feasible.
 """
 
 import json
@@ -14,7 +15,7 @@ from typing import Dict, List, Tuple
 import numpy as np
 from scipy import stats
 
-# SCORES.txtファイルのパス設定
+# Paths to SCORES.txt files
 SCORES_FILES = {
     'gemini-2.5-flash': '../gemini-2.5-flash/SCORES.txt',
     'gpt-oss-20b': '../gpt-oss-20b/SCORES.txt',
@@ -28,11 +29,11 @@ OUTPUT_JSON = 'stats.json'
 
 def parse_scores_file(filepath: str) -> Dict[str, int]:
     """
-    SCORES.txtファイルをパースして{モデル名: スコア}の辞書を返す
+    Parse a SCORES.txt file and return a {model name: score} dictionary
 
-    フォーマット例:
+    Example format:
         1→aya-expanse-32b-0: 76
-        aya-expanse-32b-0: 76  (番号なしも対応)
+        aya-expanse-32b-0: 76  (also supported without a number)
     """
     scores = {}
     with open(filepath, 'r', encoding='utf-8') as f:
@@ -41,7 +42,7 @@ def parse_scores_file(filepath: str) -> Dict[str, int]:
             if not line:
                 continue
 
-            # パターン: "番号→モデル名: スコア" または "モデル名: スコア"
+            # Pattern: "number→model name: score" or "model name: score"
             match = re.search(r'(?:\d+→)?(.+?):\s*(\d+)', line)
             if match:
                 model_name = match.group(1).strip()
@@ -52,10 +53,10 @@ def parse_scores_file(filepath: str) -> Dict[str, int]:
 
 
 def calculate_basic_stats(scores: Dict[str, int]) -> Dict:
-    """基本統計量を計算"""
+    """Compute basic statistics"""
     values = np.array(list(scores.values()))
 
-    # スコアレンジ別の分布
+    # Distribution by score range
     ranges = {
         '0-20': int(np.sum((values >= 0) & (values <= 20))),
         '21-40': int(np.sum((values >= 21) & (values <= 40))),
@@ -64,7 +65,7 @@ def calculate_basic_stats(scores: Dict[str, int]) -> Dict:
         '81-100': int(np.sum((values >= 81) & (values <= 100))),
     }
 
-    # 高得点帯の分布
+    # Distribution of high-score bands
     high_score_counts = {
         '>=95': int(np.sum(values >= 95)),
         '>=96': int(np.sum(values >= 96)),
@@ -90,17 +91,17 @@ def calculate_basic_stats(scores: Dict[str, int]) -> Dict:
 
 def calculate_correlations(scores1: Dict[str, int], scores2: Dict[str, int],
                           name1: str, name2: str) -> Dict:
-    """2つの評価者間の相関係数を計算"""
-    # 共通のモデル名を抽出
+    """Compute correlation coefficients between two evaluators"""
+    # Extract common model names
     common_models = set(scores1.keys()) & set(scores2.keys())
 
     values1 = np.array([scores1[m] for m in sorted(common_models)])
     values2 = np.array([scores2[m] for m in sorted(common_models)])
 
-    # ピアソン相関係数
+    # Pearson correlation coefficient
     pearson_r, pearson_p = stats.pearsonr(values1, values2)
 
-    # スピアマン順位相関係数
+    # Spearman rank correlation coefficient
     spearman_r, spearman_p = stats.spearmanr(values1, values2)
 
     return {
@@ -115,34 +116,34 @@ def calculate_correlations(scores1: Dict[str, int], scores2: Dict[str, int],
 
 def calculate_agreement(scores1: Dict[str, int], scores2: Dict[str, int],
                        name1: str, name2: str) -> Dict:
-    """2つの評価者間の一致度を計算"""
+    """Compute agreement between two evaluators"""
     common_models = set(scores1.keys()) & set(scores2.keys())
 
     values1 = np.array([scores1[m] for m in sorted(common_models)])
     values2 = np.array([scores2[m] for m in sorted(common_models)])
 
-    # 差分
+    # Differences
     diffs = values1 - values2
     abs_diffs = np.abs(diffs)
 
-    # 平均絶対誤差(MAE)
+    # Mean absolute error (MAE)
     mae = float(np.mean(abs_diffs))
 
-    # 二乗平均平方根誤差(RMSE)
+    # Root mean square error (RMSE)
     rmse = float(np.sqrt(np.mean(diffs ** 2)))
 
-    # ±N点範囲内の一致率
+    # Agreement rate within +/- N points
     within_5pts = float(np.mean(abs_diffs <= 5))
     within_10pts = float(np.mean(abs_diffs <= 10))
 
-    # 上位10%モデルの一致率
+    # Agreement rate for top-10% models
     threshold = 90
     top_in_1 = set(m for m in common_models if scores1[m] >= threshold)
     top_in_2 = set(m for m in common_models if scores2[m] >= threshold)
     if len(top_in_1 | top_in_2) > 0:
         top10_agreement = len(top_in_1 & top_in_2) / len(top_in_1 | top_in_2)
     else:
-        top10_agreement = 1.0  # 両方とも該当なしの場合は一致とみなす
+        top10_agreement = 1.0  # Treat as agreement when neither has a match
 
     return {
         'pair': f'{name1}_vs_{name2}',
@@ -157,16 +158,16 @@ def calculate_agreement(scores1: Dict[str, int], scores2: Dict[str, int],
 
 
 def extract_model_family(model_name: str) -> str:
-    """モデル名からファミリー名を抽出"""
-    # ファミリー名のパターン
+    """Extract the family name from a model name"""
+    # Family name patterns
     families = [
         'aya-expanse',
-        'command-r7b', 'command-r',  # r7bを先にチェック
-        'gemma3n-e4b', 'gemma3', 'gemma2',  # より具体的なものを先に
+        'command-r7b', 'command-r',  # check r7b first
+        'gemma3n-e4b', 'gemma3', 'gemma2',  # check more specific ones first
         'gpt-oss',
         'llama4-scout', 'llama3.3', 'llama',
         'ministral-3',
-        'mistral-small3.2', 'mistral',  # small3.2を先にチェック
+        'mistral-small3.2', 'mistral',  # check small3.2 first
         'mixtral',
         'phi4',
         'qwen3',
@@ -180,19 +181,19 @@ def extract_model_family(model_name: str) -> str:
 
 
 def analyze_systematic_bias(all_scores: Dict[str, Dict[str, int]]) -> Dict:
-    """系統的バイアスを分析"""
+    """Analyze systematic bias"""
     result = {
         'by_model_family': {},
         'by_inference_level': {},
         'by_temperature': {},
     }
 
-    # すべての評価者で共通のモデル名
+    # Model names common to all evaluators
     common_models = set(all_scores['gemini-2.5-flash'].keys())
     for scores in all_scores.values():
         common_models &= set(scores.keys())
 
-    # モデルファミリー別の平均差
+    # Average difference by model family
     family_data = {}
     for model in common_models:
         family = extract_model_family(model)
@@ -207,16 +208,16 @@ def analyze_systematic_bias(all_scores: Dict[str, Dict[str, int]]) -> Dict:
             name: float(np.mean(values))
             for name, values in data.items()
         }
-        # Geminiとgpt-oss-120bの差
+        # Difference between Gemini and gpt-oss-120b
         if data['gemini-2.5-flash'] and data['gpt-oss-120b']:
             result['by_model_family'][family]['gemini_gpt120b_diff'] = \
                 float(np.mean(data['gemini-2.5-flash']) - np.mean(data['gpt-oss-120b']))
 
-    # 推論レベル別の分析
+    # Analysis by inference level
     level_data = {}
     for model in common_models:
-        # レベル0-4, tr4-6などを抽出
-        if re.search(r'-\d$', model):  # 末尾が-0,-1,...,-4
+        # Extract level 0-4, tr4-6, etc.
+        if re.search(r'-\d$', model):  # ends with -0,-1,...,-4
             level = model[-1]
         elif 'tr4' in model:
             level = 'tr4'
@@ -239,10 +240,10 @@ def analyze_systematic_bias(all_scores: Dict[str, Dict[str, int]]) -> Dict:
             for name, values in data.items()
         }
 
-    # 温度設定別の分析
+    # Analysis by temperature setting
     temp_data = {}
     for model in common_models:
-        # -05, -10, -15, -20, -25を抽出
+        # Extract -05, -10, -15, -20, -25
         temp_match = re.search(r'-(\d{2})(?:-[ab])?$', model)
         if temp_match:
             temp = temp_match.group(1)
@@ -262,13 +263,13 @@ def analyze_systematic_bias(all_scores: Dict[str, Dict[str, int]]) -> Dict:
 
 
 def find_problem_cases(all_scores: Dict[str, Dict[str, int]]) -> Dict:
-    """問題ケースを抽出"""
+    """Extract problem cases"""
     gemini = all_scores['gemini-2.5-flash']
     gpt120b = all_scores['gpt-oss-120b']
 
     common_models = set(gemini.keys()) & set(gpt120b.keys())
 
-    # 乖離が大きいケース
+    # Cases with a large discrepancy
     large_discrepancy = []
     for model in common_models:
         diff = abs(gemini[model] - gpt120b[model])
@@ -282,7 +283,7 @@ def find_problem_cases(all_scores: Dict[str, Dict[str, int]]) -> Dict:
 
     large_discrepancy.sort(key=lambda x: x['diff'], reverse=True)
 
-    # 0点評価ケース
+    # Zero-score cases
     zero_scores = []
     for name, scores in all_scores.items():
         for model, score in scores.items():
@@ -292,7 +293,7 @@ def find_problem_cases(all_scores: Dict[str, Dict[str, int]]) -> Dict:
                     'evaluator': name,
                 })
 
-    # 逆転ケース(一方が80点以上、もう一方が50点以下)
+    # Reversal cases (one evaluator scores >= 80, the other <= 50)
     reversals = []
     for model in common_models:
         g_score = gemini[model]
@@ -307,7 +308,7 @@ def find_problem_cases(all_scores: Dict[str, Dict[str, int]]) -> Dict:
             })
 
     return {
-        'large_discrepancy': large_discrepancy[:30],  # TOP30
+        'large_discrepancy': large_discrepancy[:30],  # TOP 30
         'zero_scores': zero_scores,
         'reversals': reversals,
     }
@@ -315,9 +316,9 @@ def find_problem_cases(all_scores: Dict[str, Dict[str, int]]) -> Dict:
 
 def make_migration_decision(correlations: Dict, agreement: Dict,
                            systematic_bias: Dict) -> Dict:
-    """移行判定を行う"""
-    # gemini vs gpt-oss-120bのデータを取得
-    # ペア名の形式: "gemini25flash_vs_gptoss120b"
+    """Make the migration decision"""
+    # Retrieve gemini vs gpt-oss-120b data
+    # Pair name format: "gemini25flash_vs_gptoss120b"
     gemini_gpt120b_corr = next(
         c for c in correlations.values()
         if 'gemini25flash' in c['pair'].lower() and 'gptoss120b' in c['pair'].lower()
@@ -331,42 +332,42 @@ def make_migration_decision(correlations: Dict, agreement: Dict,
     top10 = gemini_gpt120b_agree['top10_agreement']
     within_10 = gemini_gpt120b_agree['within_10pts']
 
-    # 判定基準
+    # Decision criteria
     reasons = []
 
     if spearman >= 0.85:
-        reasons.append(f"✅ スピアマン順位相関係数: {spearman:.3f} ≥ 0.85 (合格)")
+        reasons.append(f"✅ Spearman rank correlation: {spearman:.3f} >= 0.85 (pass)")
     elif spearman >= 0.70:
-        reasons.append(f"⚠️ スピアマン順位相関係数: {spearman:.3f} (0.70-0.85の範囲)")
+        reasons.append(f"⚠️ Spearman rank correlation: {spearman:.3f} (0.70-0.85 range)")
     else:
-        reasons.append(f"❌ スピアマン順位相関係数: {spearman:.3f} < 0.70 (不合格)")
+        reasons.append(f"❌ Spearman rank correlation: {spearman:.3f} < 0.70 (fail)")
 
     if top10 >= 0.75:
-        reasons.append(f"✅ 上位10%一致率: {top10:.3f} ≥ 0.75 (合格)")
+        reasons.append(f"✅ Top-10% agreement rate: {top10:.3f} >= 0.75 (pass)")
     elif top10 >= 0.60:
-        reasons.append(f"⚠️ 上位10%一致率: {top10:.3f} (0.60-0.75の範囲)")
+        reasons.append(f"⚠️ Top-10% agreement rate: {top10:.3f} (0.60-0.75 range)")
     else:
-        reasons.append(f"❌ 上位10%一致率: {top10:.3f} < 0.60 (不合格)")
+        reasons.append(f"❌ Top-10% agreement rate: {top10:.3f} < 0.60 (fail)")
 
     if within_10 >= 0.70:
-        reasons.append(f"✅ ±10点範囲内一致率: {within_10:.3f} ≥ 0.70 (合格)")
+        reasons.append(f"✅ Agreement rate within +/-10 points: {within_10:.3f} >= 0.70 (pass)")
     elif within_10 >= 0.60:
-        reasons.append(f"⚠️ ±10点範囲内一致率: {within_10:.3f} (0.60-0.70の範囲)")
+        reasons.append(f"⚠️ Agreement rate within +/-10 points: {within_10:.3f} (0.60-0.70 range)")
     else:
-        reasons.append(f"❌ ±10点範囲内一致率: {within_10:.3f} < 0.60 (不合格)")
+        reasons.append(f"❌ Agreement rate within +/-10 points: {within_10:.3f} < 0.60 (fail)")
 
-    # 系統的バイアスの補正可能性
+    # Whether the systematic bias can be corrected
     max_family_bias = max(
         abs(data.get('gemini_gpt120b_diff', 0))
         for data in systematic_bias['by_model_family'].values()
     )
 
     if max_family_bias <= 15:
-        reasons.append(f"✅ 最大モデルファミリー別バイアス: {max_family_bias:.1f}点 (補正可能)")
+        reasons.append(f"✅ Max per-model-family bias: {max_family_bias:.1f} points (correctable)")
     else:
-        reasons.append(f"⚠️ 最大モデルファミリー別バイアス: {max_family_bias:.1f}点 (補正が必要)")
+        reasons.append(f"⚠️ Max per-model-family bias: {max_family_bias:.1f} points (correction needed)")
 
-    # 総合判定
+    # Overall decision
     if spearman >= 0.85 and top10 >= 0.75 and within_10 >= 0.70:
         judgment = "possible"
     elif spearman < 0.70 or top10 < 0.60 or within_10 < 0.60:
@@ -385,42 +386,42 @@ def make_migration_decision(correlations: Dict, agreement: Dict,
 
 
 def main():
-    """メイン処理"""
+    """Main process"""
     print("=" * 60)
-    print("評価者間比較分析")
+    print("Inter-evaluator comparison analysis")
     print("=" * 60)
 
-    # 1. データ読み込み
-    print("\n[1] SCORES.txtファイルを読み込み中...")
+    # 1. Load data
+    print("\n[1] Loading SCORES.txt files...")
     all_scores = {}
     for name, filepath in SCORES_FILES.items():
         full_path = Path(__file__).parent / filepath
         if not full_path.exists():
-            print(f"警告: {full_path} が見つかりません。スキップします。")
+            print(f"Warning: {full_path} not found. Skipping.")
             continue
 
         all_scores[name] = parse_scores_file(str(full_path))
-        print(f"  - {name}: {len(all_scores[name])} 項目")
+        print(f"  - {name}: {len(all_scores[name])} items")
 
-    # 項目数の一致確認
+    # Check that the item counts match
     counts = [len(scores) for scores in all_scores.values()]
     if len(set(counts)) > 1:
-        print(f"警告: 項目数が一致しません: {counts}")
+        print(f"Warning: item counts do not match: {counts}")
     else:
-        print(f"  ✓ 全評価者で {counts[0]} 項目を確認")
+        print(f"  ✓ Confirmed {counts[0]} items for all evaluators")
 
-    # 2. 基本統計計算
-    print("\n[2] 基本統計量を計算中...")
+    # 2. Compute basic statistics
+    print("\n[2] Computing basic statistics...")
     basic_stats = {}
     for name, scores in all_scores.items():
         basic_stats[name] = calculate_basic_stats(scores)
         stats_data = basic_stats[name]
         print(f"\n  {name}:")
-        print(f"    平均: {stats_data['mean']:.2f}, 中央値: {stats_data['median']:.2f}")
-        print(f"    標準偏差: {stats_data['std']:.2f}, 範囲: [{stats_data['min']}, {stats_data['max']}]")
+        print(f"    Mean: {stats_data['mean']:.2f}, Median: {stats_data['median']:.2f}")
+        print(f"    Std dev: {stats_data['std']:.2f}, Range: [{stats_data['min']}, {stats_data['max']}]")
 
-    # 3. 相関分析
-    print("\n[3] 相関係数を計算中...")
+    # 3. Correlation analysis
+    print("\n[3] Computing correlation coefficients...")
     correlations = {}
     evaluators = list(all_scores.keys())
     for i in range(len(evaluators)):
@@ -433,11 +434,11 @@ def main():
             )
             correlations[corr['pair']] = corr
             print(f"\n  {name1} vs {name2}:")
-            print(f"    ピアソン: {corr['pearson']:.3f} (p={corr['pearson_p']:.3e})")
-            print(f"    スピアマン: {corr['spearman']:.3f} (p={corr['spearman_p']:.3e})")
+            print(f"    Pearson: {corr['pearson']:.3f} (p={corr['pearson_p']:.3e})")
+            print(f"    Spearman: {corr['spearman']:.3f} (p={corr['spearman_p']:.3e})")
 
-    # 4. 一致度分析
-    print("\n[4] 一致度を計算中...")
+    # 4. Agreement analysis
+    print("\n[4] Computing agreement...")
     agreement = {}
     for i in range(len(evaluators)):
         for j in range(i + 1, len(evaluators)):
@@ -449,41 +450,41 @@ def main():
             )
             agreement[agree['pair']] = agree
             print(f"\n  {name1} vs {name2}:")
-            print(f"    MAE: {agree['mae']:.2f}点, RMSE: {agree['rmse']:.2f}点")
-            print(f"    ±5点以内: {agree['within_5pts']:.1%}, ±10点以内: {agree['within_10pts']:.1%}")
-            print(f"    上位10%一致率: {agree['top10_agreement']:.1%}")
+            print(f"    MAE: {agree['mae']:.2f} pts, RMSE: {agree['rmse']:.2f} pts")
+            print(f"    Within +/-5 pts: {agree['within_5pts']:.1%}, Within +/-10 pts: {agree['within_10pts']:.1%}")
+            print(f"    Top-10% agreement rate: {agree['top10_agreement']:.1%}")
 
-    # 5. 系統的バイアス検出
-    print("\n[5] 系統的バイアスを分析中...")
+    # 5. Systematic bias detection
+    print("\n[5] Analyzing systematic bias...")
     systematic_bias = analyze_systematic_bias(all_scores)
-    print(f"  - モデルファミリー: {len(systematic_bias['by_model_family'])} 種類")
-    print(f"  - 推論レベル: {len(systematic_bias['by_inference_level'])} 種類")
-    print(f"  - 温度設定: {len(systematic_bias['by_temperature'])} 種類")
+    print(f"  - Model families: {len(systematic_bias['by_model_family'])} types")
+    print(f"  - Inference levels: {len(systematic_bias['by_inference_level'])} types")
+    print(f"  - Temperature settings: {len(systematic_bias['by_temperature'])} types")
 
-    # 6. 問題ケース抽出
-    print("\n[6] 問題ケースを抽出中...")
+    # 6. Extract problem cases
+    print("\n[6] Extracting problem cases...")
     problem_cases = find_problem_cases(all_scores)
-    print(f"  - 大きな乖離(≥30点): {len(problem_cases['large_discrepancy'])} 件")
-    print(f"  - 0点評価: {len(problem_cases['zero_scores'])} 件")
-    print(f"  - 逆転ケース: {len(problem_cases['reversals'])} 件")
+    print(f"  - Large discrepancies (>=30 pts): {len(problem_cases['large_discrepancy'])} cases")
+    print(f"  - Zero-score evaluations: {len(problem_cases['zero_scores'])} cases")
+    print(f"  - Reversal cases: {len(problem_cases['reversals'])} cases")
 
-    # 7. 移行判定
-    print("\n[7] 移行判定を実施中...")
+    # 7. Migration decision
+    print("\n[7] Making migration decision...")
     migration_decision = make_migration_decision(correlations, agreement, systematic_bias)
 
     judgment_labels = {
-        'possible': '✅ 移行可能',
-        'conditional': '⚠️ 条件付き移行可能',
-        'impossible': '❌ 移行不可',
+        'possible': '✅ Migration possible',
+        'conditional': '⚠️ Conditional migration possible',
+        'impossible': '❌ Migration not recommended',
     }
 
-    print(f"\n  判定結果: {judgment_labels[migration_decision['judgment']]}")
-    print("\n  判定理由:")
+    print(f"\n  Decision: {judgment_labels[migration_decision['judgment']]}")
+    print("\n  Reasons:")
     for reason in migration_decision['reasons']:
         print(f"    {reason}")
 
-    # 8. JSON出力
-    print(f"\n[8] 結果を {OUTPUT_JSON} に保存中...")
+    # 8. JSON output
+    print(f"\n[8] Saving results to {OUTPUT_JSON}...")
     output_data = {
         'metadata': {
             'num_entries': counts[0] if counts else 0,
@@ -502,9 +503,9 @@ def main():
     with open(output_path, 'w', encoding='utf-8') as f:
         json.dump(output_data, f, ensure_ascii=False, indent=2)
 
-    print(f"  ✓ 保存完了: {output_path}")
+    print(f"  ✓ Saved: {output_path}")
     print("\n" + "=" * 60)
-    print("分析完了")
+    print("Analysis complete")
     print("=" * 60)
 
 

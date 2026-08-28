@@ -1,25 +1,25 @@
-# experimental/02 設定による比較試行
+# Comparison trial using experimental/02 settings
 
-[experimental/02](../../02/) と同じ設定（`--summary glossary --no-think`・threshold=10・keep=5）を使い、翻訳3回 × 評価3回で実施した試行です。experimental/03 の各試行との対等な比較を目的としています。
+A trial run using the same settings as [experimental/02](../../02/) (`--summary glossary --no-think`, threshold=10, keep=5), with 3 translation runs × 3 evaluation runs. The purpose is a fair comparison against each trial in experimental/03.
 
-## 実験結果
+## Experimental results
 
-翻訳入力: [examples/finetuning-fr.txt](../../../examples/finetuning-fr.txt)（43行、フランス語ポッドキャスト）
-翻訳先: スペイン語（翻訳3回 × 評価3回、各 run の中央値）
+Translation input: [examples/finetuning-fr.txt](../../../examples/finetuning-fr.txt) (43 lines, French podcast)
+Target language: Spanish (3 translation runs × 3 evaluation runs, median of each run)
 
-### スコア一覧
+### Score summary
 
-| モデル | tr-1 | tr-2 | tr-3 |
+| Model | tr-1 | tr-2 | tr-3 |
 |---|:---:|:---:|:---:|
 | qwen3.6-27b | **84** | 96 | 95 |
 | gemma4-26b | 96 | **98** | 96 |
 | gemma4-e4b | 95 | **83** | 94 |
 
-参考: 参照訳（Gemini 2.5 Pro）= 97点（experimental/02 で計測済み）
+Reference: the reference translation (Gemini 2.5 Pro) scored 97 points (measured in experimental/02)
 
-各 run の評価3回の個別スコア:
+Individual scores of the 3 evaluation runs for each run:
 
-| モデル | run | eval-1 | eval-2 | eval-3 | 中央値 |
+| Model | run | eval-1 | eval-2 | eval-3 | Median |
 |---|:---:|:---:|:---:|:---:|:---:|
 | qwen3.6-27b | 1 | 84 | 80 | 93 | **84** |
 | qwen3.6-27b | 2 | 96 | 96 | 96 | **96** |
@@ -31,16 +31,16 @@
 | gemma4-e4b | 2 | 68 | 83 | 93 | **83** |
 | gemma4-e4b | 3 | 83 | 95 | 94 | **94** |
 
-### 主な観察
+### Main observations
 
-**qwen3.6-27b-1: 84点急落**
+**qwen3.6-27b-1: dropped to 84**
 
-readability=16、fluency=15、terminology=17 と複数項目で減点。tr-2・tr-3 は 95〜96 点と安定しており、tr-1 の glossary 初期蓄積のブレによる一時的な崩壊と見られる。
+Deductions across multiple categories: readability=16, fluency=15, terminology=17. Since tr-2/tr-3 were stable at 95-96 points, this looks like a temporary collapse due to variance in tr-1's initial glossary accumulation.
 
-**gemma4-e4b-2: 83点急落**
+**gemma4-e4b-2: dropped to 83**
 
-eval-1 が 68点（experimental/03/20/ の tr-2 急落と同スコア）を含み、標準偏差が 5.80 と全試行中最大。terminology=15（11・15・18 と評価ブレも大きい）が主な減点要因。threshold=15 でも threshold=20 と同様の急落が発生しており、閾値の違いよりも glossary 初期蓄積の確率的なブレが支配的と考えられる。
+Includes an eval-1 score of 68 (the same score as experimental/03/20/'s tr-2 plunge); standard deviation was 5.80, the largest of any trial. The main deduction factor was terminology=15 (11, 15, 18 — also high evaluation variance). The same kind of plunge occurred at threshold=15 as at threshold=20, suggesting the probabilistic variance in initial glossary accumulation dominates over differences in threshold value.
 
-**gemma4-26b: 全 run で安定**
+**gemma4-26b: stable across all runs**
 
-96・98・96 点と急落なし。experimental/03 の各試行と同水準を維持しており、設定の違いに関係なく安定した品質を示している。
+Scored 96, 98, 96 with no plunges. Matches the level of the other experimental/03 trials, showing stable quality regardless of the setting differences.

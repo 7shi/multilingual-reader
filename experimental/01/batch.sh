@@ -50,7 +50,7 @@ process_translation() {
         time $command -o $output -m $model
     fi
     
-    # 評価を3回実行
+    # Run evaluation 3 times
     for eval_run in {1..3}; do
         local eval_output="$EVAL_DIR/${output%.txt}-${eval_run}.json"
         if [ -f "$eval_output" ]; then

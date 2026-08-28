@@ -1,7 +1,9 @@
-# 対話テキスト翻訳（用語事前抽出方式）
-# experimental/03 の構造を踏襲し、翻訳開始前に全文から用語と固有名詞を抽出して
-# 訳語を確定する。再編成のたびに「対象範囲に絞った用語リスト」を chat_history に注入する。
-# CoT は使用しない（翻訳・要約・抽出・訳生成すべて think=False）。
+# Dialogue text translation (term pre-extraction approach)
+# Building on the structure of experimental/03, this extracts terms and proper nouns
+# from the full text before translation starts and fixes their translations up front.
+# On every reorganization, a "term list scoped to the target range" is injected into
+# chat_history. CoT is not used (translation, summarization, extraction, and
+# translation generation all run with think=False).
 
 import argparse
 import json
@@ -11,18 +13,18 @@ import time
 from pydantic import BaseModel, Field
 from llm7shi.compat import generate_with_schema
 
-parser = argparse.ArgumentParser(description="対話テキストを用語事前抽出方式で翻訳")
-parser.add_argument("input_file", help="翻訳対象のテキストファイル")
-parser.add_argument("-f", "--from", dest="from_lang", required=True, help="原語（例: French, English, Japanese）")
-parser.add_argument("-t", "--to", dest="to_lang", required=True, help="翻訳先言語（例: Spanish, Japanese）")
-parser.add_argument("-o", "--output", dest="output_file", required=True, help="出力ファイル名")
-parser.add_argument("-m", "--model", required=True, help="翻訳モデル")
-parser.add_argument("--threshold", type=int, default=10, help="要約生成の間隔（デフォルト: 10）")
-parser.add_argument("--keep", type=int, default=5, help="要約後〜再編成までの翻訳ペア数（デフォルト: 5）")
+parser = argparse.ArgumentParser(description="Translate dialogue text using term pre-extraction")
+parser.add_argument("input_file", help="Text file to translate")
+parser.add_argument("-f", "--from", dest="from_lang", required=True, help="Source language (e.g., French, English, Japanese)")
+parser.add_argument("-t", "--to", dest="to_lang", required=True, help="Target language (e.g., Spanish, Japanese)")
+parser.add_argument("-o", "--output", dest="output_file", required=True, help="Output file name")
+parser.add_argument("-m", "--model", required=True, help="Translation model")
+parser.add_argument("--threshold", type=int, default=10, help="Interval for generating a summary (default: 10)")
+parser.add_argument("--keep", type=int, default=5, help="Number of translation pairs kept between a summary and the next reorganization (default: 5)")
 parser.add_argument("--terms", dest="terms_file", default=None,
-                    help="用語ファイルのパス（デフォルト: <output_base>-terms.json）")
+                    help="Path to the term file (default: <output_base>-terms.json)")
 parser.add_argument("--terms-only", action="store_true",
-                    help="用語抽出と訳生成のみ実行して終了（翻訳は行わない）")
+                    help="Run only term extraction and translation generation, then exit (no translation)")
 args = parser.parse_args()
 
 MODEL = args.model
@@ -68,7 +70,7 @@ total = len(entries)
 
 
 def chunk_range(chunk_index):
-    """1-indexed chunk_index → (start_entry, end_entry) いずれも 1-indexed inclusive。"""
+    """1-indexed chunk_index → (start_entry, end_entry), both 1-indexed inclusive."""
     start = (chunk_index - 1) * KEEP + 1
     end = min(chunk_index * KEEP, total)
     return start, end
@@ -92,7 +94,7 @@ def print_response_stats(response):
 
 
 def call_with_schema(prompts, schema):
-    """1回限りの構造化出力呼び出し（履歴なし）。JSON エラー時は最大3回リトライ。"""
+    """A single-shot structured output call (no history). Retries up to 3 times on JSON errors."""
     max_retries = 3
     for attempt in range(max_retries):
         response = generate_with_schema(
@@ -108,14 +110,14 @@ def call_with_schema(prompts, schema):
             return data
         except json.JSONDecodeError as e:
             if attempt < max_retries - 1:
-                print(f"  JSONデコードエラー（試行{attempt+1}/{max_retries}）: {e}")
+                print(f"  JSON decode error (attempt {attempt+1}/{max_retries}): {e}")
                 time.sleep(3)
             else:
                 raise
 
 
 def extract_terms(chunk_text):
-    """単一チャンクから元言語の用語を抽出する。"""
+    """Extract source-language terms from a single chunk."""
     prompt = (
         f"Extract proper nouns and domain-specific technical terms from the following "
         f"{FROM_LANG} text. Return them in the original {FROM_LANG} form (do NOT translate).\n\n"
@@ -136,7 +138,7 @@ def extract_terms(chunk_text):
 
 
 def translate_glossary(originals):
-    """全用語をまとめて翻訳する。"""
+    """Translate all terms in a single batch."""
     if not originals:
         return {}
     listing = "\n".join(f"- {t}" for t in originals)
@@ -157,7 +159,7 @@ def translate_glossary(originals):
 
 
 def write_terms_file(path, chunk_terms_map, translations):
-    """用語ファイルを JSON で出力する。"""
+    """Write the term file as JSON."""
     data = {
         "from": FROM_LANG,
         "to": TO_LANG,
@@ -173,17 +175,17 @@ def write_terms_file(path, chunk_terms_map, translations):
 
 
 def read_terms_file(path):
-    """用語ファイル（JSON）を読み込み、(chunk_terms_map, translations) を返す。"""
+    """Load the term file (JSON) and return (chunk_terms_map, translations)."""
     with open(path, "r", encoding="utf-8") as f:
         data = json.load(f)
 
     if data.get("from") != FROM_LANG:
         raise ValueError(
-            f"用語ファイルの from 言語 ({data.get('from')}) が引数 ({FROM_LANG}) と一致しません: {path}"
+            f"Term file's from language ({data.get('from')}) does not match the argument ({FROM_LANG}): {path}"
         )
     if data.get("to") != TO_LANG:
         raise ValueError(
-            f"用語ファイルの to 言語 ({data.get('to')}) が引数 ({TO_LANG}) と一致しません: {path}"
+            f"Term file's to language ({data.get('to')}) does not match the argument ({TO_LANG}): {path}"
         )
 
     chunk_terms_map = {c["index"]: c["terms"] for c in data.get("chunks", [])}
@@ -191,12 +193,12 @@ def read_terms_file(path):
     return chunk_terms_map, translations
 
 
-# Phase 0: 用語抽出と訳生成
+# Phase 0: term extraction and translation generation
 if os.path.exists(TERMS_FILE):
-    print(f"既存の用語ファイルを読み込み: {TERMS_FILE}")
+    print(f"Loading existing term file: {TERMS_FILE}")
     chunk_terms_map, term_translations = read_terms_file(TERMS_FILE)
 else:
-    print(f"用語抽出を開始: {num_chunks()} チャンク (keep={KEEP})")
+    print(f"Starting term extraction: {num_chunks()} chunks (keep={KEEP})")
     chunk_terms_map = {}
     for cidx in range(1, num_chunks() + 1):
         start, end = chunk_range(cidx)
@@ -216,14 +218,14 @@ else:
     term_translations = translate_glossary(unique_terms)
 
     write_terms_file(TERMS_FILE, chunk_terms_map, term_translations)
-    print(f"用語ファイルを保存: {TERMS_FILE}")
+    print(f"Saved term file: {TERMS_FILE}")
 
 if args.terms_only:
     sys.exit(0)
 
 
 def build_terms_messages(start_entry, end_entry):
-    """指定範囲（1-indexed inclusive）に登場する用語のメッセージペアを返す。"""
+    """Return the message pair for terms appearing within the given range (1-indexed inclusive)."""
     chunks_in_range = []
     for cidx in sorted(chunk_terms_map.keys()):
         cstart, cend = chunk_range(cidx)
@@ -256,7 +258,7 @@ def build_terms_messages(start_entry, end_entry):
     return [user_msg, assistant_msg]
 
 
-# Phase 1: 翻訳ループ
+# Phase 1: translation loop
 system_message = {
     "role": "system",
     "content": (
@@ -269,7 +271,7 @@ system_message = {
 
 
 def call_llm(prompt):
-    """chat_history に prompt を追加して LLM を呼び出し、応答も history に追加する。"""
+    """Append prompt to chat_history, call the LLM, and also append the response to history."""
     user_message = {"role": "user", "content": prompt}
     chat_history.append(user_message)
 
@@ -289,7 +291,7 @@ def call_llm(prompt):
 
 
 def summarize_messages():
-    """内容サマリーを生成（CoT なし）。用語・固有名詞は事前抽出済みのため含めない。"""
+    """Generate a content summary (no CoT). Terms and proper nouns are already pre-extracted, so they are not included."""
     summary_content = (
         "Please summarize the translation history above in 2-3 sentences (in English). "
         "Focus on topics and narrative context. "
@@ -348,5 +350,5 @@ with open(args.output_file, "w", encoding="utf-8") as f:
     for speaker, translation in translations:
         f.write(f"{speaker}: {translation}\n")
 
-print(f"\n翻訳完了: {FROM_LANG} → {TO_LANG} ({args.output_file})")
-print(f"処理時間: {elapsed:.1f}秒 ({elapsed/60:.1f}分)")
+print(f"\nTranslation complete: {FROM_LANG} → {TO_LANG} ({args.output_file})")
+print(f"Processing time: {elapsed:.1f}s ({elapsed/60:.1f}min)")

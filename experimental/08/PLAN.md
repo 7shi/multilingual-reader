@@ -1,5 +1,5 @@
-# 実験08: CoTを用いた1ステップ推敲の検証
+# Experiment 08: Verifying single-step revision using CoT
 
-## 今後のアクション
+## Future actions
 
-本実験の検証はすべて完了しました。最終的な推敲プロセスとして**実験07の方式（2ステップ・CoT無効）**が確定したため、今後は実験07の `review.py` を用いて他の中リソース言語（カタルーニャ語、ブルガリア語、ノルウェー語など）への適用拡大を進めます。
+All verification for this experiment is complete. Since **Experiment 07's approach (two-step, CoT disabled)** was confirmed as the final revision process, we will now proceed to expand its application to other medium-resource languages (Catalan, Bulgarian, Norwegian, etc.) using Experiment 07's `review.py`.

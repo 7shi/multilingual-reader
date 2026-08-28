@@ -1,22 +1,22 @@
-# 用語事前抽出方式の翻訳実験
+# Term Pre-Extraction Translation Experiment
 
-[experimental/03](../03/) のハイブリッドモードを発展させ、**翻訳開始前に全文から用語と固有名詞を抽出して訳語を確定する**方式を検証する実験ディレクトリです。
+Building on the hybrid mode from [experimental/03](../03/), this experiment directory verifies an approach that **extracts terms and proper nouns from the full text before translation begins, and fixes their translations up front**.
 
-## 背景と動機
+## Background and Motivation
 
-experimental/03 までは、翻訳ループの中でサマリー（glossary）が逐次蓄積される方式でした。この方式では序盤の数行で誤訳が発生すると、それが glossary に固定されて後続全体に伝播する「初期蓄積のブレ」問題があります（experimental/03 の急落 run はこれが主因）。
+Through experimental/03, the summary (glossary) was accumulated incrementally within the translation loop. With this approach, a mistranslation in the early lines gets locked into the glossary and propagates through everything that follows — the "early-accumulation drift" problem (this was the main cause of the sharp score drop seen in experimental/03).
 
-experimental/04 では:
+In experimental/04:
 
-- **翻訳開始前に全文をスキャンして用語を抽出**（チャンク単位）
-- **抽出した用語を一括翻訳**して glossary を確定
-- **再編成のたびに対象範囲に絞った用語リストを注入**
+- **Scan the full text before translation starts to extract terms** (chunk by chunk)
+- **Batch-translate the extracted terms** to fix the glossary
+- **Inject a term list scoped to the target range on every reorganization**
 
-これにより、初期蓄積のブレを排除しつつ、用語の一貫性を翻訳全体で確保することを目指します。固有名詞（人名・地名）を抽出対象に含めることで、**音写の統一**（一度決めた表記を全体で揃える）も同時に解決します。
+This aims to eliminate early-accumulation drift while ensuring terminology consistency across the entire translation. By including proper nouns (person names, place names) in the extraction target, this also addresses **unifying transliteration** (keeping a once-decided spelling consistent throughout).
 
-## 翻訳システム
+## Translation System
 
-スクリプト実行は必ず `uv run` を使うこと。
+Always use `uv run` to run the scripts.
 
 ### translate.py
 
@@ -24,48 +24,48 @@ experimental/04 では:
 uv run translate.py <input_file> -f <from_lang> -t <to_lang> -o <output> -m <model> [options]
 ```
 
-**オプション:**
+**Options:**
 
-| オプション | デフォルト | 説明 |
+| Option | Default | Description |
 |---|---|---|
-| `--threshold` | 10 | 要約生成の間隔（翻訳ペア数） |
-| `--keep` | 5 | 要約後〜再編成までの翻訳ペア数 |
-| `--terms` | `<output_base>-terms.json` | 用語ファイルのパス。既存ファイルがあれば抽出をスキップして読み込む |
-| `--terms-only` | なし | 用語抽出と訳生成のみ実行して終了（翻訳は行わない） |
+| `--threshold` | 10 | Interval (in translation pairs) for generating a summary |
+| `--keep` | 5 | Number of translation pairs kept between a summary and the next reorganization |
+| `--terms` | `<output_base>-terms.json` | Path to the term file. If it already exists, extraction is skipped and it is loaded instead |
+| `--terms-only` | none | Run only term extraction and translation generation, then exit (no translation is performed) |
 
-experimental/03 にあった `--no-think` は廃止し、CoT 不使用に固定しています（翻訳・要約・抽出・訳生成すべて think=False）。
+The `--no-think` option present in experimental/03 has been removed; CoT is now fixed to disabled (translation, summarization, extraction, and translation generation all run with think=False).
 
-### 動作仕様（threshold=10, keep=5）
+### Behavior Specification (threshold=10, keep=5)
 
-#### Phase 0: 用語抽出と訳生成（前処理）
+#### Phase 0: Term Extraction and Translation Generation (preprocessing)
 
-1. 入力を `keep` 行ごとのチャンクに分割（43行なら9チャンク）
-2. 各チャンクから元言語の用語・固有名詞を構造化出力で抽出（CoT なし）
-3. 全チャンクの用語を統合・重複除去
-4. 一括の構造化出力で全用語の訳語を生成
-5. 用語ファイル（デフォルト `<output_base>-terms.json`）に保存
+1. Split the input into chunks of `keep` lines (43 lines → 9 chunks)
+2. Extract source-language terms and proper nouns from each chunk via structured output (no CoT)
+3. Merge and deduplicate terms across all chunks
+4. Generate translations for all terms in a single batched structured output call
+5. Save to the term file (default `<output_base>-terms.json`)
 
-用語ファイルが既に存在する場合は読み込みのみで済ませます（再実験時の時間節約用）。用語や訳語に問題があれば JSON を直接編集してから再実行することで、抽出をやり直さずに翻訳だけ再実行できます。
+If the term file already exists, it is simply loaded (saving time on re-runs of the experiment). If there is an issue with a term or its translation, you can edit the JSON directly and re-run — only the translation step is re-run, without redoing extraction.
 
-#### Phase 1: 翻訳ループ
+#### Phase 1: Translation Loop
 
-experimental/03 と同じ threshold+keep サイクルで翻訳します。違いは再編成時のコンテキスト構造です:
+Translation follows the same threshold+keep cycle as experimental/03. The difference is the context structure at reorganization time:
 
-| タイミング | chat_history |
+| Timing | chat_history |
 |---|---|
-| 初期 | `[system, terms(1〜threshold+keep)]` |
-| 翻訳1〜10 | 逐次拡張 |
-| 翻訳10直後 | サマリー生成 → 履歴から削除 |
-| 翻訳11〜15 | 拡張継続 |
-| 翻訳15直後（再編成） | `[system, terms(16〜30), latest_summary, last 5 pairs]` |
-| 翻訳16〜25 | 拡張継続 |
-| 翻訳25直後 | サマリー生成 → 履歴から削除 |
+| Initial | `[system, terms(1〜threshold+keep)]` |
+| Translations 1–10 | Extended incrementally |
+| Right after translation 10 | Summary generated → removed from history |
+| Translations 11–15 | Extension continues |
+| Right after translation 15 (reorganization) | `[system, terms(16〜30), latest_summary, last 5 pairs]` |
+| Translations 16–25 | Extension continues |
+| Right after translation 25 | Summary generated → removed from history |
 | ... | ... |
 
-- 用語注入の対象範囲は「次のサイクルで翻訳する threshold+keep 行」
-- 用語抽出はチャンク（keep 行）単位で行うため、範囲フィルタリングが可能
+- The scope for term injection is "the threshold+keep lines to be translated in the next cycle"
+- Because term extraction is done chunk by chunk (keep lines), range filtering is possible
 
-### 用語ファイルのフォーマット（JSON）
+### Term File Format (JSON)
 
 ```json
 {
@@ -84,8 +84,8 @@ experimental/03 と同じ threshold+keep サイクルで翻訳します。違い
 }
 ```
 
-- `chunks`: チャンクごとの抽出用語。`start`/`end` は入力ファイルの 1-indexed 行番号
-- `glossary`: 元言語 → 翻訳先言語の対応辞書（再編成時の範囲フィルタに使用）
+- `chunks`: extracted terms per chunk. `start`/`end` are 1-indexed line numbers in the input file
+- `glossary`: source-language → target-language mapping (used for range filtering at reorganization time)
 
 ### batch.sh
 
@@ -93,55 +93,55 @@ experimental/03 と同じ threshold+keep サイクルで翻訳します。違い
 bash batch.sh
 ```
 
-[MODELS.txt](MODELS.txt) の2モデル（gemma4-26b、gemma4-e4b）について、**翻訳3回 × 評価3回** を実行します。experimental/03/10-nt と同じ条件で、用語事前抽出の有無のみが差分です。
+For the two models in [MODELS.txt](MODELS.txt) (gemma4-26b, gemma4-e4b), this runs **3 translations × 3 evaluations**. Same conditions as experimental/03/10-nt; the only difference is whether terms are pre-extracted.
 
-**ファイル命名:**
+**File naming:**
 
 ```
-tr/<model>-<trrun>.txt              例: tr/gemma4-26b-1.txt
-tr/<model>-<trrun>-terms.json       例: tr/gemma4-26b-1-terms.json
+tr/<model>-<trrun>.txt              e.g. tr/gemma4-26b-1.txt
+tr/<model>-<trrun>-terms.json       e.g. tr/gemma4-26b-1-terms.json
 evals/<model>-<trrun>-eval-<evrun>.json
 ```
 
-## 対象モデル
+## Target Models
 
-experimental/03 で安定動作が確認された gemma4-26b と、省リソースの代替モデルとして gemma4-e4b の2モデルに絞りました。qwen3.6-27b は experimental/03 で急落リスクと KV キャッシュ非効率が課題として確認されているため除外しています。
+Narrowed down to gemma4-26b, whose stable operation was confirmed in experimental/03, and gemma4-e4b as a lower-resource alternative. qwen3.6-27b is excluded, since experimental/03 identified it as having a risk of sharp score drops and inefficient KV-cache usage.
 
-| モデル | experimental/03/10-nt 中央値 | 選定理由 |
+| Model | experimental/03/10-nt median | Reason for selection |
 |---|:---:|---|
-| gemma4-26b | 96 / 100 / 96 | 全 run で急落なし、最安定 |
-| gemma4-e4b | 95 / 96 / 85 | リソース制約がある場合の代替 |
+| gemma4-26b | 96 / 100 / 96 | No sharp drops in any run, most stable |
+| gemma4-e4b | 95 / 96 / 85 | Alternative for resource-constrained settings |
 
-## 評価システム
+## Evaluation System
 
-[experimental/03](../experimental/03/) と同じパイプラインを使用します。
+Uses the same pipeline as [experimental/03](../experimental/03/).
 
-- 評価者: `ollama:qwen3.6`
-- 5項目 × 20点 = 100点満点
-- 集計: 3回評価の中央値
+- Evaluator: `ollama:qwen3.6`
+- 5 criteria × 20 points = 100 points total
+- Aggregation: median of 3 evaluations
 
-## 試行
+## Trials
 
-| 試行 | threshold | 結果 |
+| Trial | threshold | Result |
 |---|:---:|---|
-| [tr/](tr/) | 10 | gemma4-26b: 96/96/99、gemma4-e4b: 95/96/92 |
+| [tr/](tr/) | 10 | gemma4-26b: 96/96/99, gemma4-e4b: 95/96/92 |
 
-## 比較結果
+## Comparison Results
 
-experimental/03/10-nt（用語抽出なし）との比較（差分: 用語事前抽出の有無のみ）:
+Comparison against experimental/03/10-nt (no term extraction) — the only difference is whether terms are pre-extracted:
 
-| モデル | experimental/03/10-nt | experimental/04 |
+| Model | experimental/03/10-nt | experimental/04 |
 |---|:---:|:---:|
 | gemma4-26b run 1 | 96 | 96 |
 | gemma4-26b run 2 | 100 | 96 |
 | gemma4-26b run 3 | 96 | 99 |
 | gemma4-e4b run 1 | 95 | 95 |
 | gemma4-e4b run 2 | 96 | 96 |
-| gemma4-e4b run 3 | **85**（急落） | **92**（急落軽減） |
+| gemma4-e4b run 3 | **85** (sharp drop) | **92** (drop lessened) |
 
-**観察:**
+**Observations:**
 
-- **gemma4-e4b の急落が軽減**: 85点 → 92点。急落自体は残るが、ダメージが大幅に縮小。用語事前抽出の効果が確認できた
-- **gemma4-26b は安定維持**: 急落なし。run 3 が 96→99 と微改善
-- **用語集の run 間ブレが残存**: `affinage` の訳語が run によって `refinamiento` と `ajuste fino` に分かれるなど、用語抽出フェーズ自体に確率的なブレがある。glossary 初期蓄積のブレを翻訳ループから用語抽出フェーズに移しただけとも言える
-- **一般語の混入**: `mathématiques`・`physicien`・`anglais` など専門用語ではない語が抽出される。抽出プロンプトの改善余地あり
+- **gemma4-e4b's sharp drop is lessened**: 85 → 92 points. The drop itself still occurs, but the damage is substantially reduced. This confirms the effect of pre-extracting terms
+- **gemma4-26b remains stable**: no sharp drop. Run 3 improved slightly, 96 → 99
+- **Run-to-run glossary drift persists**: the translation of `affinage` splits between `refinamiento` and `ajuste fino` depending on the run, showing that the term extraction phase itself has stochastic variance. This essentially just moved the early-accumulation drift from the translation loop to the term extraction phase
+- **Contamination with general vocabulary**: non-technical words such as `mathématiques`, `physicien`, `anglais` get extracted. There is room to improve the extraction prompt

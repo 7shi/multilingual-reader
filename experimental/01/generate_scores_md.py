@@ -1,69 +1,69 @@
 #!/usr/bin/env python3
-"""SCORES.txtからSCORES.mdを生成するスクリプト
+"""Script to generate SCORES.md from SCORES.txt
 
-仕様のポイント:
-1. 完全にデータドリブン
-   - モデル名、テスト設定、すべてSCORES.txtから自動抽出
-   - ハードコーディングなし（データの存在チェックのみで判断）
+Key design points:
+1. Fully data-driven
+   - Model names and test configurations are all auto-extracted from SCORES.txt
+   - No hardcoding (decisions are based only on checking whether data exists)
 
-2. テーブル生成
-   - 推論レベル別（-r 0-4）: -r 0-4のデータがあるモデルのみ表示
-   - レベル0/1/2: 各レベルのデータがあるモデルと設定を動的に抽出
-   - 翻訳改善効果の検証: 0-xxと2-xxのデータを比較
-   - 構造化出力の影響調査: 0-xx/1-xx と tr4/tr6 を比較
-   - 自由記述式推論比較: tr5とtr6を比較
+2. Table generation
+   - By reasoning level (-r 0-4): only shows models that have -r 0-4 data
+   - Levels 0/1/2: dynamically extracts the models and configs that have data for each level
+   - Verifying the translation-improvement effect: compares 0-xx and 2-xx data
+   - Investigating the impact of structured output: compares 0-xx/1-xx against tr4/tr6
+   - Free-form reasoning comparison: compares tr5 and tr6
 
-3. フラグ処理（(t), (nt)など）
-   - テーブル: フラグ付きモデルとして別行で表示
-   - 実用設定一覧: フラグ付きで表示するが、ソート時はベースモデル名で判断
+3. Flag handling ((t), (nt), etc.)
+   - Tables: shown as a separate row for the flagged model
+   - Practical-config list: shown with the flag, but sorted by base model name
 
-4. モデル別実用設定一覧（各モデルの上位3項目かつ85点以上）
-   - ソート順: ベースモデル名の最高スコア降順（フラグは捨象）
-   - 表示: フラグ付きモデル名で表示
-   - 各モデル内: スコアの降順で上位3項目のみ表示
-   - 同じモデル・同じスコア: 設定をカンマ区切りで結合
+4. Per-model practical-config list (each model's top 3 entries scoring 85+)
+   - Sort order: descending by the base model name's highest score (flags are ignored)
+   - Display: shown with the flagged model name
+   - Within each model: only the top 3 entries by descending score are shown
+   - Same model, same score: configs are joined with commas
 
-5. 最大値の太字表示
-   - 各テーブルの行ごとに最大スコアを太字で表示
+5. Bold display of the maximum value
+   - The maximum score in each table row is shown in bold
 """
 
 import re
 
 def natural_sort_key(text):
-    """自然順ソート用のキー生成関数
+    """Key generation function for natural-order sorting
 
-    文字列を文字と数字のリストに変換し、数字部分は整数として扱う。
-    これにより "a2" が "a11" より前にソートされる。
+    Converts a string into a list of characters and numbers, treating the numeric
+    parts as integers. This makes "a2" sort before "a11".
 
-    各要素をタプル(type, value)形式にすることで、異なる型の比較エラーを回避。
-    数字は(0, int_value)、文字列は(1, str_value)として扱う。
+    Wrapping each element as a (type, value) tuple avoids comparison errors between
+    different types. Numbers are stored as (0, int_value), strings as (1, str_value).
 
-    例:
+    Example:
         "gemma2-9b" -> [(1, "gemma"), (0, 2), (1, "-"), (0, 9), (1, "b")]
         "qwen3-30b" -> [(1, "qwen"), (0, 3), (1, "-"), (0, 30), (1, "b")]
         "a2" -> [(1, "a"), (0, 2)]
         "a11" -> [(1, "a"), (0, 11)]
 
     Args:
-        text: ソート対象の文字列
+        text: the string to sort
 
     Returns:
-        タプルのリスト（比較キー）
+        a list of tuples (the comparison key)
     """
     parts = []
     for part in re.split(r'(\d+)', text):
         if part:
             if part.isdigit():
-                # 数字は優先度0で整数値として格納
+                # Numbers are stored with priority 0 as an integer value
                 parts.append((0, int(part)))
             else:
-                # 文字列は優先度1で文字列として格納
+                # Strings are stored with priority 1 as a string value
                 parts.append((1, part))
     return parts
 
 def parse_test_name(test_name):
-    """テスト名を解析してモデル名とテスト種別を抽出"""
-    # パターン例:
+    """Parse a test name to extract the model name and test type"""
+    # Example patterns:
     # gemma2-9b-0 -> model: gemma2-9b, type: -r, variant: 0
     # gemma2-9b-0-05 -> model: gemma2-9b, type: 0-, history: 05
     # gemma2-9b-1-05 -> model: gemma2-9b, type: 1-, history: 05
@@ -74,28 +74,28 @@ def parse_test_name(test_name):
 
     parts = test_name.split('-')
 
-    # 末尾から既知のサフィックスパターンを探す
-    # サフィックスの開始位置を特定
+    # Search from the end for known suffix patterns
+    # Identify where the suffix begins
     suffix_start = len(parts)
 
-    # 最後の部分から逆順にチェック
+    # Check parts in reverse order starting from the end
     i = len(parts) - 1
     while i >= 0:
         part = parts[i]
 
-        # 数値パターン (05, 10, 15, 20, 25, 0-4など)
+        # Numeric pattern (05, 10, 15, 20, 25, 0-4, etc.)
         if part in ['05', '10', '15', '20', '25', '0', '1', '2', '3', '4']:
             suffix_start = i
             i -= 1
             continue
 
-        # a/b サフィックス
+        # a/b suffix
         if part in ['a', 'b'] and i > 0:
             suffix_start = i
             i -= 1
             continue
 
-        # フラグ (t, nt)
+        # Flags (t, nt)
         if part in ['t', 'nt'] and i > 0:
             suffix_start = i
             i -= 1
@@ -107,10 +107,10 @@ def parse_test_name(test_name):
             i -= 1
             continue
 
-        # それ以外はモデル名の一部
+        # Anything else is part of the model name
         break
 
-    # モデル名を抽出
+    # Extract the model name
     if suffix_start == 0:
         return None
 
@@ -120,7 +120,7 @@ def parse_test_name(test_name):
     if not model_name or not remaining:
         return None
 
-    # 残りの部分を解析
+    # Parse the remaining parts
     test_type = None
     history = None
     flags = []
@@ -129,35 +129,35 @@ def parse_test_name(test_name):
     while i < len(remaining):
         part = remaining[i]
 
-        # -r 0-4 パターン
+        # -r 0-4 pattern
         if part in ['0', '1', '2', '3', '4'] and i == 0:
             test_type = '-r'
             variant = part
             i += 1
-            # 次がntフラグかチェック
+            # Check whether the next part is the nt flag
             if i < len(remaining) and remaining[i] == 'nt':
                 flags.append('nt')
                 i += 1
-            # 次がtフラグかチェック
+            # Check whether the next part is the t flag
             if i < len(remaining) and remaining[i] == 't':
                 flags.append('t')
                 i += 1
-            # 次がhistoryかチェック
+            # Check whether the next part is history
             if i < len(remaining) and remaining[i] in ['05', '10', '15', '20', '25']:
                 history = remaining[i]
                 test_type = f"{variant}-"
                 i += 1
-                # 次がa/bかチェック
+                # Check whether the next part is a/b
                 if i < len(remaining) and remaining[i] in ['a', 'b']:
                     history += f"-{remaining[i]}"
                     i += 1
             else:
                 history = variant
-        # tr4/tr5/tr6 パターン
+        # tr4/tr5/tr6 pattern
         elif part in ['tr4', 'tr5', 'tr6']:
             test_type = f"{part}-"
             i += 1
-            # ntフラグチェック
+            # Check the nt flag
             if i < len(remaining) and remaining[i] == 'nt':
                 flags.append('nt')
                 i += 1
@@ -165,7 +165,7 @@ def parse_test_name(test_name):
             if i < len(remaining) and remaining[i] in ['05', '10', '15', '20', '25']:
                 history = remaining[i]
                 i += 1
-        # tフラグ（0-t-05パターン）
+        # t flag (0-t-05 pattern)
         elif part == 't':
             flags.append('t')
             i += 1
@@ -180,7 +180,7 @@ def parse_test_name(test_name):
     }
 
 def parse_scores(scores_file):
-    """SCORES.txtを解析"""
+    """Parse SCORES.txt"""
     all_scores = {}
 
     with open(scores_file, 'r', encoding='utf-8') as f:
@@ -198,7 +198,7 @@ def parse_scores(scores_file):
     return all_scores
 
 def extract_models_from_scores(all_scores):
-    """スコアデータからモデル名のリストを抽出"""
+    """Extract the list of model names from the score data"""
     models_set = set()
 
     for test_name in all_scores.keys():
@@ -209,7 +209,7 @@ def extract_models_from_scores(all_scores):
     return sorted(models_set, key=natural_sort_key)
 
 def get_test_configs_by_pattern(all_scores, pattern_type):
-    """特定のパターンのテスト設定を抽出"""
+    """Extract the test configs for a specific pattern"""
     configs_set = set()
 
     for test_name in all_scores.keys():
@@ -217,18 +217,18 @@ def get_test_configs_by_pattern(all_scores, pattern_type):
         if not parsed:
             continue
 
-        # パターンタイプに応じて設定を抽出
+        # Extract configs according to the pattern type
         if pattern_type == '-r':
-            # -r 0-4 パターン
+            # -r 0-4 pattern
             if parsed['type'] == '-r' and parsed['history'] in ['0', '1', '2', '3', '4']:
                 configs_set.add(parsed['history'])
         elif pattern_type.startswith('level-'):
-            # レベル別パターン (0-05, 1-10など)
+            # Per-level pattern (0-05, 1-10, etc.)
             level = pattern_type.split('-')[1]
             if parsed['type'] == f"{level}-" and parsed['history']:
                 configs_set.add(parsed['history'])
         elif pattern_type.startswith('tr'):
-            # tr4, tr5, tr6パターン
+            # tr4, tr5, tr6 pattern
             tr_num = pattern_type[2:]
             if parsed['type'] == f"tr{tr_num}-" and parsed['history']:
                 configs_set.add(parsed['history'])
@@ -236,7 +236,7 @@ def get_test_configs_by_pattern(all_scores, pattern_type):
     return sorted(configs_set, key=natural_sort_key)
 
 def has_flag_variant(all_scores, model_name, flag, pattern_prefix=''):
-    """特定のモデルとフラグの組み合わせがデータに存在するかチェック"""
+    """Check whether the data contains a specific model and flag combination"""
     for test_name in all_scores.keys():
         if not test_name.startswith(f"{model_name}-"):
             continue
@@ -248,31 +248,31 @@ def has_flag_variant(all_scores, model_name, flag, pattern_prefix=''):
     return False
 
 def get_model_display_name(model_name, flags):
-    """モデル表示名を生成（フラグ付き）"""
+    """Generate the model display name (with flags)"""
     if flags:
         return f"{model_name} ({','.join(flags)})"
     return model_name
 
 def generate_table(f, title, models, test_configs, all_scores, column_headers=None):
-    """テーブルを生成
+    """Generate a table
 
     Args:
-        f: 出力ファイル
-        title: テーブルタイトル
-        models: モデル情報のリスト
-        test_configs: テスト設定のリスト（patternで使用）
-        all_scores: スコア辞書
-        column_headers: 列ヘッダー（省略時はtest_configsを使用）
+        f: the output file
+        title: the table title
+        models: list of model info
+        test_configs: list of test configs (used with the pattern)
+        all_scores: scores dict
+        column_headers: column headers (uses test_configs if omitted)
     """
     if title:
         f.write(f"### {title}\n\n")
 
-    # column_headersが指定されていない場合はtest_configsを使用
+    # Use test_configs if column_headers is not specified
     if column_headers is None:
         column_headers = test_configs
 
-    # ヘッダー
-    f.write("| モデル |")
+    # Header
+    f.write("| Model |")
     for header in column_headers:
         f.write(f" {header} |")
     f.write("\n")
@@ -282,7 +282,7 @@ def generate_table(f, title, models, test_configs, all_scores, column_headers=No
         f.write(":---:|")
     f.write("\n")
 
-    # データ行
+    # Data rows
     for model_info in models:
         model_name = model_info['model']
         flags = model_info.get('flags', [])
@@ -293,7 +293,7 @@ def generate_table(f, title, models, test_configs, all_scores, column_headers=No
         max_score = -1
         scores_in_row = []
 
-        # まず全スコアを収集して最大値を見つける
+        # First collect all scores to find the maximum
         for config in test_configs:
             test_name = model_info['pattern'].format(config=config)
             score = all_scores.get(test_name)
@@ -301,7 +301,7 @@ def generate_table(f, title, models, test_configs, all_scores, column_headers=No
             if score is not None and score > max_score:
                 max_score = score
 
-        # スコアを出力（最大値を太字に）
+        # Output the scores (bolding the maximum)
         for score in scores_in_row:
             if score is None:
                 f.write(" - |")
@@ -314,21 +314,21 @@ def generate_table(f, title, models, test_configs, all_scores, column_headers=No
     f.write("\n")
 
 def generate_markdown(all_scores, output_file, practical_threshold=90, highlight_threshold=96):
-    """SCORES.md.origと同じ形式でMarkdownを生成"""
+    """Generate Markdown in the same format as SCORES.md.orig"""
 
-    # モデル名とテスト設定を自動抽出
+    # Auto-extract model names and test configs
     all_models = extract_models_from_scores(all_scores)
 
     with open(output_file, 'w', encoding='utf-8') as f:
-        f.write("# ローカルLLM翻訳実験\n\n")
+        f.write("# Local LLM Translation Experiment\n\n")
 
-        # 推論レベル別システム設計と実験スコア
-        f.write("## 推論レベル別システム設計と実験スコア\n\n")
+        # System design and experiment scores by reasoning level
+        f.write("## Reasoning-Level System Design and Experimental Scores\n\n")
 
-        # -r 0-4 のデータがあるモデルのみ抽出
+        # Extract only the models that have -r 0-4 data
         models_with_r = []
         for model in all_models:
-            # -r 0-4 のいずれかのデータがあるかチェック（通常版）
+            # Check whether any -r 0-4 data exists (regular version)
             has_r_data = False
             for i in range(5):
                 if f"{model}-{i}" in all_scores:
@@ -337,7 +337,7 @@ def generate_markdown(all_scores, output_file, practical_threshold=90, highlight
             if has_r_data:
                 models_with_r.append({'model': model, 'pattern': f'{model}-{{config}}'})
 
-            # -r 0-4 のいずれかのデータがあるかチェック（nt版）
+            # Check whether any -r 0-4 data exists (nt version)
             has_nt_data = False
             for i in range(5):
                 if f"{model}-{i}-nt" in all_scores:
@@ -348,26 +348,26 @@ def generate_markdown(all_scores, output_file, practical_threshold=90, highlight
 
         generate_table(f, "", models_with_r, ['0', '1', '2', '3', '4'], all_scores)
 
-        # レベル0、1、2のテーブルを動的に生成
-        for level, title in [('0', 'レベル0: 直接翻訳'), ('1', 'レベル1: 推論付き翻訳'), ('2', 'レベル2: 2段階翻訳')]:
+        # Dynamically generate the tables for levels 0, 1, and 2
+        for level, title in [('0', 'Level 0: Direct Translation'), ('1', 'Level 1: Translation with Reasoning'), ('2', 'Level 2: Two-Stage Translation')]:
             f.write(f"### {title}\n\n")
 
-            # このレベルのテスト設定を抽出
+            # Extract the test configs for this level
             configs_set = set()
             for test_name in all_scores.keys():
                 parsed = parse_test_name(test_name)
                 if parsed and parsed['type'] == f"{level}-" and parsed['history']:
-                    # a/bサフィックスを含む履歴を処理
+                    # Handle history that includes an a/b suffix
                     configs_set.add(parsed['history'])
 
-            # プレフィックス付きの列ヘッダーを生成
+            # Generate the prefixed column headers
             configs = sorted(configs_set, key=natural_sort_key)
             column_headers = [f"{level}-{config}" for config in configs]
 
-            # このレベルのデータがあるモデルを抽出
+            # Extract the models that have data for this level
             models = []
             for model in all_models:
-                # 通常バージョンのデータがあるかチェック
+                # Check whether the regular version has data
                 has_data = False
                 for config in configs:
                     if f"{model}-{level}-{config}" in all_scores:
@@ -376,7 +376,7 @@ def generate_markdown(all_scores, output_file, practical_threshold=90, highlight
                 if has_data:
                     models.append({'model': model, 'pattern': f'{model}-{level}-{{config}}'})
 
-                # (nt) バリアントのデータがあるかチェック
+                # Check whether the (nt) variant has data
                 has_nt_data = False
                 for config in configs:
                     if f"{model}-{level}-nt-{config}" in all_scores:
@@ -385,7 +385,7 @@ def generate_markdown(all_scores, output_file, practical_threshold=90, highlight
                 if has_nt_data:
                     models.append({'model': model, 'flags': ['nt'], 'pattern': f'{model}-{level}-nt-{{config}}'})
 
-                # (t) バリアントのデータがあるかチェック
+                # Check whether the (t) variant has data
                 has_t_data = False
                 for config in configs:
                     if f"{model}-{level}-t-{config}" in all_scores:
@@ -394,7 +394,7 @@ def generate_markdown(all_scores, output_file, practical_threshold=90, highlight
                 if has_t_data:
                     models.append({'model': model, 'flags': ['t'], 'pattern': f'{model}-{level}-t-{{config}}'})
 
-                # (nt,t) バリアントのデータがあるかチェック
+                # Check whether the (nt,t) variant has data
                 has_nt_t_data = False
                 for config in configs:
                     if f"{model}-{level}-nt-t-{config}" in all_scores:
@@ -405,27 +405,27 @@ def generate_markdown(all_scores, output_file, practical_threshold=90, highlight
 
             generate_table(f, "", models, configs, all_scores, column_headers)
 
-        # 翻訳改善効果の検証（レベル0 vs レベル2）
-        f.write("### 翻訳改善効果の検証（レベル0 vs レベル2）\n\n")
+        # Verifying the translation-improvement effect (level 0 vs level 2)
+        f.write("### Verifying the Improvement Effect of Translation (Level 0 vs Level 2)\n\n")
 
-        # 0-xx と 2-xx の設定を収集
+        # Collect the 0-xx and 2-xx configs
         configs_0 = set()
         configs_2 = set()
         for test_name in all_scores.keys():
             parsed = parse_test_name(test_name)
             if parsed and parsed['type'] == '0-' and parsed['history']:
-                # 0-15, 0-25を除外、0-20は除外（0-20-a, 0-20-bのみ）
+                # Exclude 0-15, 0-25; also exclude plain 0-20 (only 0-20-a, 0-20-b)
                 if parsed['history'] not in ['15', '20', '25']:
                     configs_0.add(f"0-{parsed['history']}")
             elif parsed and parsed['type'] == '2-' and parsed['history']:
-                # 2-15, 2-25を除外
+                # Exclude 2-15, 2-25
                 if parsed['history'] not in ['15', '25']:
                     configs_2.add(f"2-{parsed['history']}")
 
         configs = sorted(configs_0, key=natural_sort_key) + sorted(configs_2, key=natural_sort_key)
 
-        # ヘッダー
-        f.write("| モデル |")
+        # Header
+        f.write("| Model |")
         for config in configs:
             f.write(f" {config} |")
         f.write("\n")
@@ -434,15 +434,15 @@ def generate_markdown(all_scores, output_file, practical_threshold=90, highlight
             f.write(":---:|")
         f.write("\n")
 
-        # データがあるモデルとバリアントを抽出
+        # Extract the models and variants that have data
         model_configs = []
         for model in all_models:
-            # 通常バージョン
+            # Regular version
             has_data = any(f"{model}-{config}" in all_scores for config in configs)
             if has_data:
                 model_configs.append((model, None))
 
-            # (nt) バリアント
+            # (nt) variant
             has_nt_data = False
             for config in configs:
                 nt_config = config.replace('0-', '0-nt-').replace('2-', '2-nt-')
@@ -461,7 +461,7 @@ def generate_markdown(all_scores, output_file, practical_threshold=90, highlight
 
             for config in configs:
                 if flag_variant == 'nt':
-                    # config内の0-や2-の後にnt-を挿入
+                    # Insert nt- after the 0- or 2- in the config
                     nt_config = config.replace('0-', '0-nt-').replace('2-', '2-nt-')
                     test_name = f"{model_base}-{nt_config}"
                 else:
@@ -472,7 +472,7 @@ def generate_markdown(all_scores, output_file, practical_threshold=90, highlight
                 if score is not None and score > max_score:
                     max_score = score
 
-            # スコアを出力
+            # Output the scores
             for score in scores_in_row:
                 if score is None:
                     f.write(" - |")
@@ -484,27 +484,27 @@ def generate_markdown(all_scores, output_file, practical_threshold=90, highlight
 
         f.write("\n")
 
-        # 直接翻訳における構造化出力の影響調査（レベル0 vs tr4）
-        f.write("### 直接翻訳における構造化出力の影響調査（レベル0 vs tr4）\n\n")
+        # Investigating the impact of structured output on direct translation (level 0 vs tr4)
+        f.write("### Investigating the Impact of Structured Output on Direct Translation (Level 0 vs tr4)\n\n")
 
-        # 0-xx と tr4-xx の設定を収集
+        # Collect the 0-xx and tr4-xx configs
         configs_0 = set()
         configs_tr4 = set()
         for test_name in all_scores.keys():
             parsed = parse_test_name(test_name)
             if parsed and parsed['type'] == '0-' and parsed['history']:
-                # 0-15, 0-25を除外、0-20は除外（0-20-a, 0-20-bのみ）
+                # Exclude 0-15, 0-25; also exclude plain 0-20 (only 0-20-a, 0-20-b)
                 if parsed['history'] not in ['15', '20', '25']:
                     configs_0.add(f"0-{parsed['history']}")
             elif parsed and parsed['type'] == 'tr4-' and parsed['history']:
-                # tr4-15, tr4-25を除外
+                # Exclude tr4-15, tr4-25
                 if parsed['history'] not in ['15', '25']:
                     configs_tr4.add(f"tr4-{parsed['history']}")
 
         configs = sorted(configs_0, key=natural_sort_key) + sorted(configs_tr4, key=natural_sort_key)
 
-        # ヘッダー
-        f.write("| モデル |")
+        # Header
+        f.write("| Model |")
         for config in configs:
             f.write(f" {config} |")
         f.write("\n")
@@ -513,15 +513,15 @@ def generate_markdown(all_scores, output_file, practical_threshold=90, highlight
             f.write(":---:|")
         f.write("\n")
 
-        # データがあるモデルとバリアントを抽出
+        # Extract the models and variants that have data
         model_configs = []
         for model in all_models:
-            # 通常バージョン
+            # Regular version
             has_data = any(f"{model}-{config}" in all_scores for config in configs)
             if has_data:
                 model_configs.append((model, None))
 
-            # (nt) バリアント
+            # (nt) variant
             has_nt_data = False
             for config in configs:
                 if config.startswith('tr4-'):
@@ -541,7 +541,7 @@ def generate_markdown(all_scores, output_file, practical_threshold=90, highlight
             scores_in_row = []
 
             for config in configs:
-                # 0-xx と tr4-xx でnt処理が異なる
+                # nt handling differs between 0-xx and tr4-xx
                 if config.startswith('0-'):
                     if flag_variant == 'nt':
                         # 0-05 -> 0-nt-05
@@ -563,7 +563,7 @@ def generate_markdown(all_scores, output_file, practical_threshold=90, highlight
                 if score is not None and score > max_score:
                     max_score = score
 
-            # スコアを出力
+            # Output the scores
             for score in scores_in_row:
                 if score is None:
                     f.write(" - |")
@@ -575,27 +575,27 @@ def generate_markdown(all_scores, output_file, practical_threshold=90, highlight
 
         f.write("\n")
 
-        # 推論付き翻訳における構造化出力の影響調査（レベル1 vs tr6）
-        f.write("### 推論付き翻訳における構造化出力の影響調査（レベル1 vs tr6）\n\n")
+        # Investigating the impact of structured output on reasoning-based translation (level 1 vs tr6)
+        f.write("### Investigating the Impact of Structured Output on Translation with Reasoning (Level 1 vs tr6)\n\n")
 
-        # 1-xx と tr6-xx の設定を収集
+        # Collect the 1-xx and tr6-xx configs
         configs_1 = set()
         configs_tr6 = set()
         for test_name in all_scores.keys():
             parsed = parse_test_name(test_name)
             if parsed and parsed['type'] == '1-' and parsed['history']:
-                # 1-15, 1-25を除外
+                # Exclude 1-15, 1-25
                 if parsed['history'] not in ['15', '25']:
                     configs_1.add(f"1-{parsed['history']}")
             elif parsed and parsed['type'] == 'tr6-' and parsed['history']:
-                # tr6-15, tr6-25を除外
+                # Exclude tr6-15, tr6-25
                 if parsed['history'] not in ['15', '25']:
                     configs_tr6.add(f"tr6-{parsed['history']}")
 
         configs = sorted(configs_1, key=natural_sort_key) + sorted(configs_tr6, key=natural_sort_key)
 
-        # ヘッダー
-        f.write("| モデル |")
+        # Header
+        f.write("| Model |")
         for config in configs:
             f.write(f" {config} |")
         f.write("\n")
@@ -604,15 +604,15 @@ def generate_markdown(all_scores, output_file, practical_threshold=90, highlight
             f.write(":---:|")
         f.write("\n")
 
-        # データがあるモデルとバリアントを抽出
+        # Extract the models and variants that have data
         model_configs = []
         for model in all_models:
-            # 通常バージョン
+            # Regular version
             has_data = any(f"{model}-{config}" in all_scores for config in configs)
             if has_data:
                 model_configs.append((model, None))
 
-            # (nt) バリアント
+            # (nt) variant
             has_nt_data = False
             for config in configs:
                 if config.startswith('tr6-'):
@@ -632,7 +632,7 @@ def generate_markdown(all_scores, output_file, practical_threshold=90, highlight
             scores_in_row = []
 
             for config in configs:
-                # 1-xx と tr6-xx でnt処理が異なる
+                # nt handling differs between 1-xx and tr6-xx
                 if config.startswith('1-'):
                     if flag_variant == 'nt':
                         # 1-05 -> 1-nt-05
@@ -654,7 +654,7 @@ def generate_markdown(all_scores, output_file, practical_threshold=90, highlight
                 if score is not None and score > max_score:
                     max_score = score
 
-            # スコアを出力
+            # Output the scores
             for score in scores_in_row:
                 if score is None:
                     f.write(" - |")
@@ -666,10 +666,10 @@ def generate_markdown(all_scores, output_file, practical_threshold=90, highlight
 
         f.write("\n")
 
-        # 自由記述式推論比較（tr5 vs tr6）
-        f.write("### 自由記述式推論比較（tr5 vs tr6）\n\n")
+        # Free-form reasoning comparison (tr5 vs tr6)
+        f.write("### Free-Form Reasoning Comparison (tr5 vs tr6)\n\n")
 
-        # tr5-xx と tr6-xx の設定を収集
+        # Collect the tr5-xx and tr6-xx configs
         configs_tr5 = set()
         configs_tr6 = set()
         for test_name in all_scores.keys():
@@ -681,8 +681,8 @@ def generate_markdown(all_scores, output_file, practical_threshold=90, highlight
 
         configs = sorted(configs_tr5, key=natural_sort_key) + sorted(configs_tr6, key=natural_sort_key)
 
-        # ヘッダー
-        f.write("| モデル |")
+        # Header
+        f.write("| Model |")
         for config in configs:
             f.write(f" {config} |")
         f.write("\n")
@@ -691,15 +691,15 @@ def generate_markdown(all_scores, output_file, practical_threshold=90, highlight
             f.write(":---:|")
         f.write("\n")
 
-        # データがあるモデルとバリアントを抽出
+        # Extract the models and variants that have data
         model_configs = []
         for model in all_models:
-            # 通常バージョン
+            # Regular version
             has_data = any(f"{model}-{config}" in all_scores for config in configs)
             if has_data:
                 model_configs.append((model, None))
 
-            # (nt) バリアント
+            # (nt) variant
             has_nt_data = False
             for config in configs:
                 parts = config.split('-')
@@ -711,7 +711,7 @@ def generate_markdown(all_scores, output_file, practical_threshold=90, highlight
             if has_nt_data:
                 model_configs.append((model, 'nt'))
 
-        # 各モデルのデータを生成
+        # Generate the data for each model
         for model_base, flag_variant in model_configs:
 
                 display_name = f"{model_base} (nt)" if flag_variant == 'nt' else model_base
@@ -720,11 +720,11 @@ def generate_markdown(all_scores, output_file, practical_threshold=90, highlight
                 max_score = -1
                 scores_in_row = []
 
-                # tr5とtr6で異なるパターンを使用
+                # tr5 and tr6 use different patterns
                 for config in configs:
-                    # config例: 'tr5-05', 'tr6-10'
+                    # config example: 'tr5-05', 'tr6-10'
                     if flag_variant == 'nt':
-                        # config内のtr5/tr6の後にnt-を挿入
+                        # Insert nt- after tr5/tr6 in the config
                         # tr5-05 -> tr5-nt-05
                         parts = config.split('-')
                         if len(parts) == 2:  # tr5-05
@@ -739,7 +739,7 @@ def generate_markdown(all_scores, output_file, practical_threshold=90, highlight
                     if score is not None and score > max_score:
                         max_score = score
 
-                # スコアを出力
+                # Output the scores
                 for score in scores_in_row:
                     if score is None:
                         f.write(" - |")
@@ -751,21 +751,21 @@ def generate_markdown(all_scores, output_file, practical_threshold=90, highlight
 
         f.write("\n")
 
-        # モデル別実用設定一覧
-        f.write("## モデル別実用設定一覧\n\n")
-        f.write(f"スコア変動を考慮し、各モデルの上位3項目（{practical_threshold}点以上）または最高点1項目を実用レベルの目安として設定。\n\n")
-        f.write("| モデル | スコア | 設定 |\n")
+        # Per-model practical-config list
+        f.write("## Practical Settings List by Model\n\n")
+        f.write(f"Accounting for score variation, the top 3 entries ({practical_threshold} or above) or the single highest-scoring entry for each model are set as a practical-level benchmark.\n\n")
+        f.write("| Model | Score | Settings |\n")
         f.write("|:---|:---:|:---|\n")
 
-        # 全スコアを収集
-        # ソート用のベースモデル名と表示用のモデル名（フラグ付き）を分けて管理
+        # Collect all scores
+        # Track the base model name (for sorting) and the display model name (with flags) separately
         all_scores_by_model = {}  # {(base_model, display_model, score): [configs]}
         for test_name, score in all_scores.items():
             parsed = parse_test_name(test_name)
             if parsed:
-                # ベースモデル名（ソート用）
+                # Base model name (for sorting)
                 base_model = parsed['model']
-                # 表示用モデル名（フラグ付き）
+                # Display model name (with flags)
                 display_model = get_model_display_name(parsed['model'], parsed['flags'])
                 config = test_name.replace(f"{parsed['model']}-", "")
                 key = (base_model, display_model, score)
@@ -773,82 +773,82 @@ def generate_markdown(all_scores, output_file, practical_threshold=90, highlight
                     all_scores_by_model[key] = []
                 all_scores_by_model[key].append(config)
 
-        # ベースモデル名→(表示モデル名, スコア, 設定)でグループ化
+        # Group by base model name -> (display model name, score, configs)
         models_scores = {}
         for (base_model, display_model, score), configs in all_scores_by_model.items():
             if base_model not in models_scores:
                 models_scores[base_model] = []
             models_scores[base_model].append((display_model, score, configs))
 
-        # 各モデル内でスコアの降順にソートし、フィルタリング
+        # Sort by descending score within each model and filter
         filtered_models_scores = {}
         for base_model, scores_list in models_scores.items():
-            # スコアの降順にソート
+            # Sort by descending score
             sorted_scores = sorted(scores_list, key=lambda x: -x[1])
 
-            # practical_threshold点以上のスコアを取得
+            # Get the scores at or above practical_threshold
             scores_above_threshold = [s for s in sorted_scores if s[1] >= practical_threshold]
 
-            # フィルタリング
+            # Filter
             if scores_above_threshold:
-                # practical_threshold点以上がある場合: 上位3項目まで
+                # If there are scores at or above practical_threshold: up to the top 3 entries
                 selected = scores_above_threshold[:3]
             else:
-                # 90点以上がない場合: 最高点の1項目のみ
+                # If there are none at or above the threshold: only the single highest-scoring entry
                 selected = sorted_scores[:1]
 
             if selected:
                 filtered_models_scores[base_model] = selected
 
-        # モデルを最高スコアの降順でソート
+        # Sort the models by descending highest score
         sorted_models = sorted(filtered_models_scores.keys(),
                               key=lambda m: -filtered_models_scores[m][0][1])
 
-        # 出力
+        # Output
         for base_model in sorted_models:
             for display_model, score, configs in filtered_models_scores[base_model]:
-                # 設定をカンマ区切りで結合
+                # Join the configs with commas
                 config_str = ', '.join(sorted(configs, key=natural_sort_key))
                 f.write(f"| **{display_model}** | {score} | {config_str} |\n")
 
-        # highlight_threshold点以上のスコア一覧（モデル別実用設定一覧からhighlight_threshold点以上をフィルタ）
-        f.write(f"\n### {highlight_threshold}点以上のスコア一覧\n\n")
-        f.write("| モデル | スコア | 設定 |\n")
+        # List of scores at or above highlight_threshold (filtered from the per-model practical-config list)
+        f.write(f"\n### Scores of {highlight_threshold} and Above\n\n")
+        f.write("| Model | Score | Settings |\n")
         f.write("|:---|:---:|:---|\n")
 
-        # モデル別実用設定一覧と同じ順序で96点以上のみを出力
+        # Output only scores >= 96, in the same order as the per-model practical-config list
         for base_model in sorted_models:
             for display_model, score, configs in filtered_models_scores[base_model]:
                 if score >= highlight_threshold:
-                    # 設定をカンマ区切りで結合
+                    # Join the configs with commas
                     config_str = ', '.join(sorted(configs, key=natural_sort_key))
                     f.write(f"| **{display_model}** | {score} | {config_str} |\n")
 
 def main():
-    """メイン処理"""
+    """Main processing"""
     import argparse
     from pathlib import Path
 
-    parser = argparse.ArgumentParser(description='SCORES.txtからSCORES.mdを生成するスクリプト')
-    parser.add_argument('scores_file', type=Path, help='入力ファイル')
-    parser.add_argument('-o', '--output', type=Path, help='出力ファイル (デフォルト: 入力ファイルの拡張子を.mdに変更)')
+    parser = argparse.ArgumentParser(description='Script to generate SCORES.md from SCORES.txt')
+    parser.add_argument('scores_file', type=Path, help='Input file')
+    parser.add_argument('-o', '--output', type=Path, help='Output file (default: change the input file extension to .md)')
     parser.add_argument('-1', '--practical-threshold', type=int, required=True,
-                        help='モデル別実用設定一覧の選定に用いる基準点')
+                        help='Threshold score used to select the per-model practical-config list')
     parser.add_argument('-2', '--highlight-threshold', type=int, required=True,
-                        help='ハイライト用スコア一覧の基準点')
+                        help='Threshold score for the highlight score list')
     args = parser.parse_args()
 
     scores_file = args.scores_file
     output_file = args.output or scores_file.with_suffix('.md')
 
     if not scores_file.exists():
-        print(f"エラー: {scores_file} が見つかりません")
+        print(f"Error: {scores_file} not found")
         return
 
-    print(f"SCORES.txtを読み込んでいます: {scores_file}")
+    print(f"Reading SCORES.txt: {scores_file}")
     scores_by_model = parse_scores(scores_file)
 
-    print(f"Markdownファイルを生成しています: {output_file}")
+    print(f"Generating Markdown file: {output_file}")
     generate_markdown(
         scores_by_model,
         output_file,
@@ -856,7 +856,7 @@ def main():
         highlight_threshold=args.highlight_threshold,
     )
 
-    print(f"✓ SCORES.mdを生成しました ({len(scores_by_model)}モデル)")
+    print(f"✓ Generated SCORES.md ({len(scores_by_model)} models)")
 
 if __name__ == "__main__":
     main()

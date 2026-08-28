@@ -1,32 +1,32 @@
-# 評価者間比較分析レポート
+# Inter-Evaluator Comparison Analysis Report
 
-生成日時: 2026-04-23 23:33:41
+Generated: 2026-04-23 23:33:41
 
-## エグゼクティブサマリー
+## Executive Summary
 
-- **分析対象**: 716項目の翻訳評価結果
-- **評価者**: gemini-2.5-flash, gpt-oss-20b, gpt-oss-120b, qwen3.6, gemma-4-31b
-- **移行判定**: ❌ 移行不可
+- **Scope of analysis**: 716 translation evaluation results
+- **Evaluators**: gemini-2.5-flash, gpt-oss-20b, gpt-oss-120b, qwen3.6, gemma-4-31b
+- **Migration decision**: ❌ Migration not viable
 
-### 主な結論
+### Main Conclusion
 
-Gemini-2.5-flashからgpt-oss-120bへの移行は**推奨できません**。
-評価傾向の差が大きすぎるため、別の評価手法を検討する必要があります。
+Migrating from Gemini-2.5-flash to gpt-oss-120b **cannot be recommended**.
+The difference in evaluation tendencies is too large, so a different evaluation approach should be considered.
 
-### 主要指標
+### Key Metrics
 
-| 指標 | 値 | 基準 | 判定 |
+| Metric | Value | Threshold | Verdict |
 |------|-----|------|------|
-| スピアマン順位相関係数 | 0.784 | ≥0.85 (可), ≥0.70 (条件付き) | ⚠️ |
-| 上位10%モデル一致率 | 37.2% | ≥75% (可), ≥60% (条件付き) | ❌ |
-| ±10点範囲内一致率 | 55.0% | ≥70% (可), ≥60% (条件付き) | ❌ |
-| 最大モデルファミリー別バイアス | 25.4点 | ≤15点 (補正容易) | ⚠️ |
+| Spearman rank correlation coefficient | 0.784 | ≥0.85 (pass), ≥0.70 (conditional) | ⚠️ |
+| Top-10% model agreement rate | 37.2% | ≥75% (pass), ≥60% (conditional) | ❌ |
+| Agreement rate within ±10 points | 55.0% | ≥70% (pass), ≥60% (conditional) | ❌ |
+| Maximum bias by model family | 25.4 points | ≤15 points (easily correctable) | ⚠️ |
 
-## 基本統計
+## Basic Statistics
 
-### 評価者ごとの基本統計量
+### Basic Statistics per Evaluator
 
-| 評価者 | 平均 | 中央値 | 標準偏差 | 最小値 | 最大値 | Q25 | Q75 |
+| Evaluator | Mean | Median | Std. dev. | Min | Max | Q25 | Q75 |
 |--------|------|--------|----------|--------|--------|-----|-----|
 | gemini-2.5-flash | 69.35 | 75.00 | 22.97 | 0 | 100 | 57.00 | 88.00 |
 | gpt-oss-20b | 78.00 | 83.00 | 16.09 | 0 | 92 | 76.00 | 87.00 |
@@ -34,9 +34,9 @@ Gemini-2.5-flashからgpt-oss-120bへの移行は**推奨できません**。
 | qwen3.6 | 66.92 | 74.00 | 25.98 | 0 | 98 | 53.00 | 89.00 |
 | gemma-4-31b | 76.28 | 83.00 | 24.30 | 0 | 100 | 68.00 | 95.00 |
 
-### スコアレンジ別の分布
+### Distribution by Score Range
 
-| 評価者 | 0-20点 | 21-40点 | 41-60点 | 61-80点 | 81-100点 |
+| Evaluator | 0-20 | 21-40 | 41-60 | 61-80 | 81-100 |
 |--------|--------|---------|---------|---------|----------|
 | gemini-2.5-flash | 45 | 36 | 129 | 214 | 292 |
 | gpt-oss-20b | 15 | 21 | 29 | 196 | 455 |
@@ -44,9 +44,9 @@ Gemini-2.5-flashからgpt-oss-120bへの移行は**推奨できません**。
 | qwen3.6 | 53 | 80 | 109 | 184 | 290 |
 | gemma-4-31b | 39 | 26 | 64 | 197 | 390 |
 
-### 高得点帯の分布（95点以上）
+### Distribution in the High-Score Range (95 and above)
 
-| 評価者 | 95点以上 | 96点以上 | 97点以上 | 98点以上 | 99点以上 | 100点 |
+| Evaluator | 95+ | 96+ | 97+ | 98+ | 99+ | 100 |
 |--------|----------|----------|----------|----------|----------|-------|
 | gemini-2.5-flash | 48 | 38 | 24 | 11 | 5 | 2 |
 | gpt-oss-20b | 0 | 0 | 0 | 0 | 0 | 0 |
@@ -54,11 +54,11 @@ Gemini-2.5-flashからgpt-oss-120bへの移行は**推奨できません**。
 | qwen3.6 | 58 | 28 | 8 | 2 | 0 | 0 |
 | gemma-4-31b | 195 | 162 | 132 | 90 | 37 | 13 |
 
-## 相関分析
+## Correlation Analysis
 
-### 評価者間の相関係数
+### Correlation Coefficients Between Evaluators
 
-| ペア | 共通項目数 | ピアソンr | p値 | スピアマンρ | p値 |
+| Pair | Common entries | Pearson r | p-value | Spearman ρ | p-value |
 |------|-----------|----------|-----|-------------|-----|
 | gemini25flash_vs_gptoss20b | 716 | 0.621 | 1.94e-77 | 0.699 | 2.87e-106 |
 | gemini25flash_vs_gptoss120b | 716 | 0.683 | 1.90e-99 | 0.784 | 4.36e-150 |
@@ -71,16 +71,16 @@ Gemini-2.5-flashからgpt-oss-120bへの移行は**推奨できません**。
 | gptoss120b_vs_gemma431b | 716 | 0.882 | 3.24e-235 | 0.837 | 8.93e-189 |
 | qwen36_vs_gemma431b | 716 | 0.895 | 6.23e-253 | 0.877 | 1.45e-229 |
 
-### 相関係数の解釈
+### Interpretation of the Correlation Coefficients
 
-- **gpt-oss-20b vs gpt-oss-120b**: 非常に高い相関（ρ≈0.91）で、ほぼ同等の評価傾向
-- **gemini vs gpt-oss系**: 中程度の相関（ρ≈0.67）で、体系的な差異が存在
+- **gpt-oss-20b vs gpt-oss-120b**: a very high correlation (ρ≈0.91), with nearly identical evaluation tendencies
+- **gemini vs gpt-oss series**: a moderate correlation (ρ≈0.67), indicating a systematic difference
 
-## 一致度分析
+## Agreement Analysis
 
-### 評価者間の一致度指標
+### Agreement Metrics Between Evaluators
 
-| ペア | MAE | RMSE | ±5点以内 | ±10点以内 | 上位10%一致率 | 平均差 | 標準偏差 |
+| Pair | MAE | RMSE | Within ±5 | Within ±10 | Top-10% agreement | Mean diff. | Std. dev. |
 |------|-----|------|----------|-----------|---------------|--------|----------|
 | gemini25flash_vs_gptoss20b | 14.15 | 20.05 | 32.3% | 54.6% | 21.3% | -8.65 | 18.10 |
 | gemini25flash_vs_gptoss120b | 13.54 | 19.19 | 34.6% | 55.0% | 37.2% | -9.26 | 16.82 |
@@ -93,11 +93,11 @@ Gemini-2.5-flashからgpt-oss-120bへの移行は**推奨できません**。
 | gptoss120b_vs_gemma431b | 9.35 | 12.54 | 33.1% | 70.3% | 36.9% | +2.33 | 12.33 |
 | qwen36_vs_gemma431b | 11.17 | 14.91 | 34.9% | 56.8% | 55.1% | -9.36 | 11.62 |
 
-## 系統的バイアスの分析
+## Systematic Bias Analysis
 
-### モデルファミリー別の偏り
+### Bias by Model Family
 
-| モデルファミリー | Gemini平均 | GPT-OSS-120B平均 | 差分(Gemini-GPT120B) |
+| Model family | Gemini mean | GPT-OSS-120B mean | Diff. (Gemini-GPT120B) |
 |-----------------|-----------|-----------------|---------------------|
 | command-r7b | 47.71 | 73.08 | -25.37 |
 | gemma2 | 63.96 | 80.04 | -16.08 |
@@ -114,9 +114,9 @@ Gemini-2.5-flashからgpt-oss-120bへの移行は**推奨できません**。
 | mistral-small3.2 | 84.38 | 85.83 | -1.46 |
 | gpt-oss | 90.35 | 89.35 | +1.00 |
 
-### 推論レベル別の影響
+### Effect of Reasoning Level
 
-| 推論レベル | Gemini平均 | GPT-OSS-120B平均 | 差分 |
+| Reasoning level | Gemini mean | GPT-OSS-120B mean | Diff. |
 |-----------|-----------|-----------------|------|
 | 0 | 78.75 | 85.79 | -7.04 |
 | 1 | 55.88 | 70.54 | -14.67 |
@@ -127,9 +127,9 @@ Gemini-2.5-flashからgpt-oss-120bへの移行は**推奨できません**。
 | tr5 | 66.52 | 73.87 | -7.35 |
 | tr6 | 66.75 | 75.95 | -9.20 |
 
-### 温度設定別の影響
+### Effect of Temperature Setting
 
-| 温度 | Gemini平均 | GPT-OSS-120B平均 | 差分 |
+| Temperature | Gemini mean | GPT-OSS-120B mean | Diff. |
 |------|-----------|-----------------|------|
 | 05 | 69.95 | 78.32 | -8.37 |
 | 10 | 70.29 | 78.31 | -8.02 |
@@ -137,11 +137,11 @@ Gemini-2.5-flashからgpt-oss-120bへの移行は**推奨できません**。
 | 20 | 71.43 | 79.79 | -8.36 |
 | 25 | 59.00 | 75.25 | -16.25 |
 
-## 問題ケースの詳細
+## Details of Problem Cases
 
-### 乖離が大きいケース TOP30
+### Top 30 Cases with the Largest Discrepancy
 
-| 順位 | モデル名 | Geminiスコア | GPT-OSS-120Bスコア | 差分 |
+| Rank | Model name | Gemini score | GPT-OSS-120B score | Diff. |
 |------|----------|-------------|-------------------|------|
 | 1 | qwen3-30b-tr4-nt-05 | 93 | 0 | +93 |
 | 2 | qwen3-30b-tr6-nt-10 | 91 | 0 | +91 |
@@ -174,9 +174,9 @@ Gemini-2.5-flashからgpt-oss-120bへの移行は**推奨できません**。
 | 29 | gemma2-9b-1 | 30 | 71 | +41 |
 | 30 | command-r7b-tr6-20 | 25 | 65 | +40 |
 
-### 0点評価ケース
+### Zero-Point Evaluation Cases
 
-| モデル名 | 評価者 |
+| Model name | Evaluator |
 |----------|--------|
 | qwen3-30b-tr6-10 | gemini-2.5-flash |
 | qwen3-30b-tr6-20 | gemini-2.5-flash |
@@ -241,11 +241,11 @@ Gemini-2.5-flashからgpt-oss-120bへの移行は**推奨できません**。
 | qwen3-30b-tr6-nt-10 | gemma-4-31b |
 | qwen3-30b-tr6-nt-20 | gemma-4-31b |
 
-**注意**: qwen3-30b-nt系列がgpt-oss系で0点評価されているのは特に注目すべき問題です。
+**Note**: it is particularly notable that the qwen3-30b-nt series receives zero-point evaluations from the gpt-oss series.
 
-### 逆転ケース（評価が真逆）
+### Reversal Cases (opposite evaluations)
 
-| モデル名 | Geminiスコア | GPT-OSS-120Bスコア | 差分 |
+| Model name | Gemini score | GPT-OSS-120B score | Diff. |
 |----------|-------------|-------------------|------|
 | qwen3-30b-tr6-nt-05 | 82 | 0 | +82 |
 | qwen3-4b-1-nt-05 | 50 | 81 | -31 |
@@ -267,30 +267,30 @@ Gemini-2.5-flashからgpt-oss-120bへの移行は**推奨できません**。
 | qwen3-4b-tr4-20 | 42 | 81 | -39 |
 | ministral-3-3b-tr5-10 | 48 | 80 | -32 |
 
-## 移行判定
+## Migration Decision
 
-### 判定結果: **❌ 移行不可**
+### Verdict: **❌ Migration not viable**
 
-### 判定基準との照合
+### Comparison Against the Decision Criteria
 
-- ⚠️ スピアマン順位相関係数: 0.784 (0.70-0.85の範囲)
-- ❌ 上位10%一致率: 0.372 < 0.60 (不合格)
-- ❌ ±10点範囲内一致率: 0.550 < 0.60 (不合格)
-- ⚠️ 最大モデルファミリー別バイアス: 25.4点 (補正が必要)
+- ⚠️ Spearman rank correlation coefficient: 0.784 (in the 0.70-0.85 range)
+- ❌ Top-10% agreement rate: 0.372 < 0.60 (fail)
+- ❌ Agreement rate within ±10 points: 0.550 < 0.60 (fail)
+- ⚠️ Maximum bias by model family: 25.4 points (correction needed)
 
-### 推奨事項
+### Recommendations
 
-gpt-oss-120bは Gemini-2.5-flash の代替として推奨できません。
+gpt-oss-120b cannot be recommended as a replacement for Gemini-2.5-flash.
 
-**代替案**:
-1. より大規模なgpt-ossモデルを試す（もし利用可能なら）
-2. 複数の評価者（gpt-oss-20b, gpt-oss-120b）の平均を使用
-3. Gemini-2.5-flashを継続使用し、コスト最適化を他の方法で実施
+**Alternatives**:
+1. Try a larger-scale gpt-oss model (if available)
+2. Use the average of multiple evaluators (gpt-oss-20b, gpt-oss-120b)
+3. Continue using Gemini-2.5-flash and pursue cost optimization through other means
 
-## 詳細データ
+## Detailed Data
 
-- 統計データ: [stats.json](stats.json)
+- Statistical data: [stats.json](stats.json)
 
 ---
 
-生成日時: 2026-04-23T23:33:28.616692
+Generated: 2026-04-23T23:33:28.616692

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""各言語の最高得点翻訳を探してTSV（言語コード・得点・ファイルパス・言語名）を標準出力する。"""
+"""Finds the highest-scoring translation for each language and prints a TSV (language code, score, file path, language name) to standard output."""
 import re
 from pathlib import Path
 

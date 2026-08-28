@@ -1,39 +1,39 @@
-# 翻訳評価基準（読みやすさ重視版）
+# Translation Evaluation Criteria (Readability-Focused Version)
 
-翻訳の品質を100点満点で評価するために、以下の5つの主要な基準を使用します。
-**各基準は20点満点で評価し、合計100点で採点します。**
+To evaluate translation quality on a 100-point scale, we use the following 5 main criteria.
+**Each criterion is scored out of 20 points, for a total of 100 points.**
 
-### 1. 読みやすさと理解しやすさ (Readability and Comprehensibility)
+### 1. Readability and Comprehensibility
 
-*   **評価内容:**
-    *   ターゲット言語の読者が内容を容易に理解できるか。
-    *   複雑な概念が分かりやすく説明されているか。
-    *   文章の構造が論理的で読み進めやすいか。
+*   **What is evaluated:**
+    *   Can readers in the target language easily understand the content?
+    *   Are complex concepts explained clearly?
+    *   Is the structure of the text logical and easy to follow?
 
-### 2. 流暢さと自然さ (Fluency and Naturalness)
+### 2. Fluency and Naturalness
 
-*   **評価内容:**
-    *   翻訳された文章が、ターゲット言語のネイティブスピーカーにとって自然で滑らかに聞こえるか。
-    *   不自然な言い回し、ぎこちない文法、直訳っぽさがないか。
-    *   語彙選択が適切で現代的か。
+*   **What is evaluated:**
+    *   Does the translated text sound natural and smooth to a native speaker of the target language?
+    *   Are there any unnatural phrasings, awkward grammar, or overly literal translations?
+    *   Is the word choice appropriate and modern?
 
-### 3. 専門用語の適切性 (Technical Terminology Appropriateness)
+### 3. Technical Terminology Appropriateness
 
-*   **評価内容:**
-    *   専門用語（例: `fine-tuning`, `in-context learning`）が、読者の理解レベルに合わせて適切に処理されているか。
-    *   必要に応じて説明や言い換えが提供されているか。
-    *   用語の選択に一貫性があるか。
+*   **What is evaluated:**
+    *   Is technical terminology (e.g., `fine-tuning`, `in-context learning`) handled appropriately for the readers' level of understanding?
+    *   Are explanations or paraphrases provided where necessary?
+    *   Is terminology used consistently?
 
-### 4. 文脈適応性 (Contextual Adaptation)
+### 4. Contextual Adaptation
 
-*   **評価内容:**
-    *   原文の意図と目的が効果的に伝わっているか。
-    *   ターゲット読者の文化的背景に配慮した表現になっているか。
-    *   必要に応じて表現の改善や最適化が行われているか。
+*   **What is evaluated:**
+    *   Is the intent and purpose of the original text conveyed effectively?
+    *   Does the expression take the target readers' cultural background into consideration?
+    *   Have expressions been improved or optimized where necessary?
 
-### 5. 情報の完全性 (Information Completeness)
+### 5. Information Completeness
 
-*   **評価内容:**
-    *   原文の重要な情報が欠落なく伝達されているか。
-    *   読者の理解を助けるための適切な補足があるか（必要な場合）。
-    *   冗長性を排除し、簡潔で要点が明確か。
+*   **What is evaluated:**
+    *   Is all important information from the original text conveyed without omission?
+    *   Are there appropriate supplementary notes to aid readers' understanding (where needed)?
+    *   Is redundancy eliminated, with the content concise and the key points clear?

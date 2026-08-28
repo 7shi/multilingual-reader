@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# draft.jsonを指定してテキスト形式で翻訳のみを出力するユーティリティ
+# Utility to take a draft.json file and output only the translations as plain text
 
 import argparse
 import json
@@ -7,30 +7,30 @@ import os
 import sys
 
 def load_draft_json(file_path):
-    """draft.jsonファイルを読み込み"""
+    """Load a draft.json file"""
     if not os.path.exists(file_path):
-        print(f"エラー: ファイルが見つかりません: {file_path}", file=sys.stderr)
+        print(f"Error: file not found: {file_path}", file=sys.stderr)
         return None
-    
+
     try:
         with open(file_path, 'r', encoding='utf-8') as f:
             data = json.load(f)
         return data
     except json.JSONDecodeError as e:
-        print(f"エラー: JSONファイルの解析に失敗しました: {e}", file=sys.stderr)
+        print(f"Error: failed to parse JSON file: {e}", file=sys.stderr)
         return None
     except Exception as e:
-        print(f"エラー: ファイル読み込みに失敗しました: {e}", file=sys.stderr)
+        print(f"Error: failed to read file: {e}", file=sys.stderr)
         return None
 
 def extract_translations(data):
-    """JSONデータから翻訳のみを抽出"""
+    """Extract only the translations from the JSON data"""
     translations = []
-    
+
     if isinstance(data, dict) and 'results' in data:
         results = data['results']
-        
-        # リスト形式の場合
+
+        # List format
         if isinstance(results, list):
             for item in results:
                 if isinstance(item, dict) and 'speaker' in item and 'translation' in item:
@@ -38,8 +38,8 @@ def extract_translations(data):
                         'speaker': item['speaker'],
                         'translation': item['translation']
                     })
-        
-        # 辞書形式の場合（旧形式対応）
+
+        # Dict format (for legacy support)
         elif isinstance(results, dict):
             for line_key, item_data in results.items():
                 if isinstance(item_data, dict) and 'speaker' in item_data and 'translation' in item_data:
@@ -51,66 +51,66 @@ def extract_translations(data):
     return translations
 
 def save_translations_to_text(translations, output_path):
-    """翻訳をテキストファイルに保存"""
+    """Save the translations to a text file"""
     try:
         with open(output_path, 'w', encoding='utf-8') as f:
             for item in translations:
                 f.write(f"{item['speaker']}: {item['translation']}\n")
         return True
     except Exception as e:
-        print(f"エラー: ファイル出力に失敗しました: {e}", file=sys.stderr)
+        print(f"Error: failed to write output file: {e}", file=sys.stderr)
         return False
 
 def main():
     parser = argparse.ArgumentParser(
-        description="draft.jsonファイルから翻訳のみをテキスト形式で出力",
+        description="Output only the translations from a draft.json file as plain text",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
-使用例:
-  python draft_to_text.py output_draft.json                    # output_draft.txt を生成
-  python draft_to_text.py output_draft.json -o custom.txt     # custom.txt を生成
-  python draft_to_text.py output_draft.json --stdout          # 標準出力に表示
+Examples:
+  python draft_to_text.py output_draft.json                    # generates output_draft.txt
+  python draft_to_text.py output_draft.json -o custom.txt     # generates custom.txt
+  python draft_to_text.py output_draft.json --stdout          # print to stdout
 
-対応形式:
-  - 新形式: {"metadata": {...}, "results": [{"speaker": "...", "translation": "..."}, ...]}
-  - 旧形式: {"metadata": {...}, "results": {"key": {"speaker": "...", "translation": "..."}, ...}}
+Supported formats:
+  - New format: {"metadata": {...}, "results": [{"speaker": "...", "translation": "..."}, ...]}
+  - Old format: {"metadata": {...}, "results": {"key": {"speaker": "...", "translation": "..."}, ...}}
 """
     )
-    
-    parser.add_argument("input_file", help="入力するdraft.jsonファイル")
-    parser.add_argument("-o", "--output", help="出力ファイル名（デフォルト: 拡張子を.txtに変更）")
-    parser.add_argument("--stdout", action="store_true", help="標準出力に表示（ファイル出力しない）")
-    
+
+    parser.add_argument("input_file", help="Input draft.json file")
+    parser.add_argument("-o", "--output", help="Output file name (default: change extension to .txt)")
+    parser.add_argument("--stdout", action="store_true", help="Print to stdout (no file output)")
+
     args = parser.parse_args()
-    
-    # JSONファイル読み込み
+
+    # Load the JSON file
     data = load_draft_json(args.input_file)
     if data is None:
         sys.exit(1)
-    
-    # 翻訳データ抽出
+
+    # Extract translation data
     translations = extract_translations(data)
     if not translations:
-        print("警告: 翻訳データが見つかりませんでした", file=sys.stderr)
+        print("Warning: no translation data found", file=sys.stderr)
         sys.exit(1)
-    
-    print(f"翻訳データを{len(translations)}行抽出しました")
-    
-    # 出力処理
+
+    print(f"Extracted {len(translations)} lines of translation data")
+
+    # Output processing
     if args.stdout:
-        # 標準出力に表示
+        # Print to stdout
         for item in translations:
             print(f"{item['speaker']}: {item['translation']}")
     else:
-        # ファイル出力
+        # File output
         if args.output:
             output_path = args.output
         else:
-            # 拡張子を.txtに変更
+            # Change extension to .txt
             output_path = args.input_file.replace('.json', '.txt')
-        
+
         if save_translations_to_text(translations, output_path):
-            print(f"出力完了: {output_path}")
+            print(f"Output complete: {output_path}")
         else:
             sys.exit(1)
 

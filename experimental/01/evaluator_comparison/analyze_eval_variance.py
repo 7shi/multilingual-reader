@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""3回評価の変動（標準偏差・レンジ）を評価者ごとに定量分析するスクリプト
+"""Script that quantitatively analyzes the variance (standard deviation, range) of
+3-run evaluations per evaluator.
 
-集約には中央値を採用している（trtools agg と同様）。
-3点サンプルでは中央値＝「外れ値1件を捨てた中間値」となり、
-評価者ハルシネーションによる1回崩壊（0点混入・極端なスコア）を
-自動的に除外できるため、平均値より堅牢。
+The median is used for aggregation (same as trtools agg).
+For a 3-point sample, the median is "the middle value after discarding one outlier",
+which automatically excludes single-run collapses caused by evaluator hallucination
+(a stray zero score, extreme scores), making it more robust than the mean.
 """
 
 import json
@@ -25,9 +26,9 @@ BASE_DIR = Path(__file__).parent.parent
 
 
 def load_data(evaluator_dir: Path) -> dict[str, list[dict]]:
-    """評価者ディレクトリ内の全JSONを読み込み、キー→データリストを返す。
-    各データは total_score と観点別スコアを含む。
-    キーはファイル名から末尾の -N を除いたもの。"""
+    """Load all JSON files in an evaluator directory and return a key -> data list mapping.
+    Each entry includes total_score and per-criterion scores.
+    Keys are the filename with the trailing -N stripped."""
     groups: dict[str, list[tuple[int, dict]]] = defaultdict(list)
 
     for json_file in sorted(evaluator_dir.rglob("*.json")):
@@ -55,7 +56,7 @@ def load_data(evaluator_dir: Path) -> dict[str, list[dict]]:
 
 
 def compute_stats(data_map: dict[str, list[dict]]) -> dict:
-    """3回評価が揃っているアイテムの変動統計を計算する。"""
+    """Compute variance statistics for items that have all 3 evaluation runs."""
     complete = {k: v for k, v in data_map.items() if len(v) == 3}
     incomplete = {k: v for k, v in data_map.items() if len(v) != 3}
 
@@ -63,7 +64,7 @@ def compute_stats(data_map: dict[str, list[dict]]) -> dict:
     ranges = [max(v) - min(v) for v in total_scores.values()]
     stdevs = [statistics.stdev(v) for v in total_scores.values()]
 
-    # レンジ別の件数
+    # Counts per range bucket
     range_buckets = {0: 0, "1-5": 0, "6-10": 0, "11-20": 0, ">20": 0}
     for r in ranges:
         if r == 0:
@@ -77,7 +78,7 @@ def compute_stats(data_map: dict[str, list[dict]]) -> dict:
         else:
             range_buckets[">20"] += 1
 
-    # 観点別の平均レンジと平均σ
+    # Average range and average sigma per criterion
     criteria_stats: dict[str, dict] = defaultdict(lambda: {"ranges": [], "stdevs": []})
     for runs in complete.values():
         all_criteria = set()
@@ -122,36 +123,36 @@ def compute_stats(data_map: dict[str, list[dict]]) -> dict:
 
 def print_report(evaluator_id: str, label: str, stats: dict):
     print(f"\n{'='*60}")
-    print(f"評価者: {label}  ({stats['complete']} 件完全 / {stats['incomplete']} 件不完全)")
+    print(f"Evaluator: {label}  ({stats['complete']} complete / {stats['incomplete']} incomplete)")
     print(f"{'='*60}")
-    print(f"  合計スコアレンジ（max-min）")
-    print(f"    平均   : {stats['range_mean']:.2f}")
-    print(f"    中央値 : {stats['range_median']:.1f}")
-    print(f"    最大   : {stats['range_max']}")
-    print(f"  標準偏差（3回内）")
-    print(f"    平均   : {stats['stdev_mean']:.2f}")
-    print(f"    中央値 : {stats['stdev_median']:.2f}")
-    print(f"    最大   : {stats['stdev_max']:.2f}")
-    print(f"    σのσ  : {stats['stdev_stdev']:.2f}")
+    print(f"  Total score range (max-min)")
+    print(f"    Mean   : {stats['range_mean']:.2f}")
+    print(f"    Median : {stats['range_median']:.1f}")
+    print(f"    Max    : {stats['range_max']}")
+    print(f"  Standard deviation (within 3 runs)")
+    print(f"    Mean   : {stats['stdev_mean']:.2f}")
+    print(f"    Median : {stats['stdev_median']:.2f}")
+    print(f"    Max    : {stats['stdev_max']:.2f}")
+    print(f"    Sigma of sigma : {stats['stdev_stdev']:.2f}")
 
     bkt = stats["range_buckets"]
     total = stats["complete"]
-    print(f"\n  レンジ分布（{total}件）")
+    print(f"\n  Range distribution ({total} items)")
     for label_b, count in bkt.items():
         pct = count / total * 100 if total else 0
         bar = "█" * int(pct / 2)
-        print(f"    {str(label_b):>5}点差: {count:4d}件 ({pct:5.1f}%) {bar}")
+        print(f"    {str(label_b):>5}pt diff: {count:4d} items ({pct:5.1f}%) {bar}")
 
     if stats["criteria_summary"]:
-        print(f"\n  観点別 平均レンジ（降順）:")
+        print(f"\n  Average range per criterion (descending):")
         sorted_crit = sorted(stats["criteria_summary"].items(),
                              key=lambda x: x[1]["range_mean"], reverse=True)
         for crit, cs in sorted_crit:
-            print(f"    {crit:<28} レンジ平均={cs['range_mean']:.2f}  σ平均={cs['stdev_mean']:.2f}")
+            print(f"    {crit:<28} range_mean={cs['range_mean']:.2f}  stdev_mean={cs['stdev_mean']:.2f}")
 
-    print(f"\n  変動上位10件:")
+    print(f"\n  Top 10 highest-variance items:")
     for key, scores, rng in stats["top_variance"]:
-        print(f"    {rng:3d}点差  {scores}  {key}")
+        print(f"    {rng:3d}pt diff  {scores}  {key}")
 
 
 def main():
@@ -159,11 +160,11 @@ def main():
 
     for ev_id in show_evaluators:
         if ev_id not in EVALUATORS:
-            print(f"不明な評価者: {ev_id}")
+            print(f"Unknown evaluator: {ev_id}")
             continue
         ev_dir = BASE_DIR / ev_id
         if not ev_dir.exists():
-            print(f"ディレクトリが見つかりません: {ev_dir}")
+            print(f"Directory not found: {ev_dir}")
             continue
         data_map = load_data(ev_dir)
         stats = compute_stats(data_map)

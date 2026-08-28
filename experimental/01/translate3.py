@@ -1,5 +1,5 @@
-# 2段階統合翻訳システム - 一気通貫実行版
-# Phase 1 → Phase 2a（統合品質チェック+修正）を自動的に順次実行
+# Two-stage integrated translation system - end-to-end execution version
+# Automatically runs Phase 1 -> Phase 2a (combined quality check + revision) in sequence
 
 import argparse
 import json
@@ -10,45 +10,45 @@ from llm7shi import create_json_descriptions_prompt
 from tqdm import tqdm
 import os
 
-# コマンドライン引数の設定
+# Command-line argument setup
 parser = argparse.ArgumentParser(
-    description="2段階統合翻訳システム（Phase 1→2a自動実行）",
+    description="Two-stage integrated translation system (automatic Phase 1->2a execution)",
     formatter_class=argparse.RawDescriptionHelpFormatter,
     epilog="""
-使用例:
+Example:
   python translate3.py input.txt -f French -t Spanish -o output.txt -m ollama:gemma3n:e4b -c ollama:qwen2.5:7b
 
-  -m: Phase 1で使用する翻訳モデル
-  -c: Phase 2aで使用する品質チェック・修正用モデル
+  -m: translation model used in Phase 1
+  -c: quality-check/revision model used in Phase 2a
 
-Phase 2aは品質チェックと修正を統合したシステムで、92点の高品質を実現します。
+Phase 2a combines quality checking and revision into a single system, achieving a high score of 92 points.
 """
 )
 
-parser.add_argument("input_file", help="翻訳対象のテキストファイル")
-parser.add_argument("-f", "--from", dest="from_lang", required=True, help="原語（例: English, French, Japanese）")
-parser.add_argument("-t", "--to", dest="to_lang", required=True, help="翻訳先言語（例: English, French, Japanese）")
-parser.add_argument("-o", "--output", dest="output_file", required=True, help="最終出力ファイル名")
-parser.add_argument("-m", "--model", required=True, help="翻訳モデル（Phase 1で使用）")
-parser.add_argument("-c", "--checker-model", required=True, help="品質チェック・修正用モデル（Phase 2aで使用）")
-parser.add_argument("--draft-file", dest="draft_file", help="Phase 1の中間ファイルパス（デフォルト: [output]_draft.json）")
-parser.add_argument("--final-file", dest="final_file", help="Phase 2aの中間ファイルパス（デフォルト: [output]_final.json）")
-parser.add_argument("--skip-existing", action="store_true", help="既存の中間ファイルがある場合は処理をスキップ")
+parser.add_argument("input_file", help="Text file to translate")
+parser.add_argument("-f", "--from", dest="from_lang", required=True, help="Source language (e.g. English, French, Japanese)")
+parser.add_argument("-t", "--to", dest="to_lang", required=True, help="Target language (e.g. English, French, Japanese)")
+parser.add_argument("-o", "--output", dest="output_file", required=True, help="Final output file name")
+parser.add_argument("-m", "--model", required=True, help="Translation model (used in Phase 1)")
+parser.add_argument("-c", "--checker-model", required=True, help="Quality-check/revision model (used in Phase 2a)")
+parser.add_argument("--draft-file", dest="draft_file", help="Phase 1 intermediate file path (default: [output]_draft.json)")
+parser.add_argument("--final-file", dest="final_file", help="Phase 2a intermediate file path (default: [output]_final.json)")
+parser.add_argument("--skip-existing", action="store_true", help="Skip processing if intermediate files already exist")
 
 args = parser.parse_args()
 
-# 入力ファイル読み込み
+# Read the input file
 with open(args.input_file, "r", encoding="utf-8") as f:
     lines = f.readlines()
 
 def normalize(text):
-    """テキストの正規化"""
+    """Normalize text"""
     normalized = ''.join(' ' if ord(ch) < 32 else ch for ch in text)
     normalized = re.sub(r' +', ' ', normalized)
     return normalized.strip()
 
 def save_phase_data(data, file_path, metadata=None):
-    """フェーズ間データをJSONで保存"""
+    """Save inter-phase data as JSON"""
     if isinstance(data, dict):
         results_list = []
         for line_key, item_data in data.items():
@@ -66,7 +66,7 @@ def save_phase_data(data, file_path, metadata=None):
         json.dump(output_data, f, ensure_ascii=False, indent=2)
 
 def save_translation_only(data, file_path):
-    """翻訳のみをテキストファイルで保存"""
+    """Save only the translations as a text file"""
     with open(file_path, 'w', encoding='utf-8') as f:
         if isinstance(data, dict):
             for line_key, item_data in data.items():
@@ -78,7 +78,7 @@ def save_translation_only(data, file_path):
                     f.write(f"{item['speaker']}: {item['translation']}\n")
 
 def load_phase_data(file_path):
-    """フェーズ間データをJSONから読み込み"""
+    """Load inter-phase data from JSON"""
     if not file_path or not os.path.exists(file_path):
         return {}, []
     
@@ -90,7 +90,7 @@ def load_phase_data(file_path):
             return {}, data if isinstance(data, list) else []
 
 def get_phase_file_path(base_path, phase):
-    """フェーズ別ファイルパスを生成"""
+    """Generate the file path for each phase"""
     base = base_path.rsplit('.', 1)[0]
     if phase == 1:
         return f"{base}_draft.json"
@@ -99,7 +99,7 @@ def get_phase_file_path(base_path, phase):
     else:
         return base_path
 
-# 翻訳対象行を抽出
+# Extract the lines to translate
 processing_items = []
 for line in lines:
     line = line.strip()
@@ -111,21 +111,21 @@ for line in lines:
     line_key = f"{speaker}:{text}"
     processing_items.append((line_key, text, speaker))
 
-print(f"2段階統合翻訳を開始: {len(processing_items)}行を処理")
+print(f"Starting two-stage integrated translation: processing {len(processing_items)} lines")
 
-# ファイルパス設定
+# File path setup
 draft_file = args.draft_file if args.draft_file else get_phase_file_path(args.output_file, 1)
 final_file = args.final_file if args.final_file else get_phase_file_path(args.output_file, "2a")
 
 # =============================================================================
-# Phase 1: 初回翻訳
+# Phase 1: initial translation
 # =============================================================================
-print("\n=== Phase 1: 初回翻訳 ===")
+print("\n=== Phase 1: initial translation ===")
 
-# 既存のdraft_fileがある場合はスキップするかチェック
+# Check whether to skip based on an existing draft_file
 if args.skip_existing and os.path.exists(draft_file):
-    print(f"Phase 1をスキップ: 既存ファイル {draft_file} を使用")
-    phase1_results = None  # Phase 2aで読み込む
+    print(f"Skipping Phase 1: using existing file {draft_file}")
+    phase1_results = None  # loaded in Phase 2a
 else:
     class DraftTranslation(BaseModel):
         translation: str = Field(description=f"Direct translation from {args.from_lang} to {args.to_lang}")
@@ -136,10 +136,10 @@ else:
 
     for line_key, text, speaker in tqdm(processing_items, desc="Phase 1"):
         prompt = f"Translate the following {args.from_lang} text spoken by {speaker} into {args.to_lang}:\n{text}"
-        
+
         messages = [prompt, json_descriptions_phase1]
-        
-        # コンテキスト追加
+
+        # Add context
         if context_history:
             context_lines = ["Previous conversation context:", ""]
             for ctx in context_history[-5:]:
@@ -148,8 +148,8 @@ else:
                 context_lines.append("")
             context = "\n".join(context_lines)
             messages.insert(0, context)
-        
-        # 翻訳実行
+
+        # Run translation
         for j in range(5):
             try:
                 result = generate_with_schema(
@@ -179,7 +179,7 @@ else:
             'translation': translated_text
         })
 
-    # Phase 1結果を保存
+    # Save Phase 1 results
     metadata = {
         'from_lang': args.from_lang,
         'to_lang': args.to_lang,
@@ -187,21 +187,21 @@ else:
         'model': args.model
     }
     save_phase_data(phase1_results, draft_file, metadata)
-    
-    # draft-fileのjson拡張子をtxtに変えて翻訳のみも保存
+
+    # Also save translations only, with the draft file's json extension changed to txt
     draft_txt_file = draft_file.replace('.json', '.txt')
     save_translation_only(phase1_results, draft_txt_file)
-    print(f"Phase 1完了: {draft_file}, {draft_txt_file}")
+    print(f"Phase 1 complete: {draft_file}, {draft_txt_file}")
 
 # =============================================================================
-# Phase 2a: 統合品質チェック+修正
+# Phase 2a: combined quality check + revision
 # =============================================================================
-print("\n=== Phase 2a: 統合品質チェック+修正 ===")
+print("\n=== Phase 2a: combined quality check + revision ===")
 
-# 既存のfinal_fileがある場合はスキップするかチェック
+# Check whether to skip based on an existing final_file
 if args.skip_existing and os.path.exists(final_file):
-    print(f"Phase 2aをスキップ: 既存ファイル {final_file} を使用")
-    # 最終結果をテキストファイルに出力するため、データを読み込む
+    print(f"Skipping Phase 2a: using existing file {final_file}")
+    # Load data to output the final result as a text file
     final_metadata, final_data = load_phase_data(final_file)
     final_context_history = []
     for item in final_data:
@@ -221,23 +221,23 @@ else:
     phase2a_results = {}
     final_context_history = []
 
-    # Phase 1データを読み込み
+    # Load Phase 1 data
     draft_metadata, draft_data = load_phase_data(draft_file)
 
     for line_key, text, speaker in tqdm(processing_items, desc="Phase 2a"):
-        # draft_dataから対応する翻訳を検索
+        # Search draft_data for the corresponding translation
         draft_translation = None
         original_text = None
-        
+
         for item in draft_data:
             if isinstance(item, dict) and 'speaker' in item and 'original' in item:
                 if f"{item['speaker']}:{item['original']}" == line_key:
                     draft_translation = item['translation']
                     original_text = item['original']
                     break
-        
+
         if not draft_translation:
-            print(f"警告: Phase 1の翻訳が見つかりません: {line_key}")
+            print(f"Warning: Phase 1 translation not found: {line_key}")
             continue
         
         prompt = f"""Original {args.from_lang} text: {original_text}
@@ -252,8 +252,8 @@ Please analyze this translation for quality issues and provide an improved versi
 5. Generate a final improved translation that addresses all identified issues"""
         
         messages = [prompt, json_descriptions_phase2a]
-        
-        # Phase 2aはコンテキストを追加
+
+        # Phase 2a also adds context
         if final_context_history:
             context_lines = ["Previous conversation context:", ""]
             for ctx in final_context_history[-5:]:
@@ -262,8 +262,8 @@ Please analyze this translation for quality issues and provide an improved versi
                 context_lines.append("")
             context = "\n".join(context_lines)
             messages.insert(0, context)
-        
-        # 統合品質チェック+修正実行
+
+        # Run combined quality check + revision
         for j in range(5):
             try:
                 result = generate_with_schema(
@@ -295,17 +295,17 @@ Please analyze this translation for quality issues and provide an improved versi
             'translation': translated_text
         })
 
-    # Phase 2a結果を保存
+    # Save Phase 2a results
     save_phase_data(phase2a_results, final_file)
-    print(f"Phase 2a完了: {final_file}")
+    print(f"Phase 2a complete: {final_file}")
 
-# 最終結果をテキストファイルに出力
+# Write the final result to a text file
 with open(args.output_file, "w", encoding="utf-8") as f:
     for ctx in final_context_history:
         f.write(f"{ctx['speaker']}: {ctx['translation']}\n")
 
-print(f"\n2段階統合翻訳完了: {args.from_lang} → {args.to_lang}")
-print(f"最終結果: {args.output_file}")
+print(f"\nTwo-stage integrated translation complete: {args.from_lang} → {args.to_lang}")
+print(f"Final result: {args.output_file}")
 draft_txt_file = draft_file.replace('.json', '.txt')
-print(f"中間ファイル: {draft_file}, {draft_txt_file}, {final_file}")
-print(f"\nPhase 2aシステムは92点の高品質翻訳を実現します。")
+print(f"Intermediate files: {draft_file}, {draft_txt_file}, {final_file}")
+print(f"\nThe Phase 2a system achieves a high translation quality of 92 points.")

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# log.jsonlから2段階翻訳の効果を分析するスクリプト
+# Script to analyze the effect of 2-stage translation from log.jsonl
 
 import json
 import difflib
@@ -7,21 +7,21 @@ import argparse
 from typing import List, Dict
 
 def load_jsonl(file_path: str) -> List[Dict]:
-    """JSON混在ファイルから{...}部分を抽出して読み込み"""
+    """Extract and load the {...} portions from a file with mixed JSON content"""
     entries = []
     with open(file_path, 'r', encoding='utf-8') as f:
         content = f.read()
-    
-    # "{"から"}"までのJSON部分を抽出
+
+    # Extract the JSON portions from "{" to "}"
     i = 0
     entry_num = 0
     while i < len(content):
-        # "{"を見つける
+        # Find "{"
         start = content.find('{', i)
         if start == -1:
             break
-        
-        # 対応する"}"を見つける（ネストと文字列を考慮）
+
+        # Find the matching "}" (accounting for nesting and strings)
         brace_count = 0
         end = start
         in_string = False
@@ -45,7 +45,7 @@ def load_jsonl(file_path: str) -> List[Dict]:
                         break
             end += 1
         
-        if brace_count == 0:  # 正常に閉じた場合
+        if brace_count == 0:  # Closed successfully
             json_str = content[start:end+1]
             try:
                 entry = json.loads(json_str)
@@ -53,7 +53,7 @@ def load_jsonl(file_path: str) -> List[Dict]:
                 entry['line_num'] = entry_num
                 entries.append(entry)
             except json.JSONDecodeError as e:
-                print(f"警告: エントリー{entry_num}でJSONパースエラー: {e}")
+                print(f"Warning: JSON parse error at entry {entry_num}: {e}")
             i = end + 1
         else:
             i = start + 1
@@ -61,36 +61,36 @@ def load_jsonl(file_path: str) -> List[Dict]:
     return entries
 
 def extract_speaker_info(text_before_json: str) -> str:
-    """JSONの直前行から話者情報を抽出"""
+    """Extract speaker info from the line immediately before the JSON"""
     lines = text_before_json.strip().split('\n')
     if lines:
         last_line = lines[-1].strip()
-        # 「名前:」の形式を探す
+        # Look for a "name:" format
         if ':' in last_line:
             speaker = last_line.split(':', 1)[0].strip()
             return speaker
     return ""
 
 def load_jsonl_with_speakers(file_path: str) -> List[Dict]:
-    """JSON混在ファイルから{...}部分と話者情報を抽出して読み込み"""
+    """Extract and load the {...} portions and speaker info from a file with mixed JSON content"""
     entries = []
     with open(file_path, 'r', encoding='utf-8') as f:
         content = f.read()
-    
-    # "{"から"}"までのJSON部分を抽出
+
+    # Extract the JSON portions from "{" to "}"
     i = 0
     entry_num = 0
     while i < len(content):
-        # "{"を見つける
+        # Find "{"
         start = content.find('{', i)
         if start == -1:
             break
-        
-        # 話者情報を抽出（JSONの直前の行から）
+
+        # Extract speaker info (from the line immediately before the JSON)
         text_before = content[:start]
         speaker = extract_speaker_info(text_before)
-        
-        # 対応する"}"を見つける（ネストと文字列を考慮）
+
+        # Find the matching "}" (accounting for nesting and strings)
         brace_count = 0
         end = start
         in_string = False
@@ -114,7 +114,7 @@ def load_jsonl_with_speakers(file_path: str) -> List[Dict]:
                         break
             end += 1
         
-        if brace_count == 0:  # 正常に閉じた場合
+        if brace_count == 0:  # Closed successfully
             json_str = content[start:end+1]
             try:
                 entry = json.loads(json_str)
@@ -123,7 +123,7 @@ def load_jsonl_with_speakers(file_path: str) -> List[Dict]:
                 entry['speaker'] = speaker
                 entries.append(entry)
             except json.JSONDecodeError as e:
-                print(f"警告: エントリー{entry_num}でJSONパースエラー: {e}")
+                print(f"Warning: JSON parse error at entry {entry_num}: {e}")
             i = end + 1
         else:
             i = start + 1
@@ -131,7 +131,7 @@ def load_jsonl_with_speakers(file_path: str) -> List[Dict]:
     return entries
 
 def create_draft_output(entries: List[Dict], input_file: str) -> str:
-    """draft_translationを結合してINPUT-draft.txtの内容を作成"""
+    """Join draft_translation entries to build the content of INPUT-draft.txt"""
     output_lines = []
     
     for entry in entries:
@@ -147,7 +147,7 @@ def create_draft_output(entries: List[Dict], input_file: str) -> str:
     return '\n'.join(output_lines)
 
 def analyze_differences(entries: List[Dict]) -> Dict:
-    """draft_translationとimproved_translationの差異を分析"""
+    """Analyze the differences between draft_translation and improved_translation"""
     stats = {
         'total_entries': len(entries),
         'identical_count': 0,
@@ -167,7 +167,7 @@ def analyze_differences(entries: List[Dict]) -> Dict:
         else:
             stats['modified_count'] += 1
             
-            # 文字レベルの差分を計算
+            # Compute a character-level diff
             diff = list(difflib.unified_diff(
                 draft.splitlines(keepends=True),
                 final.splitlines(keepends=True),
@@ -177,93 +177,93 @@ def analyze_differences(entries: List[Dict]) -> Dict:
             ))
             
             stats['differences'].append({
-                'line_num': entry.get('line_num', '不明'),
+                'line_num': entry.get('line_num', 'unknown'),
                 'draft': draft,
                 'final': final,
                 'quality_check': entry.get('quality_check', ''),
-                'diff': ''.join(diff) if diff else '差分なし'
+                'diff': ''.join(diff) if diff else 'no differences'
             })
     
     return stats
 
 def print_summary(stats: Dict, show_details: bool = False, max_examples: int = 10):
-    """結果の要約を表示"""
+    """Display a summary of the results"""
     print("=" * 60)
-    print("2段階翻訳の効果分析")
+    print("2-Stage Translation Effect Analysis")
     print("=" * 60)
-    
-    print(f"総エントリー数: {stats['total_entries']}")
-    print(f"変更なし: {stats['identical_count']} ({stats['identical_count']/stats['total_entries']*100:.1f}%)")
-    print(f"変更あり: {stats['modified_count']} ({stats['modified_count']/stats['total_entries']*100:.1f}%)")
-    
+
+    print(f"Total entries: {stats['total_entries']}")
+    print(f"Unchanged: {stats['identical_count']} ({stats['identical_count']/stats['total_entries']*100:.1f}%)")
+    print(f"Changed: {stats['modified_count']} ({stats['modified_count']/stats['total_entries']*100:.1f}%)")
+
     if not show_details:
-        print(f"\n詳細表示するには --details オプションを使用してください")
+        print(f"\nUse the --details option to show details")
         return
-    
+
     print("\n" + "=" * 60)
-    print("変更された翻訳の詳細")
+    print("Details of changed translations")
     print("=" * 60)
-    
+
     for i, diff_entry in enumerate(stats['differences'][:max_examples]):
-        print(f"\n--- エントリー {i+1} (行 {diff_entry['line_num']}) ---")
-        print(f"初回翻訳: {diff_entry['draft']}")
-        print(f"最終翻訳: {diff_entry['final']}")
-        
+        print(f"\n--- Entry {i+1} (line {diff_entry['line_num']}) ---")
+        print(f"Initial translation: {diff_entry['draft']}")
+        print(f"Final translation: {diff_entry['final']}")
+
         if diff_entry['quality_check']:
-            print(f"品質チェック: {diff_entry['quality_check'][:200]}...")
-        
+            print(f"Quality check: {diff_entry['quality_check'][:200]}...")
+
         print("-" * 40)
-    
+
     if len(stats['differences']) > max_examples:
-        print(f"\n... 他 {len(stats['differences']) - max_examples} 件の変更あり")
+        print(f"\n... {len(stats['differences']) - max_examples} more changed entries")
 
 def main():
-    parser = argparse.ArgumentParser(description="2段階翻訳の効果を分析")
-    parser.add_argument("jsonl_file", help="分析対象のJSONLファイル")
-    parser.add_argument("-d", "--details", action="store_true", help="詳細な差分を表示")
-    parser.add_argument("-n", "--max-examples", type=int, default=10, help="表示する例の最大数")
-    parser.add_argument("--draft-output", action="store_true", help="draft_translationを結合してINPUT-draft.txtを出力")
-    
+    parser = argparse.ArgumentParser(description="Analyze the effect of 2-stage translation")
+    parser.add_argument("jsonl_file", help="JSONL file to analyze")
+    parser.add_argument("-d", "--details", action="store_true", help="Show detailed differences")
+    parser.add_argument("-n", "--max-examples", type=int, default=10, help="Maximum number of examples to show")
+    parser.add_argument("--draft-output", action="store_true", help="Join draft_translation entries and output INPUT-draft.txt")
+
     args = parser.parse_args()
-    
+
     try:
-        # 通常の分析処理
+        # Regular analysis processing
         entries = load_jsonl(args.jsonl_file)
         if not entries:
-            print("エラー: 有効なエントリーが見つかりませんでした")
+            print("Error: no valid entries found")
             return
-        
+
         stats = analyze_differences(entries)
         print_summary(stats, args.details, args.max_examples)
-        
-        # draft出力が指定された場合の追加処理
+
+        # Additional processing when draft output is requested
         if args.draft_output:
             print("\n" + "=" * 60)
-            print("draft翻訳の出力")
+            print("Draft translation output")
             print("=" * 60)
-            
-            # 話者情報付きでエントリーを再読み込み
+
+            # Reload entries with speaker info
             entries_with_speakers = load_jsonl_with_speakers(args.jsonl_file)
-            
-            # 出力ファイル名を生成（INPUT.txt → INPUT-draft.txt）
+
+            # Generate the output file name (INPUT.txt -> INPUT-draft.txt)
             base_name = args.jsonl_file
             if base_name.endswith('.txt'):
                 output_file = base_name[:-4] + '-draft.txt'
             else:
                 output_file = base_name + '-draft.txt'
-            
-            # draft翻訳を結合して出力
+
+            # Join draft translations and write output
             draft_content = create_draft_output(entries_with_speakers, args.jsonl_file)
-            
+
             with open(output_file, 'w', encoding='utf-8') as f:
                 f.write(draft_content)
-            
-            print(f"draft翻訳を {output_file} に出力しました ({len(entries_with_speakers)} エントリー)")
-        
+
+            print(f"Wrote draft translations to {output_file} ({len(entries_with_speakers)} entries)")
+
     except FileNotFoundError:
-        print(f"エラー: ファイル '{args.jsonl_file}' が見つかりません")
+        print(f"Error: file '{args.jsonl_file}' not found")
     except Exception as e:
-        print(f"エラー: {e}")
+        print(f"Error: {e}")
 
 if __name__ == "__main__":
     main()

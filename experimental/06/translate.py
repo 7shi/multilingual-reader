@@ -6,15 +6,15 @@ from llm7shi.compat import generate_with_schema
 from llm7shi import create_json_descriptions_prompt
 from tqdm import tqdm
 
-parser = argparse.ArgumentParser(description="2段階翻訳スクリプト（行単位・下訳保存対応）")
-parser.add_argument("input_file", help="翻訳対象のテキストファイル")
-parser.add_argument("-f", "--from", dest="from_lang", required=True, help="原語（例: English, French, Japanese）")
-parser.add_argument("-t", "--to", dest="to_lang", required=True, help="翻訳先言語（例: English, French, Japanese）")
-parser.add_argument("-o", "--output", dest="output_file", required=True, help="最終出力ファイル名")
-parser.add_argument("-d", "--draft", dest="draft_file", required=True, help="下訳出力ファイル名")
-parser.add_argument("-m", "--model", required=True, help="翻訳に使用するモデル")
-parser.add_argument("--history", type=int, default=5, help="コンテキストに含める過去の対話履歴数 (デフォルト: 5)")
-parser.add_argument("--no-think", action="store_true", help="thinking処理を無効化（Qwen3モデル用）")
+parser = argparse.ArgumentParser(description="Two-stage translation script (line-level, with draft saving)")
+parser.add_argument("input_file", help="Text file to translate")
+parser.add_argument("-f", "--from", dest="from_lang", required=True, help="Source language (e.g., English, French, Japanese)")
+parser.add_argument("-t", "--to", dest="to_lang", required=True, help="Target language (e.g., English, French, Japanese)")
+parser.add_argument("-o", "--output", dest="output_file", required=True, help="Final output file name")
+parser.add_argument("-d", "--draft", dest="draft_file", required=True, help="Draft output file name")
+parser.add_argument("-m", "--model", required=True, help="Model used for translation")
+parser.add_argument("--history", type=int, default=5, help="Number of past dialogue turns to include as context (default: 5)")
+parser.add_argument("--no-think", action="store_true", help="Disable thinking (for Qwen3 models)")
 args = parser.parse_args()
 
 with open(args.input_file, "r", encoding="utf-8") as f:
@@ -59,7 +59,7 @@ def generate_with_retry(prompts, schema, model):
 
 context_history = []
 
-for i, line in enumerate(tqdm(lines, desc="翻訳処理")):
+for i, line in enumerate(tqdm(lines, desc="Translating")):
     line = line.strip()
     
     if ":" not in line:
@@ -105,6 +105,6 @@ with open(args.draft_file, "w", encoding="utf-8") as f:
     for ctx in context_history:
         f.write(f"{ctx['speaker']}: {ctx['draft']}\n")
 
-print(f"翻訳完了: {args.from_lang} → {args.to_lang}")
-print(f"下訳出力: {args.draft_file}")
-print(f"最終出力: {args.output_file}")
+print(f"Translation complete: {args.from_lang} → {args.to_lang}")
+print(f"Draft output: {args.draft_file}")
+print(f"Final output: {args.output_file}")
