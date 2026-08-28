@@ -38,19 +38,7 @@ multilingual-reader/
 │   └── tr/                        # Local-LLM translations and evaluations from trtools translate
 ├── DEPLOY.md                      # Build/runtime/deploy architecture details
 ├── Makefile                       # build / clean / serve / deploy targets
-├── templates/
-│   ├── README.md                  # Build/deploy steps
-│   ├── build.py                   # Static site builder (uv run templates/build.py)
-│   ├── deploy.sh                  # Script that pushes to the gh-pages branch
-│   ├── page.html                  # Template for single-language pages
-│   ├── multi.html                 # Template for the multilingual side-by-side page
-│   ├── index.html                 # Template for the landing page
-│   └── static/
-│       ├── README.md              # Implementation notes for the audio playback system
-│       ├── speech.js              # Shared Web Speech API utilities (ES Module)
-│       ├── reader.js              # JS for single-language pages
-│       ├── reader-multi.js        # JS for the multilingual side-by-side page
-│       └── reader.css             # Shared CSS
+├── templates/                     # Build/deploy scripts and page templates (see templates/README.md)
 ├── dist/                          # Build output (gitignored)
 ├── experimental/                  # Translation experiment series (01-10)
 └── obsolete/                      # Deprecated scripts and source data
@@ -91,9 +79,9 @@ Proper nouns and show names shared across all topics are pinned in [examples/tr/
 
 For the other languages, see [MEMO.md](MEMO.md) and [examples/tr/README.md](examples/tr/README.md).
 
-The translation-evaluation framework has reached a stable level, so going forward, per-model directories are added under [examples/tr/onde/](examples/tr/onde/) and used as a language-capability benchmark. See [examples/tr/ADD_MODEL.md](examples/tr/ADD_MODEL.md) for the procedure.
-
 ![Score distribution by model](examples/tr/MODELS.svg)
+
+The translation-evaluation framework has reached a stable level, so going forward, per-model directories are added under [examples/tr/onde/](examples/tr/onde/) and used as a language-capability benchmark. See [examples/tr/ADD_MODEL.md](examples/tr/ADD_MODEL.md) for the procedure.
 
 ## 📝 Adding data
 
