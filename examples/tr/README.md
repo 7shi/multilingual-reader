@@ -8,7 +8,7 @@ Directory for translating the English source text into various languages and upd
 - **qwen3.6-27b**: Qwen 3.6 27B (dense)
 - **qwen3.6**: Qwen 3.6 35B-A3B (MoE)
 - **qwen3.8**: Qwen 3.8 27B (dense)
-- **muse-glimmer**: 27.9B (dense)
+- **muse-glimmer**: 30B (dense)
 - **ox-alpha**: Ox Alpha 320B-A18B (GLM-5.3-Flash stealth)
 - **gpt-5.6-luna**: GPT-5.6 Luna
 - **gpt-5.6-terra**: GPT-5.6 Terra
@@ -208,7 +208,7 @@ Mean and standard deviation are automatically computed from the comparison table
 | gemini-3.5-flash-lite | 65.94 | 69.00 | 22.40 | Damage is severe when it fails, such as multiple writing systems getting mixed in simultaneously, with large drops for languages like Bengali and Macedonian |
 | qwen3.6-27b | 62.97 | 68.00 | 22.02 | The dense counterpart of `qwen3.6` (35B-A3B MoE); mean and stdev are both somewhat better, but the same multilingual-contamination tendency persists, with Chinese characters mixing into Thai and Indonesian output |
 | gpt-oss (120B) | 64.97 | 67.00 | 19.10 | Strong at comprehension, but prone to speaker-tag dropout and structural collapse when generating translations. High reading ability, but writing ability is unstable |
-| muse-glimmer (27B) | 63.63 | 67.00 | 21.51 | Strong on medium-to-low-resource European languages (Macedonian, Bulgarian, Lithuanian, etc.), but sentence/line duplication occurs frequently |
+| muse-glimmer (30B) | 63.63 | 67.00 | 21.51 | Strong on medium-to-low-resource European languages (Macedonian, Bulgarian, Lithuanian, etc.), but sentence/line duplication occurs frequently |
 | qwen3.6 (35B-A3B) | 58.27 | 55.00 | 24.24 | Excellent as an evaluator, catching defects in broken translations well. As a translator, however, it's prone to multilingual contamination and writing-system breakdown |
 | qwen3.8 (27B) | 53.88 | 53.00 | 25.34 | Good on high-resource languages, but output is prone to dropping out partway through (the body text disappears leaving only speaker names, or sentences get cut off mid-way) |
 
