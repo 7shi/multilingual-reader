@@ -31,8 +31,8 @@ def parse_scores_file(filepath: str) -> Dict[str, int]:
     SCORES.txtファイルをパースして{モデル名: スコア}の辞書を返す
 
     フォーマット例:
-        1→aya-expanse-32b-0: 76/100点
-        aya-expanse-32b-0: 76/100点  (番号なしも対応)
+        1→aya-expanse-32b-0: 76
+        aya-expanse-32b-0: 76  (番号なしも対応)
     """
     scores = {}
     with open(filepath, 'r', encoding='utf-8') as f:
@@ -41,8 +41,8 @@ def parse_scores_file(filepath: str) -> Dict[str, int]:
             if not line:
                 continue
 
-            # パターン: "番号→モデル名: スコア/100点" または "モデル名: スコア/100点"
-            match = re.search(r'(?:\d+→)?(.+?):\s*(\d+)/100点', line)
+            # パターン: "番号→モデル名: スコア" または "モデル名: スコア"
+            match = re.search(r'(?:\d+→)?(.+?):\s*(\d+)', line)
             if match:
                 model_name = match.group(1).strip()
                 score = int(match.group(2))

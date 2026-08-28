@@ -18,7 +18,7 @@ def main():
             continue
 
         for line in scores_file.read_text().splitlines():
-            m = re.match(r"onde-(\w+): (\d+)/100点", line)
+            m = re.match(r"onde-(\w+): (\d+)", line)
             if not m:
                 continue
             code, score = m.group(1), int(m.group(2))

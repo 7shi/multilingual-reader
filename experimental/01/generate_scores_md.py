@@ -189,7 +189,7 @@ def parse_scores(scores_file):
             if not line:
                 continue
 
-            match = re.match(r'^(.+?):\s*(\d+)/100点$', line)
+            match = re.match(r'^(.+?):\s*(\d+)$', line)
             if match:
                 test_name = match.group(1)
                 score = int(match.group(2))

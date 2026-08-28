@@ -33,8 +33,8 @@ def parse_scores_file(filepath: Path) -> Dict[str, int]:
     """SCORES.txtファイルをパースして {モデル名: スコア} の辞書を返す。
 
     対応フォーマット例:
-        '  1 | aya-expanse-32b-0: 76/100点'
-        'aya-expanse-32b-0: 76/100点'
+        '  1 | aya-expanse-32b-0: 76'
+        'aya-expanse-32b-0: 76'
     のどちらにも対応する。
     """
 
@@ -46,9 +46,9 @@ def parse_scores_file(filepath: Path) -> Dict[str, int]:
             if not line:
                 continue
 
-            # パターン: 任意の前置き (行番号+記号など) → モデル名: スコア/100点
+            # パターン: 任意の前置き (行番号+記号など) → モデル名: スコア
             # compare_evaluators.py と同じ正規表現ルールを使用する
-            m = re.search(r"(?:\d+[→|])?\s*(.+?):\s*(\d+)/100点", line)
+            m = re.search(r"(?:\d+[→|])?\s*(.+?):\s*(\d+)", line)
             if not m:
                 continue
 

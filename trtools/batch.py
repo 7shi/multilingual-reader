@@ -207,6 +207,6 @@ def run(args):
                     for base_name, result in results.items():
                         total = result["total_scores"]
                         if total["median"] is not None:
-                            line = f"{base_name}: {int(total['median'])}/100点"
+                            line = f"{base_name}: {int(total['median'])}"
                             print(line)
                             scores_f.write(line + "\n")

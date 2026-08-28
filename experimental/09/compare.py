@@ -21,7 +21,7 @@ def load_scores(path):
             line = line.strip()
             if not line:
                 continue
-            m = re.match(r"onde-(\w+): (\d+)/100点", line)
+            m = re.match(r"onde-(\w+): (\d+)", line)
             if m:
                 scores[m.group(1)] = int(m.group(2))
     return scores

@@ -140,7 +140,7 @@ def run(args):
                     print(f"  総合得点: 中央値={total['median']}, 平均={total['mean']:.1f}, 標準偏差={total['stdev']:.2f}/100点")
         else:
             if total['median'] is not None:
-                print(f"{base_name}: {total['median']}/100点")
+                print(f"{base_name}: {total['median']}")
 
     if args.output_file:
         with open(args.output_file, 'w', encoding='utf-8') as f:
