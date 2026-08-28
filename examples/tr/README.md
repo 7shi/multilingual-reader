@@ -27,16 +27,7 @@ Each set manages its own evaluation model and target languages separately. The e
   - [gemma4/](onde/gemma4/): the baseline verification set
   - [gpt-oss/](onde/gpt-oss/): includes past experiments (verifying behavioral differences between local (Ollama) and cloud (OpenRouter) execution environments)
   - [qwen3.6/](onde/qwen3.6/): includes past experiments (comparing self-evaluation with third-party evaluation (gpt-oss) to verify the asymmetry between an LLM's reading and writing ability)
-  - [qwen3.8/](onde/qwen3.8/)
-  - [muse-glimmer/](onde/muse-glimmer/)
-  - [ox-alpha/](onde/ox-alpha/)
-  - [gpt-5.6-luna/](onde/gpt-5.6-luna/)
-  - [gpt-5.6-terra/](onde/gpt-5.6-terra/)
-  - [gemini-3.5-flash-lite/](onde/gemini-3.5-flash-lite/)
-  - [gemini-2.5-flash/](onde/gemini-2.5-flash/)
-  - [gemma4-31b/](onde/gemma4-31b/)
-  - [gemini-3-flash/](onde/gemini-3-flash/)
-  - [qwen3.6-27b/](onde/qwen3.6-27b/)
+  - etc.
 
 Translation starting from French was done in the past, with results stored in the directory below, but it is now treated as obsolete.
 
