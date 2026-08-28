@@ -9,7 +9,7 @@ help:
 	@echo "  deploy   build + deploy"
 
 build:
-	uv run build.py
+	uv run templates/build.py
 
 clean:
 	rm -rf dist
@@ -18,4 +18,4 @@ serve:
 	cd dist && uv run python -m http.server 8000
 
 deploy: build
-	bash deploy.sh
+	bash templates/deploy.sh

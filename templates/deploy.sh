@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # Deploy multilingual-reader to GitHub Pages (the gh-pages branch).
-# Run via `bash deploy.sh`. No need for chmod +x.
+# Run via `bash templates/deploy.sh`. No need for chmod +x.
 # Prerequisite: `make build` has been run and dist/ has the static site.
 
 set -euo pipefail
 
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DIST_DIR="$REPO_ROOT/dist"
 WORKTREE_DIR="$REPO_ROOT/.gh-pages-worktree"
 BRANCH="gh-pages"

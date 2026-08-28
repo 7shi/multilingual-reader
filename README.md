@@ -38,9 +38,10 @@ multilingual-reader/
 │   └── tr/                        # Local-LLM translations and evaluations from trtools translate
 ├── DEPLOY.md                      # Build/runtime/deploy architecture details
 ├── Makefile                       # build / clean / serve / deploy targets
-├── build.py                       # Static site builder (uv run build.py)
-├── deploy.sh                      # Script that pushes to the gh-pages branch
 ├── templates/
+│   ├── README.md                  # Build/deploy steps
+│   ├── build.py                   # Static site builder (uv run templates/build.py)
+│   ├── deploy.sh                  # Script that pushes to the gh-pages branch
 │   ├── page.html                  # Template for single-language pages
 │   ├── multi.html                 # Template for the multilingual side-by-side page
 │   ├── index.html                 # Template for the landing page
@@ -118,40 +119,4 @@ uv run trtools translate base.txt -f French -t Spanish -o output-es.txt -m ollam
 
 ## 🚀 Build and deploy
 
-For build pipeline / runtime JS / deploy design details, see [DEPLOY.md](DEPLOY.md).
-
-### Prerequisites
-- `uv` (Python package manager)
-- `git` (uses a worktree to push to the gh-pages branch)
-
-### Local build
-
-```bash
-# Generate 24 HTML + index.html + assets into dist/
-make build
-
-# Check it locally with a server (localhost:8000)
-make serve
-
-# Remove build output
-make clean
-```
-
-### Deploying to GitHub Pages
-
-```bash
-# Build, then push to the gh-pages branch
-make deploy
-```
-
-`deploy.sh` checks out the `gh-pages` branch into `.gh-pages-worktree/` via `git worktree`, replaces its contents with `dist/`, and commits and pushes. If there's no diff, it does nothing.
-
-### First-time setup
-
-The `gh-pages` branch is created automatically the first time `make deploy` runs.
-
-Steps on the GitHub UI side:
-
-1. Open **Settings → Pages** on the GitHub repository
-2. Set **Source** to `Deploy from a branch`
-3. Set **Branch** to `gh-pages` / `/ (root)` and click **Save**
+See [templates/README.md](templates/README.md) for the build/deploy steps.

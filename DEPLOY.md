@@ -7,11 +7,11 @@ Design details for multilingual-reader's static site generation, runtime behavio
 ```
 examples/{topic}-{lang}.txt  ──┐
 templates/page.html          ──┤
-templates/multi.html         ──┼── build.py (Jinja2) ──▶ dist/
-templates/index.html         ──┤                          │
-templates/static/*.{js,css}  ──┘                          │
-                                                          ▼
-                                          deploy.sh (git worktree)
+templates/multi.html         ──┼── templates/build.py (Jinja2) ──▶ dist/
+templates/index.html         ──┤                                    │
+templates/static/*.{js,css}  ──┘                                    │
+                                                                     ▼
+                                                templates/deploy.sh (git worktree)
                                                           │
                                                           ▼
                                               push to gh-pages branch
