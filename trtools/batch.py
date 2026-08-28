@@ -152,6 +152,9 @@ def run(args):
                 if not os.path.exists(tr_file):
                     print(f"Skipping {tr_file} evaluation (translation not available)")
                     continue
+                if _line_count(tr_file) != _line_count(input_file):
+                    print(f"Skipping {tr_file} evaluation (line count mismatch)")
+                    continue
                 for evrun in range(1, args.eval_runs + 1):
                     eval_out = _eval_path(topic, lang, trrun, args.tr_runs, evrun, args.eval_dir)
                     if os.path.exists(eval_out):

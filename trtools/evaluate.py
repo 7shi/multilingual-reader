@@ -59,6 +59,14 @@ def run(args):
     with open(args.translation, "r", encoding="utf-8") as f:
         translated_text = f.read().rstrip()
 
+    original_lines = original_text.count("\n") + 1
+    translated_lines = translated_text.count("\n") + 1
+    if original_lines != translated_lines:
+        raise RuntimeError(
+            f"Line count mismatch: {args.original} has {original_lines} lines, "
+            f"{args.translation} has {translated_lines} lines"
+        )
+
     evaluation_prompt = f"""Please evaluate this translation from {args.from_lang} to {args.to_lang}.
 
 **CRITICAL GUIDELINES**:
