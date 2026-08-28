@@ -5,6 +5,7 @@ Directory for translating the English source text into various languages and upd
 - **gemma4**: Gemma 4 26B-A4B (MoE)
 - **gemma4-31b**: Gemma 4 31B (dense)
 - **gpt-oss**: GPT-OSS 120B-A5.1B (MoE)
+- **qwen3.6-27b**: Qwen 3.6 27B (dense)
 - **qwen3.6**: Qwen 3.6 35B-A3B (MoE)
 - **qwen3.8**: Qwen 3.8 27B (dense)
 - **muse-glimmer**: 27.9B (dense)
@@ -33,6 +34,7 @@ Each set manages its own evaluation model and target languages separately. The e
   - [gemini-2.5-flash/](onde/gemini-2.5-flash/)
   - [gemma4-31b/](onde/gemma4-31b/)
   - [gemini-3-flash/](onde/gemini-3-flash/)
+  - [qwen3.6-27b/](onde/qwen3.6-27b/)
 
 Translation starting from French was done in the past, with results stored in the directory below, but it is now treated as obsolete.
 
@@ -42,13 +44,75 @@ Translation starting from French was done in the past, with results stored in th
 
 For core languages with abundant training resources (French, Spanish, German, Japanese, Chinese), gemma4 produces stable, high-quality translations.
 
-| Language | finetuning | transformer | momentum | onde | Average |
-| --- | ---: | ---: | ---: | ---: | ---: |
-| Japanese | 95 | 97 | 95 | 97 | 96.00 |
-| Chinese | 95 | 97 | 96 | 96 | 96.00 |
-| Spanish | 96 | 97 | 93 | 93 | 94.75 |
-| French | 96 | 100 | 82 | 100 | 94.50 |
-| German | 96 | 99 | 88 | 94 | 94.25 |
+| Language | [gemma4](onde/gemma4/README.md) | [gemma4-31b](onde/gemma4-31b/README.md) | [gpt-oss](onde/gpt-oss/README.md) | [qwen3.6-27b](onde/qwen3.6-27b/README.md) | [qwen3.6](onde/qwen3.6/README.md) | [qwen3.8](onde/qwen3.8/README.md) | [muse-glimmer](onde/muse-glimmer/README.md) | [ox-alpha](onde/ox-alpha/README.md) | [gpt-5.6-luna](onde/gpt-5.6-luna/README.md) | [gemini-3.5-flash-lite](onde/gemini-3.5-flash-lite/README.md) | [gemini-2.5-flash](onde/gemini-2.5-flash/README.md) | [gemini-3-flash](onde/gemini-3-flash/README.md) |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| French | **100** | 98 | 97 | 96 | 97 | 97 | 85 | 97 | 97 | 96 | 96 | 94 |
+| Italian | 92 | 95 | 95 | 92 | 96 | 95 | 95 | 97 | **100** | 94 | 86 | 87 |
+| Catalan | 74 | 60 | 96 | **99** | 78 | 90 | 89 | 97 | 97 | 85 | 97 | 98 |
+| Korean | 95 | 94 | 65 | 77 | 75 | 29 | 82 | 88 | **99** | 95 | 85 | 88 |
+| Spanish | 93 | 91 | **98** | 96 | 97 | 97 | 95 | 97 | 97 | 97 | 96 | 95 |
+| Portuguese | 92 | 97 | 90 | 96 | 97 | **98** | 96 | 97 | 97 | 91 | 94 | 95 |
+| Swedish | 88 | 97 | 89 | 73 | 80 | 85 | 74 | 97 | **98** | 97 | 91 | 87 |
+| Vietnamese | **97** | 94 | 93 | 92 | 91 | 91 | 93 | 95 | **97** | 91 | 81 | **97** |
+| Russian | **97** | 96 | 79 | 94 | 91 | 85 | 48 | 96 | **97** | 79 | 85 | 91 |
+| Japanese | **97** | **97** | 94 | 95 | 76 | 56 | 92 | 93 | 86 | 79 | 80 | 95 |
+| Turkish | 91 | **97** | 83 | 74 | 63 | 88 | 85 | 92 | **97** | 73 | 94 | 87 |
+| Czech | 78 | 74 | 80 | 66 | 68 | 60 | 71 | 92 | **97** | 86 | 90 | **97** |
+| Chinese | 96 | **97** | 79 | 94 | 86 | 95 | 91 | 93 | 96 | 49 | 90 | 90 |
+| Ukrainian | 93 | 96 | 88 | 83 | 73 | 86 | 78 | **97** | 96 | 39 | 94 | 92 |
+| Dutch | 78 | 94 | 86 | 95 | 91 | 77 | 89 | 96 | **97** | 89 | 91 | 88 |
+| Danish | 92 | 96 | 77 | 78 | 76 | 83 | 84 | 95 | **97** | 59 | 76 | 89 |
+| Arabic | 96 | 91 | 83 | 78 | 33 | 77 | 75 | 90 | **97** | 74 | 91 | 91 |
+| Polish | 91 | 84 | 67 | 83 | 72 | 77 | 89 | **97** | 92 | 92 | 89 | 90 |
+| Georgian | 60 | 12 | 31 | 42 | 36 | 32 | 57 | 92 | **97** | 91 | 92 | 82 |
+| German | 94 | 95 | 83 | 84 | 89 | 91 | 74 | **96** | **96** | 78 | 85 | 89 |
+| Romanian | 64 | 93 | 56 | 74 | 92 | 89 | 76 | 93 | 95 | 63 | 93 | **96** |
+| Finnish | 95 | 87 | 63 | 41 | 49 | 48 | 56 | 92 | **96** | 67 | 83 | 92 |
+| Slovak | 66 | 53 | 71 | 79 | 62 | 50 | 78 | 95 | **96** | 51 | 92 | 40 |
+| Persian | **96** | 90 | 74 | 75 | 89 | 50 | 86 | 94 | 94 | 69 | 90 | 81 |
+| Macedonian | 76 | 59 | 75 | 67 | 46 | 77 | 89 | 94 | **96** | 36 | 91 | 91 |
+| Indonesian | 86 | 94 | 78 | 66 | 55 | 60 | 67 | 84 | **96** | 68 | 83 | 81 |
+| Serbian | 93 | 89 | 61 | 74 | 85 | 65 | 72 | **95** | 94 | 80 | 78 | 80 |
+| Bulgarian | 80 | 92 | 80 | 66 | 50 | 58 | 86 | 92 | **95** | 70 | 80 | 94 |
+| Norwegian | 89 | 94 | 69 | 69 | 86 | 71 | 63 | **95** | 90 | 65 | 85 | 60 |
+| Thai | 46 | **95** | 42 | 72 | 26 | 28 | 39 | 94 | 86 | 71 | 76 | 89 |
+| Galician | 78 | 92 | 80 | 89 | 89 | 75 | 82 | 93 | **95** | 91 | 77 | 82 |
+| Croatian | 89 | 87 | 57 | 74 | 83 | 59 | 75 | 93 | **95** | 61 | 89 | 82 |
+| Albanian | 83 | 79 | 54 | 55 | 71 | 52 | 43 | **95** | 93 | 52 | 75 | 78 |
+| Lithuanian | 23 | 24 | 48 | 69 | 77 | 67 | 79 | 90 | **95** | 49 | 84 | 89 |
+| Hungarian | 35 | 43 | 77 | 70 | 83 | 55 | 71 | 80 | **95** | 89 | 64 | 89 |
+| Afrikaans | 82 | 54 | 81 | 77 | 78 | 68 | 80 | 85 | **95** | 83 | 84 | 86 |
+| Armenian | 91 | 34 | 41 | 45 | 46 | 27 | 73 | 80 | **94** | 93 | 91 | 90 |
+| Hebrew | 89 | 90 | 65 | 37 | 70 | 32 | 65 | 92 | **94** | 88 | 89 | 89 |
+| Hindi | 75 | 91 | 39 | 77 | 29 | 57 | 38 | 91 | **93** | 85 | 89 | 81 |
+| Tamil | 43 | 91 | 30 | 33 | 18 | 30 | 40 | 84 | 91 | 30 | 85 | **93** |
+| Bengali | 54 | 64 | 50 | 53 | 42 | 42 | 41 | 91 | **93** | 32 | 76 | 16 |
+| Slovene | 58 | 32 | 73 | 71 | 48 | 50 | 71 | **92** | 86 | 90 | 86 | 91 |
+| Azerbaijani | 78 | 71 | 65 | 62 | 46 | 32 | 63 | 72 | **92** | 80 | 79 | 73 |
+| Burmese | 34 | 32 | 38 | 29 | 19 | 22 | 17 | 78 | **91** | 89 | 89 | 73 |
+| Telugu | 64 | 88 | 39 | 34 | 39 | 26 | 42 | **91** | 81 | 68 | 88 | 87 |
+| Nepali | 60 | 83 | 77 | 60 | 37 | 52 | 34 | 78 | **91** | 52 | 80 | 80 |
+| Basque | 15 | 21 | 45 | 31 | 23 | 26 | 62 | **90** | 89 | 74 | 84 | 63 |
+| Latvian | 20 | 33 | 61 | 68 | 65 | 31 | 53 | 87 | **90** | 50 | 79 | 71 |
+| Estonian | 22 | 11 | 53 | 32 | 53 | 33 | 64 | 85 | **90** | 32 | 66 | 82 |
+| Marathi | 67 | 75 | 60 | 67 | 38 | 54 | 35 | 81 | **89** | 42 | 86 | 85 |
+| Malayalam | 49 | 17 | 54 | 25 | 32 | 22 | 34 | 71 | **89** | 82 | 78 | 85 |
+| Greek | 53 | 73 | 66 | 55 | 61 | 31 | 45 | 82 | **89** | 33 | 77 | 74 |
+| Malay | 86 | 77 | 69 | 38 | 55 | 71 | 76 | 71 | **88** | 61 | 66 | 67 |
+| Esperanto | 31 | 40 | 57 | 48 | 27 | 31 | 36 | 77 | **88** | 83 | 78 | 39 |
+| Mongolian | 76 | 31 | 52 | 38 | 42 | 18 | 60 | 81 | **88** | 33 | 76 | 72 |
+| Icelandic | 23 | 33 | 45 | 33 | 33 | 21 | 51 | 66 | 68 | 56 | **88** | 41 |
+| Khmer | 54 | 17 | 32 | 32 | 30 | 26 | 16 | 73 | **87** | 69 | 76 | 83 |
+| Belarusian | 35 | 34 | 69 | 62 | 66 | 37 | 59 | 85 | 81 | 42 | 80 | **86** |
+| Urdu | 72 | 75 | 70 | 69 | 50 | 59 | 82 | 78 | **85** | 78 | 79 | **85** |
+| Irish | 9 | 16 | 29 | 28 | 30 | 14 | 43 | 68 | **83** | 27 | 60 | 27 |
+| Swahili | **82** | 70 | 58 | 55 | 32 | 26 | 62 | 80 | 79 | 33 | 70 | 36 |
+| Sinhala | 32 | 32 | 33 | 34 | 32 | 20 | 23 | 62 | 70 | 20 | 76 | **82** |
+| Welsh | 16 | 15 | 52 | 34 | 27 | 26 | 50 | 43 | 67 | 28 | 53 | **82** |
+| Kannada | 50 | 38 | 49 | 71 | 26 | 26 | 35 | 80 | **81** | 61 | 65 | 76 |
+| Interlingua | 20 | 19 | 73 | 38 | 32 | 53 | 27 | 71 | **81** | 26 | 63 | 40 |
+| Lao | 68 | 24 | 23 | 25 | 45 | 21 | 32 | 51 | **73** | 33 | 49 | 26 |
+| Tagalog | **70** | 61 | 67 | 31 | 25 | 33 | 50 | 66 | 62 | 49 | 64 | 24 |
 
 In the momentum topic, French and German scores are lower than in other topics, but this is mainly due to expression/formatting issues such as literal English-style phrasing (German) or broken dialogue formatting from missing speaker labels (French). There are no major issues with content accuracy or practical usability. See [core/README.md](core/README.md) for details.
 
@@ -148,6 +212,7 @@ Mean and standard deviation are automatically computed from the comparison table
 | gemma4-31b | 66.69 | 77.00 | 29.61 | Shows stability comparable to top models on medium-to-high-resource languages, but has the largest standard deviation of all models, with catastrophic breakdowns involving garbled text frequently occurring on low-resource languages such as Georgian, Estonian, and Malayalam |
 | gemma4 (26B-A4B) | 68.22 | 76.00 | 26.04 | Keeps grammatical structure and dialogue flow stable for medium-to-high-resource languages, but can break down catastrophically for low-resource languages; standard deviation is the second largest after `qwen3.8` |
 | gemini-3.5-flash-lite | 65.94 | 69.00 | 22.40 | Damage is severe when it fails, such as multiple writing systems getting mixed in simultaneously, with large drops for languages like Bengali and Macedonian |
+| qwen3.6-27b | 62.97 | 68.00 | 22.02 | The dense counterpart of `qwen3.6` (35B-A3B MoE); mean and stdev are both somewhat better, but the same multilingual-contamination tendency persists, with Chinese characters mixing into Thai and Indonesian output |
 | gpt-oss (120B) | 64.97 | 67.00 | 19.10 | Strong at comprehension, but prone to speaker-tag dropout and structural collapse when generating translations. High reading ability, but writing ability is unstable |
 | muse-glimmer (27B) | 63.63 | 67.00 | 21.51 | Strong on medium-to-low-resource European languages (Macedonian, Bulgarian, Lithuanian, etc.), but sentence/line duplication occurs frequently |
 | qwen3.6 (35B-A3B) | 58.27 | 55.00 | 24.24 | Excellent as an evaluator, catching defects in broken translations well. As a translator, however, it's prone to multilingual contamination and writing-system breakdown |
