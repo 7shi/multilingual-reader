@@ -1,5 +1,5 @@
-# onde 各モデルディレクトリの共通定義
-# 各 Makefile では固有部分（TRANSLATOR）のみ定義してこれを include する。
+# Shared definitions for each onde model directory
+# Each Makefile defines only its model-specific part (TRANSLATOR) and includes this.
 
 .PHONY: all translate evaluate scores trends
 
@@ -10,7 +10,7 @@ EVALUATOR  = ollama:qwen3.6
 SUMMARIZER = $(EVALUATOR)
 OPTIONS   ?= --no-think
 
-# 対象言語。過去実験など一部の言語だけを扱う場合はターゲット側で上書きする。
+# Target languages. Overridden by the caller when only a subset is needed, e.g. for past experiments.
 LANGS = $(CORE_LANGS) $(EXTRA_LANGS)
 
 TRANSLATE = uv run trtools batch \
