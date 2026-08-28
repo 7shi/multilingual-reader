@@ -8,10 +8,15 @@ from dataclasses import dataclass
 from pathlib import Path
 
 # Generates a graph with matplotlib, same as plot_comparison.py (for the graph subcommand)
+import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.cbook import boxplot_stats
 
 from trtools.language import LANG_NAMES
+
+# Fix the SVG element id salt so regenerating the chart doesn't churn
+# unrelated ids in the diff.
+matplotlib.rcParams["svg.hashsalt"] = "tr-compare-models-chart"
 
 ROOT = Path(__file__).resolve().parent
 ONDE_MAKEFILE = ROOT / "onde" / "Makefile"
