@@ -88,28 +88,28 @@ Guide: high quality (90+), practical range (80-89), medium quality (60-79), crit
 | Burmese | 19 | Massive text-generation loop causes corruption |
 | Tamil | 18 | Severe orthographic corruption and spelling errors |
 
-## 過去の実験: gpt-oss:120b による評価との比較
+## Past Experiment: Comparison with Evaluation by gpt-oss:120b
 
-`qwen3.6` による評価（`evals/`）に加え、比較検証用として `gpt-oss:120b` による評価も実施しました。結果は `gpt-oss-120b/` ディレクトリに保存されています（評価 `gpt-oss-120b/evals/`、スコア `gpt-oss-120b/SCORES.txt`）。
+In addition to evaluation by `qwen3.6` (`evals/`), evaluation by `gpt-oss:120b` was also carried out for comparative verification. The results are stored in the `gpt-oss-120b/` directory (evaluations in `gpt-oss-120b/evals/`, scores in `gpt-oss-120b/SCORES.txt`).
 
-| 言語 | qwen3.6 | gpt-oss |
+| Language | qwen3.6 | gpt-oss |
 | :--- | :--- | :--- |
-| エストニア語 | 53 | 84 |
-| セルビア語 | 85 | 79 |
-| トルコ語 | 63 | 77 |
-| 朝鮮語 | 75 | 74 |
-| カンナダ語 | 38 | 73 |
-| エスペラント | 27 | 64 |
-| テルグ語 | 39 | 62 |
-| ヒンディー語 | 29 | 43 |
-※ 対象言語は当時の8言語のみ。
+| Estonian | 53 | 84 |
+| Serbian | 85 | 79 |
+| Turkish | 63 | 77 |
+| Korean | 75 | 74 |
+| Kannada | 38 | 73 |
+| Esperanto | 27 | 64 |
+| Telugu | 39 | 62 |
+| Hindi | 29 | 43 |
+※ Only the 8 languages used at the time are covered.
 
-これらの評価ログを比較すると、両モデルとも**「翻訳テキストに含まれるエラー（プロンプトの混入、漢字の幻覚、致命的な誤訳など）を正確に検知・指摘する能力」については非常に高く、同等に機能している**ことが分かりました。
+Comparing these evaluation logs showed that **both models function very well, and equally, at "the ability to accurately detect and point out errors in the translated text (prompt contamination, Han-character hallucination, critical mistranslation, etc.)"**.
 
-しかし、そのエラーに対して**「どのように点数をつけるか（採点基準）」において、両者に極端な違い**があり、結果として「自己評価の方が圧倒的に厳しくなる」という興味深い現象が確認されました。
+However, there was an **extreme difference between the two in "how they score those errors (the scoring criteria)"**, and as a result an interesting phenomenon was confirmed: "self-evaluation is overwhelmingly stricter."
 
-1. **qwen3.6（自己評価）の傾向：容赦ない減点方式（文法警察）**
-   `qwen3.6` は自身が生成した翻訳の「文法エラー、正しくない語形変化、スペルミス、不自然な直訳」を正確に検知した上で、「抜本的な書き直しが必要」「完全に破綻している」と自分自身を容赦なく酷評し、**極めて低いスコア（20〜40点台）**をつけています。
+1. **qwen3.6's (self-evaluation) tendency: a merciless deduction method (the grammar police)**
+   Having accurately detected "grammar errors, incorrect inflection, spelling mistakes, unnatural literal translation" in its own generated translation, `qwen3.6` mercilessly criticized itself as needing "a fundamental rewrite" or being "completely broken," giving itself **extremely low scores (20s to 40s)**.
 
-2. **gpt-oss:120b（他者評価）の傾向：意味重視の加点方式（寛容さ）**
-   対して `gpt-oss:120b` は、漢字の混入や誤訳といった致命的なエラーを正しくログに列挙して指摘しているにもかかわらず、「全体として科学的な内容は伝わる」と文脈のゲシュタルト性を高く評価し、**比較的高めのスコア（60〜80点台）**を与える傾向がありました。
+2. **gpt-oss:120b's (third-party evaluation) tendency: a meaning-focused, credit-giving approach (leniency)**
+   In contrast, even while correctly listing and pointing out critical errors like Han-character contamination or mistranslation in its log, `gpt-oss:120b` tended to rate the overall gestalt of the context highly — "the scientific content comes through overall" — and give **relatively higher scores (60s to 80s)**.

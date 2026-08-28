@@ -1,6 +1,6 @@
-"""指定したモデルの組み合わせで翻訳評価スコアを比較する折れ線グラフを1枚生成する。
+"""Generate a single line graph comparing translation evaluation scores across the given models.
 
-実行: uv run plot_comparison.py -o compare/gemini35fl.png \
+Run: uv run plot_comparison.py -o compare/gemini35fl.png \
     -i gemini-3.5-flash-lite -l "Gemini 3.5 Flash Lite" \
     -i gemini-2.5-flash -l "Gemini 2.5 Flash"
 """
@@ -30,15 +30,15 @@ def load_scores(model: str) -> dict[str, int]:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("-o", "--output", required=True, type=Path, help="出力ファイルパス")
+    parser.add_argument("-o", "--output", required=True, type=Path, help="Output file path")
     parser.add_argument(
         "-i", "--model", action="append", required=True,
-        help="モデル名（onde/<model>/TRENDS.jsonl を参照、先頭指定がソート基準）",
+        help="Model name (refers to onde/<model>/TRENDS.jsonl; the first one given is the sort basis)",
     )
-    parser.add_argument("-l", "--label", action="append", required=True, help="凡例ラベル")
+    parser.add_argument("-l", "--label", action="append", required=True, help="Legend label")
     args = parser.parse_args()
     if len(args.model) != len(args.label):
-        parser.error("-i と -l の指定回数が一致しません")
+        parser.error("-i and -l must be given the same number of times")
     return args
 
 

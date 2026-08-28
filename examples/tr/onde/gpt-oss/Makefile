@@ -2,9 +2,9 @@ TRANSLATOR = ollama:gpt-oss:120b
 
 include ../common.mk
 
-# 【過去実験】ローカル（Ollama）とクラウド（OpenRouter）の実行環境の違いによる
-# 挙動の差異を検証したもの。all には含めず、明示的に指定した場合のみ実行する。
-# 対象言語は実験当時のセットに固定する。
+# [Past experiment] Verified behavioral differences between local (Ollama) and cloud
+# (OpenRouter) execution environments. Not included in `all`; only runs when
+# explicitly specified. The target languages are fixed to the set used at the time of the experiment.
 .PHONY: openrouter
 
 OR_TRANSLATOR = openrouter:openai/gpt-oss-120b:free

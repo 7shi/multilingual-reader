@@ -1,65 +1,65 @@
-# モデル追加時の評価更新手順
+# Evaluation Update Procedure When Adding a Model
 
-翻訳モデルを追加してベンチマークセットを作成した後、比較表や考察に反映させるための手順です。翻訳作業自体はユーザーが手動で行うため、以下の3ステップで進めます。
+Procedure for reflecting a newly added translation model in the comparison table and discussion after creating a benchmark set for it. The translation work itself is done manually by the user, so proceed through the following 3 steps.
 
-1. `onde/` 以下の準備
-2. ユーザーが翻訳
-3. 結果を処理
+1. Prepare under `onde/`
+2. User translates
+3. Process the results
 
-## 1. `onde/` 以下の準備
+## 1. Preparing Under `onde/`
 
-新しいモデルをベンチマークに追加する際は [onde/TEMPLATE/](onde/TEMPLATE/) を基本構成として複製する。`TEMPLATE/` はひな形専用のディレクトリで、`make all` の対象には含めない。
+When adding a new model to the benchmark, duplicate [onde/TEMPLATE/](onde/TEMPLATE/) as the base structure. `TEMPLATE/` is a directory reserved for the template and is not included in the `make all` target.
 
-1. `TEMPLATE/` を対象モデル名のディレクトリ名でコピー
-2. コピー先の `Makefile` の `TRANSLATOR` を対象モデルに変更（それ以外は [onde/common.mk](onde/common.mk) の共通定義を使う。評価者は基準を揃えるため `ollama:qwen3.6` に固定。`TRANSLATOR` は自動実行には使われず、どのモデルによる翻訳かを記録する目的の値）
-3. コピー先の `README.md` の `TODO` 箇所（タイトル・翻訳モデル名）を書き換え
-4. 親の [onde/Makefile](onde/Makefile) の `MODELS` に対象モデルのディレクトリ名を追加、[onde/README.md](onde/README.md) のディレクトリ一覧にも追記（`MODELS` は `generate_compare_rows.py` が比較表のモデル列を自動的に読み込む際の元データにもなる）
+1. Copy `TEMPLATE/` to a directory named after the target model
+2. In the copy's `Makefile`, change `TRANSLATOR` to the target model (everything else uses the common definitions in [onde/common.mk](onde/common.mk). The evaluator is fixed to `ollama:qwen3.6` to keep the scoring criteria consistent. `TRANSLATOR` isn't used by automated runs — it's a value for recording which model did the translation)
+3. Rewrite the `TODO` spots (title, translation model name) in the copy's `README.md`
+4. Add the target model's directory name to `MODELS` in the parent [onde/Makefile](onde/Makefile), and also add it to the directory list in [onde/README.md](onde/README.md) (`MODELS` is also the source data `generate_compare_rows.py` reads automatically for the comparison table's model columns)
 
-この時点では `make` を実行しない（翻訳未配置のまま実行すると、対象モデルのAPI経由の翻訳が試みられて失敗する）。
+Don't run `make` at this point (running it before the translations are in place will attempt translation via the target model's API and fail).
 
-## 2. ユーザーが翻訳
+## 2. User Translates
 
-対象モデルを使って、`onde/{model}/tr/onde-{lang}.txt` を対象言語（`CORE_LANGS` + `EXTRA_LANGS`、[onde/common.mk](onde/common.mk) で定義）ごとに手動で作成する。
+Using the target model, manually create `onde/{model}/tr/onde-{lang}.txt` for each target language (`CORE_LANGS` + `EXTRA_LANGS`, defined in [onde/common.mk](onde/common.mk)).
 
-- 原文は [onde-en.txt](onde-en.txt)。1行ずつ翻訳し、空行はそのまま保持する（`trtools translate` の出力形式に合わせる）。
-- 対象言語すべての翻訳ファイルを配置してから次のステップに進む。ファイルが揃っていない言語があると、次の `make` 実行時にその言語だけ対象モデルへのAPI呼び出しが試みられて失敗する。
+- The source text is [onde-en.txt](onde-en.txt). Translate line by line, keeping blank lines as-is (matching `trtools translate`'s output format).
+- Place translation files for all target languages before proceeding to the next step. If any language is missing its file, the next `make` run will attempt an API call to the target model for that language only, and fail.
 
-## 3. 結果を処理
+## 3. Processing the Results
 
-### 3.1 `make` の実行
+### 3.1 Running `make`
 
-`onde/{model}/` で `make` を実行する。`tr/` に翻訳済みファイルが揃っていれば翻訳フェーズはすべてスキップされ、評価・集計・傾向生成（`evaluate` → `scores` → `trends`）のみが行われる。評価ログは `evals/`、スコアは `SCORES.txt` に出力される。
+Run `make` in `onde/{model}/`. If translated files are already in place in `tr/`, the translation phase is entirely skipped, and only evaluation, aggregation, and trend generation (`evaluate` → `scores` → `trends`) run. Evaluation logs are output to `evals/`, and scores to `SCORES.txt`.
 
-### 3.2 スコアと評価ログの確認
-- 出力されたスコア（`SCORES.txt`）を確認します。
-- 訳文（`tr/` 以下のテキストファイル）と評価ログ（`evals/` 以下の JSON ファイル）を読み、各言語に対する具体的な指摘内容（専門用語の正確さ、不自然な直訳、文字化け、システムプロンプトや他言語の混入などのハルシネーションの有無）を把握します。
+### 3.2 Checking Scores and Evaluation Logs
+- Check the output scores (`SCORES.txt`).
+- Read the translations (text files under `tr/`) and evaluation logs (JSON files under `evals/`) to understand the specific issues noted for each language (terminology accuracy, unnatural literal translation, garbled text, hallucinations such as system-prompt or other-language contamination, etc.).
 
-### 3.3 `README.md` の更新
-`onde/{model}/README.md` を以下の通り更新します。
-- **「翻訳品質の概要」の確認**: この表は `make`（`trends` ターゲット）が `trtools trend --sync` により評価ログから自動生成するため、手動での記入は不要です。生成された各言語の傾向（記入方針は [ADD_LANG.md の 1.2.1](ADD_LANG.md#121-傾向の分析の記入方針) を参照）が妥当か確認します。
-- **表記の統一**: 「韓国語」と「朝鮮語」のように既存の言及と表記揺れが生じないよう、ファイル全体で言語の表記を統一します。
+### 3.3 Updating `README.md`
+Update `onde/{model}/README.md` as follows.
+- **Check the "Translation Quality Overview"**: this table is auto-generated from the evaluation logs by `make` (the `trends` target) via `trtools trend --sync`, so no manual entry is needed. Check that the generated trend for each language is appropriate (see [ADD_LANG.md's 1.2.1](ADD_LANG.md#121-writing-policy-for-trend-analysis) for the writing policy).
+- **Unify notation**: make sure the language notation is consistent throughout the file, avoiding inconsistencies with existing mentions (e.g. spelling variants of the same language).
 
-### 3.4 統合結果の更新 (`examples/tr/README.md`)
+### 3.4 Updating the Consolidated Results (`examples/tr/README.md`)
 
-すべてのディレクトリの更新が終わったら、最上位の `examples/tr/README.md` を更新して総括します。
+Once all directories have been updated, update the top-level `examples/tr/README.md` to summarize.
 
-- 冒頭のモデル略称一覧に、追加したモデルの正式名称（パラメータ規模・MoE か否かなど）を追記します。
-- `onde/` の説明リストに、追加したディレクトリへのリンクを挿入します。
-- `examples/tr/` で `make sync` を実行すると「翻訳モデル間の比較」の表（ヘッダー行・区切り行・本文行）をまとめて更新できます。
+- Add the added model's full name (parameter scale, whether it's MoE, etc.) to the model abbreviation list at the top.
+- Insert a link to the added directory into the `onde/` description list.
+- Running `make sync` in `examples/tr/` updates the "Comparison Between Translation Models" table (header row, separator row, body rows) all at once.
 
-#### 3.4.1 比較表の更新
-- 「翻訳モデル間の比較」セクションにある表に、追加したモデルの列を反映します。列は `onde/Makefile` の `MODELS` の順序に従うため、手順1.4で `MODELS` に追加していれば表側の列編集は不要です。
-- 各モデルの代表スコア（基本の `SCORES.txt` に記録された数値）を記入し、その行の **最大スコアのセル** を太字（`**`）で強調します。最大値が同点の場合は、同点のセルをすべて太字にします。
-- 比較表は `examples/tr/` で `make sync` を実行して更新します。ヘッダー行（各モデル名は `onde/{model}/README.md` へのリンク付き）・区切り行・本文行がまとめて書き換わります。
-- 続けて `examples/tr/` で `make compare` を実行し、モデルごとのスコア分布boxplot（`compare/MODELS.png`）を再生成します。
-- 行順の決定アルゴリズムなど生成処理の詳細は [ADD_LANG.md の 2.1](ADD_LANG.md#21-比較表の更新) を参照してください。
+#### 3.4.1 Updating the Comparison Table
+- Reflect the added model's column in the table under "Comparison Between Translation Models". Columns follow the order of `MODELS` in `onde/Makefile`, so if you added it to `MODELS` in step 1.4, no manual column editing is needed on the table side.
+- Enter each model's representative score (the number recorded in the base `SCORES.txt`), and bold (`**`) the **cell with the maximum score** in that row. If the maximum is tied, bold all tied cells.
+- Update the comparison table by running `make sync` in `examples/tr/`. The header row (each model name links to `onde/{model}/README.md`), separator row, and body rows are all rewritten together.
+- Then run `make compare` in `examples/tr/` to regenerate the per-model score-distribution boxplot (`compare/MODELS.png`).
+- See [ADD_LANG.md's 2.1](ADD_LANG.md#21-updating-the-comparison-table) for details on the generation process, including the row-ordering algorithm.
 
-#### 3.4.2 傾向の分析セクションの更新
-- **安定性の項目**: 追加したモデルの結果が既存の傾向を裏付ける、あるいは覆す場合は、モデル名を文中に追記して実例として挙げます。
-- **ハルシネーションの項目**: 追加したモデルで発見された特異な現象があれば追記します。
-- **新旧の区別をしない**: 統合 `README.md` の考察や注記でも「新たに追加した〜」のような表現は避け、モデル全体の比較結果として自然に統合します。
-- **表記の統一**: 統合 `README.md` 内においても、モデル名の表記揺れがないか確認し、統一します。
+#### 3.4.2 Updating the Trend Analysis Section
+- **Stability items**: if the added model's results back up or overturn an existing trend, add the model name into the text as a concrete example.
+- **Hallucination items**: add any peculiar phenomenon found for the added model.
+- **Don't distinguish old from new**: avoid phrasing like "the newly added ~" even in the discussion or notes of the consolidated `README.md`; integrate it naturally as part of the overall comparison across models.
+- **Unify notation**: also check the consolidated `README.md` for inconsistent notation of the model name and unify it.
 
 ---
 
-以上の手順を踏むことで、モデルごとの翻訳品質の差や、特有のハルシネーションの傾向を正確に比較検証の記録として維持することができます。
+Following the above procedure lets you accurately maintain a record of per-model differences in translation quality and characteristic hallucination tendencies for comparative verification.

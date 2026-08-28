@@ -7,11 +7,11 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
-# plot_comparison.py と同様に matplotlib でグラフを生成する（graph サブコマンド用）
+# Generates a graph with matplotlib, same as plot_comparison.py (for the graph subcommand)
 import matplotlib.pyplot as plt
 from matplotlib.cbook import boxplot_stats
 
-from trtools.language import LANGUAGES, LANG_NAMES
+from trtools.language import LANG_NAMES
 
 ROOT = Path(__file__).resolve().parent
 ONDE_MAKEFILE = ROOT / "onde" / "Makefile"
@@ -38,7 +38,7 @@ LINE_RE = re.compile(r"^([a-z0-9.]+)-([a-z0-9.]+):\s+(\d+)$")
 README_FILE = ROOT / "README.md"
 GRAPH_OUTPUT = ROOT / "compare" / "MODELS.png"
 GRAPH_SVG_OUTPUT = ROOT / "MODELS.svg"
-STATS_HEADER = "| モデル | 平均値 | 中央値 | 標準偏差 | 備考 |"
+STATS_HEADER = "| Model | Mean | Median | Stdev | Notes |"
 SYNC_HEADERS = {
     "compare": "| Language | ",
     "stats": STATS_HEADER,
@@ -49,7 +49,6 @@ SYNC_HEADERS = {
 class CompareRow:
     code: str
     display_name: str
-    display_name_ja: str
     scores: tuple[int, ...]
     sort_key: tuple
 
@@ -97,7 +96,6 @@ def load_compare_rows() -> list[CompareRow]:
             CompareRow(
                 code=code,
                 display_name=LANG_NAMES[code],
-                display_name_ja=LANGUAGES[code]["ja"],
                 scores=scores,
                 sort_key=(*[-s for s in sorted(scores, reverse=True)], code),
             )
@@ -141,10 +139,10 @@ def compute_stats() -> dict[str, tuple[float, float, float]]:
 
 
 def load_existing_model_notes() -> dict[str, tuple[str, str]]:
-    """model -> (モデル欄の表示文字列, 備考) を既存の stats 表から読み取る
-    （中央値・標準偏差は再計算するため無視）。モデル欄には手動で追記した
-    括弧書き（パラメータ規模など）が含まれることがあるため、先頭の
-    空白区切りトークン（モデル名本体）をキーにして引き当てる。
+    """Read model -> (model column display string, notes) from the existing stats table
+    (median/stdev are ignored since they're recomputed). The model column may contain
+    manually appended parenthetical notes (parameter scale, etc.), so entries are keyed
+    by the leading whitespace-separated token (the base model name).
     """
     readme_lines = README_FILE.read_text(encoding="utf-8").splitlines()
     header_idx = next(
@@ -257,7 +255,7 @@ def render_core_rows() -> list[str]:
             )
         onde_score = onde_scores[onde_key]
         average = (sum(topic_scores) + onde_score) / 4
-        name = LANGUAGES[code]["ja"]
+        name = LANG_NAMES[code]
         rows.append(
             (average, code, topic_scores, onde_score, name)
         )
@@ -273,9 +271,9 @@ def render_core_rows() -> list[str]:
 
 
 TIERS = [
-    ("高品質（90点以上）", 90, 101),
-    ("実用範囲（80〜89点）", 80, 90),
-    ("中品質（60〜79点）", 60, 80),
+    ("high quality (90+)", 90, 101),
+    ("practical range (80-89)", 80, 90),
+    ("medium quality (60-79)", 60, 80),
 ]
 
 
@@ -290,7 +288,7 @@ def render_classify_rows(overall: bool = False) -> list[str]:
         for label, lo, hi in TIERS:
             tier_rows = [r for r in all_rows if lo <= max(r.scores) < hi]
             if tier_rows:
-                names = "、".join(r.display_name_ja for r in tier_rows)
+                names = ", ".join(r.display_name for r in tier_rows)
                 lines.append(f"- {label}: {names}")
     else:
         for i, model in enumerate(ONDE_MODELS):
@@ -299,8 +297,8 @@ def render_classify_rows(overall: bool = False) -> list[str]:
             for label, lo, hi in TIERS:
                 tier_rows = [r for r in model_rows if lo <= r.scores[i] < hi]
                 if tier_rows:
-                    names = "、".join(
-                        f"**{r.display_name_ja}**" if r.scores[i] == max(r.scores) else r.display_name_ja
+                    names = ", ".join(
+                        f"**{r.display_name}**" if r.scores[i] == max(r.scores) else r.display_name
                         for r in tier_rows
                     )
                     lines.append(f"- {label}: {names}")
@@ -311,8 +309,8 @@ def render_classify_rows(overall: bool = False) -> list[str]:
         key=lambda r: -max(r.scores),
     )
     if bottom:
-        names = "、".join(r.display_name_ja for r in bottom)
-        lines.append(f"- 致命的な欠陥（60点未満）: {names}")
+        names = ", ".join(r.display_name for r in bottom)
+        lines.append(f"- critical flaws (below 60): {names}")
 
     return lines
 

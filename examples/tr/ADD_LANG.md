@@ -1,51 +1,51 @@
-# 言語追加時の評価更新手順
+# Evaluation Update Procedure When Adding a Language
 
-言語を追加して翻訳・評価（`make`）を実行した後、各ディレクトリの `README.md` に評価結果を反映させるための手順です。
+Procedure for reflecting evaluation results in each directory's `README.md` after adding a language and running translation and evaluation (`make`).
 
-## 1. `onde/` ディレクトリ内の評価確認と更新
+## 1. Checking and Updating Evaluations in the `onde/` Directory
 
-`onde/` 配下の各モデルディレクトリ（`onde/Makefile` の `all` 参照）について、以下の作業を行います。
+For each model directory under `onde/` (see `all` in `onde/Makefile`), do the following.
 
-### 1.1 スコアと評価ログの確認
-- 出力されたスコア（`SCORES.txt`）を確認します。
-- 訳文（`tr/` 以下のテキストファイル）と評価ログ（`evals/` 以下の JSON ファイル）を読み、各言語に対する具体的な指摘内容（専門用語の正確さ、不自然な直訳、文字化け、システムプロンプトや他言語の混入などのハルシネーションの有無）を把握します。
+### 1.1 Checking Scores and Evaluation Logs
+- Check the output scores (`SCORES.txt`).
+- Read the translations (text files under `tr/`) and evaluation logs (JSON files under `evals/`) to understand the specific issues noted for each language (terminology accuracy, unnatural literal translation, garbled text, hallucinations such as system-prompt or other-language contamination, etc.).
 
-### 1.2 `README.md` の更新
-各ディレクトリの `README.md` を以下の通り更新します。
-- **対象言語の反映**: ファイル上部の対象言語リストに挿入ソートの要領で対象言語（例: `朝鮮語`）を追加します。
-- **「傾向の分析」の確認**: この列は `make`（`trends` ターゲット）が `trtools trend --sync` により評価ログから自動生成するため、手動での記入は不要です。記入方針（[1.2.1](#121-傾向の分析の記入方針)）に照らして生成内容が妥当か確認します。
-- **表記の統一**: 「韓国語」と「朝鮮語」のように既存の言及と表記揺れが生じないよう、ファイル全体で対象言語の表記を統一します。
+### 1.2 Updating `README.md`
+Update each directory's `README.md` as follows.
+- **Reflect the target language**: insert the target language (e.g. `Korean`) into the target-language list at the top of the file, in the manner of insertion sort.
+- **Check the "Trend Analysis" column**: this column is auto-generated from the evaluation logs by `make` (the `trends` target) via `trtools trend --sync`, so no manual entry is needed. Check that the generated content is appropriate according to the writing policy ([1.2.1](#121-writing-policy-for-trend-analysis)).
+- **Unify notation**: make sure the target language's notation is consistent throughout the file, avoiding inconsistencies with existing mentions (e.g. spelling variants of the same language).
 
-#### 1.2.1 「傾向の分析」の記入方針
+#### 1.2.1 Writing Policy for "Trend Analysis"
 
-各モデルディレクトリの `README.md` にある言語別表の「傾向の分析」欄には、**スコアを見れば分かることは書きません**。順位や品質の高低（「高品質」「拮抗」など）は数値の言い換えでしかないため、その分の文字数を具体的な症状に充てます。
+For the "Trend Analysis" column in the per-language table in each model directory's `README.md`, **do not write what can already be seen from the score**. Ranking or quality level (words like "high quality", "close") are just paraphrases of the number, so use that space for concrete symptoms instead.
 
-- **書くこと**: スコアの数値からは読み取れない、訳文で実際に起きている現象。話者タグの脱落、他言語・漢字の混入、造語や非存在語、正書法の崩れ、生成ループ、出力の途中脱落、特定の用語の誤訳など、何が起きたかを具体的に記します。
-- **書かないこと**: 「高品質」「拮抗」「相対的に良い」「崩壊」といった、スコアの大小をなぞるだけの評価語。
-- **書くことが無ければそのままで良い**: 特異な症状が報告されていない言語（安定している言語など）は、無理に埋めず既存の文面を維持します。
+- **What to write**: what actually happens in the translation that the score number alone doesn't reveal. Describe concretely what happened: speaker-tag dropout, contamination with another language or Han characters, coined/nonexistent words, orthography breakdown, generation loops, output cutting off partway through, mistranslation of specific terms, etc.
+- **What not to write**: evaluative words that just restate the score's magnitude, like "high quality", "close", "relatively good", "collapsed".
+- **If there's nothing to write, leave it as is**: for languages with no notable symptoms reported (e.g. stable languages), don't force an entry — keep the existing text.
 
-## 2. 統合結果の更新 (`examples/tr/README.md`)
+## 2. Updating the Consolidated Results (`examples/tr/README.md`)
 
-すべてのディレクトリの更新が終わったら、最上位の `examples/tr/README.md` を更新して総括します。
+Once all directories have been updated, update the top-level `examples/tr/README.md` to summarize.
 
-- `uv run examples/tr/generate_compare_rows.py compare` は「翻訳モデル間の比較」の表（ヘッダー行・区切り行・本文行）を出力します。`--sync` を付けると、README.md 内の `| Language | ` で始まる行から続く表全体を直接書き換えます。
-- `uv run examples/tr/generate_compare_rows.py core` は「コア言語（core）の評価結果」のスコア行を出力します。
-- `core` モードの行順は平均値の降順です。同点の場合は言語コード昇順で安定化します。
+- `uv run examples/tr/generate_compare_rows.py compare` outputs the "Comparison Between Translation Models" table (header row, separator row, body rows). With `--sync`, it directly rewrites the entire table following the line starting with `| Language | ` in README.md.
+- `uv run examples/tr/generate_compare_rows.py core` outputs the score rows for "Evaluation Results for Core Languages (core)".
+- In `core` mode, rows are ordered by descending average; ties are stabilized by ascending language code.
 
-### 2.1 比較表の更新
-- 「翻訳モデル間の比較」セクションにある表に対象言語の行を反映します。
-- 各モデルの代表スコア（基本の `SCORES.txt` に記録された数値）を記入し、その行の **最大スコアのセル** を太字（`**`）で強調します。最大値が同点の場合は、同点のセルをすべて太字にします。
-- 比較表は `uv run examples/tr/generate_compare_rows.py compare --sync` で更新します。ヘッダー行（各モデル名は `onde/{model}/README.md` へのリンク付き）・区切り行・本文行がまとめて書き換わるため、手作業での貼り付けは不要です。
-- 列（モデル）は `onde/Makefile` の `MODELS` から自動的に読み込まれます。表側で個別に列を追加・編集する必要はありません。
-- このスクリプトは `onde/{各モデル}/SCORES.txt` を読み込み、各言語のスコアを **行内で降順にソートしたタプル** を内部的に作り、そのタプルを **降順比較** して行順を決めます。同じタプルになった場合は言語コード昇順で安定化します。
-- 言語名は英語表記（`LANG_NAMES`）で出力されます。
+### 2.1 Updating the Comparison Table
+- Reflect the target language's row in the table under "Comparison Between Translation Models".
+- Enter each model's representative score (the number recorded in the base `SCORES.txt`), and bold (`**`) the **cell with the maximum score** in that row. If the maximum is tied, bold all tied cells.
+- The comparison table is updated by running `uv run examples/tr/generate_compare_rows.py compare --sync`. The header row (each model name links to `onde/{model}/README.md`), separator row, and body rows are all rewritten together, so no manual pasting is needed.
+- Columns (models) are automatically read from `MODELS` in `onde/Makefile`. There's no need to add or edit columns manually in the table.
+- This script reads `onde/{each model}/SCORES.txt`, internally builds a **tuple of each language's scores sorted in descending order within the row**, and determines row order by **comparing those tuples in descending order**. Ties on the same tuple are stabilized by ascending language code.
+- Language names are output in their English form (`LANG_NAMES`).
 
-### 2.2 傾向の分析セクションの更新
-- **安定性の項目**: （「マイナー言語における gemma4 の安定性」など）に対象言語の結果が裏付けとなる場合は、言語名（例: `朝鮮語`）を文中に追記して実例として挙げます。
-- **ハルシネーションの項目**: 対象言語で発見された特異な現象があれば追記します。
-- **新旧の区別をしない**: 統合 `README.md` の考察や注記でも「新規追加した〜」のような表現は避け、言語全体の比較結果として自然に統合します。
-- **表記の統一**: 統合 `README.md` 内においても、対象言語の表記揺れ（過去のハルシネーション例における言及など）がないか確認し、統一します。
+### 2.2 Updating the Trend Analysis Section
+- **Stability items**: if the target language's results back up an item (such as "gemma4's stability on minor languages"), add the language name (e.g. `Korean`) into the text as a concrete example.
+- **Hallucination items**: add any peculiar phenomenon found for the target language.
+- **Don't distinguish old from new**: avoid phrasing like "the newly added ~" even in the discussion or notes of the consolidated `README.md`; integrate it naturally as part of the overall comparison across languages.
+- **Unify notation**: also check the consolidated `README.md` for inconsistent notation of the target language (e.g. mentions in past hallucination examples) and unify it.
 
 ---
 
-以上の手順を踏むことで、言語ごとのモデル性能の差や、特有のハルシネーションの傾向を正確に比較検証の記録として維持することができます。
+Following the above procedure lets you accurately maintain a record of per-language differences in model performance and characteristic hallucination tendencies for comparative verification.

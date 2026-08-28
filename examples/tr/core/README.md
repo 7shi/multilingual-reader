@@ -1,34 +1,34 @@
 # examples/tr/core/
 
-英語原文からコア言語（フランス語、スペイン語、ドイツ語、日本語、中国語）への翻訳・評価を行います。
+Translates and evaluates the English source text into the core languages (French, Spanish, German, Japanese, Chinese).
 
-## 実行
+## Running
 
-`make` で翻訳・評価・集計を一括実行。翻訳は `tr/`、評価は `evals/`、スコアは `SCORES.txt` に出力。
+`make` runs translation, evaluation, and aggregation all at once. Translations go to `tr/`, evaluations to `evals/`, and scores to `SCORES.txt`.
 
-- 翻訳モデル: gemma4:26b
-- 評価モデル: qwen3.6
-- 設定: threshold=20・keep=5・CoT なし・用語ファイル注入（`../../terms/*-en.{json,tsv}`）
-- 既存ファイルはスキップされるため途中再開可能
+- Translation model: gemma4:26b
+- Evaluation model: qwen3.6
+- Settings: threshold=20, keep=5, no CoT, term-file injection (`../../terms/*-en.{json,tsv}`)
+- Existing files are skipped, so it can be resumed partway through
 
-## 翻訳品質の概要
+## Translation Quality Overview
 
-評価結果（`SCORES.txt`）および内容の検証に基づく各言語の品質傾向は以下の通りです。
+The quality trends for each language, based on the evaluation results (`SCORES.txt`) and content review, are as follows.
 
-| 言語 | finetuning | transformer | momentum | 平均 |
+| Language | finetuning | transformer | momentum | Average |
 | --- | ---: | ---: | ---: | ---: |
-| 日本語 (ja) | 95 | 97 | 95 | 95.67 |
-| 中国語 (zh) | 95 | 97 | 96 | 96.00 |
-| スペイン語 (es) | 96 | 97 | 93 | 95.33 |
-| フランス語 (fr) | 96 | 100 | 82 | 92.67 |
-| ドイツ語 (de) | 96 | 99 | 88 | 94.33 |
+| Japanese (ja) | 95 | 97 | 95 | 95.67 |
+| Chinese (zh) | 95 | 97 | 96 | 96.00 |
+| Spanish (es) | 96 | 97 | 93 | 95.33 |
+| French (fr) | 96 | 100 | 82 | 92.67 |
+| German (de) | 96 | 99 | 88 | 94.33 |
 
-学習リソースが豊富なコア言語においては、安定した高品質な翻訳が出力されています。
+For core languages with abundant training resources, stable, high-quality translations are produced.
 
-- **文脈の適応**: ポッドキャスト特有の「カジュアルで分かりやすい会話のトーン」を完璧に再現しています。
-- **ネイティブレベルの流暢さ**: 相槌や文のつながりが自然であり、翻訳特有の不自然さ（翻訳語）がほとんど見られません。
+- **Contextual adaptation**: perfectly reproduces the podcast's characteristic "casual, easy-to-follow conversational tone".
+- **Native-level fluency**: back-channel responses and sentence flow feel natural, with almost none of the awkwardness typical of translations ("translationese").
 
-momentum トピックでフランス語とドイツ語のスコアが低い理由:
+Reasons for the lower French and German scores on the momentum topic:
 
-- ドイツ語 (88): 内容の正確さや論理展開は完璧であるものの、「Pitcher-Hügel（ピッチャーマウンド）」「Peak（ピーク）」「neu verdrahten（rewireの直訳）」といった英語の直訳（カルク）やアングリシズムが散見され、母語話者にとっての「流暢さ（fluency）」の項目で軽微な減点を受けたためです。実用上の問題はありません。
-- フランス語 (82): 物理学の専門用語や概念の説明は正確ですが、短い相槌や応答（例：「Oh ?」「D'accord」など）から話者ラベル（「Luc:」「Camille:」など）が抜け落ちるという構造的な欠陥が頻発し、対話形式が崩れて読みにくくなっている点が大きく減点されました。また、「Son nature」（正しくはSa nature）のような軽微な文法ミスや、一部に直訳調の不自然な表現が残っていることも影響しています。
+- German (88): content accuracy and logical flow are perfect, but literal English calques and anglicisms occasionally appear, such as "Pitcher-Hügel" (pitcher's mound) or "Peak" (peak) or "neu verdrahten" (a literal translation of "rewire"), leading to a minor deduction in the "fluency" category from a native speaker's perspective. There's no practical issue.
+- French (82): the explanations of physics terminology and concepts are accurate, but a structural flaw occurs frequently where speaker labels (`Luc:`, `Camille:`, etc.) drop out from short back-channel responses (e.g. "Oh ?", "D'accord"), breaking the dialogue format and making it hard to read — this drew a large deduction. Minor grammar mistakes such as "Son nature" (should be "Sa nature") and some remaining awkward literal-translation phrasing also contributed.

@@ -1,6 +1,6 @@
 # examples/tr/onde/
 
-onde テキストを対象として各モデルで翻訳・評価を行います。
+Translates and evaluates the onde text with each model.
 
 - [gemma4](gemma4/)
 - [gpt-oss](gpt-oss/)
@@ -14,6 +14,6 @@ onde テキストを対象として各モデルで翻訳・評価を行います
 - [gemma4-31b](gemma4-31b/)
 - [gemini-3-flash](gemini-3-flash/)
 
-onde はフランス語で「波」を意味します。ここでは物理用語として「波動」の意味で使用されています。
+"onde" means "wave" in French. Here it's used in the sense of "wave" as a physics term.
 
-[TEMPLATE/](TEMPLATE/) はモデル追加用のひな形ディレクトリ（`make all` の対象外）。追加手順は [ADD_MODEL.md](../ADD_MODEL.md) を参照。
+[TEMPLATE/](TEMPLATE/) is the template directory for adding a model (excluded from `make all`). See [ADD_MODEL.md](../ADD_MODEL.md) for the procedure for adding one.

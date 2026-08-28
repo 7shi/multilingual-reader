@@ -1,61 +1,61 @@
 # examples/tr/terms/
 
-`examples/` の翻訳で使用する用語ファイル（JSON・TSV）を格納するディレクトリ。`trtools term extract/translate` で生成し、校正済みのものを保管する。
+Directory holding the term files (JSON/TSV) used for translation in `examples/`. Generated with `trtools term extract/translate`, and only the proofread versions are kept here.
 
-## ファイル構成
+## File Layout
 
-| ファイル | 内容 |
+| File | Contents |
 |---|---|
-| `common.mk` | `onde-en.tsv` の追加言語 `EXTRA_LANGS` を定義 |
-| `common.tsv` | 全トピック共通の固有名詞（番組名など）。LLM をスキップして訳語を固定する |
-| `{topic}-fr.json` | フランス語原文から抽出した用語チャンクマップ（FR→EN, FR→ES 翻訳用） |
-| `{topic}-fr.tsv` | フランス語用語の English・Spanish 訳語対応表 |
-| `{topic}-en.json` | 英語原文から抽出した用語チャンクマップ（EN→DE, EN→JA, EN→ZH 翻訳用） |
-| `{topic}-en.tsv` | 英語用語の German, Japanese, Chinese 訳語対応表 |
+| `common.mk` | Defines `EXTRA_LANGS`, additional languages for `onde-en.tsv` |
+| `common.tsv` | Proper nouns common to all topics (show titles, etc.); skips the LLM to fix the translation |
+| `{topic}-fr.json` | Term chunk map extracted from the French source text (for FR→EN, FR→ES translation) |
+| `{topic}-fr.tsv` | English/Spanish translation table for French terms |
+| `{topic}-en.json` | Term chunk map extracted from the English source text (for EN→DE, EN→JA, EN→ZH translation) |
+| `{topic}-en.tsv` | German/Japanese/Chinese translation table for English terms |
 
-## 生成・更新
+## Generating/Updating
 
 ```bash
 make
 ```
 
-生成後は TSV を校正すること。LLM はスラッシュ2択・誤訳・余分テキスト混入・誤字などを出力することがある（詳細は [MEMO.md](../../MEMO.md) 参照）。
+Proofread the TSV after generating it. The LLM can produce slash-separated dual candidates, mistranslations, extraneous text, and typos (see [MEMO.md](../../MEMO.md) for details).
 
-## 実行上の注意
+## Operational Notes
 
-- `trtools term set` は TSV を直接更新するため、**同じファイルに対して並列実行しないこと**。`show` / `set` / 再確認は必ず逐次実行する。
-- `trtools term show common.tsv -l xx` で列が存在しない場合は、警告付きで `English` 列だけが表示される。これは「その言語列が未作成」であることを意味する。
+- `trtools term set` updates the TSV directly, so **never run it in parallel against the same file**. Always run `show` / `set` / re-check sequentially.
+- If `trtools term show common.tsv -l xx` finds no such column, it displays only the `English` column with a warning. This means "that language column hasn't been created yet."
 
-## TSV の校正手順
+## TSV Proofreading Procedure
 
-列数が多いため、**必ず言語を1つずつ独立したタスクとして分けて**確認・修正すること。
+Since there are many columns, **always split by language into separate, independent tasks** when reviewing and fixing.
 
-`common.tsv` を校正する場合の追加事項：
-- タイトル "Tech Flash", "Bridges in Physics" は翻訳対象とする。
-- 人名 "Camille", "Luc" は固有文字を使用する言語では転写する。
+Additional notes when proofreading `common.tsv`:
+- The titles "Tech Flash" and "Bridges in Physics" should be translated.
+- Person names "Camille" and "Luc" should be transliterated in languages that use a distinct script.
 
-### 1. 言語を絞り込んで表示
+### 1. Display filtered by language
 
 ```bash
-# 特定言語列のみ表示（LLM にペーストして確認する場合にも有用）
+# Show only a specific language column (also useful when pasting into an LLM for review)
 uv run trtools term show onde-en.tsv -l ja
 ```
 
-### 2. 問題のあるセルを修正
+### 2. Fix a problematic cell
 
 ```bash
 uv run trtools term set onde-en.tsv -k "physics" -l ja -v "物理学"
 ```
 
-`-k` はキー（第1列の値）、`-l` は言語コード（例: `ja`）、`-v` は修正後の値を指定する。
+`-k` specifies the key (the value in the first column), `-l` the language code (e.g. `ja`), and `-v` the corrected value.
 
-### 3. 修正結果を確認
+### 3. Check the result of the fix
 
 ```bash
 uv run trtools term show onde-en.tsv -l ja -k physics
 ```
 
-## 翻訳での使用
+## Using in Translation
 
 ```bash
 uv run trtools translate input.txt -f French -t Spanish -o output.txt \
@@ -64,4 +64,4 @@ uv run trtools translate input.txt -f French -t Spanish -o output.txt \
   --terms-tsv {topic}-fr.tsv
 ```
 
-`trtools batch` では `--terms-dir` オプションでこのディレクトリを指定する。
+For `trtools batch`, point to this directory with the `--terms-dir` option.

@@ -92,44 +92,44 @@ Guide: high quality (90+), practical range (80-89), medium quality (60-79), crit
 | Irish | 29 | Major grammatical and terminology defects |
 | Lao | 23 | Critical terminology errors and mixed language |
 
-全体を通して、モデルの規模に反して低リソース言語の翻訳は極めて不安定で、多言語の混入、状況認識の漏出、話者タグの脱落などが頻発しました。
+Overall, contrary to the model's scale, translation of low-resource languages was extremely unstable, with frequent multilingual contamination, leakage of situational awareness, and speaker-tag dropout.
 
-## 過去の実験: OpenRouter との比較
+## Past Experiment: Comparison with OpenRouter
 
-当初は同一の処理をローカル（Ollama）とクラウド API（OpenRouter）の両環境で並行実行し、プロバイダー間の挙動の差異を検証していました。より厳密な検証のため、OpenRouterで生成した翻訳結果に対して、OpenRouterとOllamaの両方で評価を行っています（`openrouter/` 以下の `evals/` と `evals-ollama/`）。
+Initially, the same process was run in parallel on both the local (Ollama) and cloud API (OpenRouter) environments to verify behavioral differences between providers. For stricter verification, the translations generated on OpenRouter were evaluated by both OpenRouter and Ollama (`evals/` and `evals-ollama/` under `openrouter/`).
 
-以下の表は、3つの組み合わせによるスコアを示しています（ol: Ollama, or: OpenRouter）。
-- **ol-ol**: ローカル翻訳・ローカル評価 (`SCORES.txt` から過去の8言語を抜粋)
-- **or-ol**: クラウド翻訳・ローカル評価 (`openrouter/SCORES-ollama.txt`)
-- **or-or**: クラウド翻訳・クラウド評価 (`openrouter/SCORES.txt`)
+The table below shows scores for the three combinations (ol: Ollama, or: OpenRouter).
+- **ol-ol**: local translation, local evaluation (an excerpt of 8 languages from the past, from `SCORES.txt`)
+- **or-ol**: cloud translation, local evaluation (`openrouter/SCORES-ollama.txt`)
+- **or-or**: cloud translation, cloud evaluation (`openrouter/SCORES.txt`)
 
-| 言語 | ol-ol | or-ol | or-or |
+| Language | ol-ol | or-ol | or-or |
 | :--- | :--- | :--- | :--- |
-| トルコ語 | 83 | 89 | 87 |
-| 朝鮮語 | 65 | 81 | 80 |
-| セルビア語 | 61 | 81 | 53 |
-| ヒンディー語 | 39 | 68 | 67 |
-| エスペラント | 57 | 30 | 33 |
-| テルグ語 | 39 | 31 | 30 |
-| エストニア語 | 53 | 24 | 20 |
-| カンナダ語 | 49 | 10 | 7 |
-※ 対象言語は当時の8言語のみ。
+| Turkish | 83 | 89 | 87 |
+| Korean | 65 | 81 | 80 |
+| Serbian | 61 | 81 | 53 |
+| Hindi | 39 | 68 | 67 |
+| Esperanto | 57 | 30 | 33 |
+| Telugu | 39 | 31 | 30 |
+| Estonian | 53 | 24 | 20 |
+| Kannada | 49 | 10 | 7 |
+※ Only the 8 languages used at the time are covered.
 
-これにより、以下の2つの視点で比較が可能になります。
-- **翻訳モデルの実行環境の比較 (ol-ol vs or-ol)**: 評価者を Ollama に固定し、翻訳をどちらで行ったかの違い。各環境での実行は1回のみであるため、スコアの乱高下がプロバイダー間の差なのか、単なるサンプリングの揺らぎなのかは区別できません。しかし、どちらの環境であっても多くの低リソース言語で60点未満のスコアとなり、非実用的であることに変わりはないため、結果的には大差ないと言えます。
-- **評価モデルの実行環境の比較 (or-ol vs or-or)**: 翻訳を OpenRouter に固定し、評価をどちらで行ったかの違い。
+This enables comparison from the following two perspectives.
+- **Comparing execution environments for the translation model (ol-ol vs or-ol)**: fixing the evaluator to Ollama, the difference is which environment did the translation. Since each environment was only run once, it's not possible to distinguish whether score swings are provider differences or simple sampling noise. However, in either environment many low-resource languages still scored below 60, remaining impractical, so the outcome is effectively no different.
+- **Comparing execution environments for the evaluation model (or-ol vs or-or)**: fixing translation to OpenRouter, the difference is which environment did the evaluation.
 
-### エラー検知能力の完全な一致
+### Perfect Agreement in Error-Detection Ability
 
-同一の評価モデル（`qwen3.6`）を用いた場合、**ローカル（Ollama）でもクラウド（OpenRouter）でも、テキストに含まれる「文字化け」「他言語の混入」「プロンプトの漏洩」といったエラーを寸分違わず正確に検知・指摘する能力（読む力）を持っている**ことが証明されました。スコアに生じる数点〜10点程度のブレはプロバイダーの能力差ではなく、推論（サンプリング）ごとのランダムな揺らぎに過ぎません。
+Using the same evaluation model (`qwen3.6`), it was proven that **whether local (Ollama) or cloud (OpenRouter), it has an identical ability (reading ability) to accurately detect and point out errors in the text — garbled text, other-language contamination, prompt leakage — down to the last detail**. The few-to-ten-point swings seen in scores aren't a difference in provider capability, but merely random noise from run to run (sampling).
 
-なお、セルビア語において `or-ol` (81点) と `or-or` (53点) で大きな評価の乖離が見られました。評価ログを確認したところ、OpenRouter で生成した翻訳テキストの途中に構造上の欠陥（`Cam… ... ... ...` という無意味な断片）が含まれており、Ollama と OpenRouter の両方の評価モデルが**この同じエラーを正確に検知**していました。しかし、Ollama 側の一部の評価プロセスがこのエラーを軽微なものとして無視して高得点（91点）を与えたのに対し、OpenRouter 側の評価プロセスはガイドラインに従い「致命的な構造的欠陥」として厳しく減点（24点、53点など）したため、平均スコアに大きな差が生じました。これも検知能力の差ではなく、評価の厳しさ（ペナルティの重み付け）のランダムな揺らぎによるものです。
+Note that for Serbian, there was a large evaluation gap between `or-ol` (81) and `or-or` (53). Checking the evaluation logs, the OpenRouter-generated translation text contained a structural flaw partway through (a meaningless fragment, `Cam… ... ... ...`), and **both the Ollama and OpenRouter evaluation models accurately detected this same error**. However, while some of the Ollama-side evaluation runs dismissed this error as minor and gave a high score (91), the OpenRouter-side evaluation runs followed the guidelines and strictly deducted points for it as a "critical structural flaw" (24, 53, etc.), producing a large gap in the average score. This too isn't a difference in detection ability, but random variation in how strict the evaluation is (the weight given to the penalty).
 
-### 構造化出力（JSONフォーマット）の安定性の違い
+### Difference in Structured-Output (JSON Format) Stability
 
-運用上の重要な知見として、構造化出力のバグの出方にプロバイダー間で明確な差が見られました。
+As an important operational insight, a clear difference was observed between providers in how structured-output bugs manifest.
 
-- **OpenRouter（クラウド）**: 構造化出力が不安定になることがあり、`reasoning` フィールドに「無意味な内容」が入って出力が破損するケースが複数回発生しました。この場合、JSONの構文としては成立してしまうため、プログラムによるエラー検知が難しく、目視確認と手動での再実行が必要でした。
-- **Ollama（ローカル）**: 無意味な内容が出力される破損は発生しませんでしたが、代わりに `overall_comment` フィールドの出力が「無限ループ」に陥る事象が一定割合で発生しました。ただし、こちらはツール側のループ検知機能によって自動的にリトライが行われるため、運用上の手間は抑えられています。
+- **OpenRouter (cloud)**: structured output sometimes became unstable, with several cases where the `reasoning` field got "meaningless content" and the output broke. In this case, the JSON syntax itself remained valid, making programmatic error detection difficult and requiring visual inspection and manual re-runs.
+- **Ollama (local)**: breakage from meaningless output content didn't occur, but instead the `overall_comment` field's output fell into an "infinite loop" at a certain rate. However, this is automatically retried by the tool's loop-detection feature, keeping the operational overhead low.
 
-完全な自動化パイプラインを構築する上では、プロバイダーごとのこうした「ハルシネーションの出方のクセ」を考慮したエラーハンドリングが必要不可欠であることが示唆されています。
+This suggests that building a fully automated pipeline requires error handling that accounts for each provider's own quirks in how hallucinations manifest.

@@ -1,22 +1,22 @@
 # examples/tr/fr/
 
-フランス語原文から英語・スペイン語への翻訳を行い、`examples/` の参照訳を更新するためのディレクトリ。
+Directory for translating the French source text into English and Spanish and updating the reference translations in `examples/`.
 
-## フロー
+## Flow
 
-1. `make` で翻訳を実行（`tr/` に出力）
-2. 翻訳結果を添削
-3. `examples/` の該当ファイルを置き換え
+1. Run the translation with `make` (output goes to `tr/`)
+2. Proofread the translation results
+3. Replace the corresponding files in `examples/`
 
-評価が必要な場合は `--eval-runs 3` を `Makefile` に追加して `make` を再実行する（`evals/` に JSON、`SCORES.txt` にスコアを出力）。
+If evaluation is needed, add `--eval-runs 3` to `Makefile` and re-run `make` (outputs JSON to `evals/` and scores to `SCORES.txt`).
 
-## 実行
+## Running
 
 ```bash
 make
 ```
 
-- 翻訳モデル: gemma4-26b
-- 対象: finetuning・transformer・onde・momentum × FR→EN・FR→ES
-- 設定: threshold=10・keep=5・CoT なし・用語ファイル注入（`../terms/*-fr.{json,tsv}`）
-- 既存ファイルはスキップされるため途中再開可能
+- Translation model: gemma4-26b
+- Targets: finetuning, transformer, onde, momentum × FR→EN, FR→ES
+- Settings: threshold=10, keep=5, no CoT, term-file injection (`../terms/*-fr.{json,tsv}`)
+- Existing files are skipped, so it can be resumed partway through

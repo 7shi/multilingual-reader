@@ -1,38 +1,38 @@
-# シェルスクリプトから Makefile への移植ノウハウ
+# Notes on Porting a Shell Script to a Makefile
 
-`batch.sh` → `Makefile` への移植で得られた知見をまとめる。
+Summarizes the insights gained while porting `batch.sh` to `Makefile`.
 
-## 構造の対応
+## Structural Mapping
 
-| シェルスクリプト | Makefile |
+| Shell script | Makefile |
 |---|---|
-| トップレベルの処理ブロック | `.PHONY` ターゲット |
-| `for` ループ | 複数ターゲットへの分割 |
-| `[ -f file ] \|\| continue` | 静的パターンルールの前提条件 |
-| シェル変数代入 `x=val` | Make 変数 `X = val` |
+| Top-level processing block | `.PHONY` target |
+| `for` loop | Split into multiple targets |
+| `[ -f file ] \|\| continue` | Prerequisite of a static pattern rule |
+| Shell variable assignment `x=val` | Make variable `X = val` |
 
-## 静的パターンルール
+## Static Pattern Rules
 
-前提条件ファイルの存在チェックを Make に委譲できる。
+Checking for a prerequisite file's existence can be delegated to Make.
 
 ```makefile
 $(TOPICS): %: ../%-fr.txt ../%-en.txt
     ...
 ```
 
-対象ファイルが存在しない場合は Make がエラーを報告する。ループ内の `continue` が不要になる。
+If the target file doesn't exist, Make reports an error. This removes the need for `continue` inside a loop.
 
-## `$@` を含む変数の遅延評価
+## Lazy Evaluation of Variables Containing `$@`
 
-`=` で定義した変数はレシピ実行時に展開されるため、`$@`（ターゲット名）を含めることができる。
+A variable defined with `=` is expanded at recipe execution time, so it can include `$@` (the target name).
 
 ```makefile
-FR_FILE = ../$@-fr.txt  # レシピ内で $@ が展開される
+FR_FILE = ../$@-fr.txt  # $@ is expanded inside the recipe
 ```
 
-ただし依存関係リストでは `$@` は未定義なので使えない。静的パターンルールに移行すれば変数自体が不要になる。
+However, `$@` is undefined in the prerequisite list, so it can't be used there. Moving to a static pattern rule removes the need for the variable itself.
 
-## ターゲット階層による処理の分割
+## Splitting Processing via a Target Hierarchy
 
 ```makefile
 all: common core extra
@@ -40,18 +40,18 @@ core: $(TOPICS)
 $(TOPICS): %: ...
 ```
 
-シェルの処理順序をターゲットの依存関係で表現し、個別実行（`make onde` など）も可能になる。
+The shell's processing order is expressed through target dependencies, and individual runs (e.g. `make onde`) also become possible.
 
-## `define` はインライン展開と等価
+## `define` Is Equivalent to Inline Expansion
 
-Makefile の `define` はテキスト置換であり、関数のような抽象化にはならない。共通レシピは多ターゲットルールに直接記述する方が明快。
+Makefile's `define` is text substitution, not an abstraction like a function. A shared recipe is clearer written directly in a multi-target rule.
 
 ```makefile
-# define RECIPE ... endef + $(RECIPE) より直接記述が明快
+# Writing it directly is clearer than define RECIPE ... endef + $(RECIPE)
 $(TOPICS): %: ...
-    <共通レシピ>
+    <shared recipe>
 ```
 
-## 変数名の注意点
+## Caveat on Variable Names
 
-`TERM`、`SHELL`、`MAKE` など、Make やシェルが使う変数名との衝突に注意する。
+Watch out for collisions with variable names used by Make or the shell, such as `TERM`, `SHELL`, `MAKE`.
