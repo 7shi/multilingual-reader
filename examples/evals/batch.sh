@@ -8,7 +8,7 @@ declare -A LANG_NAME=(
     [eo]="Esperanto" [hi]="Hindi"
 )
 
-# 英語から重訳する言語
+# Languages re-translated from English
 declare -A EN_TARGETS=(
     [finetuning]="de ja zh"
     [transformer]="de ja zh"
@@ -17,7 +17,7 @@ declare -A EN_TARGETS=(
 )
 
 for topic in finetuning transformer onde momentum; do
-    # FR → EN, ES の評価（フランス語が原文）
+    # Evaluate FR → EN, ES (French is the source)
     fr_file="../$topic-fr.txt"
     [ -f "$fr_file" ] || continue
     for tgt_lang in en es; do
@@ -38,7 +38,7 @@ for topic in finetuning transformer onde momentum; do
         done
     done
 
-    # EN → DE, JA, ZH, (EO, HI は onde のみ) の評価（英語が原文）
+    # Evaluate EN → DE, JA, ZH, (EO, HI for onde only) (English is the source)
     en_file="../$topic-en.txt"
     [ -f "$en_file" ] || continue
     for tgt_lang in ${EN_TARGETS[$topic]}; do
@@ -60,13 +60,13 @@ for topic in finetuning transformer onde momentum; do
     done
 done
 
-# --- 集約 ---
+# --- Aggregation ---
 jsons=(*.json)
 if [ -e "${jsons[0]}" ]; then
     echo -e "\nAggregating ..."
     uv run trtools agg "${jsons[@]}" | tee SCORES.txt
 
-    echo -e "\n言語別平均値（中央値の平均）:"
+    echo -e "\nPer-language average (mean of medians):"
     python3 -c "
 import re
 from collections import defaultdict
@@ -74,7 +74,7 @@ from collections import defaultdict
 scores = defaultdict(list)
 with open('SCORES.txt') as f:
     for line in f:
-        m = re.match(r'\w+-\w+-(\w+): (\d+)/100点', line)
+        m = re.match(r'\w+-\w+-(\w+): (\d+)', line)
         if m:
             lang, score = m.group(1), int(m.group(2))
             scores[lang].append(score)
@@ -84,7 +84,7 @@ lang_names = {'en':'English','de':'German','es':'Spanish','ja':'Japanese',
 for lang, vals in sorted(scores.items(), key=lambda x: -sum(x[1])/len(x[1])):
     avg = sum(vals) / len(vals)
     name = lang_names.get(lang, lang)
-    print(f'  {name}: {avg:.2f} ({len(vals)}トピック)')
+    print(f'  {name}: {avg:.2f} ({len(vals)} topics)')
 "
 else
     echo "No eval files found, skipping aggregation"

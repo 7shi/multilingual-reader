@@ -1,7 +1,7 @@
-# 各トピックの要約を trtools translate 用に事前生成する。
-# 要約は英語で出力され to_lang に依存しないため、トピックごとに1回生成すればよい
-# （生成済みなら trtools summary 側で即座にスキップされる）。
-# threshold は examples/tr/onde/common.mk の TRANSLATE 定義に合わせている。
+# Pre-generate each topic's summary for use by trtools translate.
+# Summaries are output in English and don't depend on to_lang, so generating
+# once per topic is enough (trtools summary skips instantly if already generated).
+# threshold matches the TRANSLATE definition in examples/tr/onde/common.mk.
 
 TOPICS = finetuning momentum onde transformer
 
