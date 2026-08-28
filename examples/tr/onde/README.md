@@ -11,6 +11,7 @@ Translates and evaluates the onde text with each model.
 - [muse-glimmer](muse-glimmer/)
 - [ox-alpha](ox-alpha/) (glm-5.3-flash stealth 320B-A18B)
 - [gpt-5.6-luna](gpt-5.6-luna/)
+- [gpt-5.6-terra](gpt-5.6-terra/)
 - [gemini-3.5-flash-lite](gemini-3.5-flash-lite/)
 - [gemini-2.5-flash](gemini-2.5-flash/)
 - [gemini-3-flash](gemini-3-flash/)

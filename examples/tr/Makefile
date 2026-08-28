@@ -25,6 +25,9 @@ GEMINI3F   = -i gemini-3-flash -l "Gemini 3 Flash Preview"
 QWEN36     = -i qwen3.6 -l "Qwen 3.6 35B-A3B"
 QWEN36_27B = -i qwen3.6-27b -l "Qwen 3.6 27B"
 QWEN38     = -i qwen3.8 -l "Qwen 3.8 27B"
+GPT56LUNA  = -i gpt-5.6-luna -l "GPT-5.6 Luna"
+GPT56TERRA = -i gpt-5.6-terra -l "GPT-5.6 Terra"
+GPTOSS     = -i gpt-oss -l "GPT-OSS 120B"
 
 sync:
 	uv run generate_compare_rows.py compare --sync
@@ -37,3 +40,4 @@ compare:
 	uv run plot_comparison.py -o compare/gemma4_31b.png $(GEMMA4_31B) $(GEMINI35FL) $(GEMINI25F) $(GEMMA4) $(GEMINI3F)
 	uv run plot_comparison.py -o compare/gemini3f.png $(GEMINI3F) $(GEMINI35FL) $(GEMINI25F) $(GEMMA4) $(GEMMA4_31B)
 	uv run plot_comparison.py -o compare/qwen38.png $(QWEN38) $(QWEN36) $(QWEN36_27B)
+	uv run plot_comparison.py -o compare/gpt56luna.png $(GPT56LUNA) $(GPT56TERRA) $(GPTOSS)

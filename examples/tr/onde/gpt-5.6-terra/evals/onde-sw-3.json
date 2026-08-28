@@ -1,0 +1,31 @@
+{
+  "original_file": "../../../onde-en.txt",
+  "translation_file": "tr/onde-sw.txt",
+  "source_language": "English",
+  "target_language": "Swahili",
+  "model_used": "ollama:qwen3.6",
+  "evaluation": {
+    "readability": {
+      "reasoning": "The text is generally understandable and follows a clear dialogue structure that aids comprehension of complex physics concepts. However, readability is severely impacted by a critical structural defect: an embedded English instruction fragment (`We need translate... Use glossary exact experimental proof.`) appears mid-dialogue, breaking flow and confusing the reader. Additionally, recurring terminology errors like using `utatuzi` (solution) for optical resolution creates cognitive friction for readers familiar with scientific Swahili.",
+      "score": 6
+    },
+    "fluency": {
+      "reasoning": "The translation largely preserves the conversational podcast tone and uses appropriate fillers (`Hmm`, `Ah`, `Naona...`). However, fluency is compromised by awkward calques and unnatural phrasing. Examples include `Lo!` for `Wow!` (unnatural in Swahili), `kazi ya wimbi` for wave function (literally 'work/job of a wave'), and `Utatuzi wa juu sana` for super-resolution. These choices disrupt natural speech patterns expected in academic/podcast contexts.",
+      "score": 5
+    },
+    "terminology": {
+      "reasoning": "Technical handling shows significant drift. 'Resolution' (in optics/microscopy) is consistently translated as `utatuzi`, which means 'problem-solving' or 'solution of equations'; the correct terms should be `utenganishaji` or `uwezo wa kutofautisha`. 'Wave function' becomes `kazi ya wimbi`, a non-standard calque; `fanksheni ya wimbi` or `hali ya wimbi` are standard. 'Evanescent waves' as `mawimbi yanayopotea` is overly literal. While terms like `sheria ya Born`, `kanuni ya kutokuwa na uhakika ya Heisenberg`, and `difrakshoni` are correctly handled, the systematic terminology errors significantly lower this criterion.",
+      "score": 4
+    },
+    "contextual_adaptation": {
+      "reasoning": "The translation successfully adapts the podcast format to Swahili conventions, maintaining speaker roles and conversational pacing. It appropriately localizes rhetorical questions and filler words. However, the contextual integrity is undermined by the accidental inclusion of the prompt's own instructions, which violates the immersive academic/scientific context. Despite this, the adaptation of the scientific narrative to a general audience remains structurally sound.",
+      "score": 7
+    },
+    "information_completeness": {
+      "reasoning": "All key concepts from the original are addressed: wave function vs. matter wave, Born rule, double-slit experiment, Heisenberg uncertainty principle, diffraction/Abbe limit, evanescent waves, NSOM/super-resolution, and the philosophical conclusion about probability/energy. No substantive scientific content is omitted. However, information completeness is slightly penalized because terminological inaccuracies (e.g., resolution vs. solution) distort precise technical meanings, and the prompt-fragment insertion creates false redundancy.",
+      "score": 6
+    },
+    "overall_comment": "The translation demonstrates a solid grasp of the dialogue structure and successfully covers all scientific topics from quantum mechanics to optical microscopy in Swahili. However, it is critically flawed by two main issues: (1) a structural defect where the user's prompt instructions are accidentally pasted into the text, breaking immersion and violating guideline 3, and (2) consistent terminology drift, particularly translating 'resolution' as `utatuzi` (solution) and 'wave function' as `kazi ya wimbi`, which undermines scientific accuracy. While the conversational tone is preserved, these major defects prevent the translation from meeting professional or academic standards. Targeted terminology correction and removal of the embedded prompt are required for high-quality output."
+  },
+  "total_score": 28
+}
