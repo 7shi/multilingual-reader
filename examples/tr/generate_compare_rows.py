@@ -38,7 +38,7 @@ LINE_RE = re.compile(r"^([a-z0-9.]+)-([a-z0-9.]+):\s+(\d+)/100点$")
 README_FILE = ROOT / "README.md"
 GRAPH_OUTPUT = ROOT / "compare" / "MODELS.png"
 GRAPH_SVG_OUTPUT = ROOT / "MODELS.svg"
-STATS_HEADER = "| モデル | 中央値 | 標準偏差 | 備考 |"
+STATS_HEADER = "| モデル | 平均値 | 中央値 | 標準偏差 | 備考 |"
 SYNC_HEADERS = {
     "compare": "| Language | ",
     "stats": STATS_HEADER,
@@ -127,12 +127,16 @@ def render_compare_rows() -> list[str]:
     return rendered
 
 
-def compute_stats() -> dict[str, tuple[float, float]]:
+def compute_stats() -> dict[str, tuple[float, float, float]]:
     rows = load_compare_rows()
     stats = {}
     for i, model in enumerate(ONDE_MODELS):
         scores = [row.scores[i] for row in rows]
-        stats[model] = (statistics.median(scores), statistics.pstdev(scores))
+        stats[model] = (
+            statistics.mean(scores),
+            statistics.median(scores),
+            statistics.pstdev(scores),
+        )
     return stats
 
 
@@ -154,7 +158,7 @@ def load_existing_model_notes() -> dict[str, tuple[str, str]]:
     i = header_idx + 2  # header line + separator line
     while i < len(readme_lines) and readme_lines[i].startswith("|"):
         cols = [c.strip() for c in readme_lines[i].split("|")[1:-1]]
-        model_cell, _mean, _stdev, remark = cols
+        model_cell, _mean, _median, _stdev, remark = cols
         model = model_cell.split(" ", 1)[0]
         notes[model] = (model_cell, remark)
         i += 1
@@ -162,17 +166,19 @@ def load_existing_model_notes() -> dict[str, tuple[str, str]]:
 
 
 def render_stats_header() -> list[str]:
-    return [STATS_HEADER, "| --- | ---: | ---: | --- |"]
+    return [STATS_HEADER, "| --- | ---: | ---: | ---: | --- |"]
 
 
 def render_stats_rows() -> list[str]:
     stats = compute_stats()
     notes = load_existing_model_notes()
     rendered = []
-    for model in sorted(ONDE_MODELS, key=lambda m: -stats[m][0]):
-        median, stdev = stats[model]
+    for model in sorted(ONDE_MODELS, key=lambda m: -stats[m][1]):
+        mean, median, stdev = stats[model]
         model_cell, remark = notes.get(model, (model, ""))
-        rendered.append(f"| {model_cell} | {median:.0f} | {stdev:.2f} | {remark} |")
+        rendered.append(
+            f"| {model_cell} | {mean:.2f} | {median:.2f} | {stdev:.2f} | {remark} |"
+        )
     return rendered
 
 

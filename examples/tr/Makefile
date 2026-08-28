@@ -1,4 +1,4 @@
-.PHONY: help all core onde compare
+.PHONY: help all core onde sync compare
 
 help:
 	@echo "Usage: make <target>"
@@ -6,6 +6,7 @@ help:
 	@echo "  all      core + onde"
 	@echo "  core     build core examples"
 	@echo "  onde     build onde examples"
+	@echo "  sync     sync comparison table into README.md"
 	@echo "  compare  generate comparison graphs/tables"
 
 all: core onde
@@ -21,6 +22,9 @@ GEMINI25F  = -i gemini-2.5-flash -l "Gemini 2.5 Flash"
 GEMMA4     = -i gemma4 -l "Gemma 4 26B-A4B"
 GEMMA4_31B = -i gemma4-31b -l "Gemma 4 31B"
 GEMINI3F   = -i gemini-3-flash -l "Gemini 3 Flash Preview"
+
+sync:
+	uv run generate_compare_rows.py compare --sync
 
 compare:
 	uv run generate_compare_rows.py graph
