@@ -1,70 +1,70 @@
-# メモ
+# Memo
 
-[examples/tr/README.md](examples/tr/README.md) にある実験構成や結果概要とは分けて、ここでは判断メモと今後の検討事項だけを残します。
+Separate from the experiment setup and results overview in [examples/tr/README.md](examples/tr/README.md), this file keeps only decision notes and future considerations.
 
-## 知見の要点
+## Key findings
 
-モデルごとの傾向・Google製モデル間の比較・言語の分類は [examples/tr/README.md](examples/tr/README.md) に一本化しています。
+Model-by-model trends, comparisons between Google's models, and language classification are consolidated in [examples/tr/README.md](examples/tr/README.md).
 
-### 挙動の背景についての仮説
+### Hypotheses on the underlying behavior
 
-- 翻訳品質は言語構造そのものより、学習データ量と標準化されたデジタル資源の充実度に強く依存していそう
-- 同じモデルでも特定言語だけ局所的に崩れることがあり、これは言語一般の難しさというより、そのモデル内部の表現空間での混線だと考えるのが自然
-- 巨大モデルほど常に有利というわけではなく、低〜中リソース言語では小さめでも安定したモデルの方が実用的なことがある
-- 評価能力と生成能力には非対称があり、読む力が高いモデルが書く力でも強いとは限らない
+- Translation quality seems to depend more strongly on training data volume and the richness of standardized digital resources than on the language's structure itself
+- The same model can locally break down for just one specific language; this seems more naturally explained as crosstalk within that model's internal representation space than as a general difficulty of the language
+- Bigger models aren't always better — for low-to-mid resource languages, a smaller but more stable model can sometimes be more practical
+- There's an asymmetry between evaluation ability and generation ability — a model that's strong at reading isn't necessarily strong at writing
 
-### 推敲（他者評価）アプローチの傾向
+### Trends in the revision (peer-review) approach
 
-全 67 言語を対象に、各言語の最高得点ベースラインを qwen3.6 が行単位で推敲する実験（実験09）を実施しました。改善30言語・悪化32言語・変化なし5言語（平均変化 −1.2点）という結果で、推敲の効果は言語・ベーススコアの状態に強く依存します。
+We ran an experiment (experiment 09) across all 67 languages where `qwen3.6` revised each language's highest-scoring baseline line by line. The result was 30 languages improved, 32 degraded, and 5 unchanged (average change −1.2 points), showing that the effect of revision depends heavily on the language and the state of the base score.
 
-**推敲が有効だった言語**（差分 +6 以上かつ推敲後 80点以上）：Bulgarian (97:+17), Hungarian (96:+13), Slovene (95:+22), Azerbaijani (91:+13), Czech (89:+9), Basque (87:+42), Estonian (82:+29), Latvian (82:+17), Macedonian (82:+6), Belarusian (81:+12)
+**Languages where revision worked well** (delta of +6 or more, and 80+ points after revision): Bulgarian (97:+17), Hungarian (96:+13), Slovene (95:+22), Azerbaijani (91:+13), Czech (89:+9), Basque (87:+42), Estonian (82:+29), Latvian (82:+17), Macedonian (82:+6), Belarusian (81:+12)
 
-**推敲が効く条件と但し書き**（実験09・10 から）：
+**Conditions and caveats for when revision works** (from experiments 09 and 10):
 
-- 推敲は「表現の洗練」として機能するため、**意味が通じるが表現が粗い翻訳**に対して有効
-- 翻訳が**構造的に破綻している**場合は改善できず悪化する傾向がある
-- ベースラインの**完成度が高い**場合は余計な変更で逆効果になるケースもある（bg: 88点 → −1点）
-- **ベーススコアが低くても**、意味の骨格が残っていれば推敲が大幅改善をもたらすことがある（実験10: eu 17→59、hu 26→89、sl 56→83、et 30→51）
+- Revision functions as "refining the expression," so it's effective on **translations that are understandable but rough in phrasing**
+- If a translation is **structurally broken**, revision tends to fail to improve it and can make it worse
+- If the baseline is **already highly polished**, unnecessary changes can sometimes backfire (bg: 88 points → −1 point)
+- **Even when the base score is low**, if the semantic skeleton is intact, revision can bring about large improvements (experiment 10: eu 17→59, hu 26→89, sl 56→83, et 30→51)
 
-この非対称な効果のため、推敲の適用可否はスコアの高低だけでは判断できません。
+Because of this asymmetric effect, whether to apply revision can't be judged from the score alone.
 
-### 運用上の判断
+### Operational decisions
 
-- 品質だけを見れば `gpt-5.6-luna`（クローズド）が最も汎用的だが、オープンウェイトで運用したい場合のベースラインは引き続き `gemma4` が無難。`ox-alpha` は期間限定のテスト用ステルスモデルで、正式版は500B以上と予想され自前運用が困難なため、クラウド利用なら効率の良い `gpt-5.6-luna` を選ぶ方が妥当
-- 評価の定規は `qwen3.6` に統一したままの方が比較しやすい
-- 低リソース言語では「意味が通じるか」だけでなく、話者タグ保持や他言語混入の有無を重く見るべき
-- 推敲（`trtools review`）は中リソース言語で特に有効だが、ベースラインが構造的に破綻している場合や高品質すぎる場合は逆効果になる。スコアだけで判断せず、翻訳の構造的健全性を確認してから適用すること
-- プロバイダー差よりモデル差の方が大きいが、JSON の壊れ方や停止の仕方には実行環境差があるので、自動化ではそこだけ別途ケアが必要
+- Purely on quality, `gpt-5.6-luna` (closed) is the most generally capable, but `gemma4` remains a reasonable baseline if open-weight operation is desired. `ox-alpha` is a time-limited test stealth model, and its production release is expected to be 500B+ parameters, which would be hard to self-host — so if going to the cloud anyway, the more efficient `gpt-5.6-luna` is a more sensible choice
+- Keeping the evaluation "ruler" fixed to `qwen3.6` makes comparisons easier
+- For low-resource languages, weight not just "is the meaning conveyed" but also whether speaker tags are preserved and whether other languages leak in
+- Revision (`trtools review`) is especially effective for mid-resource languages, but backfires when the baseline is structurally broken or already too polished. Don't judge by score alone — check the translation's structural soundness before applying it
+- Differences between models matter more than differences between providers, but there are environment-specific differences in how JSON breaks or how generation stops, so automation needs to handle that separately
 
-## ROCm/Vulkanバックエンドの傾向
+## ROCm/Vulkan backend trends
 
-評価者(`qwen3.6`)がROCmバックエンドで動作不良を起こす問題を受けて、翻訳・評価それぞれのバックエンドを切り替えた比較を行いました（`examples/tr/onde/qwen3.8/`, `examples/tr/onde/muse-glimmer/`）。
+After the evaluator (`qwen3.6`) started misbehaving on the ROCm backend, we compared switching the backend used for translation and for evaluation separately (`examples/tr/onde/qwen3.8/`, `examples/tr/onde/muse-glimmer/`).
 
-- **評価はROCmで使用不可**: `qwen3.6` を評価者としてROCmで動かすと、存在しない言語混入を報告するハルシネーションや、評価対象の原文・訳文がプロンプトに渡っていないと訴える出力（コンテキスト自体の破損）が発生し、スコアが崩壊する。評価をVulkanに戻すとこれらの異常は解消され、翻訳内容に即した妥当な評価に戻る。評価バックエンドは常にVulkan固定とする。
-- **翻訳側のROCm影響はモデル依存**: 評価をVulkanに揃えた上で翻訳バックエンド（ROCm/Vulkan）のみを比較すると、モデルによって挙動が異なる。
-  - `qwen3.8`: ROCm翻訳で一部言語（スペイン語・ガリシア語・ルーマニア語）が生成途中で停止し0点化。途切れる直前までは文法・語彙とも自然で、能力不足ではなく生成が完走できない問題と見られる。
-  - `muse-glimmer`: ROCm翻訳でも0点言語は発生せず、スコア差は通常のばらつきの範囲内（マレー語など一部言語で±20〜40点の変動はあるが、上昇・低下双方に分布し偏りはない）。
-- 運用上は、評価は必ずVulkanで固定し、翻訳をROCmで行う場合はモデルごとに0点言語（生成途中停止）の有無を個別に確認すること。
+- **Evaluation is unusable on ROCm**: running `qwen3.6` as the evaluator on ROCm produces hallucinated reports of language contamination that isn't actually there, or output claiming the source/translation text was never passed to the prompt (i.e. the context itself is corrupted), and scores collapse. Switching evaluation back to Vulkan resolves these anomalies and restores reasonable scoring aligned with the actual translation content. Evaluation should always be pinned to Vulkan.
+- **The impact of ROCm on translation depends on the model**: with evaluation fixed to Vulkan, comparing only the translation backend (ROCm/Vulkan) shows behavior that varies by model.
+  - `qwen3.8`: with ROCm translation, some languages (Spanish, Galician, Romanian) stop partway through generation and score 0. Right up until it cuts off, the grammar and vocabulary look natural, suggesting a generation-completion failure rather than a capability shortfall.
+  - `muse-glimmer`: no 0-score languages occur even with ROCm translation, and score differences stay within normal variance (some languages like Malay swing ±20-40 points, but the swings go both up and down with no consistent bias).
+- Operationally: always pin evaluation to Vulkan, and when translating on ROCm, check each model individually for 0-score languages (generation stopping partway through).
 
-**推測される原因**: Gemma 4・GPT-OSS 120B・Qwen 3.6 による初期評価（2026年5月）の時点ではROCmでもこの問題は起きていなかった。その後Ollamaに入った大きな変化は、`v0.30.0`（2026年6月）での自前推論エンジン全廃とupstream `llama-server`（llama.cpp）への一本化、およびそれに伴う互換レイヤ（`llama/compat/`）の新設くらいしかなく、この変更がROCmバックエンドでの推論破壊・コンテキスト破損の原因と推測される。
+**Suspected cause**: this problem didn't occur on ROCm at the time of the initial evaluation (May 2026) using Gemma 4, GPT-OSS 120B, and Qwen 3.6. The only major change to Ollama since then is the complete removal of its own inference engine in `v0.30.0` (June 2026) in favor of consolidating on the upstream `llama-server` (llama.cpp), along with the new compatibility layer (`llama/compat/`) that came with it — this change is suspected to be the cause of the broken inference / corrupted context on the ROCm backend.
 
-互換レイヤは、旧来のOllama形式GGUFのメタデータ・テンソル名をupstream `llama-server` が期待する形式へ動的変換する仕組みである。この一本化以降にリリースされたモデル（Qwen 3.8・Muse Glimmer）はネイティブ対応済みでこの変換が不要だが、一本化前からある旧モデル（Qwen 3.6・Gemma 4）は変換に依存する。この違いは、実際に前者だけがROCmで正常動作し後者だけが壊れるという観測結果と符合する。
+The compatibility layer dynamically converts the metadata and tensor names of legacy Ollama-format GGUF files into the format upstream `llama-server` expects. Models released after this consolidation (Qwen 3.8, Muse Glimmer) are natively compatible and don't need this conversion, while older models predating the consolidation (Qwen 3.6, Gemma 4) depend on it. This distinction matches the observed result that only the former work correctly on ROCm while only the latter break.
 
-## GPT-OSS 120B の評価外活用
+## Using GPT-OSS 120B outside of evaluation
 
-`gpt-oss` は評価タスクでは天井効果があり、主要な評価者には採用していません。一方で、高速推論を活かした補助用途には向いていると思われます。
+`gpt-oss` shows a ceiling effect on evaluation tasks, so it isn't used as a primary evaluator. On the other hand, it seems well-suited to auxiliary tasks that take advantage of its fast inference.
 
-- 用語確認: 訳語候補の列挙、既存訳語の妥当性チェック
-- 背景知識補完: 固有名詞や文化的文脈の説明
-- 事前調査: 翻訳前の論点洗い出し
+- Terminology checks: enumerating candidate translations, validating the soundness of existing translations
+- Background knowledge supplementation: explaining proper nouns and cultural context
+- Preliminary research: surfacing points to consider before translation
 
-## 将来の検討事項
+## Future considerations
 
-現在の実験対象は 100 行未満のポッドキャスト台本ですが、最終的には小説 1 冊のような長文翻訳も視野に入れています。その規模になると、新たな機構が必要になるでしょう。
+The current experiments target podcast scripts under 100 lines, but the eventual goal is to also handle long-form translation like a full novel. At that scale, new mechanisms will likely be needed.
 
-- 階層的コンテキスト管理: 直近区間は詳細要約、遠い区間は粗筋というように粒度を分けて保持したい
-- 長距離参照の補助: 単一サマリーでは伏線や人物関係を落としやすいため、関連チャンクを動的に引く仕組みが必要になりそう
-- 用語と文体の一貫性: 章をまたぐ訳語統一、人物ごとの話し方、叙述トーンの維持をどう管理するか
-- 評価設計の再検討: 長文では行単位評価だけでなく、章単位の整合性や物語理解も見たい
+- Hierarchical context management: keep detail granularity varied — a detailed summary for the nearby span, a rough outline for distant spans
+- Long-range reference support: a single summary tends to lose foreshadowing and character relationships, so some mechanism to dynamically pull in related chunks will likely be needed
+- Consistency of terminology and style: how to manage cross-chapter term consistency, per-character speech patterns, and maintaining narrative tone
+- Rethinking evaluation design: for long-form text, we'll want to look beyond line-level evaluation to chapter-level coherence and narrative comprehension as well
 
-今の実験で固めている用語抽出、要約圧縮などの運用判断は、その先の基盤になることが予想されます。
+The operational decisions being solidified in the current experiments — term extraction, summary compression, and so on — are expected to become the foundation for that next stage.
