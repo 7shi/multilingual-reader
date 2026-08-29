@@ -131,10 +131,7 @@ def run(args):
                         index=tr_index,
                         count=tr_total,
                     )
-                    try:
-                        translate.run(tr_args)
-                    except Exception as e:
-                        print(f"Translation error ({out}): {e}")
+                    translate.run(tr_args)
 
     if args.tr_only:
         return
@@ -177,10 +174,7 @@ def run(args):
                         index=ev_index,
                         count=ev_total,
                     )
-                    try:
-                        evaluate.run(eval_args)
-                    except Exception as e:
-                        print(f"Evaluation error ({eval_out}): {e}")
+                    evaluate.run(eval_args)
 
     if args.eval_only or args.no_agg:
         return
