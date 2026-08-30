@@ -1,17 +1,33 @@
-import time
 from rich.panel import Panel
 from rich.table import Table
-from rich.progress import (Progress, ProgressColumn, SpinnerColumn, TextColumn,
-                           BarColumn, TaskProgressColumn, TimeElapsedColumn)
+from rich.progress import (ProgressColumn, SpinnerColumn, BarColumn,
+                           TaskProgressColumn, TimeElapsedColumn)
 from rich.text import Text
-from llm7shi.statusline import StatusLine as _BaseStatusLine
+from llm7shi.statusline import (StatusLine as _BaseStatusLine, ProgressContext,
+                                ElapsedColumn, LabelColumn, MofNColumn, SeparatorColumn)
 
 
-def _fmt_elapsed(seconds: float) -> str:
-    s = int(seconds)
-    h, rem = divmod(s, 3600)
-    m, sec = divmod(rem, 60)
-    return f"{h}:{m:02d}:{sec:02d}"
+class MofNParenColumn(MofNColumn):
+    """`(m/n)` — llm7shi's column in parentheses.
+
+    Deriving rather than rewriting keeps the `remaining` field working, which is
+    what makes llm7shi's retry countdown row count down instead of up.
+    """
+
+    def render(self, task) -> Text:
+        return Text(f"({super().render(task).plain})", style="progress.download")
+
+
+class LangMofNColumn(ProgressColumn):
+    """`(index/count)` — position in the batch of languages, fixed for this bar."""
+
+    def __init__(self, index, count):
+        super().__init__()
+        self._index = index
+        self._count = count
+
+    def render(self, task) -> Text:
+        return Text(f"({self._index}/{self._count})", style="progress.download")
 
 
 class StatusLine(_BaseStatusLine):
@@ -38,64 +54,37 @@ class StatusLine(_BaseStatusLine):
         self.console.print(Panel(text, title=title, border_style="cyan"))
 
     def progress(self, total: int, start: int = 0) -> "_ProgressContext":
-        return _ProgressContext(self, total, start, self._start, index=self._index,
-                                 count=self._count, left_count=self._left_count)
+        return self.progress_context_class(self, total, start, self._label, self._start)
 
 
-class _ProgressContext:
-    def __init__(self, status_line, total, completed=0, start=None, index=None, count=None,
-                 left_count=False):
-        self._status_line = status_line
-        label = status_line._label
-        self._total = total
-        self._completed = completed
-
-        class MofNParenColumn(ProgressColumn):
-            def render(self, task) -> Text:
-                completed = int(task.completed)
-                n = int(task.total) if task.total is not None else "?"
-                return Text(f"({completed}/{n})", style="progress.download")
-
-        class LangMofNColumn(ProgressColumn):
-            def render(self, task) -> Text:
-                return Text(f"({index}/{count})", style="progress.download")
-
-        class BatchTimeColumn(ProgressColumn):
-            def render(self, task) -> Text:
-                return Text(_fmt_elapsed(time.time() - start), style="progress.elapsed")
-
+class _ProgressContext(ProgressContext):
+    def columns(self) -> list[ProgressColumn]:
+        # The layout differs from llm7shi's throughout — (m/n) is parenthesized and
+        # sits right of the percentage unless it *is* the item count, the language
+        # counter has no llm7shi counterpart, and the trailing clock is per task —
+        # so this builds the whole list rather than editing super()'s.
+        ui = self._status_line
         columns = [SpinnerColumn()]
-        if label:
-            columns.append(TextColumn("[bold cyan]{task.description}"))
-        if count:
-            columns.append(LangMofNColumn())
-        elif left_count:
+        if self._label:
+            columns.append(LabelColumn())
+        if ui._count:
+            columns.append(LangMofNColumn(ui._index, ui._count))
+        elif ui._left_count:
             columns.append(MofNParenColumn())
-        if start is not None:
-            columns.append(BatchTimeColumn())
-        if label or start is not None or count or left_count:
-            columns.append(TextColumn("|"))
+        if self._started_at is not None:
+            columns.append(ElapsedColumn(self._started_at))
+        if len(columns) > 1:
+            columns.append(SeparatorColumn())
         columns += [BarColumn(), TaskProgressColumn()]
-        if not left_count:
+        if not ui._left_count:
             columns.append(MofNParenColumn())
-        columns.append(TimeElapsedColumn())
-
-        self._progress = Progress(*columns, console=status_line.console)
-        self._label = label
-        self._task = None
-
-    def __enter__(self):
-        self._status_line.active_progress = self._progress
-        self._progress.__enter__()
-        self._task = self._progress.add_task(self._label or "", total=self._total, completed=self._completed)
-        return self
-
-    def __exit__(self, *args):
-        self._status_line.active_progress = None
-        return self._progress.__exit__(*args)
+        return columns + [TimeElapsedColumn()]
 
     def update(self, completed: int, label: str = None) -> None:
         if label is None:
-            self._progress.update(self._task, completed=completed)
+            super().update(completed)
         else:
             self._progress.update(self._task, completed=completed, description=label)
+
+
+StatusLine.progress_context_class = _ProgressContext
