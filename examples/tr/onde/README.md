@@ -15,6 +15,7 @@ Translates and evaluates the onde text with each model.
 - [gemini-3.5-flash-lite](gemini-3.5-flash-lite/)
 - [gemini-2.5-flash](gemini-2.5-flash/)
 - [gemini-3-flash](gemini-3-flash/)
+- [gemini-3.7-flash](gemini-3.7-flash/)
 
 "onde" means "wave" in French. Here it's used in the sense of "wave" as a physics term.
 
