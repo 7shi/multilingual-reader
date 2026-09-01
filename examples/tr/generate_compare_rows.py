@@ -176,7 +176,7 @@ def render_stats_rows() -> list[str]:
     stats = compute_stats()
     notes = load_existing_model_notes()
     rendered = []
-    for model in sorted(ONDE_MODELS, key=lambda m: -stats[m][1]):
+    for model in sorted(ONDE_MODELS, key=lambda m: (-stats[m][1], stats[m][2])):
         mean, median, stdev = stats[model]
         model_cell, remark = notes.get(model, (model, ""))
         rendered.append(
@@ -200,7 +200,8 @@ def plot_model_stats(top: int | None = None) -> None:
         }
 
     medians = {model: statistics.median(scores) for model, scores in per_model_scores.items()}
-    models = sorted(ONDE_MODELS, key=lambda m: -medians[m])
+    stdevs = {model: statistics.pstdev(scores) for model, scores in per_model_scores.items()}
+    models = sorted(ONDE_MODELS, key=lambda m: (-medians[m], stdevs[m]))
     labels = [notes.get(m, (m, ""))[0] for m in models]
     data = [per_model_scores[m] for m in models]
 
