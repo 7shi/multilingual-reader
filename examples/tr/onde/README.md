@@ -10,6 +10,7 @@ Translates and evaluates the onde text with each model.
 - [qwen3.8](qwen3.8/) (27B)
 - [muse-glimmer](muse-glimmer/)
 - [ox-alpha](ox-alpha/) (glm-5.3-flash stealth 320B-A18B)
+- [union-alpha](union-alpha/)
 - [gpt-5.6-luna](gpt-5.6-luna/)
 - [gpt-5.6-terra](gpt-5.6-terra/)
 - [gemini-3.5-flash-lite](gemini-3.5-flash-lite/)
