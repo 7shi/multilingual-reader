@@ -8,6 +8,7 @@ Translates and evaluates the onde text with each model.
 - [qwen3.6-27b](qwen3.6-27b/)
 - [qwen3.6](qwen3.6/) (35B-A3B)
 - [qwen3.8](qwen3.8/) (27B)
+- [bonsai2-27b](bonsai2-27b/) (Ternary Bonsai 2 27B PTQ1_0: ternary-quantized Qwen 3.8 27B)
 - [muse-glimmer](muse-glimmer/)
 - [ox-alpha](ox-alpha/) (glm-5.3-flash stealth 320B-A18B)
 - [union-alpha](union-alpha/)
