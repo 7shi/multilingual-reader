@@ -17,8 +17,11 @@ from statistics import median
 
 from trtools.language import LANG_NAMES
 
-ONDE = Path("examples/tr/onde")
-ORIGINAL = Path("examples/onde-en.txt")
+# Resolved from this file rather than the working directory, so the selection is the
+# same wherever the script is run from.
+BASE = Path(__file__).resolve().parent
+ONDE = BASE.parent.parent / "examples" / "tr" / "onde"
+ORIGINAL = BASE.parent.parent / "examples" / "onde-en.txt"
 RUN_RE = re.compile(r"^onde-([a-z0-9.]+)-([123])\.json$")
 
 

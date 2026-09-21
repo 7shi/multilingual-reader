@@ -62,3 +62,6 @@ done
 
 echo -e "\n=== Comparison ==="
 uv run "${BASE_DIR}/agg50.py" | tee "${BASE_DIR}/SCORES.md"
+
+echo -e "\n=== Variant choice against the reference evaluator ==="
+uv run "${BASE_DIR}/refcmp.py" | tee "${BASE_DIR}/VARIANTS.md"

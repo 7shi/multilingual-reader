@@ -19,7 +19,9 @@ from statistics import median, pstdev
 from items import GROUPS, ITEM_IDS
 
 BASE = Path(__file__).resolve().parent
-ONDE = Path("examples/tr/onde")
+# Resolved from this file rather than the working directory, so the report is the same
+# wherever it is generated from -- the corpus is read in place, never copied here.
+ONDE = BASE.parent.parent / "examples" / "tr" / "onde"
 OLD_RUNS = (1, 2, 3)
 OLD_CRITERIA = ["readability", "fluency", "terminology",
                 "contextual_adaptation", "information_completeness"]
