@@ -135,6 +135,15 @@ Per-call duration in seconds. Files that record their own "duration_seconds" use
 | qwen3.6 | 24 | 19s | 23s | 17s | 44s |
 | all | 72 | 104s | 97s | 17s | 272s |
 
+## Timing (new scheme, thinking on, no evidence)
+
+| Evaluator | Calls | Median | Mean | Min | Max |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| gemma4-31b | 24 | 376s | 382s | 260s | 584s |
+| gpt-oss-120b | 24 | 118s | 124s | 94s | 246s |
+| qwen3.6 | 24 | 155s | 156s | 122s | 198s |
+| all | 72 | 157s | 220s | 94s | 584s |
+
 ## Thinking on vs off
 
 Same 50-item scheme, same targets and evaluators, run with `--no-think --no-evidence`. Score is the median-of-runs total; time is the mean call duration from "duration_seconds". gpt-oss:120b ignores `--no-think`, so its rows are thinking-on/evidence-off, not no-think.
@@ -165,6 +174,94 @@ Same 50-item scheme, same targets and evaluators, run with `--no-think --no-evid
 | gemini-3-flash / hi | gemma4-31b | 98 | 88 | -10 | 589s | 108s |
 | gemini-3-flash / hi | gpt-oss-120b | 92 | 91 | -1 | 152s | 177s |
 | gemini-3-flash / hi | qwen3.6 | 98 | 87 | -11 | 209s | 26s |
+
+## Evidence on vs off (thinking on)
+
+Same 50-item scheme with `--no-evidence` only, which separates the per-item evidence field from the thinking change `evals-nt` makes at the same time.
+
+| Translation | Evaluator | Evidence score | No-evidence score | Diff | Evidence time | No-evidence time |
+| --- | --- | ---: | ---: | ---: | ---: | ---: |
+| gpt-5.6-terra / pl | gemma4-31b | 70 | 90 | +20 | 767s | 413s |
+| gpt-5.6-terra / pl | gpt-oss-120b | 92 | 83 | -9 | 162s | 150s |
+| gpt-5.6-terra / pl | qwen3.6 | 74 | 80 | +6 | 246s | 158s |
+| gpt-oss / ia | gemma4-31b | 94 | 95 | +1 | 1366s | 447s |
+| gpt-oss / ia | gpt-oss-120b | 88 | 89 | +1 | 163s | 115s |
+| gpt-oss / ia | qwen3.6 | 84 | 92 | +8 | 349s | 175s |
+| qwen3.8 / ja | gemma4-31b | 92 | 96 | +4 | 929s | 330s |
+| qwen3.8 / ja | gpt-oss-120b | 96 | 99 | +3 | 130s | 120s |
+| qwen3.8 / ja | qwen3.6 | 88 | 87 | -1 | 231s | 152s |
+| gemini-3.5-flash-lite / kn | gemma4-31b | 89 | 96 | +7 | 444s | 332s |
+| gemini-3.5-flash-lite / kn | gpt-oss-120b | 49 | 37 | -12 | 141s | 113s |
+| gemini-3.5-flash-lite / kn | qwen3.6 | 87 | 82 | -5 | 208s | 149s |
+| ox-alpha / ga | gemma4-31b | 96 | 95 | -1 | 701s | 376s |
+| ox-alpha / ga | gpt-oss-120b | 98 | 97 | -1 | 246s | 110s |
+| ox-alpha / ga | qwen3.6 | 89 | 89 | +0 | 252s | 173s |
+| qwen3.6-27b / ko | gemma4-31b | 84 | 94 | +10 | 1098s | 282s |
+| qwen3.6-27b / ko | gpt-oss-120b | 94 | 93 | -1 | 128s | 114s |
+| qwen3.6-27b / ko | qwen3.6 | 94 | 97 | +3 | 190s | 146s |
+| gemini-2.5-flash / ru | gemma4-31b | 98 | 97 | -1 | 494s | 399s |
+| gemini-2.5-flash / ru | gpt-oss-120b | 98 | 100 | +2 | 156s | 122s |
+| gemini-2.5-flash / ru | qwen3.6 | 97 | 98 | +1 | 273s | 146s |
+| gemini-3-flash / hi | gemma4-31b | 98 | 93 | -5 | 589s | 476s |
+| gemini-3-flash / hi | gpt-oss-120b | 92 | 100 | +8 | 152s | 144s |
+| gemini-3-flash / hi | qwen3.6 | 98 | 96 | -2 | 209s | 145s |
+
+### Which item verdicts move when evidence is dropped
+
+Per-item median verdicts compared against `evals/` on the same (translation, evaluator). A variant can leave the total untouched while individual verdicts move in both directions, so the totals above do not answer this on their own.
+
+| Evaluator | Combinations | Items moved (mean of 50) | Max |
+| --- | ---: | ---: | ---: |
+| gemma4-31b | 8 | 4.6 | 14 |
+| gpt-oss-120b | 8 | 5.8 | 14 |
+| qwen3.6 | 8 | 7.0 | 15 |
+
+Items that moved in at least one of the 24 combinations: 42/50.
+
+| Item | Combinations moved | Share |
+| --- | ---: | ---: |
+| b07_real_vocabulary | 10 | 42% |
+| a03_speaker_attribution | 8 | 33% |
+| b01_target_language | 7 | 29% |
+| b05_script_consistency | 7 | 29% |
+| b02_no_source_residue | 6 | 25% |
+| b03_no_third_language | 6 | 25% |
+| c01_propositional_content | 6 | 25% |
+| c03_no_addition | 6 | 25% |
+| e06_no_related_language_interference | 6 | 25% |
+| a01_speaker_label_present | 5 | 21% |
+| a04_body_present | 4 | 17% |
+| a05_line_correspondence | 4 | 17% |
+| c09_dialogue_coherence | 4 | 17% |
+| e03_syntax | 4 | 17% |
+| e10_orthography | 4 | 17% |
+| a02_speaker_label_consistent | 3 | 12% |
+| a09_length_plausibility | 3 | 12% |
+| a10_no_inserted_matter | 3 | 12% |
+| b04_no_intraword_intrusion | 3 | 12% |
+| c02_no_omission | 3 | 12% |
+| c10_word_sense | 3 | 12% |
+| d01_standard_terms | 3 | 12% |
+| d03_borrowing_policy | 3 | 12% |
+| d04_notation_convention | 3 | 12% |
+| e08_politeness_consistency | 3 | 12% |
+| e09_discourse_markers | 3 | 12% |
+| a06_sentence_completion | 2 | 8% |
+| e05_no_calque | 2 | 8% |
+| e07_spoken_register | 2 | 8% |
+| a07_no_duplication | 1 | 4% |
+| b06_encoding_integrity | 1 | 4% |
+| b10_no_nonlinguistic_noise | 1 | 4% |
+| c04_numeric_accuracy | 1 | 4% |
+| c05_polarity_and_modality | 1 | 4% |
+| c06_proper_nouns | 1 | 4% |
+| d02_term_consistency | 1 | 4% |
+| d05_variables_and_units | 1 | 4% |
+| d07_no_needless_coinage | 1 | 4% |
+| d08_concept_identification | 1 | 4% |
+| d09_gloss_appropriateness | 1 | 4% |
+| d10_speaker_name_policy | 1 | 4% |
+| e02_inflection_and_tense | 1 | 4% |
 
 ## Group subtotals (new scheme)
 
