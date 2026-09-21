@@ -132,11 +132,26 @@ The old scheme is not run. Its run-to-run baseline is the three `qwen3.6` runs p
 translation already in `examples/tr/onde/*/evals/`, which `agg50.py` reads where they are;
 nothing is copied here. Its evaluator baseline is the `gpt-oss:120b` comparison above.
 
-Thinking is left on. The `--no-think` in `examples/tr/onde/common.mk` reaches the
-translation phase only — `trtools/batch.py:169` hardcodes `no_think=False` for evaluation —
-so every accumulated evaluation ran with thinking on, as this experiment does. Turning it
-off also breaks the old scheme's structured output: the nested `ReasoningAndScore` comes
-back as a flat integer and `trtools eval` raises `TypeError`.
+Thinking is left on for the main runs, in `evals/`. The `--no-think` in
+`examples/tr/onde/common.mk` reaches the translation phase only — `trtools/batch.py:169`
+hardcodes `no_think=False` for evaluation — so every accumulated evaluation ran with
+thinking on, and `evals/` matches that. Turning it off also breaks the *old* scheme's
+structured output: the nested `ReasoningAndScore` comes back as a flat integer and
+`trtools eval` raises `TypeError`. The new scheme has no such nesting, so `--no-think` is
+safe to run against it — see "Thinking on vs off" below.
+
+### Thinking on vs off
+
+`batch.sh` also runs the identical 50-item scheme with `--no-think`, writing to `evals-nt/`
+instead of `evals/` (same targets, evaluators and run count — 72 more evaluations). Each
+result file records its own `duration_seconds` (wall-clock time for that file's evaluation
+call, covering every chunk under `--split`) and `no_think`, so the two variants can be
+compared on both score and speed without relying on file mtimes. `agg50.py` reads both
+directories and reports the comparison under "Thinking on vs off" and the two "Timing"
+sections; `load_timing` prefers the recorded `duration_seconds` field and falls back to the
+mtime-difference estimate only for older files that predate the field.
+
+This sub-experiment has not been run yet — only the scripts are in place.
 
 ### Splitting
 
@@ -214,11 +229,11 @@ toward rewriting a specific item.
 
 ### Cost: the 50-item call is slower, and evaluators differ a lot in how much
 
-Per-call duration (from file mtimes on runs 2 and 3 of each translation/evaluator pair,
-since run 1 has no comparable predecessor to time against): `gpt-oss:120b` and `qwen3.6`
-median around 2.5-3.5 minutes per call; `gemma4:31b` medians around 8.5 minutes, with one
-call taking 49 minutes. This matches the handoff note that `gemma4:31b` was the slow one to
-run. See the "Timing" table in [SCORES.md](SCORES.md).
+Per-call duration, from each file's own `duration_seconds` field (all 72 calls, not the
+48 that file-mtime differences could reach): `gpt-oss:120b` medians 149s (~2.5 min) per
+call, `qwen3.6` medians 210s (~3.5 min); `gemma4:31b` medians 557s (~9.3 min), with one
+call taking 2912s (~49 min). This matches the handoff note that `gemma4:31b` was the slow
+one to run. See the "Timing" table in [SCORES.md](SCORES.md).
 
 ### Conclusion
 
@@ -235,6 +250,6 @@ whole-document impression), which naming the properties does not by itself resol
 ```bash
 uv run experimental/11/pick_unstable.py --per-translator 1 --exclude gpt-5.6-luna/no -n 8 \
   > experimental/11/targets.tsv
-bash experimental/11/batch.sh          # runs the new scheme, then compares
+bash experimental/11/batch.sh          # runs evals/ (thinking) and evals-nt/ (no-think), then compares
 uv run experimental/11/agg50.py        # SPLIT=group on batch.sh to step the new scheme down
 ```

@@ -16,6 +16,7 @@ work down from one call to five (one per group) to fifty (one per item).
 import argparse
 import json
 import sys
+import time
 from pathlib import Path
 from typing import Literal
 
@@ -188,11 +189,13 @@ def main():
     # than sitting still until the whole evaluation is done.
     steps = len(chunks_for(args.split))
     done = (args.run - 1) * steps
+    call_start = time.time()
     with ui.progress(args.runs * steps, start=done) as prog:
         evaluation = evaluate(client, original_text, translated_text,
                               args.from_lang, args.to_lang, args.split, ui.stream,
                               prog=prog, done=done)
         ui.stream.end()
+    duration_seconds = time.time() - call_start
 
     group_scores, total_score = tally(evaluation)
 
@@ -206,6 +209,7 @@ def main():
     for item_id in ITEM_IDS:
         counts[evaluation[item_id]["verdict"]] += 1
     ui.write(f"Verdicts: yes={counts['yes']} partial={counts['partial']} no={counts['no']}\n")
+    ui.write(f"Duration: {duration_seconds:.1f}s\n")
 
     if args.output_file:
         output_data = {
@@ -215,6 +219,8 @@ def main():
             "target_language": args.to_lang,
             "model_used": args.model,
             "split": args.split,
+            "no_think": args.no_think,
+            "duration_seconds": round(duration_seconds, 1),
             "evaluation": evaluation,
             "group_scores": group_scores,
             "total_score": total_score,

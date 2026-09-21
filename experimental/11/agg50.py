@@ -74,14 +74,18 @@ def load(directory):
 
 
 def load_timing(directory):
-    """Per-call duration from file mtimes: mtime(run n) - mtime(run n-1).
+    """Per-call duration, keyed by evaluator.
 
-    No start/end time is recorded anywhere, so run 1 of each (translation, evaluator)
-    is not measurable this way -- it would need the previous call in the batch, which
-    is a different (translation, evaluator) and not comparable. Runs 2 and 3 give a
-    clean per-call duration for the same evaluator on the same translation.
+    Each result file records its own "duration_seconds" (wall-clock time for that
+    evaluation call), which is used when present. Older files written before that
+    field existed fall back to the file-mtime difference between consecutive runs
+    of the same (translation, evaluator): mtime(run n) - mtime(run n-1). That
+    fallback cannot measure run 1 of each pair -- it would need the previous call's
+    finish time, which belongs to a different (translation, evaluator) -- so runs 2
+    and 3 are used instead.
     """
     mtimes = {}
+    measured = {}
     d = BASE / directory
     if not d.is_dir():
         return {}
@@ -90,15 +94,48 @@ def load_timing(directory):
         if not m:
             continue
         translator, lang, evaluator, run = m.groups()
-        mtimes.setdefault((translator, lang, evaluator), {})[int(run)] = path.stat().st_mtime
+        key = (translator, lang, evaluator)
+        mtimes.setdefault(key, {})[int(run)] = path.stat().st_mtime
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        if "duration_seconds" in data:
+            measured.setdefault(evaluator, []).append(data["duration_seconds"])
 
-    durations = {}
+    durations = {evaluator: list(values) for evaluator, values in measured.items()}
     for key, by_run in mtimes.items():
         evaluator = key[2]
+        if evaluator in durations:
+            continue  # measured durations take precedence over the mtime estimate
         for run in (2, 3):
             if run in by_run and (run - 1) in by_run:
                 durations.setdefault(evaluator, []).append(by_run[run] - by_run[run - 1])
     return durations
+
+
+def think_vs_nothink_table(evals, evals_nt, targets, evaluators):
+    """Score and timing, thinking on vs off, per translation and evaluator.
+
+    evals/evals_nt are keyed like the `new` summary but also carry a "duration"
+    entry (mean seconds per call) added by summarise() when the field is present.
+    """
+    lines = ["| Translation | Evaluator | Think score | No-think score | Diff | "
+             "Think time | No-think time |",
+             "| --- | --- | ---: | ---: | ---: | ---: | ---: |"]
+    for translator, lang in targets:
+        for evaluator in evaluators:
+            t = evals.get((translator, lang, evaluator))
+            nt = evals_nt.get((translator, lang, evaluator))
+            if not t or not nt:
+                continue
+            t_time = f"{t['duration']:.0f}s" if t.get("duration") is not None else "-"
+            nt_time = f"{nt['duration']:.0f}s" if nt.get("duration") is not None else "-"
+            lines.append(
+                f"| {translator} / {lang} | {evaluator} | {t['median_score']} "
+                f"| {nt['median_score']} | {nt['median_score'] - t['median_score']:+d} "
+                f"| {t_time} | {nt_time} |")
+    return lines
 
 
 def timing_table(durations):
@@ -141,6 +178,7 @@ def summarise(runs, new):
         per_run = [item_scores(d, new) for d in data_list]
         keys = per_run[0].keys()
         aggregated = sum(median([p[k] for p in per_run]) for k in keys)
+        durations = [d["duration_seconds"] for d in data_list if "duration_seconds" in d]
         out[key] = {
             "runs": len(totals),
             "totals": totals,
@@ -148,6 +186,7 @@ def summarise(runs, new):
             "stdev": pstdev(totals) if len(totals) > 1 else 0.0,
             "median_score": int(aggregated),
             "per_run": per_run,
+            "duration": sum(durations) / len(durations) if durations else None,
         }
     return out
 
@@ -252,26 +291,27 @@ def main():
     reference = "qwen3.6"
     old = summarise(load_old(targets, reference), new=False)
     new = summarise(load("evals"), new=True)
+    new_nt = summarise(load("evals-nt"), new=True)
     evaluators = sorted({k[2] for k in new})
 
     print("# Experiment 11: old vs new evaluation scheme\n")
     print(f"Old scheme: 5 criteria x 0-20. New scheme: 50 items x yes/partial/no.")
     print(f"Combinations: old {len(old)}, new {len(new)}.\n")
 
-    failures = BASE / "FAILURES.txt"
-    if failures.exists():
-        rows = [l for l in failures.read_text(encoding="utf-8").splitlines() if l.strip()]
-        if rows:
-            print("## Calls that never returned usable output\n")
-            print("Valid JSON that did not fit the schema, after 3 attempts. "
-                  "The retry inside call_json only covers decode errors, so these "
-                  "get through to the caller.\n")
-            counts = {}
-            for row in rows:
-                counts[row.split("\t")[0]] = counts.get(row.split("\t")[0], 0) + 1
-            for scheme in sorted(counts):
-                print(f"- {scheme}: {counts[scheme]}")
-            print()
+    rows = []
+    for failures in sorted(BASE.glob("FAILURES*.txt")):
+        rows += [l for l in failures.read_text(encoding="utf-8").splitlines() if l.strip()]
+    if rows:
+        print("## Calls that never returned usable output\n")
+        print("Valid JSON that did not fit the schema, after 3 attempts. "
+              "The retry inside call_json only covers decode errors, so these "
+              "get through to the caller.\n")
+        counts = {}
+        for row in rows:
+            counts[row.split("\t")[0]] = counts.get(row.split("\t")[0], 0) + 1
+        for scheme in sorted(counts):
+            print(f"- {scheme}: {counts[scheme]}")
+        print()
 
     print(f"## Run-to-run wobble under the reference evaluator ({reference})\n")
     print("How far the total score moves across runs on the same translation.\n")
@@ -296,12 +336,27 @@ def main():
 
     durations = load_timing("evals")
     if durations:
-        print("## Timing (new scheme)\n")
-        print("Per-call duration, from file mtimes: run n's mtime minus run (n-1)'s, for "
-              "n in {2, 3}. Run 1 of each (translation, evaluator) is excluded -- it "
-              "would need the previous call's finish time, which belongs to a different "
-              "translation and is not comparable.\n")
+        print("## Timing (new scheme, thinking on)\n")
+        print("Per-call duration in seconds. Files that record their own "
+              "\"duration_seconds\" use that; older files fall back to the file-mtime "
+              "difference between run n and run (n-1), for n in {2, 3} -- run 1 of each "
+              "(translation, evaluator) is excluded there, since it would need the "
+              "previous call's finish time, which belongs to a different translation.\n")
         print("\n".join(timing_table(durations)))
+        print()
+
+    durations_nt = load_timing("evals-nt")
+    if durations_nt:
+        print("## Timing (new scheme, no-think)\n")
+        print("\n".join(timing_table(durations_nt)))
+        print()
+
+    if new_nt:
+        print("## Thinking on vs off\n")
+        print("Same 50-item scheme, same targets and evaluators, run with `--no-think`. "
+              "Score is the median-of-runs total; time is the mean call duration from "
+              "\"duration_seconds\".\n")
+        print("\n".join(think_vs_nothink_table(new, new_nt, targets, evaluators)))
         print()
 
     print("## Group subtotals (new scheme)\n")

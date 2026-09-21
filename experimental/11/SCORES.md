@@ -109,16 +109,16 @@ Combinations measured: 24
 
 Items that never disagreed: 1/50
 
-## Timing (new scheme)
+## Timing (new scheme, thinking on)
 
-Per-call duration, from file mtimes: run n's mtime minus run (n-1)'s, for n in {2, 3}. Run 1 of each (translation, evaluator) is excluded -- it would need the previous call's finish time, which belongs to a different translation and is not comparable.
+Per-call duration in seconds. Files that record their own "duration_seconds" use that; older files fall back to the file-mtime difference between run n and run (n-1), for n in {2, 3} -- run 1 of each (translation, evaluator) is excluded there, since it would need the previous call's finish time, which belongs to a different translation.
 
 | Evaluator | Calls | Median | Mean | Min | Max |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| gemma4-31b | 16 | 507s | 889s | 392s | 2913s |
-| gpt-oss-120b | 16 | 142s | 160s | 109s | 367s |
-| qwen3.6 | 16 | 205s | 211s | 149s | 303s |
-| all | 48 | 214s | 420s | 109s | 2913s |
+| gemma4-31b | 24 | 557s | 798s | 393s | 2912s |
+| gpt-oss-120b | 24 | 149s | 160s | 106s | 368s |
+| qwen3.6 | 24 | 210s | 245s | 149s | 640s |
+| all | 72 | 224s | 401s | 106s | 2912s |
 
 ## Group subtotals (new scheme)
 

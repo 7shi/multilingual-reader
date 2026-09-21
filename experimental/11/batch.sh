@@ -12,9 +12,11 @@
 # under other evaluators would answer a question this experiment is not asking: model
 # dependence is what the new scheme is being tested for.
 #
-# Thinking is left ON. trtools/batch.py:169 hardcodes no_think=False for the evaluation
-# phase, so every accumulated evaluation was produced with it; passing --no-think here
-# would measure something the production tables never measured.
+# Two variants of the new scheme are run: "evals" with thinking on (matching what
+# trtools/batch.py:169 hardcodes for the production evaluation phase) and "evals-nt"
+# with --no-think, to see how much thinking buys in score stability and how much it
+# costs in time. Each output file records its own "duration_seconds" and "no_think"
+# fields, so the comparison does not depend on file mtimes.
 #
 # Existing result files are left alone, so the script can be re-run.
 
@@ -36,20 +38,23 @@ EVALUATORS[ollama:gpt-oss:120b]="gpt-oss-120b"
 
 EVAL_ORDER=(ollama:qwen3.6 ollama:gemma4:31b ollama:gpt-oss:120b)
 
+# Variant (directory name) -> extra eval50.py args
+declare -A VARIANTS
+VARIANTS[evals]=""
+VARIANTS[evals-nt]="--no-think"
+
+VARIANT_ORDER=(evals evals-nt)
+
 # A failure here is a call that came back structurally wrong: valid JSON that does not
 # fit the schema, which the retry inside call_json does not catch. How often that happens
 # is itself part of what the experiment measures, so failures are recorded rather than
 # allowed to stop the batch.
 ATTEMPTS=3
-FAILURES="${BASE_DIR}/FAILURES.txt"
 
-mkdir -p "${BASE_DIR}/evals"
-: > "${FAILURES}"
-
-# try_eval <scheme> <output> <command...>
+# try_eval <scheme> <failures_file> <output> <command...>
 try_eval() {
-    local scheme="$1" out="$2"
-    shift 2
+    local scheme="$1" failures="$2" out="$3"
+    shift 3
     local attempt
     for attempt in $(seq 1 ${ATTEMPTS}); do
         if "$@"; then
@@ -58,53 +63,64 @@ try_eval() {
         echo "  attempt ${attempt}/${ATTEMPTS} failed for ${out}"
         rm -f "${out}"
     done
-    printf '%s\t%s\n' "${scheme}" "${out}" >> "${FAILURES}"
+    printf '%s\t%s\n' "${scheme}" "${out}" >> "${failures}"
     echo "  GIVING UP on ${out}"
     return 0
 }
 
-run_eval() {  # <output> <translation> <lang_name> <evaluator> <label> <run> <index>
-    try_eval new "$1" \
+run_eval() {  # <failures_file> <output> <translation> <lang_name> <evaluator> <label> <run> <index> <extra_args...>
+    local failures="$1" out="$2" translation="$3" lang_name="$4" evaluator="$5" label="$6" run="$7" index="$8"
+    shift 8
+    try_eval new "${failures}" "${out}" \
         uv run "${BASE_DIR}/eval50.py" \
-        --original "${ORIGINAL}" --translation "$2" \
-        -m "$4" -f English -t "$3" \
-        --split "${SPLIT}" --run "$6" --runs "${RUNS}" \
-        --label "$5" --start "${BATCH_START}" \
-        --index "$7" --count "${TOTAL}" -o "$1"
+        --original "${ORIGINAL}" --translation "${translation}" \
+        -m "${evaluator}" -f English -t "${lang_name}" \
+        --split "${SPLIT}" --run "${run}" --runs "${RUNS}" \
+        --label "${label}" --start "${BATCH_START}" \
+        --index "${index}" --count "${TOTAL}" -o "${out}" "$@"
 }
 
 mapfile -t TARGET_ROWS < <(tail -n +2 "${TARGETS}")
-TOTAL=$(( ${#TARGET_ROWS[@]} * ${#EVAL_ORDER[@]} * RUNS ))
+TOTAL=$(( ${#TARGET_ROWS[@]} * ${#EVAL_ORDER[@]} * RUNS * ${#VARIANT_ORDER[@]} ))
 INDEX=0
 BATCH_START=$(date +%s.%N)
 
-# Evaluator is the outer loop: switching models means reloading them, so each one is
-# loaded once and used for every target rather than cycled per translation.
-for EVALUATOR in "${EVAL_ORDER[@]}"; do
-    EV_NAME="${EVALUATORS[$EVALUATOR]}"
-    echo -e "\n########## Evaluator: ${EV_NAME} ##########"
+for VARIANT in "${VARIANT_ORDER[@]}"; do
+    EVAL_DIR="${BASE_DIR}/${VARIANT}"
+    FAILURES="${BASE_DIR}/FAILURES-${VARIANT}.txt"
+    mkdir -p "${EVAL_DIR}"
+    : > "${FAILURES}"
 
-    for ROW in "${TARGET_ROWS[@]}"; do
-        IFS=$'\t' read -r TRANSLATOR LANG LANG_NAME RANGE SCORES MEDIAN <<< "${ROW}"
-        TR_FILE="examples/tr/onde/${TRANSLATOR}/tr/onde-${LANG}.txt"
+    echo -e "\n########## Variant: ${VARIANT} ##########"
 
-        if [ ! -f "${TR_FILE}" ]; then
-            echo "Missing translation, skipping: ${TR_FILE}"
-            continue
-        fi
+    # Evaluator is the outer loop: switching models means reloading them, so each one is
+    # loaded once and used for every target rather than cycled per translation.
+    for EVALUATOR in "${EVAL_ORDER[@]}"; do
+        EV_NAME="${EVALUATORS[$EVALUATOR]}"
+        echo -e "\n########## Evaluator: ${EV_NAME} ##########"
 
-        STEM="onde-${TRANSLATOR}-${LANG}-${EV_NAME}"
-        LABEL="${LANG}: ${LANG_NAME} / ${EV_NAME}"
+        for ROW in "${TARGET_ROWS[@]}"; do
+            IFS=$'\t' read -r TRANSLATOR LANG LANG_NAME RANGE SCORES MEDIAN <<< "${ROW}"
+            TR_FILE="examples/tr/onde/${TRANSLATOR}/tr/onde-${LANG}.txt"
 
-        for RUN in $(seq 1 ${RUNS}); do
-            OUT="${BASE_DIR}/evals/${STEM}-${RUN}.json"
-            INDEX=$((INDEX + 1))
-            if [ ! -f "${OUT}" ]; then
-                echo -e "\n=== [${INDEX}/${TOTAL}] ${TRANSLATOR}/${LANG} ${EV_NAME} run ${RUN} ==="
-                run_eval "${OUT}" "${TR_FILE}" "${LANG_NAME}" "${EVALUATOR}" "${LABEL}" "${RUN}" "${INDEX}"
-            else
-                echo "[${INDEX}/${TOTAL}] exists, skipping: ${OUT}"
+            if [ ! -f "${TR_FILE}" ]; then
+                echo "Missing translation, skipping: ${TR_FILE}"
+                continue
             fi
+
+            STEM="onde-${TRANSLATOR}-${LANG}-${EV_NAME}"
+            LABEL="${LANG}: ${LANG_NAME} / ${EV_NAME} / ${VARIANT}"
+
+            for RUN in $(seq 1 ${RUNS}); do
+                OUT="${EVAL_DIR}/${STEM}-${RUN}.json"
+                INDEX=$((INDEX + 1))
+                if [ ! -f "${OUT}" ]; then
+                    echo -e "\n=== [${INDEX}/${TOTAL}] ${TRANSLATOR}/${LANG} ${EV_NAME} ${VARIANT} run ${RUN} ==="
+                    run_eval "${FAILURES}" "${OUT}" "${TR_FILE}" "${LANG_NAME}" "${EVALUATOR}" "${LABEL}" "${RUN}" "${INDEX}" ${VARIANTS[$VARIANT]}
+                else
+                    echo "[${INDEX}/${TOTAL}] exists, skipping: ${OUT}"
+                fi
+            done
         done
     done
 done
