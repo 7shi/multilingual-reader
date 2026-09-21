@@ -94,10 +94,22 @@ Building on the results of experiments 06–09, the third-party-review approach 
 
 ## Questioning the Evaluation Scale Itself
 
-- **[11/](11/)**: Tested replacing `trtools eval`'s 5 criteria × 0–20 scoring with 50 narrow yes/partial/no items, to see whether a score can be made to stop depending on the run and on which model evaluates.
+- **[11/](11/)**: Tested replacing `trtools eval`'s 5 criteria × 0–20 scoring with 50 narrow yes/partial/no items, to see whether a score can be made to stop depending on the run and on which model evaluates. Grew over several rounds: three local evaluators first, then two commercial ones, three prompt variants, a ground-truth calibration check, and finally a System One model.
   - Under the old scheme, the same translation's score swings by a mean range of 52.4 points across runs, and by a mean absolute 21.6 points when the evaluator model is swapped (qwen3.6 vs gpt-oss:120b)
-  - The new scheme cut run-to-run range to a mean of 9.6 points; evaluator dependence narrowed but did not disappear — 6 of 8 targets converged within 10 points across evaluators, while 2 still swung 22–40 points
-  - gpt-oss:120b, which never reached the top of the old scale, scored at the ceiling under item-level judging; gemma4:31b, suspected of leniency, was not uniformly higher than the other evaluators
+  - **Runs stabilized; the choice of evaluator did not.** Run-to-run range fell to a mean of 8.6 points over the five generative evaluators, but evaluator spread *rose* to 27.1 points once commercial models were added, and only 1 of 8 targets still fits within 10 points
+  - **The evaluators split cleanly by family, 13–19 points apart**, agreeing tightly within each: local three at 88.4–90.1, commercial two at 71.6–74.9. Most of the gap sits in group E (fluency & naturalness)
+  - **The split is accuracy, not scale.** On the one item that can be settled by counting (are speaker labels present), the commercial pair is exact on 8/8 targets and the local three on 4–5. The local models collapse the rubric's 1–3 line `partial` band into `yes`, using it on 2.2–8.3% of verdicts against the commercial 23–25%
+  - So the old scheme's failure was noise and the new scheme's is a confident near-ceiling score: every item is positively phrased, so a defect an evaluator cannot see is silently scored `yes`. Ignorance stopped being visible
+  - **Thinking matters, evidence does not.** Dropping thinking cost qwen3.6 14.9 points and 10× the speed; dropping the evidence field alone moved no evaluator more than 4.4. Measured against a reference evaluator, the no-think variant is the only one under which a local evaluator approaches it, which reverses the first reading of that drop
+  - The evidence field itself produced hallucinated line numbers throughout, since the prompt carries no line numbers to cite
+  - **A System One model (`jev`) was added last** and is the steadiest evaluator on the panel (run-to-run range 2.3, ~1s and $0.0005 per evaluation), exact on the ground-truth item, and the only one whose total reflects a transcript losing 15% of its speaker labels — but it does not reproduce any reference's ordering, and its probability-weighted total is markedly better than its rounded verdicts
   - Wobble that remained was spread across 49 of the 50 items rather than concentrated in a few badly worded ones
-  - gemma4:31b was markedly slower per call (median ~8.5 minutes) than qwen3.6 or gpt-oss:120b (~2.5–3.5 minutes)
-  - Kept deliberately outside `trtools`; not yet folded back into production
+  - gemma4:31b was markedly slower per call with thinking on (median ~9 minutes) than qwen3.6 or gpt-oss:120b (~2.5–3.5 minutes); the commercial pair ran at ~40 seconds under every variant
+  - Kept deliberately outside `trtools`; not folded back into production, and its own README lists the fixes that would have to come first
+
+- **[12/](12/)**: Keeps the old 5 criteria × 0–20 rubric unchanged and replaces the evaluator instead, asking each criterion as one typed Score question of a System One model (Jev). Experiment 11 replaced the rubric; this asks how much of the old instability was ever the rubric's fault.
+  - Run-to-run range collapsed from a mean of 52.4 points to **1.25** on the same 8 targets, with the rubric untouched. The old scheme's instability was the generative evaluator's, not the scoring scale's
+  - The 21-point scale is not asked for directly: five anchored severity levels are, and the probability-weighted position between them supplies the intermediate values the old rubric left to model discretion
+  - Scores came out low and mis-levelled, though. The clean level never won a single one of 120 judgments, and a structurally sound Polish translation was placed in the "mixed languages, markup fragments" level with probability 0.87
+  - The cause looks like the level wording rather than the model: levels naming concrete defects attract probability mass away from levels stated as vague absolutes, and the defect taxonomy borrowed from the old prompt does not apply evenly across all five criteria
+  - Unresolved. The rubric-fidelity of the levels and their readability as a scale are in conflict, and the level texts have not yet been rewritten
