@@ -23,6 +23,12 @@ BASE = Path(__file__).resolve().parent
 # wherever it is generated from -- the corpus is read in place, never copied here.
 ONDE = BASE.parent.parent / "examples" / "tr" / "onde"
 OLD_RUNS = (1, 2, 3)
+# Directories making up the new scheme's baseline condition. evals-jev/ is kept apart on
+# disk because Jev answers without evidence, without an overall comment and without
+# thinking (see eval50_jev.py), so it is none of eval50.py's three variants -- but it is
+# still one evaluator under one condition, which is what every per-evaluator table here
+# compares. The variant tables below pair directories by name and so skip it on their own.
+BASELINE_DIRS = ("evals", "evals-jev")
 OLD_CRITERIA = ["readability", "fluency", "terminology",
                 "contextual_adaptation", "information_completeness"]
 VERDICT_SCORES = {"yes": 2, "partial": 1, "no": 0}
@@ -69,6 +75,18 @@ def load(directory):
             print(f"<!-- unreadable: {path.name} -->")
             continue
         runs.setdefault((translator, lang, evaluator), {})[int(run)] = data
+    return runs
+
+
+def load_dirs(directories):
+    """load() over several directories, merged into one {key: {run: data}}.
+
+    Each evaluator lives in exactly one of BASELINE_DIRS, so the merge cannot collide:
+    the key carries the evaluator's slug.
+    """
+    runs = {}
+    for directory in directories:
+        runs.update(load(directory))
     return runs
 
 
@@ -371,7 +389,7 @@ def main():
 
     reference = "qwen3.6"
     old = summarise(load_old(targets, reference), new=False)
-    new = summarise(load("evals"), new=True)
+    new = summarise(load_dirs(BASELINE_DIRS), new=True)
     new_nt = summarise(load("evals-nt"), new=True)
     new_ne = summarise(load("evals-ne"), new=True)
     evaluators = sorted({k[2] for k in new})
@@ -379,6 +397,12 @@ def main():
     print("# Experiment 11: old vs new evaluation scheme\n")
     print(f"Old scheme: 5 criteria x 0-20. New scheme: 50 items x yes/partial/no.")
     print(f"Combinations: old {len(old)}, new {len(new)}.\n")
+    if any(k[2] == "jev" for k in new):
+        print("`jev` is TypeSafe's System One model, asked the same 50 items as typed "
+              "Score questions by eval50_jev.py and written to `evals-jev/`. It emits no "
+              "evidence, no overall comment and no reasoning, so it appears in the "
+              "per-evaluator tables below but not in the think/evidence variant "
+              "comparisons, which have no counterpart for it.\n")
 
     rows = []
     for failures in sorted(BASE.glob("FAILURES*.txt")):
@@ -428,7 +452,9 @@ def main():
     print("\n".join(unstable_items(new)))
     print()
 
-    durations = load_timing("evals")
+    durations = {}
+    for directory in BASELINE_DIRS:
+        durations.update(load_timing(directory))
     if durations:
         print("## Timing (new scheme, thinking on)\n")
         print("Per-call duration in seconds. Files that record their own "

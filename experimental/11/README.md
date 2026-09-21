@@ -81,13 +81,15 @@ Total score maps directly to 0–100, nominally preserving compatibility with ex
 The experiment runs alongside `trtools` without modifying the core codebase:
 
 - **Targets**: The 8 most unstable translations from [examples/tr/onde/](../../examples/tr/onde/), selected across 8 translation models and distinct language families ([targets.tsv](targets.tsv)).
-- **Evaluators**: three local models (`qwen3.6`, `gemma4:31b`, `gpt-oss:120b`, all via Ollama) and two commercial API models (`gpt-5.6-terra`, `gpt-5.6-luna`), 3 runs each = 120 evaluations per variant. The commercial pair was added to test whether the checklist's stability and agreement hold outside the local model family, and to get a reference point from models that are not themselves among the weaker translators being judged.
+- **Evaluators**: three local models (`qwen3.6`, `gemma4:31b`, `gpt-oss:120b`, all via Ollama) and two commercial API models (`gpt-5.6-terra`, `gpt-5.6-luna`), 3 runs each = 120 evaluations per variant. The commercial pair was added to test whether the checklist's stability and agreement hold outside the local model family, and to get a reference point from models that are not themselves among the weaker translators being judged. A sixth evaluator, `jev`, was added later and is not a generative model at all; it has its own section and its own directory (see below).
 - **Variants Tested**:
   1. `evals/`: Baseline (Thinking ON, Evidence ON).
   2. `evals-nt/`: No-Think (Thinking OFF, Evidence OFF) — tests latency and whether explicit CoT is required.
   3. `evals-ne/`: No-Evidence (Thinking ON, Evidence OFF) — isolates the effect of writing citation evidence.
+  4. `evals-jev/`: the `jev` evaluator's only condition. It is not a fourth setting of the same two knobs — Jev emits no evidence, no overall comment and no reasoning, so neither knob exists for it — which is why it is a separate directory rather than a row in the three above.
 - **Modularity**: [eval50.py](eval50.py) supports `--split` (`none`, `group`, `item`) to evaluate all items in one prompt or step them down into smaller calls.
 - **Adding evaluators**: [eval50.py](eval50.py) runs one evaluator (`-m/--model`, `-s/--slug`) under one condition (`--no-think`, `--no-evidence`) over [targets.tsv](targets.tsv). [batch.sh](batch.sh) is a thin loop over the evaluators (`EVALUATORS` plus `EVAL_ORDER`, which fixes the run order the associative array does not preserve) and all three variants. A further evaluator can also be added by invoking `eval50.py` directly, without touching `batch.sh` or waiting for it to finish.
+- **Typed judgments**: [eval50_jev.py](eval50_jev.py) asks the same 50 items of TypeSafe's System One model as one Score question each, pinned to `jev-1.13.0`. Its output files use eval50.py's schema, so [agg50.py](agg50.py) and [refcmp.py](refcmp.py) read `evals-jev/` alongside the rest; it also records what a generative evaluator cannot return — the probability over the three levels, the probability-weighted total before rounding, and a per-item confidence.
 
 ---
 
@@ -110,28 +112,31 @@ Under the new scheme, score variation across runs collapsed dramatically across 
 | gemini-3-flash | Hindi | 97, 98, 98 | 1 | -45 |
 
 - Under `qwen3.6`, mean range dropped from **52.4 to 9.6 points** (mean stdev 22.16 -> 4.17).
-- Across all five evaluators, the average run-to-run range was **8.6 points** (mean stdev 3.72).
+- Across all six evaluators, the average run-to-run range was **7.5 points** (mean stdev 3.26); over the five generative ones alone it is 8.6 (3.72).
 - Every single translation stabilized significantly; none regressed.
-- **The commercial models are among the steadiest**: mean run-to-run range 7.1 (`gpt-5.6-terra`) and 8.2 (`gpt-5.6-luna`), against 6.8 (`gemma4:31b`), 9.6 (`qwen3.6`) and 11.1 (`gpt-oss:120b`). Stability under the checklist is therefore not an artifact of the local model family.
+- **The commercial models are among the steadiest, and `jev` is steadier still**: mean run-to-run range **2.3** (`jev`), 6.8 (`gemma4:31b`), 7.1 (`gpt-5.6-terra`), 8.2 (`gpt-5.6-luna`), 9.6 (`qwen3.6`), 11.1 (`gpt-oss:120b`). Stability under the checklist is therefore not an artifact of the local model family, and the steadiest evaluator is the one that never writes a verdict at all (section 6).
 
 *Caveat: stability is not by itself validity.* Part of this collapse is the checklist doing its job, but part of it is the positively-phrased items supplying a `yes` default where the old rubric supplied nothing. An evaluator that cannot detect defects in a given target now returns a stable near-ceiling score instead of a noisy low one. Interlingua and Irish are the clearest cases: their old 3-run ranges were 55 and 51, and their new ranges under the local evaluators are 6-9 and 2-7 -- but the resulting scores (84-98) contradict both the commercial evaluators and the old scheme's own corpus-level ranking of those languages. See "The Local Evaluators Are Miscalibrated" below.
 
 ### 2. Inter-Evaluator Agreement Improved Locally, but Splits by Model Family
-Comparing median scores across the five evaluators (local three first, commercial two after):
+Comparing median scores across the evaluators (local three first, commercial two next, `jev` last):
 
-| Translator | Language | Old (`qwen3.6`) | `gemma4:31b` | `gpt-oss:120b` | `qwen3.6` | `gpt-5.6-luna` | `gpt-5.6-terra` | New Evaluator Spread |
-|---|---|---:|---:|---:|---:|---:|---:|---:|
-| gpt-5.6-terra | Polish | 69 | 70 | 92 | 74 | 78 | 79 | 22 |
-| gpt-oss | Interlingua | 73 | 94 | 88 | 84 | 56 | 50 | 44 |
-| qwen3.8 | Japanese | 56 | 92 | 96 | 88 | 70 | 69 | 27 |
-| gemini-3.5-flash-lite | Kannada | 61 | 89 | 49 | 87 | 65 | 71 | 40 |
-| ox-alpha | Irish | 68 | 96 | 98 | 89 | 64 | 61 | 37 |
-| qwen3.6-27b | Korean | 77 | 84 | 94 | 94 | 81 | 69 | 25 |
-| gemini-2.5-flash | Russian | 85 | 98 | 98 | 97 | 93 | 93 | 5 |
-| gemini-3-flash | Hindi | 81 | 98 | 92 | 98 | 92 | 81 | 17 |
+| Translator | Language | Old (`qwen3.6`) | `gemma4:31b` | `gpt-oss:120b` | `qwen3.6` | `gpt-5.6-luna` | `gpt-5.6-terra` | `jev` | Spread (5) | Spread (6) |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| gpt-5.6-terra | Polish | 69 | 70 | 92 | 74 | 78 | 79 | 81 | 22 | 22 |
+| gpt-oss | Interlingua | 73 | 94 | 88 | 84 | 56 | 50 | 66 | 44 | 44 |
+| qwen3.8 | Japanese | 56 | 92 | 96 | 88 | 70 | 69 | 88 | 27 | 27 |
+| gemini-3.5-flash-lite | Kannada | 61 | 89 | 49 | 87 | 65 | 71 | 81 | 40 | 40 |
+| ox-alpha | Irish | 68 | 96 | 98 | 89 | 64 | 61 | 87 | 37 | 37 |
+| qwen3.6-27b | Korean | 77 | 84 | 94 | 94 | 81 | 69 | 87 | 25 | 25 |
+| gemini-2.5-flash | Russian | 85 | 98 | 98 | 97 | 93 | 93 | **77** | 5 | **21** |
+| gemini-3-flash | Hindi | 81 | 98 | 92 | 98 | 92 | 81 | 77 | 17 | 21 |
 
-- **Agreement is tight inside each family, not across them**: the local three land within 1.7 points of each other (`gemma4:31b` 90.1, `qwen3.6` 88.9, `gpt-oss:120b` 88.4) and the commercial two within 3.3 (`gpt-5.6-luna` 74.9, `gpt-5.6-terra` 71.6, mean absolute per-target difference 5.0). The two clusters sit **13–19 points apart**.
+*(Spread (5) is over the five generative evaluators, which is what the bullets below are about; Spread (6) adds `jev`. [SCORES.md](SCORES.md) reports the six-evaluator column.)*
+
+- **Agreement is tight inside each family, not across them**: the local three land within 1.7 points of each other (`gemma4:31b` 90.1, `qwen3.6` 88.9, `gpt-oss:120b` 88.4) and the commercial two within 3.3 (`gpt-5.6-luna` 74.9, `gpt-5.6-terra` 71.6, mean absolute per-target difference 5.0). The two clusters sit **13–19 points apart**. `jev` (80.5) lands between them and belongs to neither.
 - **Spread widened once the families were mixed**: mean evaluator spread rose from 13.25 (local three) to **27.1** points, and only 1 of 8 targets (Russian, spread 5) still fits within 10 points. The checklist stabilized *runs*, not the choice of evaluator.
+- **`jev` widens it only on Russian**, where it alone scores 77 against everyone else's 93–98 and takes that target's spread from 5 to 21. Six of the eight spreads do not move at all, so `jev` is inside the existing envelope except on the one target where the ground-truth check below says the envelope is wrong.
 - **The gap concentrates in group E (fluency & naturalness)**, not across the board. Mean group subtotals (out of 20): E is 18.8/18.8/17.9 for `gemma4:31b`/`qwen3.6`/`gpt-oss:120b` against **12.4/12.2** for `gpt-5.6-luna`/`gpt-5.6-terra`; groups A and D differ by 1–4 points. The commercial models are reading naturalness defects the local models score as clean.
 - **The widest disagreements are on Interlingua and Irish** (spread 44 and 37): `gemma4:31b` and `gpt-oss:120b` score them 88–98 while the commercial pair scores 50–64, again mostly through group E (E=20 local vs E=4–7 commercial). Constructed and low-resource targets are where "local evaluators see nothing wrong" is most visible.
 - **Ceiling effect resolved for `gpt-oss:120b`**: In the old scheme, `gpt-oss:120b` never scored above 84. Under the 50-item checklist, it reached 96–98 when warranted — though the next section shows some of that headroom is misplaced.
@@ -151,10 +156,11 @@ The 13–19 point offset raises the obvious question of which family is closer t
 | `qwen3.6` | *no* | no | *no* | yes | partial | yes | no | *partial* | 5/8 | -0.25 |
 | `gpt-5.6-luna` | partial | no | yes | yes | partial | yes | no | no | **8/8** | 0.00 |
 | `gpt-5.6-terra` | partial | no | yes | yes | partial | yes | no | no | **8/8** | 0.00 |
+| `jev` | partial | no | yes | yes | partial | yes | no | no | **8/8** | 0.00 |
 
 *(Italics mark incorrect verdicts. Bias is the mean signed error with `yes`=2, `partial`=1, `no`=0; positive means scoring higher than the count warrants.)*
 
-- **Both commercial evaluators are exactly right on all 8 targets; the local three are right on 4–5.** On this item the offset is not a difference of scale but a difference of accuracy, and it runs in the local evaluators' disfavor.
+- **Both commercial evaluators are exactly right on all 8 targets; the local three are right on 4–5.** On this item the offset is not a difference of scale but a difference of accuracy, and it runs in the local evaluators' disfavor. `jev` (section 3.6, added later) is also exact on all 8.
 - **`gemma4:31b` and `gpt-oss:120b` err leniently** (+0.50, +0.38). `gemma4:31b` rated `gpt-oss / ia` as `yes` with 13 lines unlabeled.
 - **`qwen3.6` errs in both directions.** Its -0.25 bias looks strict, but the underlying mistakes are `no` verdicts on `ja` and `pl`, whose labels are complete or near-complete: hallucinated defects, not severity. Local inaccuracy is not uniformly leniency.
 
@@ -167,9 +173,10 @@ The mechanism shows up in the raw verdict distribution over all 1,200 verdicts p
 | `gpt-oss:120b` | 83.6% | **5.4%** | 11.0% | 15.7% |
 | `gpt-5.6-luna` | 60.4% | **25.0%** | 14.6% | 39.9% |
 | `gpt-5.6-terra` | 59.8% | **23.2%** | 17.0% | 40.2% |
+| `jev` | 70.0% | **20.9%** | 9.1% | n/a |
 
-- **The gap is entirely in the `partial` band.** `no` rates are comparable across families (7.6–17.0%); what separates them is that the local models resolve the 1–3 line band to `yes` and the commercial models actually use it. `gemma4:31b` is effectively binary, using `partial` on 2.2% of verdicts.
-- **A worked example**: `gemini-2.5-flash / ru` drops the speaker label on 15 of 99 lines, all of them Camille's. The commercial evaluators return `no` on both `a01_speaker_label_present` and `a03_speaker_attribution` in all three runs. The local three all get `a01` right, then miss `a03`: `gemma4:31b` and `gpt-oss:120b` return `yes` in two runs of three (median `yes`) and `qwen3.6` lands on a median of `partial`. They hand the translation a median total of 97–98. A transcript where 15% of turns have no attributable speaker is not a 98.
+- **The gap is entirely in the `partial` band.** `no` rates are comparable across families (7.6–17.0%); what separates them is that the local models resolve the 1–3 line band to `yes` and the commercial models actually use it. `gemma4:31b` is effectively binary, using `partial` on 2.2% of verdicts. `jev`'s 20.9% puts it with the commercial pair, which is what a Score answer makes structural: probability always falls on all three levels, so the band cannot be skipped.
+- **A worked example**: `gemini-2.5-flash / ru` drops the speaker label on 15 of 99 lines, all of them Camille's. The commercial evaluators return `no` on both `a01_speaker_label_present` and `a03_speaker_attribution` in all three runs. The local three all get `a01` right, then miss `a03`: `gemma4:31b` and `gpt-oss:120b` return `yes` in two runs of three (median `yes`) and `qwen3.6` lands on a median of `partial`. They hand the translation a median total of 97–98. A transcript where 15% of turns have no attributable speaker is not a 98. `jev` gets both items right *and* is the only evaluator whose total reflects them, scoring that target 77 where the correct commercial pair still awards 93.
 
 *Caveat: this is one item of fifty, with n=8. It establishes that the local evaluators are miscalibrated on a mechanically checkable structural item; it does not by itself prove the whole 13–19 point offset is theirs, since the bulk of that offset sits in group E, where no comparable ground truth is available.*
 
@@ -210,6 +217,52 @@ The mechanism shows up in the raw verdict distribution over all 1,200 verdicts p
 - **`gemma4:31b` scores slightly higher without evidence** (+4.4), the opposite direction from what padding-driven degradation would predict. Combined with `evals-nt` leaving its score flat (-0.4), this suggests evidence and no-thinking partially offset each other for this model rather than evidence being purely a tax on the verdict.
 - **Verdicts move more than totals suggest.** Comparing per-item medians against `evals/`, a mean of 4.6-8.8 items (of 50) flipped verdict per combination (max 15), with the commercial evaluators moving the most (8.8 and 8.4) despite their totals being the most stable. Across all 40 combinations, 48/50 items moved at least once, including the two documented bad citations from the discussion below (`a01_speaker_label_present`: 7/40 combinations moved; `d01_standard_terms`: 6/40). Totals stayed close because these moves went in both directions and largely cancelled, not because the items were unaffected.
 
+### 6. A Typed-Judgment Evaluator (`evals-jev/`)
+
+Every evaluator above fills in a schema: it writes the verdicts as text, and the checklist reaches it as a prompt. `jev` ([eval50_jev.py](eval50_jev.py)) does not. Each of the 50 items is a separate typed Score question against the same state, and what comes back per item is a probability over the three rubric levels — no text at all. Three properties of the scheme's known failure modes are therefore structural rather than requested:
+
+- The `partial` band cannot be skipped, because every answer places probability on all three levels.
+- Items cannot contaminate each other, because each question is scored on its own. The prompt carries no "judge each item independently" instruction; there is nothing for it to do.
+- An unassessable property is visible instead of silent: `confidence` reports how concentrated the distribution is, which no verdict string can.
+
+It is also, by a wide margin, the cheapest: **~1s and ~12,700 input tokens per evaluation** (about $0.0005), against 34-43s for the commercial pair and 160-798s for the local three. All 24 evaluations took roughly 10 seconds.
+
+#### It is the steadiest evaluator on the panel
+
+| Evaluator | Mean run-to-run range | Mean median-total |
+|---|---:|---:|
+| **`jev`** | **2.25** | 80.5 |
+| `gemma4:31b` | 6.75 | 90.1 |
+| `gpt-5.6-terra` | 7.12 | 71.6 |
+| `gpt-5.6-luna` | 8.25 | 74.9 |
+| `qwen3.6` | 9.62 | 88.9 |
+| `gpt-oss:120b` | 11.12 | 88.4 |
+
+Per-target ranges are 1-4. At the item level, 1-6 of 50 verdicts differ across the three runs, against 14/50 for `gpt-5.6-terra` on Polish alone. **Three runs are not needed for this evaluator**, which is a conclusion the three runs were required to establish.
+
+#### It is exact on the one item with ground truth
+
+On `a01_speaker_label_present`, `jev` returns the correct verdict on **8/8** targets with bias **0.00** — matching the commercial pair, against 4-6/8 for the local three under every variant. Its verdict distribution is the commercial family's, not the local one's: **70.0% `yes` / 20.9% `partial` / 9.1% `no`**, where the local three use `partial` on 2.2-8.3%.
+
+It also catches what Discussion 3's worked example singles out. On `gemini-2.5-flash / ru`, where 15 of 99 lines lose their speaker label, all three local evaluators miss `a03_speaker_attribution`; `jev` returns `no` in all three runs. More to the point, **it is the only evaluator whose total reflects that**: it scores that target 77, where the commercial pair — correct on both items — still hands it 93, and the local three 97-98.
+
+#### But it does not reproduce the reference's ordering
+
+| Reference | `jev` discrete | `jev` expected |
+|---|---:|---:|
+| `gpt-5.6-terra`, Kendall | **-0.33** | -0.11 |
+| The 8 old 3-run medians, Kendall | **-0.52** | -0.29 |
+| Old per-language corpus mean, Kendall | +0.20 | +0.36 |
+| Old per-language corpus mean, Spearman | +0.27 | +0.48 |
+
+Against `gpt-5.6-terra` and against the 8 old 3-run medians the rank correlation is *negative*, and against the old scheme's corpus mean it lands below both commercial evaluators (Kendall 0.41-0.43). The two old-scheme references disagree about `jev` more than about anyone else (Discussion 6 has why). Two targets drive this, in opposite directions: Russian, where `jev` is right and everybody else is lenient, and Irish, where `jev` scores 87 against the commercial pair's 61-64, with group E at 15/20 against their 6-7. On Irish it sides with the local evaluators, on exactly the low-resource target Discussion 4 identifies as where "the evaluator sees nothing wrong" does its damage. Being calibrated on structural items did not make it calibrated on naturalness.
+
+#### The rounding to a verdict is throwing information away
+
+Every row of the table above improves when `jev`'s probability-weighted total is used instead of its rounded verdicts, and the correlation with the better-verified reference nearly doubles (Spearman 0.27 -> 0.48). The two totals differ by 13 points on average (mean discrete 80.5, mean expected 67.5) because a `yes` that won at p=0.4 counts as a full 2 points once rounded. `expected_total_score` in each result file keeps that resolution; the `total_score` the tables above use does not, and is only computed to keep `jev` comparable with evaluators that can express nothing finer.
+
+*Caveat: `jev`'s mean confidence over all 1,200 verdicts is 0.33, which is exactly what a flat distribution over three levels gives.* The argmax verdicts are 8/8 on the one checkable item, so the low confidence is not simply noise — but on `a01` correct verdicts carry confidences from 0.27 to 0.92, so confidence and correctness are not lining up either. What that number means here is unresolved, and it is the main reason to treat the expected-score reading as promising rather than established.
+
 ---
 
 ## 4. Discussion & Caveats
@@ -234,20 +287,22 @@ Two properties of the local verdicts explain how:
 
 The old scheme provides an independent check on the second point, and it lands against the local evaluators. Under the old 5x20 rubric, the same `qwen3.6` ranked Interlingua 64th and Irish **last** of 67 languages, averaged over all 16 translators in the corpus:
 
-| Language | Old scheme (`qwen3.6`, corpus mean, rank of 67) | New scheme, local three | New scheme, commercial two |
-|---|---|---:|---:|
-| ja | 85.6 (9th) | 88-96 | 69-70 |
-| ru | 85.2 (10th) | 97-98 | 93 |
-| pl | 83.7 (15th) | 70-92 | 78-79 |
-| ko | 75.9 (25th) | 84-94 | 69-81 |
-| hi | 70.4 (32nd) | 92-98 | 81-92 |
-| kn | 58.2 (54th) | 49-89 | 65-71 |
-| **ia** | **47.2 (64th)** | **84-94** | **50-56** |
-| **ga** | **37.8 (67th)** | **89-98** | **61-64** |
+| Language | Old scheme (`qwen3.6`, corpus mean, rank of 67) | New scheme, local three | New scheme, commercial two | `jev` |
+|---|---|---:|---:|---:|
+| ja | 85.6 (9th) | 88-96 | 69-70 | 88 |
+| ru | 85.2 (10th) | 97-98 | 93 | 77 |
+| pl | 83.7 (15th) | 70-92 | 78-79 | 81 |
+| ko | 75.9 (25th) | 84-94 | 69-81 | 87 |
+| hi | 70.4 (32nd) | 92-98 | 81-92 | 77 |
+| kn | 58.2 (54th) | 49-89 | 65-71 | 81 |
+| **ia** | **47.2 (64th)** | **84-94** | **50-56** | **66** |
+| **ga** | **37.8 (67th)** | **89-98** | **61-64** | **87** |
 
 *(Corpus figures are per-language means over 16 translators; new-scheme figures are the 8 single targets from this experiment, so the columns are not directly comparable in level. The ordering is the point.)*
 
 On Interlingua and Irish the commercial evaluators land near where the old scheme put those languages, while the new scheme's local evaluators moved them to near-ceiling. The same evaluator model, `qwen3.6`, went from rating Irish worst-of-67 to scoring it 89.
+
+`jev` splits on these two: Interlingua 66 is between the families, but Irish 87 is the local reading, on the language the old scheme ranked last of 67. Being exact on `a01` did not carry over to the group E judgment that this row is really about — see section 3.6.
 
 This suggests the rubric change did more than stabilize `qwen3.6` -- **it changed the direction in which evaluator ignorance is expressed.** The old free-form rubric gave a model with no command of the target language nothing to anchor on, producing low and wildly variable scores (Interlingua's 3-run range on this experiment's target was 55, Irish's 51). The 50-item checklist supplies a default instead: every item is positively phrased, so an undetected defect is silently scored `yes`. Ignorance that used to surface as noise now surfaces as a stable high score, which is harder to notice and worse to act on.
 
@@ -293,8 +348,11 @@ Its per-item medians do churn between variants (15.0% of 400 differ between `eva
 | `gemma4:31b` | `evals` | 90.1 | 20.8 | 0.08 | 23.3% | 84.1% | 63.5% |
 | `gemma4:31b` | `evals-nt` | 89.8 | 18.5 | 0.14 | 26.0% | 88.0% | 61.0% |
 | `gemma4:31b` | `evals-ne` | 94.5 | 24.8 | 0.15 | **12.4%** | 91.7% | 58.2% |
+| `jev` | `evals-jev`\* | 80.5 | 13.9 | **-0.33** | 54.7% | 72.5% | 65.8% |
 
 *(Recall and precision are over the reference's non-yes item medians: recall is the share of the reference's defects the evaluator also reports, precision the share of its own reports the reference shares.)*
+
+*\*The reference was never run under `evals-jev`, so that row compares against its `evals` run: evaluator and variant differ on the two sides at once, unlike every other row. `jev` detects more of the reference's defects than any local evaluator under any variant (54.7%, against `qwen3.6`'s best of 66.9% under `evals-nt` and everything else below 36%) and is the closest to it in level after the commercial pair, yet its Kendall is the only negative one in the table — it disagrees about which targets are worse, not about how many defects there are. Russian and Irish account for that; see section 3.6.*
 
 - **`qwen3.6` without thinking is a different evaluator, and a much better one.** Its mean lands on the reference (74.0 against 71.5), its detection of the reference's defects nearly doubles (35.8% -> 66.9%), the `partial` band goes from unused to used (8.3% -> 21.8%), and group E drops from 18.8/20 to 13.9 against the reference's 11.1 -- the near-ceiling naturalness verdicts Discussion 4 identifies as the local failure mode are largely gone. Against the old scheme's corpus mean, an independent reference, its correlation recovers from 0.07 to 0.67 (Pearson). It also costs 23s per call against 245s.
 - **This reverses section 3.4's reading.** That section recorded the 14.9-point drop as a loss of validity. Against the reference it is a correction: thinking is what lets `qwen3.6` talk itself into a `yes`.
@@ -327,6 +385,8 @@ Against the 8 old 3-run medians:
 | `gpt-5.6-terra` | 0.44 | 0.55 | 0.41 | 19/8 |
 | `gemma4:31b` | 0.26 | 0.45 | 0.33 | 18/9 |
 | `gpt-oss:120b` | 0.40 | 0.26 | 0.15 | 15/11 |
+| `jev` | -0.42 | -0.63 | **-0.52** | 6/19 |
+| `jev` (expected) | -0.40 | -0.40 | -0.29 | 10/18 |
 
 Against the old per-language corpus mean (the verified reference):
 
@@ -334,13 +394,16 @@ Against the old per-language corpus mean (the verified reference):
 |---|---:|---:|---:|---|
 | `gpt-5.6-terra` | **0.72** | 0.50 | 0.41 | 19/8 |
 | `gpt-5.6-luna` | 0.68 | **0.64** | **0.43** | 20/8 |
+| `jev` (expected) | 0.29 | 0.48 | 0.36 | 19/9 |
 | `gpt-oss:120b` | 0.25 | 0.36 | 0.31 | 17/9 |
+| `jev` | 0.24 | 0.27 | 0.20 | 15/10 |
 | `qwen3.6` | 0.07 | 0.12 | 0.07 | 15/13 |
 | `gemma4:31b` | **-0.35** | **-0.19** | **-0.19** | 11/16 |
 
 - **Both commercial evaluators track both references** (Kendall 0.41-0.50 and 0.41-0.43). They are equivalent to each other on trend, so neither is "closest to the old scheme"; the split is between families, not between `gpt-5.6-terra` and `gpt-5.6-luna`.
 - **`qwen3.6` collapses when the reference is changed** (Kendall 0.43 -> 0.07). Its apparent agreement with the 8 old medians does not reflect the language-difficulty trend the old scheme established over the whole corpus.
 - **`gemma4:31b` is negatively correlated** with the verified reference (-0.19): it scores highest on the languages the old scheme ranked hardest. This is the same Interlingua/Irish inflation documented in Discussion 4, measured against an independent reference.
+- **`jev` behaves oppositely against the two references**, and the split is informative rather than contradictory. Against the 8 old 3-run medians it is the worst row in the table (Kendall -0.52, 6/19 pairs), because those medians come from single unstable runs of the evaluator this experiment exists to replace — `gemini-2.5-flash / ru` sits at 86 there, and `jev` is the one evaluator that penalizes it. Against the verified corpus reference it is mid-table (0.20), and its expected-score reading (0.36) reaches third, behind only the commercial pair. Which reference is used decides `jev`'s rank more than it decides anyone else's.
 
 Scope: n=8, where Spearman needs about 0.71 and Kendall about 0.57 for p<0.05, so **no individual correlation here is significant**; these are comparisons among evaluators on a shared sample, not established effect sizes. The 8 targets also use 8 different translators, so language difficulty is confounded with translation quality -- the confound is identical for all five evaluators, which is what keeps the comparison fair but not what would make any single row meaningful.
 
@@ -350,7 +413,7 @@ Scope: n=8, where Spearman needs about 0.71 and Kendall about 0.57 for p<0.05, s
 
 - **Scale does not predict accuracy within the local set.** `gpt-oss:120b` (116.8B total, MoE 128/4, MXFP4) is the largest local evaluator and the least accurate on `a01` (4/8); `gemma4:31b` (31.3B dense, by far the most active parameters of the three) is the most lenient (+0.50). A capability floor should produce some ordering by scale, and none appears.
 - **The old scheme worked with a local evaluator.** The corpus ranking above, including the quantization detection, was produced entirely by `qwen3.6`. Local models can evaluate translation quality in aggregate; what fails is this particular rubric.
-- **The commercial side is n=2 from one family.** `gpt-5.6-terra` and `gpt-5.6-luna` agree on 80.5% of item verdicts. No commercial model outside the `gpt-5.6` family has been run as an evaluator, so no class threshold has been located.
+- **The commercial side is n=2 from one family.** `gpt-5.6-terra` and `gpt-5.6-luna` agree on 80.5% of item verdicts. No commercial model outside the `gpt-5.6` family has been run as an evaluator, so no class threshold has been located. `jev` (section 3.6) is a third family and reaches the commercial pair's 8/8 on `a01` and their `partial` rate at a fraction of the cost, which argues further against a capability floor — but it does not track either reference's ordering, so it relocates the question rather than answering it.
 
 A sharper statement of what changed: the old rubric asked for an overall judgment, which averages over an evaluator's blind spots; the 50-item checklist asks for 50 independent detections and scores every miss as `yes`, which accumulates them in one direction. The burden moved from judgment to detection, and the averaging that rescued the old scheme is gone.
 
@@ -372,6 +435,7 @@ A sharper statement of what changed: the old rubric asked for an overall judgmen
    - Group E holds most of the 13-19 point offset and admits no automatic ground truth. These two languages are where the old scheme (corpus ranks 64/67 and 67/67) and the commercial evaluators agree against the local ones, so hand-adjudicating them decides whether the local near-ceiling subtotals are the same failure `a01` exposes.
 6. **Reconsider the Uniform `yes` Default**:
    - Every item is positively phrased, so an evaluator that cannot inspect a property scores it `yes`. That converts ignorance into a stable high score rather than visible noise. Options worth testing: an explicit `unable_to_assess` verdict excluded from the denominator, or requiring evidence to *support* a `yes` on items where the old scheme and the checklist disagree most.
+   - `jev` (section 3.6) is a third option already implemented: a typed Score answer carries a confidence and a probability-weighted total, so the default is no longer a flat `yes`. It does not settle the question — `jev`'s mean confidence is the flat-distribution value, and its Irish subtotals show the near-ceiling failure mode surviving — but it makes the failure measurable rather than invisible.
 7. **Run the Quantization Separation Test**:
    - Evaluate `bonsai2-27b` and `qwen3.8` over all 67 languages under the new scheme with `qwen3.6` as evaluator (134 calls, local only), under `--no-think --no-evidence` per Discussion 5. The old scheme separated them by 26 points in 62 of 67 languages; whether the new scheme plus a local evaluator reproduces that decides if "new scheme + local" is usable in aggregate. See "Provisional Position".
 8. **Evaluate `--split` Modes**:
@@ -390,6 +454,9 @@ uv run experimental/11/pick_unstable.py --per-translator 1 --exclude gpt-5.6-lun
 
 # 2. Run batch evaluation (evals/, evals-nt/, evals-ne/)
 bash experimental/11/batch.sh
+
+# 2b. Run the typed-judgment evaluator (evals-jev/); needs TYPESAFE_API_KEY
+uv run experimental/11/eval50_jev.py
 
 # 3. Aggregate scores and generate comparisons
 uv run experimental/11/agg50.py

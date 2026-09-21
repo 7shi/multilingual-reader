@@ -1,8 +1,10 @@
 # Experiment 11: which variant, taking one evaluator as reference
 
-Reference evaluator: `gpt-5.6-terra`. Variants: `evals/`, `evals-nt/`, `evals-ne/`.
+Reference evaluator: `gpt-5.6-terra`. Variants: `evals/`, `evals-nt/`, `evals-ne/`, `evals-jev/`.
 
 Every figure below is a median of 3 runs. The reference is assumed correct; the report measures how far each variant moves the other evaluators toward or away from it, and what the variant does to the reference itself.
+
+Not every evaluator was run under every variant: `evals-jev/` holds only `jev`. Those variants have no reference of their own, so section 3 compares them against the reference's `evals/` run and marks the row; the rest of the report simply leaves the missing pairs out.
 
 ## 1. The reference under each variant
 
@@ -39,13 +41,14 @@ Unlabeled lines are counted from the translations, and the rubric's bands (0 = y
 - gemini-2.5-flash / ru: 15 unlabeled lines -> no
 - gemini-3-flash / hi: 5 unlabeled lines -> no
 
-| Evaluator | evals exact | evals bias | evals-nt exact | evals-nt bias | evals-ne exact | evals-ne bias |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| `gemma4-31b` | 5/8 | +0.50 | 6/8 | -0.25 | 6/8 | +0.25 |
-| `gpt-5.6-luna` | 8/8 | +0.00 | 7/8 | -0.12 | 7/8 | +0.12 |
-| `gpt-5.6-terra` | 8/8 | +0.00 | 8/8 | +0.00 | 7/8 | -0.12 |
-| `gpt-oss-120b` | 4/8 | +0.38 | 3/8 | +0.62 | 5/8 | +0.62 |
-| `qwen3.6` | 5/8 | -0.25 | 5/8 | +0.50 | 6/8 | +0.00 |
+| Evaluator | evals exact | evals bias | evals-nt exact | evals-nt bias | evals-ne exact | evals-ne bias | evals-jev exact | evals-jev bias |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| `gemma4-31b` | 5/8 | +0.50 | 6/8 | -0.25 | 6/8 | +0.25 | - | - |
+| `gpt-5.6-luna` | 8/8 | +0.00 | 7/8 | -0.12 | 7/8 | +0.12 | - | - |
+| `gpt-5.6-terra` | 8/8 | +0.00 | 8/8 | +0.00 | 7/8 | -0.12 | - | - |
+| `gpt-oss-120b` | 4/8 | +0.38 | 3/8 | +0.62 | 5/8 | +0.62 | - | - |
+| `jev` | - | - | - | - | - | - | 8/8 | +0.00 |
+| `qwen3.6` | 5/8 | -0.25 | 5/8 | +0.50 | 6/8 | +0.00 | - | - |
 
 Bias is the mean signed error with yes=2, partial=1, no=0; positive means scoring higher than the count warrants.
 
@@ -57,7 +60,7 @@ MAD is the mean absolute difference in total score. Recall and precision are ove
 
 | Evaluator | Mean score | MAD | Pearson | Spearman | Kendall | Recall | Precision | False alarms | Item agreement |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| `gpt-5.6-terra` | 71.6 | 0.0 | - | - | - | - | - | - | - |
+| `gpt-5.6-terra` (evals) | 71.6 | 0.0 | - | - | - | - | - | - | - |
 | `gemma4-31b` | 90.1 | 20.8 | -0.05 | 0.23 | 0.08 | 23.3% | 84.1% | 7 | 63.5% |
 | `gpt-5.6-luna` | 74.9 | 5.0 | 0.89 | 0.86 | 0.78 | 81.1% | 86.0% | 21 | 80.5% |
 | `gpt-oss-120b` | 88.4 | 22.2 | 0.11 | 0.10 | 0.04 | 22.6% | 63.2% | 21 | 61.8% |
@@ -67,7 +70,7 @@ MAD is the mean absolute difference in total score. Recall and precision are ove
 
 | Evaluator | Mean score | MAD | Pearson | Spearman | Kendall | Recall | Precision | False alarms | Item agreement |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| `gpt-5.6-terra` | 71.5 | 0.0 | - | - | - | - | - | - | - |
+| `gpt-5.6-terra` (evals-nt) | 71.5 | 0.0 | - | - | - | - | - | - | - |
 | `gemma4-31b` | 89.8 | 18.5 | 0.11 | 0.19 | 0.14 | 26.0% | 88.0% | 6 | 61.0% |
 | `gpt-5.6-luna` | 73.1 | 6.1 | 0.83 | 0.83 | 0.63 | 81.1% | 87.3% | 20 | 80.5% |
 | `gpt-oss-120b` | 87.9 | 19.9 | 0.36 | 0.68 | 0.56 | 30.2% | 69.9% | 22 | 61.0% |
@@ -77,11 +80,20 @@ MAD is the mean absolute difference in total score. Recall and precision are ove
 
 | Evaluator | Mean score | MAD | Pearson | Spearman | Kendall | Recall | Precision | False alarms | Item agreement |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| `gpt-5.6-terra` | 69.8 | 0.0 | - | - | - | - | - | - | - |
+| `gpt-5.6-terra` (evals-ne) | 69.8 | 0.0 | - | - | - | - | - | - | - |
 | `gemma4-31b` | 94.5 | 24.8 | 0.13 | 0.19 | 0.15 | 12.4% | 91.7% | 2 | 58.2% |
 | `gpt-5.6-luna` | 73.4 | 6.9 | 0.76 | 0.67 | 0.36 | 82.5% | 86.9% | 22 | 81.2% |
 | `gpt-oss-120b` | 87.2 | 24.2 | 0.28 | 0.43 | 0.33 | 27.1% | 73.8% | 17 | 56.8% |
 | `qwen3.6` | 90.1 | 20.4 | 0.32 | 0.40 | 0.29 | 35.6% | 88.7% | 8 | 62.3% |
+
+### evals-jev
+
+The reference was not run under `evals-jev`, so its `evals/` run stands in. Evaluator and variant differ on the two sides at once, which no figure in this table separates.
+
+| Evaluator | Mean score | MAD | Pearson | Spearman | Kendall | Recall | Precision | False alarms | Item agreement |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| `gpt-5.6-terra` (evals) | 71.6 | 0.0 | - | - | - | - | - | - | - |
+| `jev` | 80.5 | 13.9 | 0.15 | -0.25 | -0.33 | 54.7% | 72.5% | 33 | 65.8% |
 
 ## 4. Verdict distribution and evidence fill
 
@@ -99,6 +111,7 @@ MAD is the mean absolute difference in total score. Recall and precision are ove
 | `gpt-oss-120b` | evals | 83.6% | 5.4% | 11.0% | 15.7% |
 | `gpt-oss-120b` | evals-nt | 78.3% | 14.5% | 7.2% | 0.0% |
 | `gpt-oss-120b` | evals-ne | 82.1% | 7.7% | 10.2% | 0.0% |
+| `jev` | evals-jev | 70.0% | 20.9% | 9.1% | 0.0% |
 | `qwen3.6` | evals | 84.1% | 8.3% | 7.6% | 15.9% |
 | `qwen3.6` | evals-nt | 61.3% | 21.8% | 17.0% | 0.0% |
 | `qwen3.6` | evals-ne | 81.3% | 14.6% | 4.1% | 0.0% |
@@ -121,6 +134,7 @@ Out of 20 per group, meaned over the targets.
 | `gpt-oss-120b` | evals | 17.2 | 18.1 | 16.9 | 18.2 | 17.9 |
 | `gpt-oss-120b` | evals-nt | 18.0 | 16.6 | 18.8 | 18.2 | 16.2 |
 | `gpt-oss-120b` | evals-ne | 16.6 | 18.1 | 17.1 | 18.1 | 17.2 |
+| `jev` | evals-jev | 13.2 | 17.0 | 17.5 | 18.2 | 14.5 |
 | `qwen3.6` | evals | 16.2 | 16.8 | 18.4 | 18.8 | 18.8 |
 | `qwen3.6` | evals-nt | 14.1 | 16.6 | 14.6 | 14.8 | 13.9 |
 | `qwen3.6` | evals-ne | 17.4 | 16.6 | 18.8 | 19.0 | 18.4 |
@@ -147,16 +161,18 @@ An independent reference: each language's old-scheme mean over every translator 
 | `gpt-oss-120b` | evals | 0.24 | 0.31 | 0.31 |
 | `gpt-oss-120b` | evals-nt | 0.38 | 0.68 | 0.48 |
 | `gpt-oss-120b` | evals-ne | 0.22 | 0.35 | 0.19 |
+| `jev` | evals-jev | 0.24 | 0.27 | 0.20 |
 | `qwen3.6` | evals | 0.07 | 0.12 | 0.07 |
 | `qwen3.6` | evals-nt | 0.67 | 0.48 | 0.29 |
 | `qwen3.6` | evals-ne | 0.07 | 0.07 | 0.14 |
 
 ## 7. Call time, per variant
 
-| Evaluator | evals | evals-nt | evals-ne |
-| --- | ---: | ---: | ---: |
-| `gemma4-31b` | 798s | 110s | 382s |
-| `gpt-5.6-luna` | 42s | 43s | 39s |
-| `gpt-5.6-terra` | 43s | 39s | 34s |
-| `gpt-oss-120b` | 160s | 160s | 124s |
-| `qwen3.6` | 245s | 23s | 156s |
+| Evaluator | evals | evals-nt | evals-ne | evals-jev |
+| --- | ---: | ---: | ---: | ---: |
+| `gemma4-31b` | 798s | 110s | 382s | - |
+| `gpt-5.6-luna` | 42s | 43s | 39s | - |
+| `gpt-5.6-terra` | 43s | 39s | 34s | - |
+| `gpt-oss-120b` | 160s | 160s | 124s | - |
+| `jev` | - | - | - | 1s |
+| `qwen3.6` | 245s | 23s | 156s | - |

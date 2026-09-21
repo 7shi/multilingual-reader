@@ -33,7 +33,13 @@ BASE = Path(__file__).resolve().parent
 # generated from anywhere -- the corpus is read in place, never copied here.
 ONDE = BASE.parent.parent / "examples" / "tr" / "onde"
 RUNS = (1, 2, 3)
-VARIANTS = ("evals", "evals-nt", "evals-ne")
+VARIANTS = ("evals", "evals-nt", "evals-ne", "evals-jev")
+# The variant every evaluator that has one was run under, and so the one a variant
+# missing the reference is compared against. evals-jev/ is Jev's only condition -- it
+# answers without evidence, an overall comment or thinking, so eval50.py's two knobs have
+# no counterpart there, and the reference was never run under it. Comparing it therefore
+# breaks this report's same-variant-on-both-sides rule; every table that does so says so.
+BASELINE = "evals"
 VERDICT_SCORES = {"yes": 2, "partial": 1, "no": 0}
 NAME_RE = re.compile(r"^onde-(.+)-([a-z]{2})-(.+)-(\d+)\.json$")
 # A speaker label is a short run of text before the first colon. The colon further into
@@ -171,7 +177,7 @@ def kendall(a, b):
     return (concordant - discordant) / total if total else 0.0
 
 
-def detection(variant_data, targets, evaluator, reference):
+def detection(variant_data, targets, evaluator, reference, reference_data=None):
     """How many of the reference's defects the evaluator also reports, and how cleanly.
 
     The reference's non-yes item medians are the defects to be found. Recall is the share
@@ -179,10 +185,14 @@ def detection(variant_data, targets, evaluator, reference):
     evaluator's own non-yes verdicts that the reference agrees with. Two evaluators can
     land on the same total while sharing almost none of these, which is exactly what the
     totals cannot show.
+
+    `reference_data` supplies the reference side from a different variant, for a variant
+    the reference was never run under; it defaults to the evaluator's own.
     """
+    reference_data = variant_data if reference_data is None else reference_data
     found = missed = extra = 0
     for translator, lang in targets:
-        ref = variant_data.get((translator, lang, reference))
+        ref = reference_data.get((translator, lang, reference))
         own = variant_data.get((translator, lang, evaluator))
         if not ref or not own:
             continue
@@ -204,11 +214,16 @@ def detection(variant_data, targets, evaluator, reference):
     }
 
 
-def agreement(variant_data, targets, evaluator, reference):
-    """Share of item medians where the evaluator and the reference return the same verdict."""
+def agreement(variant_data, targets, evaluator, reference, reference_data=None):
+    """Share of item medians where the evaluator and the reference return the same verdict.
+
+    `reference_data` supplies the reference side from a different variant, as in
+    detection(); it defaults to the evaluator's own.
+    """
+    reference_data = variant_data if reference_data is None else reference_data
     same = total = 0
     for translator, lang in targets:
-        ref = variant_data.get((translator, lang, reference))
+        ref = reference_data.get((translator, lang, reference))
         own = variant_data.get((translator, lang, evaluator))
         if not ref or not own:
             continue
@@ -218,6 +233,12 @@ def agreement(variant_data, targets, evaluator, reference):
             if ref_items[item] == own_items[item]:
                 same += 1
     return same / total if total else 0.0
+
+
+def ran_under(variant_data, targets, evaluator):
+    """Whether this evaluator has any data in this variant."""
+    return any((translator, lang, evaluator) in variant_data
+               for translator, lang in targets)
 
 
 def scores_over(variant_data, targets, evaluator):
@@ -273,8 +294,14 @@ def main():
     data = {v: load(v) for v in VARIANTS}
     variants = [v for v in VARIANTS if data[v]]
     reference = args.reference
-    evaluators = sorted({k[2] for k in data[variants[0]]})
+    evaluators = sorted({k[2] for v in variants for k in data[v]})
     others = [e for e in evaluators if e != reference]
+    # Which evaluators each variant actually holds, so a table can skip the pairs that
+    # were never run rather than assuming every evaluator appears in every variant.
+    present = {v: [e for e in evaluators if ran_under(data[v], targets, e)] for v in variants}
+    # Variants the reference itself was run under, which are the ones it can be compared
+    # against on its own terms.
+    ref_variants = [v for v in variants if reference in present[v]]
 
     print("# Experiment 11: which variant, taking one evaluator as reference\n")
     print(f"Reference evaluator: `{reference}`. Variants: "
@@ -282,24 +309,32 @@ def main():
     print("Every figure below is a median of 3 runs. The reference is assumed correct; "
           "the report measures how far each variant moves the other evaluators toward "
           "or away from it, and what the variant does to the reference itself.\n")
+    off_baseline = [v for v in variants if v not in ref_variants]
+    if off_baseline:
+        print("Not every evaluator was run under every variant: "
+              + ", ".join(f"`{v}/` holds only " + ", ".join(f"`{e}`" for e in present[v])
+                          for v in off_baseline)
+              + f". Those variants have no reference of their own, so section 3 compares "
+                f"them against the reference's `{BASELINE}/` run and marks the row; the "
+                f"rest of the report simply leaves the missing pairs out.\n")
 
     print("## 1. The reference under each variant\n")
     print("If the reference itself moved between variants, nothing further could be "
           "compared. Its own per-target scores:\n")
-    print("| Target | " + " | ".join(variants) + " | Spread |")
-    print("| --- | " + " ".join("---: |" for _ in variants) + " ---: |")
+    print("| Target | " + " | ".join(ref_variants) + " | Spread |")
+    print("| --- | " + " ".join("---: |" for _ in ref_variants) + " ---: |")
     for translator, lang in targets:
-        cells = [median_total(data[v][(translator, lang, reference)]) for v in variants]
+        cells = [median_total(data[v][(translator, lang, reference)]) for v in ref_variants]
         print(f"| {translator} / {lang} | " + " | ".join(str(c) for c in cells)
               + f" | {max(cells) - min(cells)} |")
     for label, fn in (("Mean score", lambda v: mean(scores_over(data[v], targets, reference))),
                       ("Mean run-to-run range", lambda v: run_range(data[v], targets, reference)),
                       ("Mean call time", lambda v: call_time(data[v], targets, reference))):
-        cells = [fn(v) for v in variants]
+        cells = [fn(v) for v in ref_variants]
         fmt = "{:.0f}s" if label == "Mean call time" else "{:.1f}"
         print(f"| **{label}** | " + " | ".join(fmt.format(c) for c in cells) + " | |")
     print()
-    for a, b in combinations(variants, 2):
+    for a, b in combinations(ref_variants, 2):
         moved = sum(1 for translator, lang in targets
                     for item in ITEM_IDS
                     if medians(data[a][(translator, lang, reference)])[item]
@@ -325,6 +360,9 @@ def main():
     for evaluator in evaluators:
         cells = []
         for v in variants:
+            if evaluator not in present[v]:
+                cells += ["-", "-"]
+                continue
             exact, bias = 0, []
             for translator, lang in targets:
                 got = medians(data[v][(translator, lang, evaluator)])["a01_speaker_label_present"]
@@ -344,22 +382,32 @@ def main():
           "scores yes. Agreement is over all 50 item medians, defects and clean "
           "verdicts alike.\n")
     for v in variants:
+        # A variant the reference never ran under is measured against its BASELINE run
+        # instead. The two sides then differ in variant as well as in evaluator, so the
+        # row cannot separate the two -- hence the note rather than a silent comparison.
+        ref_v = v if v in ref_variants else BASELINE
         print(f"### {v}\n")
+        if ref_v != v:
+            print(f"The reference was not run under `{v}`, so its `{ref_v}/` run stands "
+                  f"in. Evaluator and variant differ on the two sides at once, which no "
+                  f"figure in this table separates.\n")
         print("| Evaluator | Mean score | MAD | Pearson | Spearman | Kendall "
               "| Recall | Precision | False alarms | Item agreement |")
         print("| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |")
-        ref_scores = scores_over(data[v], targets, reference)
-        print(f"| `{reference}` | {mean(ref_scores):.1f} | 0.0 | - | - | - "
+        ref_scores = scores_over(data[ref_v], targets, reference)
+        print(f"| `{reference}` ({ref_v}) | {mean(ref_scores):.1f} | 0.0 | - | - | - "
               "| - | - | - | - |")
         for evaluator in others:
+            if evaluator not in present[v]:
+                continue
             own = scores_over(data[v], targets, evaluator)
-            det = detection(data[v], targets, evaluator, reference)
+            det = detection(data[v], targets, evaluator, reference, data[ref_v])
             print(f"| `{evaluator}` | {mean(own):.1f} "
                   f"| {mean(abs(x - r) for x, r in zip(own, ref_scores)):.1f} "
                   f"| {pearson(own, ref_scores):.2f} | {spearman(own, ref_scores):.2f} "
                   f"| {kendall(own, ref_scores):.2f} | {det['recall']:.1%} "
                   f"| {det['precision']:.1%} | {det['extra']} | "
-                  f"{agreement(data[v], targets, evaluator, reference):.1%} |")
+                  f"{agreement(data[v], targets, evaluator, reference, data[ref_v]):.1%} |")
         print()
 
     print("## 4. Verdict distribution and evidence fill\n")
@@ -367,6 +415,8 @@ def main():
     print("| --- | --- | ---: | ---: | ---: | ---: |")
     for evaluator in evaluators:
         for v in variants:
+            if evaluator not in present[v]:
+                continue
             counts = {"yes": 0, "partial": 0, "no": 0}
             filled = total = 0
             for translator, lang in targets:
@@ -388,6 +438,8 @@ def main():
     print("| --- | --- | " + " ".join("---: |" for _ in GROUPS))
     for evaluator in evaluators:
         for v in variants:
+            if evaluator not in present[v]:
+                continue
             cells = [group_subtotal(data[v], targets, evaluator, g) for g in GROUPS]
             print(f"| `{evaluator}` | {v} | " + " | ".join(f"{c:.1f}" for c in cells) + " |")
     print()
@@ -407,6 +459,8 @@ def main():
         reference_values = [corpus[l] for l in langs]
         for evaluator in evaluators:
             for v in variants:
+                if evaluator not in present[v]:
+                    continue
                 own = scores_over(data[v], targets, evaluator)
                 print(f"| `{evaluator}` | {v} | {pearson(own, reference_values):.2f} "
                       f"| {spearman(own, reference_values):.2f} "
