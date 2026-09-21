@@ -222,6 +222,11 @@ least when the levels were rewritten. Whether that is a real property of machine
 translation at this quality level or a property of how this evaluator reads "natural and
 smooth to native speakers" is not something either experiment can say.
 
+*Settled afterwards, from data already on disk: **section 5.1**. The second reading is
+refuted — the fifty-item scheme's own fluency group and the old generative evaluator, over
+all 16 translators, put fluency lowest too. Section 5.2 adds that it is the criterion that
+discriminates most at the top of the corpus.*
+
 ### 6. The two rubrics agree at +0.90, but only before rounding
 
 The fifty-item scheme over the same 134 translations, one run each. [cmp13.py](cmp13.py)
@@ -400,7 +405,7 @@ The mean absolute difference moves the other way — 14.6 points here against 6.
 ### 3. The offset is not an offset
 
 Section 3.2 reported the scheme reading 3.7 points **below** the old one, and
-[section 6 item 4](#6-what-would-come-next) asked why it was 3.7 and not zero. Here it
+[section 7 item 4](#7-what-would-come-next) asked why it was 3.7 and not zero. Here it
 reads **12.4 points above**. A constant does not change sign, so it was never a constant.
 Fitting all 268 translations from both runs:
 
@@ -475,7 +480,7 @@ And the rounding penalty goes with it:
 **The saturation section 3.6 diagnosed is a property of the targets, not of the rubric.**
 The fifty items discriminate perfectly well when there is something to discriminate; what
 they cannot do is tell two near-perfect translations apart, because a positively-phrased
-item has nowhere above `yes` to go. That narrows [section 6 item 5](#6-what-would-come-next)
+item has nowhere above `yes` to go. That narrows [section 7 item 5](#7-what-would-come-next)
 considerably: the three levels do not need rewriting for the corpus at large, they need a
 ceiling for its top. Experiment 11's diagnosis stands, with its scope corrected.
 
@@ -585,7 +590,208 @@ because a five-question structured response has a fixed shape.
 
 ---
 
-## 5. Reproducing
+## 5. The Corpus as a Yardstick
+
+Everything above asks whether this scheme measures translation quality. That is not quite
+the question the corpus exists to answer. The corpus exists to say **how many languages a
+model can translate acceptably**, which is a different instrument with different
+requirements: it needs to rank models, to survive being pointed at new ones, and to say
+which languages fail — not to be right in the abstract about any single translation.
+
+This section is what fell out of reading the existing measurements against that use. No new
+evaluations were run for it: sections 5.1 through 5.4 are computed from data already on
+disk, which is why several questions section 7 had listed as open turn out to be answered.
+
+### 1. Fluency is real, and section 3.5's second reading is dead
+
+Section 3.5 found fluency about 2.5 points below every other criterion and could not say
+whether that was machine translation or how this evaluator reads "natural and smooth to
+native speakers". The corpus already contains two independent checks.
+
+**The fifty-item scheme has its own fluency group** — `e`, ten narrow properties
+(`e03_syntax`, `e05_no_calque`, `e07_spoken_register`, `e10_orthography`, …) sharing no
+wording with the five-criterion description:
+
+| Group (mean, 0–20) | gpt-5.6-luna | union-alpha | qwen3.8 | bonsai2-27b |
+|---|---:|---:|---:|---:|
+| a Structural integrity | 18.72 | 18.83 | 16.66 | 13.77 |
+| b Language purity | 16.97 | 17.13 | 15.20 | 12.38 |
+| c Semantic fidelity | 17.93 | 18.06 | 14.67 | 11.16 |
+| d Terminology | 16.44 | 16.50 | 14.01 | 11.35 |
+| **e Fluency and naturalness** | **15.69** | **15.77** | **11.67** | **7.73** |
+
+Lowest in all four, and per translation the two schemes' fluency figures correlate at
+**+0.91, +0.92, +0.97, +0.91**.
+
+**The old generative evaluator says the same thing over all 16 translators.** Per-criterion
+means from `examples/tr/onde/*/evals/`, a different model on a different mechanism:
+
+| Criterion (mean over 16 translators, 0–20) | |
+|---|---:|
+| Information completeness | 15.64 |
+| Terminology | 14.08 |
+| Contextual adaptation | 14.03 |
+| Readability | 13.74 |
+| **Fluency** | **12.76** |
+
+Fluency is the lowest criterion in **16 of 16 translators**, without exception.
+
+Two rubrics, two evaluator models, two granularities, one direction. **The "bias in one
+criterion's wording" reading is refuted**, and section 7 item 3's proposed test — reword
+that criterion and re-run — would not have been decisive anyway, since experiment 12
+already established that level wording moves scores.
+
+What is left is narrower than the original question. All of this is 67 translations of one
+document, a spoken dialogue about physics, so a fluency floor specific to *this source
+text* is not excluded; a second source in another genre would settle it. And no human has
+checked any of it — three evaluators agreeing is not ground truth. Item-level evidence
+gives at least a mechanism: `e05_no_calque` is the most-failed item in both runs (95
+`partial` on the top two, 91 `no` on the bottom pair), and calque is the documented failure
+mode of machine translation.
+
+### 2. Fluency is also the criterion that discriminates at the top
+
+Across all 16 translators the five criteria are near-identical in spread, so none of them
+is obviously carrying the ranking:
+
+| Criterion | min | max | range | sd |
+|---|---:|---:|---:|---:|
+| Readability | 5.48 | 18.01 | 12.54 | 3.25 |
+| Fluency | 4.72 | 17.18 | 12.46 | 3.31 |
+| Terminology | 6.03 | 17.75 | 11.72 | 3.09 |
+| Contextual adaptation | 5.31 | 18.22 | 12.91 | 3.40 |
+| Information completeness | 6.43 | 19.25 | 12.82 | 3.25 |
+
+Restricted to the four best translators, they are not:
+
+| Criterion | spread among the top 4 |
+|---|---:|
+| **Fluency** | **1.22** |
+| Contextual adaptation | 0.99 |
+| Readability | 0.96 |
+| Terminology | 0.93 |
+| **Information completeness** | **0.43** |
+
+Information completeness reaches 19.25/20 at the top and is nearly a constant there;
+fluency is the one criterion still separating models. **Rewording fluency upward would
+remove the most informative signal the rubric has at the top of the corpus**, which is
+where new models arrive. Section 7 item 3 is withdrawn on that basis rather than merely
+answered.
+
+### 3. The mean hides coverage, and the tail is unusable with the old evaluator
+
+For "how many languages does this model handle", the corpus mean is the wrong summary.
+Counting languages at or above 80 — `generate_compare_rows.py`'s existing `practical range`
+boundary — reorders it:
+
+| Translator | Old mean | ≥80 | % | the three single runs | 70–90 band |
+|---|---:|---:|---:|---|---:|
+| union-alpha | 90.09 | **63** | 94 | 60, 62, 60 | 17 |
+| gpt-5.6-luna | 90.31 | 61 | 91 | 55, 61, 59 | 20 |
+| gemini-3.7-flash | 87.48 | 58 | 87 | 55, 59, 54 | 21 |
+| ox-alpha | 85.73 | 52 | 78 | 50, 53, 54 | 24 |
+| gemini-3-flash | 78.09 | **48** | 72 | 44, 44, 43 | 37 |
+| gpt-5.6-terra | 77.66 | 40 | 60 | 41, 46, 35 | 23 |
+| gemini-2.5-flash | **81.61** | **39** | 58 | 43, 33, 42 | 40 |
+| gemma4-31b | 66.72 | 32 | 48 | 32, 34, 30 | 15 |
+| gemma4 | 68.16 | 29 | 43 | 32, 30, 27 | 19 |
+| gemini-3.5-flash-lite | 66.10 | 24 | 36 | 23, 21, 24 | 22 |
+| muse-glimmer | 63.64 | 19 | 28 | 19, 19, 18 | 25 |
+| qwen3.6 | 58.28 | 17 | 25 | 16, 19, 16 | 19 |
+| gpt-oss | 65.07 | 15 | 22 | 19, 20, 12 | 24 |
+| qwen3.6-27b | 63.00 | 14 | 21 | 18, 18, 16 | 20 |
+| qwen3.8 | 53.96 | 14 | 21 | 13, 17, 15 | 14 |
+| bonsai2-27b | 27.90 | 5 | 7 | 5, 4, 5 | 2 |
+
+`gemini-2.5-flash` has the higher mean (81.61 against 78.09) and nine fewer usable
+languages than `gemini-3-flash`. A few strong languages lift a mean; they do not widen
+coverage. The top two also swap: the mean puts `gpt-5.6-luna` ahead by 0.22, the count puts
+`union-alpha` ahead 63 to 61.
+
+**But the count is more noise-sensitive than the mean**, because languages pile up near the
+boundary — `gemini-2.5-flash` has 40 of its 67 in the 70–90 band. Recomputed from each
+single run rather than the 3-run medians, the count moves by a mean of **4.4 languages** and
+as much as **11** (`gemini-2.5-flash`: 43, 33, 42). The last column doubles as an error bar.
+
+The minimum is worse still and should not be used at all under the current evaluator. The
+three runs behind each translator's worst language spread by a mean of **15.1 points**:
+
+| Translator | worst lang | median | the three runs | spread |
+|---|---|---:|---|---:|
+| gemini-3.7-flash | ia | 54 | 23, 59, 54 | 36 |
+| gemini-2.5-flash | lo | 49 | 42, 72, 49 | 30 |
+| gemini-3.5-flash-lite | si | 20 | 8, 20, 32 | 24 |
+| union-alpha | ga | 31 | 21, 42, 31 | 21 |
+
+Averaging 67 languages suppresses evaluator noise; taking a minimum amplifies it. **The
+statistics that measure multilingual coverage are exactly the ones the current evaluator's
+52.4-point swing destroys** — the mean was the only one robust to it. That is a sharper
+argument for [PLAN.md](PLAN.md)'s migration than the one it was resting on, and it comes
+from this use of the corpus rather than from the evaluator's accuracy.
+
+### 4. What the migration does to the existing chart and tiers
+
+`generate_compare_rows.py` ranks by `(median, pstdev)` and draws a boxplot per model. On the
+four translators measured under both schemes:
+
+| Translator | scale | min | q1 | median | q3 | max | pstdev |
+|---|---|---:|---:|---:|---:|---:|---:|
+| gpt-5.6-luna | old | 62 | 88.0 | 93.0 | 96.0 | 100 | 8.13 |
+| gpt-5.6-luna | jev | 72 | 82.7 | 88.0 | 91.0 | 95 | 5.77 |
+| union-alpha | old | **29** | 88.0 | 92.0 | 95.0 | 98 | 9.39 |
+| union-alpha | jev | **72** | 84.2 | 87.2 | 90.7 | 94 | 5.02 |
+| qwen3.8 | old | 14 | 30.0 | 53.0 | 77.0 | 98 | 25.34 |
+| qwen3.8 | jev | 38 | 54.8 | 70.1 | 78.1 | 94 | 15.07 |
+| bonsai2-27b | old | 0 | 12.0 | 24.0 | 34.0 | 96 | 23.98 |
+| bonsai2-27b | jev | 3 | **25.4** | 38.5 | **52.4** | 90 | 20.94 |
+
+The box narrows as section 4.3's compression predicts. The **whisker** is where the change
+matters: `union-alpha`'s left whisker moves from 29 to 72, and 29 is the `ga` translation
+whose three old runs were 21, 42 and 31. The chart's most visually striking feature is
+currently its least reliable one. At the other end the compression runs backwards —
+`bonsai2-27b`'s box *widens*, because the old scheme's pile-up at 0 truncates its variance.
+
+**Honest negative: the median does not separate the top pair any better.** 93 against 92
+becomes 88.0 against 87.2. Whatever the migration buys, it is not top-end discrimination on
+this statistic, and the two remaining top-four translators would have to be measured to say
+more.
+
+The tier boundaries do not survive unchanged. Under `jev = 0.69 × old + 24.7`:
+
+```
+old 60 -> jev 66.1
+old 80 -> jev 79.9      <- the practical-range boundary, essentially unmoved
+old 90 -> jev 86.8
+```
+
+Only 80 lands where it started, at the crossover. Left at 90/80/60 the tiers re-bucket
+substantially — `gpt-5.6-luna` goes from 44 languages at 90+ to 24, and from 17 in 80–89 to
+35 — without any change in translation quality. The boundaries are rough guides and the one
+that defines "practical" is the one that holds, so this is recorded rather than treated as
+a problem; see [PLAN.md](PLAN.md) section 5.
+
+### 5. The reference has two definitions, and this experiment uses the other one
+
+`SCORES.txt`, the comparison table and the chart all come from `trtools agg`, which totals
+the **five criteria's medians** (`trtools/aggregate.py:67`). [agg13.py](agg13.py) uses the
+**median of the three total scores**, which is what experiments 11 and 12 used. They are not
+the same statistic, and `agg13.py`'s docstring claimed they were.
+
+Over all 1,072 corpus translations they agree on **60%**, differ by a mean absolute **0.60
+points**, and never by more than 7. Refitting section 4.3's compression against
+`SCORES.txt` instead:
+
+| Reference | Fit | Crossover |
+|---|---|---:|
+| median of totals (used here) | `jev = 0.690 × old + 24.7` | 79.6 |
+| sum of criterion medians (`SCORES.txt`) | `jev = 0.688 × old + 24.8` | 79.4 |
+
+Nothing in this experiment turns on the choice. The docstring is corrected and the
+reference is left as the median of totals, for continuity with experiments 11 and 12.
+
+---
+
+## 6. Reproducing
 
 ```bash
 # 1. Evaluate all 134 targets, one run each, under each scheme (needs TYPESAFE_API_KEY)
@@ -621,7 +827,7 @@ averaged silently into the wrong table.
 
 ---
 
-## 6. What Would Come Next
+## 7. What Would Come Next
 
 1. ~~**The bottom of the scale.**~~ **Done — section 4.** Levels 0–2 take 59% of judgments
    on `qwen3.8` and `bonsai2-27b`, and the five-criterion scheme reproduces the old
@@ -642,10 +848,15 @@ averaged silently into the wrong table.
    explanations come apart, and it is what decides whether this is a general replacement
    rather than a check on translations at the extremes. Section 4.3's slope predicts a
    near-zero mean difference there, which is a second thing to check against.
-3. **Fluency.** Section 3.5 is either a finding about machine translation or a bias in one
-   criterion's wording, and the two are distinguishable: the criterion descriptions are
-   `trtools/evaluate.py`'s verbatim, so rewording only that one and re-running 134
-   evaluations would say which.
+3. ~~**Fluency.**~~ **Withdrawn — sections 5.1 and 5.2.** The wording reading is refuted by
+   two independent measurements that were already on disk, and the proposed test would not
+   have been decisive regardless, since experiment 12 had already shown level wording moves
+   scores. Worse, section 5.2 finds fluency is the criterion that separates the top four
+   translators best (spread 1.22 against information completeness's 0.43), so rewording it
+   upward would remove signal where the corpus most needs it. **What is left** is narrower:
+   every measurement is 67 translations of one spoken-dialogue document, so a fluency floor
+   specific to this source text is not excluded. A second source in another genre settles
+   it, and nothing else will.
 4. ~~**Why the offset is 3.7 points and not zero.**~~ **Answered, and it was the wrong
    question — section 4.3.** It is not an offset: the same scheme reads 12.4 points
    *above* the old one on this pair, and all 268 translations fit `jev = 0.69 × old +
@@ -679,3 +890,13 @@ averaged silently into the wrong table.
    measurement. At $0.09 per pair of 134 and the ranges already known to be small, this is
    the cheapest open question here, and it is the one the choice between the two schemes
    actually turns on.
+8. **Whether `jev` separates the top of the corpus.** Section 5.4's honest negative: the
+   median moves from 93/92 to 88.0/87.2 on the top pair, so nothing yet says this scheme
+   discriminates better where new models actually arrive. `gemini-3.7-flash` and `ox-alpha`
+   are the other two of the corpus's top four and are not measured under `jev`. That is 134
+   evaluations, and it is the question a yardstick lives or dies on.
+9. **A second source text.** Sections 5.1 and 5.3 both end at the same limit: everything
+   the corpus knows is 67 translations of one document. Whether the fluency floor, the
+   language difficulty ordering, and the per-model coverage counts survive a different
+   genre is untested, and it is the largest unexamined assumption in the whole corpus —
+   larger than anything about the evaluator.

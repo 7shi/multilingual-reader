@@ -110,8 +110,13 @@ def old_runs(translator, lang):
 def old_score(translator, lang):
     """The old scheme's score for one translation: the median of its three runs.
 
-    Read from the corpus in place. This is the same figure the corpus README quotes, and
-    the same one experiment 11 and 12 use as the per-translation reference.
+    Read from the corpus in place. This is the reference experiments 11 and 12 use, but
+    it is NOT the figure SCORES.txt and the corpus README quote: trtools/aggregate.py
+    totals the five criteria's medians rather than taking the median of the three totals.
+    The two agree on 60% of the corpus's 1,072 translations and differ by a mean absolute
+    0.60 points (maximum 7), and README section 5.5 checks that nothing here turns on the
+    choice -- the compression fit moves from 0.690 to 0.688. Kept as the median of totals
+    for continuity with experiments 11 and 12.
     """
     totals = []
     for run in OLD_RUNS:
