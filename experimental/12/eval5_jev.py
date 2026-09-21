@@ -7,9 +7,8 @@ by a mean of 52.4 points across three runs, because nothing in the rubric separa
 from a 17. Experiment 11's answer was to replace the rubric with 50 narrow yes/partial/no
 items. This script keeps the rubric and replaces the evaluator instead.
 
-Each criterion becomes one TypeSafe System One Score question over five severity levels
-taken from the old prompt's own guidelines. Two things follow from that, neither of them
-a change to what is being judged:
+Each criterion becomes one TypeSafe System One Score question over five ordered severity
+levels. Two things follow from that, neither of them a change to what is being judged:
 
 - **The intermediate scores stop being discretionary.** A Score returns the
   probability-weighted position across the levels, so a value between "minor issues" and
@@ -28,6 +27,13 @@ The old scheme has a whole corpus behind it -- examples/tr/onde/, 16 translators
 languages x 3 runs, split-half Spearman 0.947 -- and a 5-criterion evaluator can be
 compared against it directly, in its own units, over as much of it as is worth paying for.
 
+How those levels are worded is itself a variable, and `--levels` selects between the two
+wordings criteria.py holds: `degrees`, the default, which says only how much of the
+document falls short, and `bands`, the old prompt's guidelines with their defect names.
+README.md section 3 is the comparison. Each set writes to its own directory -- `evals/`
+for the banded set that was run first, `evals-degrees/` for the replacement -- so the two
+cannot end up mixed in one.
+
 Output files use `trtools eval`'s schema, so trtools/aggregate.py and trtools/trend.py
 read them as they stand. `reasoning` and `overall_comment` come back empty, since Jev
 emits no text; both are written anyway so the shape matches, and neither is read by the
@@ -41,6 +47,7 @@ The state is billed once per request, so the five questions cost barely more tha
 Requires a TypeSafe API key in `TYPESAFE_API_KEY`.
 
     uv run experimental/12/eval5_jev.py
+    uv run experimental/12/eval5_jev.py --levels bands
 """
 
 import argparse
@@ -53,7 +60,8 @@ from trtools.statusline import StatusLine
 from llm7shi.usage import Usage, append_usage, find_usage_file, print_today_totals
 from typesafe_sdk import Score, TypeSafeClient
 
-from criteria import CRITERIA, CRITERION_IDS, LEVELS, POINTS_PER_LEVEL
+from criteria import (CRITERIA, CRITERION_IDS, DEFAULT_LEVEL_SET, EVAL_DIRS,
+                      LEVEL_SETS, POINTS_PER_LEVEL)
 
 BASE_DIR = Path(__file__).resolve().parent
 REPO_ROOT = BASE_DIR.parent.parent
@@ -62,7 +70,13 @@ ORIGINAL = str(REPO_ROOT / "examples/onde-en.txt")
 # scheme is known to be worst on, so they are where a replacement evaluator has to be
 # checked first; --targets points this anywhere else.
 DEFAULT_TARGETS = str(BASE_DIR.parent / "11" / "targets.tsv")
-RUNS = 3
+# One run, not three. Three is what README.md section 3.1 needed in order to measure this
+# evaluator's run-to-run range at all, and the answer was 1.12 points: run 1 alone
+# reproduces the median of three at Pearson 0.998 and Spearman 1.000, and no correlation
+# in section 3.3 moves by more than 0.02. Repeating a judgment that does not vary costs
+# three times as much and settles nothing. Pass --runs 3 to re-establish that on a new
+# model version, which is the one occasion it is worth paying for.
+RUNS = 1
 ATTEMPTS = 3
 
 # A version, not the `jev-latest` alias, so a model release cannot silently make later
@@ -87,7 +101,7 @@ def build_state(original_text, translated_text, from_lang, to_lang):
     }
 
 
-def build_questions():
+def build_questions(levels):
     """One Score per criterion, all sharing the same five severity levels.
 
     The levels say how badly a criterion is missed and are the same for all five; only
@@ -102,13 +116,13 @@ def build_questions():
                 "scope": "Judge this criterion alone, over the whole document. The "
                          "other four are asked about by their own questions.",
             },
-            criteria=LEVELS,
+            criteria=levels,
         )
         for key, (_, description) in CRITERIA.items()
     }
 
 
-def read_answers(response):
+def read_answers(response, levels):
     """{criterion: (expected level, confidence, {level: probability})}, in rubric order."""
     answers = {}
     for key in CRITERION_IDS:
@@ -116,7 +130,7 @@ def read_answers(response):
         if answer is None:
             raise ValueError(f"no answer for {key}")
         probabilities = {int(level): float(p) for level, p in answer.probabilities.items()}
-        if set(probabilities) != set(range(len(LEVELS))):
+        if set(probabilities) != set(range(len(levels))):
             raise ValueError(f"unexpected levels for {key}: {sorted(probabilities)}")
         answers[key] = (answer.score, answer.confidence, probabilities)
     return answers
@@ -137,7 +151,7 @@ def evaluate(client, args, state):
     exception, so it aborts the batch instead of being retried -- the alias having moved
     is not a transient failure.
     """
-    response = client.system_one(state, build_questions(), model=args.model)
+    response = client.system_one(state, build_questions(args.levels), model=args.model)
     if args.expect_model and response.model != args.expect_model:
         raise SystemExit(
             f"requested {args.model} but {response.model} answered, and the run is "
@@ -148,7 +162,7 @@ def evaluate(client, args, state):
     if response.usage:
         usage = Usage(raw={"input_tokens": response.usage.input_tokens,
                            "output_tokens": response.usage.output_tokens})
-    return read_answers(response), usage, response.model
+    return read_answers(response, args.levels), usage, response.model
 
 
 def run(client, args, ui, prog, done):
@@ -213,7 +227,10 @@ def run(client, args, ui, prog, done):
             "probabilities": {key: {level: round(p, 4)
                                     for level, p in sorted(answers[key][2].items())}
                               for key in CRITERION_IDS},
-            "levels": LEVELS,
+            # The wording this run was produced under, so a result file says which of
+            # criteria.py's level sets it belongs to without relying on its directory.
+            "level_set": args.level_set,
+            "levels": args.levels,
             "usage": usage.to_dict(),
         }
         Path(args.output_file).write_text(
@@ -289,12 +306,19 @@ def main():
                              "empty accepts whatever answers, which an alias needs")
     parser.add_argument("-s", "--slug", default=DEFAULT_SLUG,
                         help="Name used for this evaluator in result filenames")
-    parser.add_argument("-d", "--eval-dir", default="evals",
-                        help="Result directory under experimental/12 (default: evals)")
+    parser.add_argument("-l", "--levels", default=DEFAULT_LEVEL_SET,
+                        choices=sorted(LEVEL_SETS),
+                        help="Which wording of the severity levels to score on "
+                             f"(default: {DEFAULT_LEVEL_SET}); see criteria.py")
+    parser.add_argument("-d", "--eval-dir",
+                        help="Result directory under experimental/12 (default: the one "
+                             "criteria.py gives the chosen level set)")
     parser.add_argument("--targets", default=DEFAULT_TARGETS,
                         help="TSV of translator/lang/lang_name rows "
                              "(default: experimental/11/targets.tsv)")
-    parser.add_argument("--runs", type=int, default=RUNS)
+    parser.add_argument("--runs", type=int, default=RUNS,
+                        help=f"Runs per target (default: {RUNS}); 3 re-measures the "
+                             "run-to-run range, which a new model version needs")
     parser.add_argument("--timeout", type=float, default=120.0,
                         help="Per-request timeout in seconds (default: 120)")
     cli_args = parser.parse_args()
@@ -303,7 +327,11 @@ def main():
     expect_model = (cli_args.model if cli_args.expect_model is None
                     else cli_args.expect_model)
 
-    eval_dir = BASE_DIR / cli_args.eval_dir
+    # Each level set has its own directory by default, so two wordings cannot end up
+    # mixed in one -- a result file's score means nothing without the levels it was
+    # placed on. -d overrides it, for a run that is deliberately kept elsewhere.
+    eval_dir_name = cli_args.eval_dir or EVAL_DIRS[cli_args.levels]
+    eval_dir = BASE_DIR / eval_dir_name
     eval_dir.mkdir(parents=True, exist_ok=True)
     usage_path = find_usage_file()
 
@@ -321,7 +349,7 @@ def main():
                 continue
 
             stem = f"onde-{translator}-{lang}-{cli_args.slug}"
-            label = f"{lang}: {lang_name} / {cli_args.slug} / {cli_args.eval_dir}"
+            label = f"{lang}: {lang_name} / {cli_args.slug} / {eval_dir_name}"
 
             def make_args(run_no):
                 return SimpleNamespace(
@@ -329,6 +357,7 @@ def main():
                     model=cli_args.model, from_lang="English", to_lang=lang_name,
                     output_file=str(eval_dir / f"{stem}-{run_no}.json"),
                     expect_model=expect_model,
+                    level_set=cli_args.levels, levels=LEVEL_SETS[cli_args.levels],
                     run=run_no, runs=cli_args.runs,
                     label=label, start=batch_start,
                 )
