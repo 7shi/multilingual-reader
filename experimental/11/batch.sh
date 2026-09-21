@@ -12,11 +12,12 @@
 # under other evaluators would answer a question this experiment is not asking: model
 # dependence is what the new scheme is being tested for.
 #
-# Two variants of the new scheme are run: "evals" with thinking on (matching what
-# trtools/batch.py:169 hardcodes for the production evaluation phase) and "evals-nt"
-# with --no-think, to see how much thinking buys in score stability and how much it
-# costs in time. Each output file records its own "duration_seconds" and "no_think"
-# fields, so the comparison does not depend on file mtimes.
+# Three variants of the new scheme are run: "evals" with thinking on (matching what
+# trtools/batch.py:169 hardcodes for the production evaluation phase), "evals-nt" with
+# --no-think, to see how much thinking buys in score stability and how much it costs in
+# time, and "evals-ne" with evidence off and thinking left on. Each output file records
+# its own "duration_seconds", "no_think" and "no_evidence" fields, so the comparison does
+# not depend on file mtimes.
 #
 # Existing result files are left alone, so the script can be re-run.
 
@@ -44,11 +45,19 @@ EVAL_ORDER=(ollama:qwen3.6 ollama:gemma4:31b ollama:gpt-oss:120b)
 # padding every item with an unrequested overall_comment-like field instead of the requested
 # evidence, bloating the answer enough to hit --max-length. Dropping the per-item evidence
 # field removes that pressure; the run-level overall_comment is unaffected.
+#
+# evals-ne drops evidence but keeps thinking, which is the cell evals-nt is missing: since
+# evals-nt changes both at once, nothing there separates what thinking is worth from what
+# evidence costs. It also tests whether writing evidence takes effort away from the verdict
+# itself -- the evidence in evals/ frequently cites line numbers that are simply wrong,
+# which is unsurprising given that the model is handed the texts without any line numbers
+# in them, but the question is whether producing it also moves the verdict.
 declare -A VARIANTS
 VARIANTS[evals]=""
 VARIANTS[evals-nt]="--no-think --no-evidence"
+VARIANTS[evals-ne]="--no-evidence"
 
-VARIANT_ORDER=(evals evals-nt)
+VARIANT_ORDER=(evals evals-nt evals-ne)
 
 # A failure here is a call that came back structurally wrong: valid JSON that does not
 # fit the schema, which the retry inside call_json does not catch. How often that happens

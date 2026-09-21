@@ -253,6 +253,34 @@ thinking-on-vs-off contrast; see the results section below.
 `evals-nt/` is complete (72/72) with `FAILURES-evals-nt.txt` empty — no call failed to
 return schema-conforming JSON under `--no-think --no-evidence` either.
 
+### Evidence on vs off
+
+`evals-nt/` changes two things at once, so it cannot say how much of its effect belongs to
+thinking and how much to the missing evidence. `evals-ne/` is the third variant that fills
+that cell: `--no-evidence` alone, thinking left on.
+
+| Variant | Thinking | Evidence |
+|---|---|---|
+| `evals/` | on | on |
+| `evals-nt/` | off (`gpt-oss:120b` excepted, as above) | off |
+| `evals-ne/` | on | off |
+
+Beyond separating the two, this variant asks whether writing evidence takes effort away from
+the verdict itself. The `evidence` strings in `evals/` frequently cite line numbers that are
+wrong — `evals/onde-gemini-3-flash-hi-qwen3.6-1.json` marks `a01_speaker_label_present`
+`partial` on the grounds of two lines missing a speaker label, where the translation has
+five, which by the item's own rule (1-3 lines `partial`, 4+ `no`) should have been `no`.
+That is not a surprise on its own: `eval50.py` passes the texts as plain multi-line strings
+with no line numbers in them, so an exact citation is something the model has to count out
+for itself. The open question is whether producing it also moves the verdict, or whether it
+is an unreliable but harmless side output.
+
+`agg50.py` reports this under "Evidence on vs off (thinking on)", alongside a per-item
+comparison of which verdicts move against `evals/`. The scores alone would not settle it: a
+variant can leave the total where it was while individual verdicts move in both directions
+and cancel, which is what `gemma4:31b` does between `evals/` and `evals-nt/` (see the
+results below).
+
 ### Splitting
 
 Fifty items in one call may be more than a model can hold together, so `eval50.py` keeps the
@@ -285,7 +313,7 @@ absolute difference 21.6) is not measured on the same eight translations, so the
 is directional rather than exact — see "It moves when the evaluator changes" above for the
 same pair's gap on `targets.tsv` itself (mean 88.9 vs 88.4, mean absolute difference 10.5).
 Still, the new scheme's spread across all three
-evaluators averages 13.25 points per translation (from the "New spread" column), and the
+evalators averages 13.25 points per translation (from the "New spread" column), and the
 three evaluators' means across the eight targets converge to within a point of each other:
 `gemma4:31b` 90.1, `qwen3.6` 88.9, `gpt-oss:120b` 88.4. That last figure is dragged down by
 one outlier (see below); without it, the three sit at 90.1, 88.9 and 92.4.
@@ -371,8 +399,9 @@ the movement has no consistent direction, which is what a model does when the 50
 is carrying the judgement instead of the reasoning.
 
 Note that `evals-nt/` varies two things at once (thinking off *and* evidence off), so it
-cannot separate the two effects on its own. Attributing the `qwen3.6` drop to thinking alone
-would need a thinking-on/evidence-off run, which this experiment does not have.
+cannot separate the two effects on its own: attributing the `qwen3.6` drop to thinking alone
+would need the thinking-on/evidence-off run. That is what `evals-ne/` is for (see "Evidence
+on vs off" above); it has not been run yet, so the attribution stays open.
 
 ### Limitation: rare catastrophic defects are diluted, not just de-emphasized
 
@@ -413,6 +442,6 @@ defects for its gain in run-to-run and evaluator stability — see the limitatio
 ```bash
 uv run experimental/11/pick_unstable.py --per-translator 1 --exclude gpt-5.6-luna/no -n 8 \
   > experimental/11/targets.tsv
-bash experimental/11/batch.sh          # runs evals/ (thinking) and evals-nt/ (no-think), then compares
+bash experimental/11/batch.sh          # runs evals/, evals-nt/ and evals-ne/, then compares
 uv run experimental/11/agg50.py        # SPLIT=group on batch.sh to step the new scheme down
 ```

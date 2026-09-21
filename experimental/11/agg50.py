@@ -111,27 +111,73 @@ def load_timing(directory):
     return durations
 
 
-def think_vs_nothink_table(evals, evals_nt, targets, evaluators):
-    """Score and timing, thinking on vs off, per translation and evaluator.
+def variant_table(base, other, targets, evaluators, base_label, other_label):
+    """Score and timing of a variant against the baseline, per translation and evaluator.
 
-    evals/evals_nt are keyed like the `new` summary but also carry a "duration"
+    Both arguments are keyed like the `new` summary but also carry a "duration"
     entry (mean seconds per call) added by summarise() when the field is present.
     """
-    lines = ["| Translation | Evaluator | Think score | No-think score | Diff | "
-             "Think time | No-think time |",
+    lines = [f"| Translation | Evaluator | {base_label} score | {other_label} score | Diff "
+             f"| {base_label} time | {other_label} time |",
              "| --- | --- | ---: | ---: | ---: | ---: | ---: |"]
     for translator, lang in targets:
         for evaluator in evaluators:
-            t = evals.get((translator, lang, evaluator))
-            nt = evals_nt.get((translator, lang, evaluator))
-            if not t or not nt:
+            b = base.get((translator, lang, evaluator))
+            o = other.get((translator, lang, evaluator))
+            if not b or not o:
                 continue
-            t_time = f"{t['duration']:.0f}s" if t.get("duration") is not None else "-"
-            nt_time = f"{nt['duration']:.0f}s" if nt.get("duration") is not None else "-"
+            b_time = f"{b['duration']:.0f}s" if b.get("duration") is not None else "-"
+            o_time = f"{o['duration']:.0f}s" if o.get("duration") is not None else "-"
             lines.append(
-                f"| {translator} / {lang} | {evaluator} | {t['median_score']} "
-                f"| {nt['median_score']} | {nt['median_score'] - t['median_score']:+d} "
-                f"| {t_time} | {nt_time} |")
+                f"| {translator} / {lang} | {evaluator} | {b['median_score']} "
+                f"| {o['median_score']} | {o['median_score'] - b['median_score']:+d} "
+                f"| {b_time} | {o_time} |")
+    return lines
+
+
+def median_items(stats):
+    """Each item's median verdict score across the runs of one combination."""
+    return {i: median([p[i] for p in stats["per_run"]]) for i in ITEM_IDS}
+
+
+def variant_item_diff(base, other, targets, evaluators):
+    """How many item verdicts move between two variants, and which ones.
+
+    A variant's effect on the aggregate score can be near zero while individual
+    verdicts move in both directions and cancel out, so the totals alone do not
+    say whether the variant changed what the evaluator saw.
+    """
+    moved = {i: 0 for i in ITEM_IDS}
+    combinations = 0
+    per_evaluator = {}
+    for translator, lang in targets:
+        for evaluator in evaluators:
+            b = base.get((translator, lang, evaluator))
+            o = other.get((translator, lang, evaluator))
+            if not b or not o:
+                continue
+            combinations += 1
+            bi, oi = median_items(b), median_items(o)
+            differing = [i for i in ITEM_IDS if bi[i] != oi[i]]
+            for i in differing:
+                moved[i] += 1
+            counts = per_evaluator.setdefault(evaluator, [])
+            counts.append(len(differing))
+    if not combinations:
+        return []
+
+    lines = ["| Evaluator | Combinations | Items moved (mean of 50) | Max |",
+             "| --- | ---: | ---: | ---: |"]
+    for evaluator in sorted(per_evaluator):
+        counts = per_evaluator[evaluator]
+        lines.append(f"| {evaluator} | {len(counts)} | "
+                     f"{sum(counts) / len(counts):.1f} | {max(counts)} |")
+    ranked = [(i, n) for i, n in sorted(moved.items(), key=lambda kv: (-kv[1], kv[0])) if n]
+    lines += ["", f"Items that moved in at least one of the {combinations} combinations: "
+                  f"{len(ranked)}/50.", "", "| Item | Combinations moved | Share |",
+              "| --- | ---: | ---: |"]
+    for item, n in ranked:
+        lines.append(f"| {item} | {n} | {n / combinations:.0%} |")
     return lines
 
 
@@ -325,6 +371,7 @@ def main():
     old = summarise(load_old(targets, reference), new=False)
     new = summarise(load("evals"), new=True)
     new_nt = summarise(load("evals-nt"), new=True)
+    new_ne = summarise(load("evals-ne"), new=True)
     evaluators = sorted({k[2] for k in new})
 
     print("# Experiment 11: old vs new evaluation scheme\n")
@@ -396,13 +443,36 @@ def main():
         print("\n".join(timing_table(durations_nt)))
         print()
 
+    durations_ne = load_timing("evals-ne")
+    if durations_ne:
+        print("## Timing (new scheme, thinking on, no evidence)\n")
+        print("\n".join(timing_table(durations_ne)))
+        print()
+
     if new_nt:
         print("## Thinking on vs off\n")
         print("Same 50-item scheme, same targets and evaluators, run with "
               "`--no-think --no-evidence`. Score is the median-of-runs total; time is the "
               "mean call duration from \"duration_seconds\". gpt-oss:120b ignores "
               "`--no-think`, so its rows are thinking-on/evidence-off, not no-think.\n")
-        print("\n".join(think_vs_nothink_table(new, new_nt, targets, evaluators)))
+        print("\n".join(variant_table(new, new_nt, targets, evaluators,
+                                      "Think", "No-think")))
+        print()
+
+    if new_ne:
+        print("## Evidence on vs off (thinking on)\n")
+        print("Same 50-item scheme with `--no-evidence` only, which separates the per-item "
+              "evidence field from the thinking change `evals-nt` makes at the same time.\n")
+        print("\n".join(variant_table(new, new_ne, targets, evaluators,
+                                      "Evidence", "No-evidence")))
+        print()
+
+        print("### Which item verdicts move when evidence is dropped\n")
+        print("Per-item median verdicts compared against `evals/` on the same "
+              "(translation, evaluator). A variant can leave the total untouched while "
+              "individual verdicts move in both directions, so the totals above do not "
+              "answer this on their own.\n")
+        print("\n".join(variant_item_diff(new, new_ne, targets, evaluators)))
         print()
 
     print("## Group subtotals (new scheme)\n")
