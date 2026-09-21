@@ -230,15 +230,15 @@ def tally(evaluation):
     return group_scores, sum(group_scores.values())
 
 
-def run(args):
+def run(args, ui, prog, done):
     """Evaluate one translation and write the result, given an args namespace.
 
-    Built by evaluate_target(), which constructs the namespace itself and calls this
-    in-process instead of shelling out to a subprocess per evaluation. Returns the
-    Usage summed over every LLM call this evaluation made.
+    Built by evaluate_target(), which also builds `ui` and `prog` -- shared across
+    all of a target's runs, so the whole target advances one continuous progress bar
+    instead of each run opening and freezing its own. `done` is this run's starting
+    offset into that shared bar. Returns the Usage summed over every LLM call this
+    evaluation made.
     """
-    ui = StatusLine(label=args.label, start=args.start, index=args.index, count=args.count)
-
     original_text = Path(args.original).read_text(encoding="utf-8").rstrip()
     translated_text = Path(args.translation).read_text(encoding="utf-8").rstrip()
 
@@ -249,12 +249,8 @@ def run(args):
 
     client = LLMClient(model=args.model, think=(not args.no_think), retry_wait=args.retry_wait)
 
-    # One step per call, so a split run shows progress through the item list rather
-    # than sitting still until the whole evaluation is done.
-    steps = len(chunks_for(args.split))
-    done = (args.run - 1) * steps
     call_start = args.attempt_start if args.attempt_start is not None else time.time()
-    with ui.progress(args.runs * steps, start=done) as prog, track_usage() as get_usage:
+    with track_usage() as get_usage:
         evaluation = evaluate(client, original_text, translated_text,
                               args.from_lang, args.to_lang, args.split, ui.stream,
                               no_evidence=args.no_evidence, prog=prog, done=done)
@@ -300,7 +296,7 @@ def run(args):
     return usage
 
 
-def evaluate_target(make_args, runs, attempts, index_start, total):
+def evaluate_target(make_args, runs, attempts, index, total):
     """Run one target for `runs` runs, retrying each up to `attempts` times.
 
     `make_args(run_no)` builds the run() namespace for one run; its output_file is
@@ -308,28 +304,47 @@ def evaluate_target(make_args, runs, attempts, index_start, total):
     keeps failing stops the whole batch (see main()) rather than being logged and
     skipped, since a missing output file already records what didn't complete.
 
+    `index`/`total` count targets, not runs (matching trtools.batch's ev_index). A
+    single StatusLine/progress bar is opened for the whole target and shared across
+    its `runs` runs, rather than each run opening and freezing its own -- that
+    per-run open/close is what left a stack of frozen bars behind. Nothing is opened
+    at all when every run is already done: that case has no work to show progress on.
+
     Returns a list of (output_path, Usage) for the runs actually executed.
     """
-    results = []
+    args0 = make_args(1)
+    steps = len(chunks_for(args0.split))
+
+    pending = []
     for run_no in range(1, runs + 1):
         args = make_args(run_no)
-        args.index = index_start + run_no
+        args.index = index
         args.count = total
         out = Path(args.output_file)
         if out.is_file():
-            print(f"[{args.index}/{total}] exists, skipping: {out}")
-            continue
-        print(f"\n=== [{args.index}/{total}] {args.label} run {run_no} ===")
-        for attempt in range(1, attempts + 1):
-            try:
-                usage = run(args)
-                break
-            except Exception as e:
-                print(f"  attempt {attempt}/{attempts} failed for {out}: {e}")
-                out.unlink(missing_ok=True)
+            print(f"[{index}/{total}] exists, skipping: {out}")
         else:
-            raise SystemExit(f"GIVING UP on {out}")
-        results.append((out, usage))
+            pending.append((run_no, args, out))
+
+    if not pending:
+        return []
+
+    ui = StatusLine(label=args0.label, start=args0.start, index=index, count=total)
+    results = []
+    with ui.progress(runs * steps, start=(pending[0][0] - 1) * steps) as prog:
+        for run_no, args, out in pending:
+            done = (run_no - 1) * steps
+            ui.write(f"\n=== [{index}/{total}] {args.label} run {run_no} ===\n")
+            for attempt in range(1, attempts + 1):
+                try:
+                    usage = run(args, ui, prog, done)
+                    break
+                except Exception as e:
+                    ui.write(f"  attempt {attempt}/{attempts} failed for {out}: {e}\n")
+                    out.unlink(missing_ok=True)
+            else:
+                raise SystemExit(f"GIVING UP on {out}")
+            results.append((out, usage))
     return results
 
 
@@ -376,7 +391,7 @@ def main():
         usage_path = find_usage_file()
 
     targets = load_targets(cli_args.targets)
-    total = len(targets) * cli_args.runs
+    total = len(targets)
     index = 0
     batch_start = time.time()
     total_usage = Usage()
@@ -401,8 +416,8 @@ def main():
                 label=label, start=batch_start, attempt_start=time.time(),
             )
 
+        index += 1
         results = evaluate_target(make_args, cli_args.runs, ATTEMPTS, index, total)
-        index += cli_args.runs
 
         if usage_path is not None:
             for out, usage in results:
