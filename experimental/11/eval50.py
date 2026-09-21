@@ -180,7 +180,7 @@ def tally(evaluation):
     return group_scores, sum(group_scores.values())
 
 
-def main():
+def build_parser():
     parser = argparse.ArgumentParser(description="Evaluate a translation on 50 yes/partial/no items")
     parser.add_argument("--original", required=True, help="Original text file")
     parser.add_argument("--translation", required=True, help="Translated text file")
@@ -206,8 +206,15 @@ def main():
                              "(defaults to this process's own start time)")
     parser.add_argument("--index", type=int, help="Position of this evaluation within the batch")
     parser.add_argument("--count", type=int, help="Total number of evaluations in the batch")
-    args = parser.parse_args()
+    return parser
 
+
+def run(args):
+    """Evaluate one translation and write the result, given a parsed args namespace.
+
+    Split out from main() so batch.py can call it in-process (constructing the
+    namespace itself) instead of shelling out to a subprocess per evaluation.
+    """
     ui = StatusLine(label=args.label, start=args.start, index=args.index, count=args.count)
 
     original_text = Path(args.original).read_text(encoding="utf-8").rstrip()
@@ -264,6 +271,10 @@ def main():
         Path(args.output_file).write_text(
             json.dumps(output_data, ensure_ascii=False, indent=2), encoding="utf-8")
         ui.write(f"\nSaved evaluation result as JSON: {args.output_file}\n")
+
+
+def main():
+    run(build_parser().parse_args())
 
 
 if __name__ == "__main__":
