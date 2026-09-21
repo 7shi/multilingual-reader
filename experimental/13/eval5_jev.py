@@ -307,9 +307,14 @@ def result_path(eval_dir, translator, lang, run_no):
     return eval_dir / translator / name
 
 
-def label_for(translator, lang, lang_name, eval_dir_name):
-    """The status line's description for one target."""
-    return f"{translator} / {lang}: {lang_name} / {eval_dir_name}"
+def label_for(translator, lang, lang_name, eval_dir_name, name_width=0):
+    """The status line's description for one target.
+
+    `name_width` pads the language name so every label in a batch is the same length.
+    The status line redraws in place, and a name that shrinks from "Serbo-Croatian" to
+    "Thai" moves everything after it, which reads as flicker over 134 targets.
+    """
+    return f"{translator} / {lang}: {lang_name:<{name_width}} / {eval_dir_name}"
 
 
 def load_targets(translators):
@@ -392,12 +397,13 @@ def main():
     # start, which is what the trailing clock already shows now that one task spans the
     # whole batch; when each target had its own bar the two clocks meant different
     # things.
-    ui = StatusLine(label=label_for(*targets[0], eval_dir_name))
+    name_width = max(len(name) for _, _, name in targets)
+    ui = StatusLine(label=label_for(*targets[0], eval_dir_name, name_width))
     with TypeSafeClient(timeout=cli_args.timeout) as client, \
             ui.progress(total, start=0) as prog:
         for translator, lang, lang_name in targets:
             index += 1
-            label = label_for(translator, lang, lang_name, eval_dir_name)
+            label = label_for(translator, lang, lang_name, eval_dir_name, name_width)
             # Before the work, so the label names what is running rather than what last
             # finished; the completed count is advanced once the target is done.
             prog.update(index - 1, label)

@@ -218,14 +218,18 @@ def main():
     args = ap.parse_args()
 
     TRANSLATORS = tuple(args.translators)
-    data = load(args.eval_dir)
+    # Only the named translators. The directory holds one subdirectory per translator
+    # and accumulates across runs, so a later pass over a different pair would otherwise
+    # be silently averaged into this report's level counts and confidence figures.
+    data = {k: v for k, v in load(args.eval_dir).items() if k[0] in TRANSLATORS}
     if not data:
-        raise SystemExit(f"no results in {BASE / args.eval_dir}")
+        raise SystemExit(
+            f"no results for {', '.join(TRANSLATORS)} in {BASE / args.eval_dir}")
     CRITERION_IDS, N_LEVELS, level_set = rubric_of(data)
     langs = sorted({lang for _, lang in data})
     both = [l for l in langs if all((t, l) in data for t in TRANSLATORS)]
 
-    print("# Experiment 13: the corpus's top two, all languages\n")
+    print(f"# Experiment 13: {' vs '.join(TRANSLATORS)}, all languages\n")
     print(f"{len(data)} evaluations, one run each, over {len(langs)} languages "
           f"({len(both)} with both translators present), on the `{level_set}` level "
           f"set.\n")
@@ -234,17 +238,23 @@ def main():
     print("## 1. Corpus means\n")
     print("| Translator | `jev` mean | Old mean | n |")
     print("|---|---:|---:|---:|")
-    means = {}
+    means, old_means = {}, {}
     for t in TRANSLATORS:
         own = [data[(t, l)]["expected_total_score"] for l in langs if (t, l) in data]
         old = [old_score(t, l) for l in langs if (t, l) in data]
         old = [o for o in old if o is not None]
         means[t] = mean(own) if own else None
+        # The same languages this scheme scored, so the two gaps below are comparable.
+        old_means[t] = mean(old) if old else None
         print(f"| {t} | {mean(own):.2f} | {mean(old):.2f} | {len(own)} |")
     if all(means[t] is not None for t in TRANSLATORS):
         gap = means[TRANSLATORS[0]] - means[TRANSLATORS[1]]
-        print(f"\n`{TRANSLATORS[0]}` minus `{TRANSLATORS[1]}`: **{gap:+.2f}** points under "
-              f"this scheme, against **+0.22** under the old one.\n")
+        line = (f"\n`{TRANSLATORS[0]}` minus `{TRANSLATORS[1]}`: **{gap:+.2f}** points "
+                f"under this scheme")
+        if all(old_means[t] is not None for t in TRANSLATORS):
+            old_gap = old_means[TRANSLATORS[0]] - old_means[TRANSLATORS[1]]
+            line += f", against **{old_gap:+.2f}** under the old one"
+        print(line + ".\n")
 
     # --- 2. Agreement with the old scheme, per translator ---
     print("## 2. Agreement with the old scheme, language by language\n")

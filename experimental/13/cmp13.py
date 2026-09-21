@@ -36,8 +36,12 @@ ONDE = REPO_ROOT / "examples" / "tr" / "onde"
 OLD_RUNS = (1, 2, 3)
 # Run 1 only: <lang>.json. A later run is <lang>-N.json and is not read here.
 NAME_RE = re.compile(r"^[a-z]{2}\.json$")
-# (directory, label, whether its verdict total is on a rounded scale)
+# (directory, label)
 SCHEMES = (("evals-degrees", "5 criteria"), ("evals50", "50 items"))
+# The result directories accumulate across runs, one subdirectory per translator, so
+# which translators this report covers has to be said rather than inferred from what
+# happens to be on disk.
+DEFAULT_TRANSLATORS = ("gpt-5.6-luna", "union-alpha")
 
 
 def load(directory):
@@ -110,11 +114,18 @@ def spread(xs):
 
 
 def main():
-    argparse.ArgumentParser(description=__doc__).parse_args()
-    loaded = {d: load(d) for d, _ in SCHEMES}
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("translators", nargs="*", default=list(DEFAULT_TRANSLATORS),
+                    help="Directory names under examples/tr/onde/ to report on "
+                         "(default: " + " ".join(DEFAULT_TRANSLATORS) + ")")
+    args = ap.parse_args()
+    wanted = set(args.translators)
+    loaded = {d: {k: v for k, v in load(d).items() if k[0] in wanted}
+              for d, _ in SCHEMES}
     missing = [d for d, _ in SCHEMES if not loaded[d]]
     if missing:
-        raise SystemExit("no results in " + ", ".join(f"{d}/" for d in missing))
+        raise SystemExit(f"no results for {', '.join(sorted(wanted))} in "
+                         + ", ".join(f"{d}/" for d in missing))
     keys = sorted(set(loaded[SCHEMES[0][0]]) & set(loaded[SCHEMES[1][0]]))
     if not keys:
         raise SystemExit("the two directories share no targets")

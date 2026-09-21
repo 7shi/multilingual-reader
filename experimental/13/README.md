@@ -1,4 +1,9 @@
-# Experiment 13: The Corpus's Top Two, Every Language, One Run
+# Experiment 13: Both Ends of the Corpus, Every Language, One Run
+
+This file is the experiment record: what was run, what it measured, and what that
+does and does not support. What is being *decided* on the strength of it — replacing
+the corpus evaluator, and the blockers in the way — is [PLAN.md](PLAN.md), kept
+separate so a plan changing does not edit a result.
 
 ## 1. What This Tests
 
@@ -44,7 +49,8 @@ asked to generalise from eight numbers. Same targets, same model: whatever separ
 is the rubric.
 
 The bottom of the scale is still untested after this. That needs its own targets, and the
-corpus has them (`bonsai2-27b` at 27.90); it is a separate run.
+corpus has them (`bonsai2-27b` at 27.90); it was run separately, and **section 4** is that
+run. Everything in section 3 is the top two and stands as first written.
 
 ---
 
@@ -69,6 +75,8 @@ corpus has them (`bonsai2-27b` at 27.90); it is a separate run.
   states which languages it covers and this experiment takes all of them, so a list would
   be a copy of that with nothing added. Experiment 11 needed a file because its 8 targets
   encoded a selection; "every language this translator has" encodes nothing.
+  Section 4 runs the same shape over `qwen3.8` and `bonsai2-27b`, a second 134,
+  into the same two output directories.
 - **Runs**: 1. Experiment 12 section 3.1 measured this evaluator's run-to-run range at
   1.12 points and showed run 1 alone reproduces the median of three at Spearman 1.000;
   three runs would triple the cost and settle nothing.
@@ -319,7 +327,265 @@ not for running it by default.
 
 ---
 
-## 4. Reproducing
+## 4. The Bottom of the Scale
+
+Section 3 leaves two things open that the same run answers: nothing had been evaluated
+where levels 1 and 2 should win, and experiment 11's Future Work 7 — whether a scheme this
+cheap still separates a ternary-quantized model from its full-precision parent — had no
+result. `qwen3.8` (old corpus mean 53.96) and `bonsai2-27b` (27.90), its ternary
+quantization, are the corpus's answer to both. Same two schemes, same 67 languages each,
+134 translations, one run, nothing above rewritten:
+
+```bash
+uv run experimental/13/eval5_jev.py  qwen3.8 bonsai2-27b
+uv run experimental/13/eval50_jev.py qwen3.8 bonsai2-27b
+uv run experimental/13/agg13.py qwen3.8 bonsai2-27b
+uv run experimental/13/cmp13.py qwen3.8 bonsai2-27b
+```
+
+The quantization pair is the one target in this corpus where the answer is close to known
+in advance. `bonsai2-27b` is not a different translator from `qwen3.8`; it is the same
+model with its weights crushed, so a scheme that cannot tell them apart is not measuring
+translation quality. That is why this section can say more than section 3.3 could.
+
+### 1. Levels 0, 1 and 2 exist as well
+
+| | L0 | L1 | L2 | L3 | L4 |
+|---|---:|---:|---:|---:|---:|
+| Mean probability mass | 0.086 | 0.253 | 0.236 | 0.289 | 0.135 |
+| Times most probable | **46** | **191** | **156** | 219 | 58 |
+
+Section 3.1 found level 4 winning 469 of 670 judgments on the corpus's best translations,
+and experiment 12 found level 3 winning 100 of 120 on its mid-range targets. Here levels 0
+through 2 take **393 of 670 (59%)**, and level 0 — never once the most probable level on
+the top two — wins 46 times. Level 3 is still the largest single bucket at 219, but
+at 33% of judgments rather than 83%.
+
+Three runs, three different modes, ordered the way the targets are:
+
+| Targets | Old-scheme mean | Modal level | L4 mass | Mean confidence |
+|---|---:|---|---:|---:|
+| experiment 12's 8 | — | L3, 100/120 | 0.175 | 0.55 |
+| top two (section 3) | 90.20 | **L4**, 469/670 | 0.564 | 0.65 |
+| this pair | 40.93 | L3, 219/670 — but L0–L2 take 393 | 0.135 | 0.59 |
+
+Experiment 12's targets have no comparable old-scheme mean: they were selected for having
+the widest 3-run spread in the corpus, so their medians are not a position on the scale.
+
+That is the full scale in use. Section 3.1 could rule out saturation at the top; this rules
+it out at the bottom, and the two together say the level set spans the corpus rather than
+covering one end of it.
+
+### 2. Agreement is far stronger here — and most of that is range
+
+| Set | n | Pearson | Spearman | Kendall | Mean diff | Mean abs diff |
+|---|---:|---:|---:|---:|---:|---:|
+| qwen3.8 | 67 | +0.93 | +0.94 | +0.80 | +12.5 | 15.3 |
+| bonsai2-27b | 67 | +0.92 | +0.95 | +0.85 | +12.3 | 13.9 |
+| **pooled** | 134 | +0.92 | **+0.96** | +0.84 | **+12.4** | 14.6 |
+| *(top two, section 3.2)* | *134* | *+0.62* | *+0.69* | *+0.53* | *-3.7* | *6.0* |
+
+Spearman +0.96 against +0.69 looks like the evaluator working far better down here, and
+that reading should be resisted. The reference's own spread is **3.2× wider** on this pair
+— standard deviation 27.93 against 8.72, interquartile range 21–59 against 88–96 — and
+correlation rises with range whatever the evaluator is doing. Restriction of range alone
+predicts most of the difference, and nothing in this run separates that from a real gain in
+accuracy. What can be said is the weaker claim in both directions: **the scheme tracks the
+reference at both ends of the corpus**, and it does not fall apart where the reference's
+own scores do.
+
+The mean absolute difference moves the other way — 14.6 points here against 6.0 at the top
+— which is the same fact seen from the other side.
+
+### 3. The offset is not an offset
+
+Section 3.2 reported the scheme reading 3.7 points **below** the old one, and
+[section 6 item 4](#6-what-would-come-next) asked why it was 3.7 and not zero. Here it
+reads **12.4 points above**. A constant does not change sign, so it was never a constant.
+Fitting all 268 translations from both runs:
+
+```
+jev = 0.69 × old + 24.7        (crossover at old = 79.6)
+```
+
+| Set | n | Slope of `jev` on old | Old mean | `jev` mean |
+|---|---:|---:|---:|---:|
+| top two | 134 | 0.39 | 90.20 | 86.51 |
+| this pair | 134 | 0.75 | 40.93 | 53.34 |
+| both | 268 | **0.69** | 65.57 | 69.93 |
+
+The scheme is **compressed** against the old one: it pulls bad translations up and good
+ones down, crossing the old scale around 80. The -3.7 of section 3.2 and the +12.4 here are
+the same slope read at two points, not two offsets. For ranking this changes nothing —
+compression is monotone, and the Spearman figures are what section 3.7's recommendation
+rests on — but any absolute claim, or any comparison of a `jev` score against a corpus
+number, has to go through the slope rather than through a constant.
+
+### 4. Quantization: the cheap scheme separates them, slightly more cleanly
+
+| | `jev` | Old (3-run medians) |
+|---|---:|---:|
+| qwen3.8 corpus mean | 66.49 | 53.96 |
+| bonsai2-27b corpus mean | 40.18 | 27.90 |
+| **Gap** | **+26.31** | **+26.06** |
+| Languages separated (of 67) | **66** | 62 |
+| Separated by ≥10 points | **60** | 53 |
+| Same winner where both take a side | 61/66 (92%) | |
+
+This is experiment 11's Future Work 7, answered. The old scheme separated the quantized
+model from its parent by 26 points in 62 of 67 languages; the five-criterion scheme
+reproduces the gap to within **0.25 points** and separates **66 of 67** — one more clean
+than the reference, at half the input tokens of the fifty-item scheme and a fraction of the
+old scheme's three generative runs. The single exception is not a reversal worth the
+name: `jev` puts `bonsai2-27b` ahead in one language by **0.1 points**.
+
+The reason it separates more of them is at the floor. The old scheme scores
+`bonsai2-27b` a flat **0 in 10 of its 67 languages** (`cs cy fi hr ia id sk sl sw th`), and
+15 at 10 or below: below some quality threshold a 21-point integer scale summed over five
+criteria has nothing left to say. On those same 10 translations `jev` returns 2.6 to 31.2,
+an ordering where the reference has a single value. This is section 3.3's point about the
+old scheme's 13 ties, seen at the other end of the scale — and here it costs the reference
+real information, because a quantization this severe fails by degrees.
+
+Whether that ordering inside the floor is *correct* is not something this run can check.
+What it establishes is that the cheap scheme is usable for the one question quantization
+work actually asks — did this hurt, and where — and that the old scheme stops answering it
+first.
+
+### 5. The fifty-item verdicts are not saturated here
+
+Section 3.6 found 96.1% of item verdicts `yes` and rounding costing 0.18 of correlation.
+Over these 134 translations:
+
+| Verdict | Top two (section 3.6) | This pair |
+|---|---:|---:|
+| `yes` | 96.1% | 64.5% |
+| `partial` | 2.7% | 11.4% |
+| `no` | 1.1% | **24.1%** |
+| Items ever scored `no` | 10 of 50 | **49 of 50** |
+| Items ever scored `partial` | 31 of 50 | 47 of 50 |
+
+And the rounding penalty goes with it:
+
+| Pair | Top two | This pair |
+|---|---:|---:|
+| 5 criteria vs 50 items, weighted | +0.90 | +0.95 |
+| 5 criteria vs 50 items, **rounded** | +0.72 | **+0.94** |
+
+**The saturation section 3.6 diagnosed is a property of the targets, not of the rubric.**
+The fifty items discriminate perfectly well when there is something to discriminate; what
+they cannot do is tell two near-perfect translations apart, because a positively-phrased
+item has nowhere above `yes` to go. That narrows [section 6 item 5](#6-what-would-come-next)
+considerably: the three levels do not need rewriting for the corpus at large, they need a
+ceiling for its top. Experiment 11's diagnosis stands, with its scope corrected.
+
+Two things do not improve. The fifty-item scheme's mean confidence falls to **0.38** here
+(0.61 on the top two) against the five-criterion scheme's 0.59, and its inflation against
+the old scheme is much the larger:
+
+| Scheme | Total | Pearson | Spearman | Mean diff |
+|---|---|---:|---:|---:|
+| 5 criteria | weighted | **+0.92** | **+0.96** | **+12.4** |
+| 5 criteria | rounded | +0.92 | +0.96 | +12.4 |
+| 50 items | weighted | +0.90 | +0.92 | +23.4 |
+| 50 items | rounded | +0.88 | +0.92 | +29.3 |
+
+Section 3.7's recommendation is unchanged and, on this evidence, stronger: the
+five-criterion scheme tracks the reference better and sits half as far above it, at half
+the cost.
+
+Where the two rubrics disagree is systematic and worth recording. The five largest
+residuals in each direction are all `bonsai2-27b` on one side — the fifty items rate
+badly-broken translations far higher (`fi` 3.8 against 49.6) — and good translations of
+`zh`, `ar`, `fr` on the other. Fifty narrow properties scored independently cannot
+register that a translation has failed as a whole; most of them are still satisfied by
+text that is unusable.
+
+### 6. Spread, per translator and per scheme
+
+All four translators measured so far, 67 languages each, one run each. Median and standard
+deviation are across languages, not across runs — every translation here was evaluated
+once.
+
+**Probability-weighted totals**, which is what each scheme is recommended on:
+
+| Translator | n | 5 criteria | sd | 50 items | sd | Old (3-run median) | sd |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| gpt-5.6-luna | 67 | 88.00 | 5.82 | 87.08 | 4.97 | 93.00 | 8.15 |
+| union-alpha | 67 | 87.15 | 5.06 | 86.84 | 4.04 | 92.00 | 9.31 |
+| qwen3.8 | 67 | 70.10 | 15.18 | 74.34 | 11.77 | 52.00 | 25.38 |
+| bonsai2-27b | 67 | **38.45** | **21.10** | **56.27** | **13.40** | 24.00 | 24.15 |
+
+**Rounded verdict totals**, for what rounding costs each scheme:
+
+| Translator | 5 criteria | sd | 50 items | sd |
+|---|---:|---:|---:|---:|
+| gpt-5.6-luna | 88.00 | 5.67 | **99.00** | 4.18 |
+| union-alpha | 87.00 | 4.99 | **99.00** | 2.43 |
+| qwen3.8 | 71.00 | 15.10 | 86.00 | 15.98 |
+| bonsai2-27b | 39.00 | 20.97 | 58.00 | 18.67 |
+
+Three things come out of this that the pooled statistics above do not show.
+
+**The five-criterion scheme keeps more spread, and the gap opens downward.** On the top two
+the two schemes are indistinguishable (88.00/5.82 against 87.08/4.97). On `bonsai2-27b` the
+five-criterion scheme reads 18 points lower with **1.6× the standard deviation**. The
+fifty-item scheme's compression against the old scale, which section 4.3 measured for the
+five-criterion scheme at a slope of 0.69, is steeper still.
+
+That makes the five-criterion scheme easier to compare translators with, and it is worth
+being careful about what that does and does not mean. A wider spread is not by itself
+better: the two schemes are not on the same scale, and spreading the same ordering over
+more points adds nothing. **What matters is spread against the scheme's own noise**, and
+both figures were measured on other targets — experiment 12 section 3.1 put the
+five-criterion scheme's mean run-to-run range at **1.12** and experiment 11's fifty-item
+Jev run at **2.25**. Taking those as indicative:
+
+| Translator | 5 criteria, sd ÷ 1.12 | 50 items, sd ÷ 2.25 |
+|---|---:|---:|
+| gpt-5.6-luna | 5.2 | 2.2 |
+| union-alpha | 4.5 | 1.8 |
+| qwen3.8 | 13.6 | 5.2 |
+| bonsai2-27b | 18.8 | 6.0 |
+
+The five-criterion scheme has roughly **2–3× the spread per unit of its own noise**, at
+every quality level. That is a stronger statement than "wider range", and it is the one the
+cost argument in section 3.7 was missing — but the two noise figures come from different
+experiments on different targets, so this is an indication and not a measurement. Measuring
+it properly means three runs of both schemes on one target set, which nothing so far has
+paid for.
+
+**The standard deviations are themselves ordered by quality** — 5.82, 5.06, 15.18, 21.10.
+A good translator is uniformly good across languages; a broken one fails language by
+language. The old scheme shows the same shape with one exception, and the exception is
+informative: its sd **falls** from 25.38 to 24.15 between `qwen3.8` and `bonsai2-27b`, the
+one place the ordering breaks, because 10 of `bonsai2-27b`'s translations are pinned to 0
+and a floor truncates variance. Section 4.4 reads that floor off the separation counts;
+here it shows up as the reference's dispersion going the wrong way.
+
+**Rounding is a fifty-item problem, confirmed per translator.** The five-criterion scheme's
+two tables are the same to within a point everywhere (88.00 against 88.00, sd 5.82 against
+5.67). The fifty-item scheme's rounded total sits at a median of **99.00** for both top
+translators, with `union-alpha`'s standard deviation collapsing to **2.43** — its 67
+languages take only 10 distinct values, and **57 of them fall in 97–100**. Section 3.6 measured that as a loss of 0.18 of
+correlation; this is the same fact as a distribution.
+
+### 7. Cost is the same ratio
+
+| | 5 criteria | 50 items | Ratio |
+|---|---:|---:|---:|
+| Input tokens, total | 925,334 | 1,841,894 | **×1.99** |
+| Input tokens, per evaluation | 6,905 | 13,745 | |
+| Output tokens, total | 11,122 | 131,052 | ×11.78 |
+| Wall time, per evaluation | 0.25s | 0.32s | ×1.28 |
+
+Within 2% of section 3.7's input-token figures, which is expected: the state is the same
+size whatever the translation says. Output is identical to the token — 11,122 either time —
+because a five-question structured response has a fixed shape.
+
+---
+
+## 5. Reproducing
 
 ```bash
 # 1. Evaluate all 134 targets, one run each, under each scheme (needs TYPESAFE_API_KEY)
@@ -337,46 +603,79 @@ Existing result files are skipped, so an interrupted run resumes where it stoppe
 costs nothing for what is already on disk. `agg13.py` reports on whatever it finds, so it
 can be run while the evaluation is still going.
 
-Both scripts take translator directory names as positional arguments, so any other
-selection from the corpus is a matter of naming it:
+All four scripts take translator directory names as positional arguments, so any other
+selection from the corpus is a matter of naming it. Section 4 is that command, and the
+results live beside these under the same two directories:
 
 ```bash
-uv run experimental/13/eval5_jev.py qwen3.8 bonsai2-27b
+uv run experimental/13/eval5_jev.py  qwen3.8 bonsai2-27b
 uv run experimental/13/eval50_jev.py qwen3.8 bonsai2-27b
 uv run experimental/13/agg13.py qwen3.8 bonsai2-27b
+uv run experimental/13/cmp13.py qwen3.8 bonsai2-27b
 ```
+
+The two aggregators must be given the same names. `evals-degrees/` and `evals50/` hold one
+subdirectory per translator and accumulate across runs, so without the argument they report
+on their own default pair and a later run over different targets would otherwise be
+averaged silently into the wrong table.
 
 ---
 
-## 5. What Would Come Next
+## 6. What Would Come Next
 
-1. **The bottom of the scale.** Still untested, and now the obvious gap: level 4 dominates
-   here, level 3 dominated experiment 12's targets, and nothing has been run where level 1
-   or 2 should win. `bonsai2-27b` sits at 27.90 under the old scheme against `qwen3.8`'s
-   53.96, and it is the same 134-evaluation shape as this run. That is also experiment
-   11's Future Work 7 — whether a cheaper scheme still separates a ternary-quantized model
-   from its full-precision parent, which the old scheme did by 26 points in 62 of 67
-   languages — so one run answers both.
-2. **The middle of the corpus.** Sections 2 and 4 rest on translations the old scheme
-   scores in the 80s and 90s. Whether Spearman +0.69 survives on translators the old
-   scheme puts at 60–70, where its own rankings are most contested, is what decides if
-   this is usable as a general replacement rather than a check on good translations.
+1. ~~**The bottom of the scale.**~~ **Done — section 4.** Levels 0–2 take 59% of judgments
+   on `qwen3.8` and `bonsai2-27b`, and the five-criterion scheme reproduces the old
+   scheme's 26-point quantization gap to within 0.25 points while separating 66 of 67
+   languages against its 62. What it turned up instead is section 4.3: the scheme is
+   compressed against the old one at a slope of 0.69, so the -3.7 offset of section 3.2 is
+   not a constant. **What is left of this one** is whether the ordering `jev` produces
+   inside the old scheme's floor — 10 translations it scores a flat 0, spread over 2.6 to
+   31.2 here — is real or invented. It is the one place this scheme claims information the
+   reference does not have, and checking it needs human judgment on ten translations, not
+   another evaluator.
+2. **The middle of the corpus.** Now the only untested part of it, and the sharper
+   question for having both ends. Section 3.2 rests on translations the old scheme scores
+   in the 80s and 90s (Spearman +0.69) and section 4.2 on ones it scores 0–98 (+0.96),
+   and section 4.2 says most of that difference is range rather than accuracy. A
+   translator the old scheme puts at 60–70, where its own rankings are most contested,
+   has a narrow range *and* a contested reference — so it is the case where the two
+   explanations come apart, and it is what decides whether this is a general replacement
+   rather than a check on translations at the extremes. Section 4.3's slope predicts a
+   near-zero mean difference there, which is a second thing to check against.
 3. **Fluency.** Section 3.5 is either a finding about machine translation or a bias in one
    criterion's wording, and the two are distinguishable: the criterion descriptions are
    `trtools/evaluate.py`'s verbatim, so rewording only that one and re-running 134
    evaluations would say which.
-4. **Why the offset is 3.7 points and not zero.** Small enough to ignore for ranking,
-   large enough to matter for any absolute claim. It is one number and it has not been
-   looked into.
-5. **Whether the fifty-item verdicts can be rescued.** Section 3.7 recommends the
-   five-criterion scheme for ranking on cost, which leaves the fifty-item one to justify
-   itself as a diagnostic — and a diagnostic whose headline number is 96.1% `yes` is not
-   yet one. The choice is to abandon the verdict in favour of the weighted total, which
-   costs comparability with every generative evaluator experiment 11 ran, or to rewrite
-   the three levels the way experiment 12 rewrote its five. Experiment 12 is the precedent
-   that this is worth trying: there, the level wording moved the corpus mean by 15 points.
+4. ~~**Why the offset is 3.7 points and not zero.**~~ **Answered, and it was the wrong
+   question — section 4.3.** It is not an offset: the same scheme reads 12.4 points
+   *above* the old one on this pair, and all 268 translations fit `jev = 0.69 × old +
+   24.7`. What is left is why the slope is 0.69 — whether five ordered levels simply
+   cannot reach the ends of a 100-point scale the way a generative model's free-hand
+   numbers do, or whether the level wording is doing it — and whether it is stable enough
+   to invert. If it is, corpus scores and `jev` scores can be put on one scale; if the
+   slope moves with the translator, section 3.7's "ranking only" restriction is permanent.
+5. **Whether the fifty-item verdicts can be rescued.** Narrowed by section 4.5: the
+   96.1% `yes` is a ceiling effect on good translations, not a broken scale. On this pair
+   the same items return 24.1% `no`, 49 of 50 fire at least once, and rounding costs
+   0.01 of correlation instead of 0.18. So the rewrite that was being considered for the
+   whole rubric is needed only at the top — a positively-phrased item has nowhere above
+   `yes` to go, and that is where the resolution disappears. The cheaper fix is now worth
+   trying first: keep the three levels and reword only their top, against the top two's
+   134 translations where the failure is measurable. Experiment 12 is still the precedent
+   — there, level wording moved the corpus mean by 15 points.
 6. **Whether +0.90 says anything about the rubrics at all.** Two rubrics sharing nothing
-   but an evaluator agree at +0.90; a third rubric asked of the same evaluator would say
-   whether that is a property of the rubrics or of Jev. If everything Jev is asked
-   correlates at +0.90, the number is about the model, and neither rubric is being
-   validated by it.
+   but an evaluator agree at +0.90 on the top two and +0.95 on this pair; a third rubric
+   asked of the same evaluator would say whether that is a property of the rubrics or of
+   Jev. If everything Jev is asked correlates at +0.90, the number is about the model, and
+   neither rubric is being validated by it. Section 4.5 is a partial argument that it is
+   not pure model artifact — the two rubrics disagree systematically on `bonsai2-27b`,
+   where fifty independent properties cannot see that a translation has failed as a whole
+   — but that is one direction of disagreement, not a test.
+7. **Spread per unit of noise, measured rather than borrowed.** Section 4.6 finds the
+   five-criterion scheme carrying 2–3× the spread per unit of its own run-to-run noise at
+   every quality level, which is the sharpest form of section 3.7's recommendation — and
+   it rests on 1.12 and 2.25, two figures measured in different experiments on different
+   8-target sets. Three runs of both schemes over one target set would replace it with a
+   measurement. At $0.09 per pair of 134 and the ranges already known to be small, this is
+   the cheapest open question here, and it is the one the choice between the two schemes
+   actually turns on.
