@@ -1,11 +1,11 @@
 #!/bin/bash
-# Experiment 11: runs the three reference evaluators (qwen3.6, gemma4:31b, gpt-oss:120b)
-# across all three variants (evals, evals-nt, evals-ne), then aggregates the results.
+# Experiment 11: runs the reference evaluators (local qwen3.6, gemma4:31b, gpt-oss:120b and
+# commercial gpt-5.6-terra, gpt-5.6-luna) across all three variants (evals, evals-nt,
+# evals-ne), then aggregates the results.
 #
 # The per-target/per-run work is eval50.py's: this script only supplies the fixed set of
-# evaluators and variants that make up the reference comparison. Any other evaluator
-# (e.g. a commercial model) can be added the same way, by invoking eval50.py directly with
-# its own -m/-s -- see README.md.
+# evaluators and variants that make up the reference comparison. A further evaluator can
+# also be added by invoking eval50.py directly with its own -m/-s -- see README.md.
 #
 # Existing result files are left alone, so the script can be re-run; a failed call stops
 # the whole run (see eval50.evaluate_target), so a missing output file is a failure, not
@@ -17,13 +17,17 @@ cd "$(dirname "$0")"/../..
 BASE_DIR="experimental/11"
 SPLIT="${SPLIT:-none}"
 
+# Evaluator run order; a new evaluator must be added here first, since EVALUATORS below is
+# an associative array and does not preserve insertion order on its own.
+EVAL_ORDER=(ollama:qwen3.6 ollama:gemma4:31b ollama:gpt-oss:120b gpt-5.6-terra gpt-5.6-luna)
+
 # Evaluator model -> name used in result filenames
 declare -A EVALUATORS
 EVALUATORS[ollama:qwen3.6]="qwen3.6"
 EVALUATORS[ollama:gemma4:31b]="gemma4-31b"
 EVALUATORS[ollama:gpt-oss:120b]="gpt-oss-120b"
-
-EVAL_ORDER=(ollama:qwen3.6 ollama:gemma4:31b ollama:gpt-oss:120b)
+EVALUATORS[gpt-5.6-terra]="gpt-5.6-terra"
+EVALUATORS[gpt-5.6-luna]="gpt-5.6-luna"
 
 # Variant (directory name) -> extra eval50.py args
 #
