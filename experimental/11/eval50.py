@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Experiment 11: evaluates a translation against 50 yes/partial/no items.
+"""Experiment 11: evaluates every target under one evaluator model against 50
+yes/partial/no items, three runs each.
 
 The production evaluator (trtools eval) asks for five scores on a 0-20 scale, which
 leaves the evaluator model a 20-point range of discretion per criterion. This script
@@ -11,22 +12,71 @@ Scoring: yes=2, partial=1, no=0, summed over 50 items, so the scale stays 0-100.
 Judging 50 items in a single call may exceed what a model can hold together, so the
 item set is data and the schema is built from any subset of it: --split steps the
 work down from one call to five (one per group) to fifty (one per item).
+
+Handles one evaluator (-m/--model, -s/--slug) under one condition (--no-think,
+--no-evidence) at a time. batch.sh loops this over the three reference evaluators
+(qwen3.6, gemma4:31b, gpt-oss:120b) and all three variants; any other evaluator (e.g. a
+commercial model) can be added the same way, by invoking this script directly with its
+own -m/-s, without touching batch.sh or waiting for it to finish. Both write into the
+same evals/evals-nt/evals-ne directories, and agg50.py picks up whatever it finds there,
+keyed by the slug in the filename.
+
+Targets come from targets.tsv (translator, lang, lang_name, ...).
+
+Existing result files are left alone, so the script can be re-run. A call that keeps
+failing stops the whole run (see evaluate_target) rather than being logged and skipped,
+since a missing output file already records what didn't complete.
 """
 
 import argparse
 import json
 import time
+from contextlib import contextmanager
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Literal
 
 from pydantic import BaseModel, Field, create_model
 
+import trtools.llm as trtools_llm
 from trtools.llm import LLMClient, DEFAULT_RETRY_WAIT_SECONDS
 from trtools.statusline import StatusLine
+from llm7shi.usage import Usage, append_usage, find_usage_file, print_today_totals
 
 from items import GROUPS, ITEM_IDS, CRITERIA
 
+BASE_DIR = Path(__file__).resolve().parent
+ORIGINAL = str(BASE_DIR.parent.parent / "examples/onde-en.txt")
+RUNS = 3
+ATTEMPTS = 3
+
 VERDICT_SCORES = {"yes": 2, "partial": 1, "no": 0}
+
+
+@contextmanager
+def track_usage():
+    """Sum the Usage of every LLMClient call made inside the with-block.
+
+    LLMClient.call() discards the response's usage info, and LLMClient itself is
+    shared with other, unrelated callers, so this leaves it alone and instead wraps
+    the generate_with_schema it calls, for the duration of the with-block only.
+    """
+    total = Usage()
+    original = trtools_llm.generate_with_schema
+
+    def wrapper(*args, **kwargs):
+        nonlocal total
+        result = original(*args, **kwargs)
+        if result.usage:
+            total = total + result.usage
+        return result
+
+    trtools_llm.generate_with_schema = wrapper
+    try:
+        yield lambda: total
+    finally:
+        trtools_llm.generate_with_schema = original
+
 
 # Values a model emits when it echoes the schema instead of filling it in.
 PLACEHOLDERS = {"string", "str", "...", "n/a"}
@@ -180,40 +230,12 @@ def tally(evaluation):
     return group_scores, sum(group_scores.values())
 
 
-def build_parser():
-    parser = argparse.ArgumentParser(description="Evaluate a translation on 50 yes/partial/no items")
-    parser.add_argument("--original", required=True, help="Original text file")
-    parser.add_argument("--translation", required=True, help="Translated text file")
-    parser.add_argument("-m", "--model", required=True, help="Model used for evaluation")
-    parser.add_argument("-f", "--from", dest="from_lang", required=True, help="Source language")
-    parser.add_argument("-t", "--to", dest="to_lang", required=True, help="Target language")
-    parser.add_argument("-o", "--output", dest="output_file", help="Filename to save the evaluation result as JSON")
-    parser.add_argument("-w", "--retry-wait", type=int, default=DEFAULT_RETRY_WAIT_SECONDS,
-                        help=f"Wait time on retry, in seconds (default: {DEFAULT_RETRY_WAIT_SECONDS}s)")
-    parser.add_argument("--no-think", action="store_true", help="Disable thinking")
-    parser.add_argument("--no-evidence", action="store_true",
-                        help="Drop the per-item evidence field (verdict only); "
-                             "overall_comment is still produced")
-    parser.add_argument("--split", choices=["none", "group", "item"], default="none",
-                        help="How many calls to spread the 50 items over (default: none, a single call)")
-    parser.add_argument("--run", type=int, default=1, help="Current evaluation run number")
-    parser.add_argument("--runs", type=int, default=1, help="Total number of evaluation runs")
-    parser.add_argument("--label", help="Label shown on the status line")
-    parser.add_argument("--start", type=float, help="Batch start time (Unix timestamp)")
-    parser.add_argument("--attempt-start", type=float,
-                        help="Unix timestamp of the first attempt for this output file, so "
-                             "duration_seconds includes time spent on earlier failed retries "
-                             "(defaults to this process's own start time)")
-    parser.add_argument("--index", type=int, help="Position of this evaluation within the batch")
-    parser.add_argument("--count", type=int, help="Total number of evaluations in the batch")
-    return parser
-
-
 def run(args):
-    """Evaluate one translation and write the result, given a parsed args namespace.
+    """Evaluate one translation and write the result, given an args namespace.
 
-    Split out from main() so batch.py can call it in-process (constructing the
-    namespace itself) instead of shelling out to a subprocess per evaluation.
+    Built by evaluate_target(), which constructs the namespace itself and calls this
+    in-process instead of shelling out to a subprocess per evaluation. Returns the
+    Usage summed over every LLM call this evaluation made.
     """
     ui = StatusLine(label=args.label, start=args.start, index=args.index, count=args.count)
 
@@ -232,7 +254,7 @@ def run(args):
     steps = len(chunks_for(args.split))
     done = (args.run - 1) * steps
     call_start = args.attempt_start if args.attempt_start is not None else time.time()
-    with ui.progress(args.runs * steps, start=done) as prog:
+    with ui.progress(args.runs * steps, start=done) as prog, track_usage() as get_usage:
         evaluation = evaluate(client, original_text, translated_text,
                               args.from_lang, args.to_lang, args.split, ui.stream,
                               no_evidence=args.no_evidence, prog=prog, done=done)
@@ -253,6 +275,9 @@ def run(args):
     ui.write(f"Verdicts: yes={counts['yes']} partial={counts['partial']} no={counts['no']}\n")
     ui.write(f"Duration: {duration_seconds:.1f}s\n")
 
+    usage = get_usage()
+    ui.write(f"{usage}\n")
+
     if args.output_file:
         output_data = {
             "original_file": args.original,
@@ -272,9 +297,121 @@ def run(args):
             json.dumps(output_data, ensure_ascii=False, indent=2), encoding="utf-8")
         ui.write(f"\nSaved evaluation result as JSON: {args.output_file}\n")
 
+    return usage
+
+
+def evaluate_target(make_args, runs, attempts, index_start, total):
+    """Run one target for `runs` runs, retrying each up to `attempts` times.
+
+    `make_args(run_no)` builds the run() namespace for one run; its output_file is
+    checked first, so re-running the batch retries only what's missing. A run that
+    keeps failing stops the whole batch (see main()) rather than being logged and
+    skipped, since a missing output file already records what didn't complete.
+
+    Returns a list of (output_path, Usage) for the runs actually executed.
+    """
+    results = []
+    for run_no in range(1, runs + 1):
+        args = make_args(run_no)
+        args.index = index_start + run_no
+        args.count = total
+        out = Path(args.output_file)
+        if out.is_file():
+            print(f"[{args.index}/{total}] exists, skipping: {out}")
+            continue
+        print(f"\n=== [{args.index}/{total}] {args.label} run {run_no} ===")
+        for attempt in range(1, attempts + 1):
+            try:
+                usage = run(args)
+                break
+            except Exception as e:
+                print(f"  attempt {attempt}/{attempts} failed for {out}: {e}")
+                out.unlink(missing_ok=True)
+        else:
+            raise SystemExit(f"GIVING UP on {out}")
+        results.append((out, usage))
+    return results
+
+
+def variant_dir(no_think, no_evidence):
+    if no_think:
+        return "evals-nt"
+    if no_evidence:
+        return "evals-ne"
+    return "evals"
+
+
+def load_targets(path):
+    """Read (translator, lang, lang_name) from targets.tsv, skipping its header row."""
+    targets = []
+    for line in Path(path).read_text(encoding="utf-8").splitlines()[1:]:
+        if line.strip():
+            fields = line.split("\t")
+            targets.append((fields[0], fields[1], fields[2]))
+    return targets
+
 
 def main():
-    run(build_parser().parse_args())
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("-m", "--model", required=True, help="Evaluator model")
+    parser.add_argument("-s", "--slug", required=True,
+                        help="Name used for this evaluator in result filenames")
+    parser.add_argument("--no-think", action="store_true", help="Disable thinking")
+    parser.add_argument("--no-evidence", action="store_true",
+                        help="Drop the per-item evidence field")
+    parser.add_argument("--targets", default=str(BASE_DIR / "targets.tsv"))
+    parser.add_argument("--runs", type=int, default=RUNS)
+    parser.add_argument("--split", choices=["none", "group", "item"], default="none")
+    parser.add_argument("-w", "--retry-wait", type=int, default=DEFAULT_RETRY_WAIT_SECONDS)
+    parser.add_argument("--save-usage", action="store_true",
+                        help="Record usage regardless of model name")
+    cli_args = parser.parse_args()
+
+    variant = variant_dir(cli_args.no_think, cli_args.no_evidence)
+    eval_dir = BASE_DIR / variant
+    eval_dir.mkdir(parents=True, exist_ok=True)
+
+    usage_path = None
+    if cli_args.model.startswith("openai:") or cli_args.model.startswith("gpt-") or cli_args.save_usage:
+        usage_path = find_usage_file()
+
+    targets = load_targets(cli_args.targets)
+    total = len(targets) * cli_args.runs
+    index = 0
+    batch_start = time.time()
+    total_usage = Usage()
+
+    for translator, lang, lang_name in targets:
+        tr_file = BASE_DIR.parent.parent / f"examples/tr/onde/{translator}/tr/onde-{lang}.txt"
+        if not tr_file.is_file():
+            print(f"Missing translation, skipping: {tr_file}")
+            continue
+
+        stem = f"onde-{translator}-{lang}-{cli_args.slug}"
+        label = f"{lang}: {lang_name} / {cli_args.slug} / {variant}"
+
+        def make_args(run_no):
+            return SimpleNamespace(
+                original=ORIGINAL, translation=str(tr_file),
+                model=cli_args.model, from_lang="English", to_lang=lang_name,
+                output_file=str(eval_dir / f"{stem}-{run_no}.json"),
+                retry_wait=cli_args.retry_wait,
+                no_think=cli_args.no_think, no_evidence=cli_args.no_evidence,
+                split=cli_args.split, run=run_no, runs=cli_args.runs,
+                label=label, start=batch_start, attempt_start=time.time(),
+            )
+
+        results = evaluate_target(make_args, cli_args.runs, ATTEMPTS, index, total)
+        index += cli_args.runs
+
+        if usage_path is not None:
+            for out, usage in results:
+                append_usage(usage, cli_args.model, usage_path)
+                total_usage = total_usage + usage
+
+    if usage_path is not None:
+        print(f"\nTotal usage: {total_usage}\n")
+        print_today_totals(usage_path)
 
 
 if __name__ == "__main__":

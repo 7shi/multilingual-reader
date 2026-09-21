@@ -57,7 +57,7 @@ The experiment runs alongside `trtools` without modifying the core codebase:
   2. `evals-nt/`: No-Think (Thinking OFF, Evidence OFF) — tests latency and whether explicit CoT is required.
   3. `evals-ne/`: No-Evidence (Thinking ON, Evidence OFF) — isolates the effect of writing citation evidence.
 - **Modularity**: [eval50.py](eval50.py) supports `--split` (`none`, `group`, `item`) to evaluate all items in one prompt or step them down into smaller calls.
-- **Adding evaluators**: [batch.py](batch.py) runs one evaluator (`-m/--model`, `-s/--slug`) under one condition (`--no-think`, `--no-evidence`) over [targets.tsv](targets.tsv). [batch.sh](batch.sh) is a thin loop over the three reference evaluators and all three variants; another evaluator (e.g. a commercial model) can be added by invoking `batch.py` directly, without touching `batch.sh` or waiting for it to finish.
+- **Adding evaluators**: [eval50.py](eval50.py) runs one evaluator (`-m/--model`, `-s/--slug`) under one condition (`--no-think`, `--no-evidence`) over [targets.tsv](targets.tsv). [batch.sh](batch.sh) is a thin loop over the three reference evaluators and all three variants; another evaluator (e.g. a commercial model) can be added by invoking `eval50.py` directly, without touching `batch.sh` or waiting for it to finish.
 
 ---
 
