@@ -40,7 +40,7 @@ multilingual-reader/
 ├── Makefile                       # build / clean / serve / deploy targets
 ├── templates/                     # Build/deploy scripts and page templates (see templates/README.md)
 ├── dist/                          # Build output (gitignored)
-├── experimental/                  # Translation experiment series (01-10)
+├── experimental/                  # Translation experiment series
 └── obsolete/                      # Deprecated scripts and source data
 ```
 

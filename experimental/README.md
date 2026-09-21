@@ -91,3 +91,13 @@ Building on the results of experiments 06–09, the third-party-review approach 
   - `translate`, `eval`, and `review` now share a unified progress bar via the `--label` / `--start` main options
   - Confirmed that refinement works effectively even when the base score is low (eu: 17→59, hu: 26→89, sl: 56→83, et: 30→51)
   - bg, which had a high base score (88 points), saw a slight decline (-1). Consistent with the finding from experiment 09 that refinement tends to backfire on already-high scores
+
+## Questioning the Evaluation Scale Itself
+
+- **[11/](11/)**: Tested replacing `trtools eval`'s 5 criteria × 0–20 scoring with 50 narrow yes/partial/no items, to see whether a score can be made to stop depending on the run and on which model evaluates.
+  - Under the old scheme, the same translation's score swings by a mean range of 52.4 points across runs, and by a mean absolute 21.6 points when the evaluator model is swapped (qwen3.6 vs gpt-oss:120b)
+  - The new scheme cut run-to-run range to a mean of 9.6 points; evaluator dependence narrowed but did not disappear — 6 of 8 targets converged within 10 points across evaluators, while 2 still swung 22–40 points
+  - gpt-oss:120b, which never reached the top of the old scale, scored at the ceiling under item-level judging; gemma4:31b, suspected of leniency, was not uniformly higher than the other evaluators
+  - Wobble that remained was spread across 49 of the 50 items rather than concentrated in a few badly worded ones
+  - gemma4:31b was markedly slower per call (median ~8.5 minutes) than qwen3.6 or gpt-oss:120b (~2.5–3.5 minutes)
+  - Kept deliberately outside `trtools`; not yet folded back into production
