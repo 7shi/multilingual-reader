@@ -20,9 +20,76 @@ Everything below is measured from [examples/tr/onde/](../../examples/tr/onde/).
 
 ### It moves between runs
 
-Across the translations selected for this experiment, the same evaluator on the same
-translation spans a **mean range of 52.4 points** over three runs (mean stdev 22.16). See
-[targets.tsv](targets.tsv) for the individual figures; they run from 46 to 66 points.
+[pick_unstable.py](pick_unstable.py) ranks every stored old-scheme evaluation by how much
+its total score moves across three runs under the same evaluator (`qwen3.6`), and
+[targets.tsv](targets.tsv) keeps the worst one per translation model — the translations a
+new scheme most needs to steady, not a cross-section of quality bands:
+
+| Translator | Language | Old scores (3 runs) | Old range | Old median |
+|---|---|---|---:|---:|
+| gpt-5.6-terra | Polish | 69, 81, 15 | 66 | 69 |
+| gpt-oss | Interlingua | 89, 73, 34 | 55 | 73 |
+| qwen3.8 | Japanese | 56, 78, 25 | 53 | 56 |
+| gemini-3.5-flash-lite | Kannada | 29, 61, 80 | 51 | 61 |
+| ox-alpha | Irish | 38, 68, 89 | 51 | 68 |
+| qwen3.6-27b | Korean | 92, 42, 77 | 50 | 77 |
+| gemini-2.5-flash | Russian | 91, 44, 86 | 47 | 86 |
+| gemini-3-flash | Hindi | 91, 81, 45 | 46 | 81 |
+
+Mean range 52.4 points, mean stdev 22.16 — on the *same* translation, scored by the *same*
+model, three separate times. `pick_unstable.py --per-translator 1` also spreads the pick
+across eight different translation models (Slavic, Japonic, Dravidian, Celtic, Koreanic and
+Indo-Aryan languages plus a constructed one), so the wobble isn't a quirk of one model's
+output; translations whose line count no longer matched the original were excluded first,
+since `trtools` refuses to evaluate those (`batch.py` skips them, `evaluate.py` raises) and
+their stored evaluations would belong to an older version of the file.
+
+Run the identical eight translations through the new 50-item scheme, same reference
+evaluator (`qwen3.6`, `evals/`, thinking on):
+
+| Translator | Language | New scores (3 runs) | New range | Range change |
+|---|---|---|---:|---:|
+| gpt-5.6-terra | Polish | 87, 72, 69 | 18 | -48 |
+| gpt-oss | Interlingua | 80, 89, 80 | 9 | -46 |
+| qwen3.8 | Japanese | 86, 89, 84 | 5 | -48 |
+| gemini-3.5-flash-lite | Kannada | 81, 79, 95 | 16 | -35 |
+| ox-alpha | Irish | 85, 92, 89 | 7 | -44 |
+| qwen3.6-27b | Korean | 84, 93, 100 | 16 | -34 |
+| gemini-2.5-flash | Russian | 96, 100, 95 | 5 | -42 |
+| gemini-3-flash | Hindi | 97, 98, 98 | 1 | -45 |
+
+Mean range 9.6 points, mean stdev 4.17 — roughly a fifth of the old spread, and every
+single translation improved; none regressed. This holds up under the other two evaluators
+too (see "Results" below), so it isn't specific to `qwen3.6`.
+
+Run-to-run stability is only half of what makes a score trustworthy; the other half is not
+moving when a *different* model does the judging. Same eight translations, new scheme,
+median across the three runs above, against `gemma4:31b` and `gpt-oss:120b` as evaluators
+too, next to the old scheme's `qwen3.6` median as a reference point:
+
+| Translator | Language | Old (qwen3.6) | New (gemma4:31b) | New (gpt-oss:120b) | New (qwen3.6) | New spread |
+|---|---|---:|---:|---:|---:|---:|
+| gpt-5.6-terra | Polish | 69 | 70 | 92 | 74 | 22 |
+| gpt-oss | Interlingua | 73 | 94 | 88 | 84 | 10 |
+| qwen3.8 | Japanese | 56 | 92 | 96 | 88 | 8 |
+| gemini-3.5-flash-lite | Kannada | 61 | 89 | 49 | 87 | 40 |
+| ox-alpha | Irish | 68 | 96 | 98 | 89 | 9 |
+| qwen3.6-27b | Korean | 77 | 84 | 94 | 94 | 10 |
+| gemini-2.5-flash | Russian | 85 | 98 | 98 | 97 | 1 |
+| gemini-3-flash | Hindi | 81 | 98 | 92 | 98 | 6 |
+
+"New spread" is the range across the three new-scheme evaluators alone (old is not
+comparable here — it was only ever run under `qwen3.6`). It averages 13.25 points per
+translation, and six of the eight targets sit at 10 points or under; `gemini-3.5-flash-lite
+/ kn` (40) and `gpt-5.6-terra / pl` (22) are the exceptions. Every new-scheme evaluator also
+reads noticeably higher than the old `qwen3.6` baseline on nearly every row — the "roughly
+halves" framing below is about the *gap between evaluators* narrowing, not about the
+absolute scores converging on the old ones (see "It moves between runs" above and the
+Results section's "Dependence on the evaluator narrows" for why that's expected, not a
+defect: the old scheme's discretion is what produced the low baseline in the first place).
+
+The next section asks the same question the old scheme's own numbers already answer: how
+far apart do two evaluators land on the *same* translation.
 
 ### It moves when the evaluator changes
 
@@ -48,6 +115,18 @@ lands in the 20s-40s; `gpt-oss` credits the surviving meaning and lands in the 6
 
 That is the dependence this experiment is trying to remove. Because the ruler moves with
 the model, the evaluator has to be pinned to one model for scores to be comparable at all.
+
+This table is old-scheme only, and on a different set of translations from the rest of
+this experiment (`examples/tr/onde/qwen3.6/*`, all translated by `qwen3.6`, vs
+`targets.tsv`'s one-per-translator set). The new scheme was never run against this
+specific set — but the same two evaluators (`qwen3.6`, `gpt-oss:120b`) were both already
+run against `targets.tsv` for the rest of this experiment, so the analogous gap can be
+read straight off that existing data: mean 88.9 against 88.4, with a mean absolute
+difference of 10.5 points (`agg50.py`'s "qwen3.6 vs gpt-oss:120b, new scheme, in the old
+table's terms" section). Against the old scheme's 49.6/69.5/21.6, the evaluator gap on
+this pair roughly halves under the new scheme — smaller than the "Dependence on the
+evaluator model" section's three-evaluator spread suggests on its own, since `gemma4:31b`
+sits closer to `gpt-oss:120b` than `qwen3.6` does on a few of these targets.
 
 ### Two of the zeros are not judgements
 
@@ -113,15 +192,8 @@ Nothing in `trtools` was changed. The experiment runs beside it.
 
 ### Targets
 
-Selected by instability, not by quality band: if the scheme cannot steady the translations
-that wobble most, it is not worth adopting. Translations whose line count no longer matches
-the original were excluded, because `trtools` refuses to evaluate those (`batch.py` skips
-them, `evaluate.py` raises), so their stored evaluations belong to an older version of the
-file.
-
-See [targets.tsv](targets.tsv): eight translations from eight different translation models,
-spanning Slavic, Japonic, Dravidian, Celtic, Koreanic and Indo-Aryan languages plus a
-constructed one, with old-scheme ranges of 46-66 points.
+[targets.tsv](targets.tsv), selected by instability rather than quality band — see "It
+moves between runs" above for the table and the exclusion rule (line-count mismatches).
 
 ### Runs
 
@@ -145,13 +217,41 @@ safe to run against it — see "Thinking on vs off" below.
 `batch.sh` also runs the identical 50-item scheme with `--no-think`, writing to `evals-nt/`
 instead of `evals/` (same targets, evaluators and run count — 72 more evaluations). Each
 result file records its own `duration_seconds` (wall-clock time for that file's evaluation
-call, covering every chunk under `--split`) and `no_think`, so the two variants can be
-compared on both score and speed without relying on file mtimes. `agg50.py` reads both
-directories and reports the comparison under "Thinking on vs off" and the two "Timing"
-sections; `load_timing` prefers the recorded `duration_seconds` field and falls back to the
-mtime-difference estimate only for older files that predate the field.
+call, covering every chunk under `--split`), `no_think` and `no_evidence` (see below), so
+the two variants can be compared on both score and speed without relying on file mtimes.
+`agg50.py` reads both directories and reports the comparison under "Thinking on vs off" and
+the two "Timing" sections; `load_timing` prefers the recorded `duration_seconds` field and
+falls back to the mtime-difference estimate only for older files that predate the field.
 
-This sub-experiment has not been run yet — only the scripts are in place.
+`duration_seconds` counts time spent on failed retries too. `batch.sh` records one
+`attempt-start` timestamp per output file, before `try_eval`'s retry loop, and passes it to
+every retried `eval50.py` invocation via `--attempt-start`; `eval50.py` measures from that
+timestamp instead of its own process start when it is given, so a file that needed 2 of its
+3 allotted attempts reports the full wall-clock time, not just the successful attempt's.
+
+Without thinking, models had nowhere to put their reasoning except the answer itself: they
+padded every one of the 50 items with an extra explanation field beyond what the schema
+asked for, bloating the answer enough to hit `--max-length` mid-response. `--no-evidence`
+(new `eval50.py` flag, used only for `evals-nt`) drops the per-item `evidence` field —
+`overall_comment` at the end of the call is unaffected — which removes the pressure that was
+causing the padding.
+
+Dropping evidence also exposed a schema mismatch: asked for a single-field
+`{"verdict": ...}` object per item, models tended to flatten it and hand back the bare
+string directly (e.g. `"a01_speaker_label_present": "no"`), which crashed `check_sane` with
+`missing verdict for ...`. The schema for a no-evidence item is now the bare
+`Literal["yes", "partial", "no"]` itself rather than a wrapping object, matching what models
+actually produce; `check_sane`, `tally()` and `agg50.py`'s `item_scores()` all go through a
+shared `verdict_of()` that also tolerates the wrapped-object shape, in case some model wraps
+it anyway.
+
+One caveat applies to the whole comparison: `gpt-oss:120b` does not honor `--no-think`. It
+keeps producing its reasoning regardless of the flag, so its `evals-nt/` rows are "thinking
+on, evidence off", not no-think at all. Only `qwen3.6` and `gemma4:31b` give a genuine
+thinking-on-vs-off contrast; see the results section below.
+
+`evals-nt/` is complete (72/72) with `FAILURES-evals-nt.txt` empty — no call failed to
+return schema-conforming JSON under `--no-think --no-evidence` either.
 
 ### Splitting
 
@@ -168,22 +268,23 @@ changing the output format:
 ## Results
 
 Full tables are in [SCORES.md](SCORES.md), generated by `agg50.py` from the 72 evaluations
-(8 targets x 3 evaluators x 3 runs). `FAILURES.txt` is empty: every call returned a
+(8 targets x 3 evaluators x 3 runs). `FAILURES-evals.txt` is empty: every call returned a
 schema-conforming JSON on the first attempt.
 
-### Run-to-run wobble narrows sharply
+### Run-to-run wobble narrows sharply, under every evaluator
 
-Under `qwen3.6`, the same eight translations that spanned a mean range of 52.4 points
-(mean stdev 22.16) under the old scheme span a mean range of 9.6 points (mean stdev 4.17)
-under the new one — roughly a fifth of the old spread. Every individual translation
-improved; none regressed. Averaged across all three evaluators the new scheme's mean range
-is 9.2, so the improvement is not specific to `qwen3.6`.
+The `qwen3.6` figures (mean range 52.4 -> 9.6) are in "It moves between runs" above.
+Averaged across all three evaluators the new scheme's mean range is 9.2, so the
+improvement isn't specific to `qwen3.6` — see the full per-translation, per-evaluator
+breakdown in [SCORES.md](SCORES.md).
 
 ### Dependence on the evaluator narrows, but does not disappear
 
 The old scheme's evaluator gap (`qwen3.6` vs `gpt-oss:120b`, mean 49.6 vs 69.5, mean
 absolute difference 21.6) is not measured on the same eight translations, so the comparison
-is directional rather than exact. Still, the new scheme's spread across all three
+is directional rather than exact — see "It moves when the evaluator changes" above for the
+same pair's gap on `targets.tsv` itself (mean 88.9 vs 88.4, mean absolute difference 10.5).
+Still, the new scheme's spread across all three
 evaluators averages 13.25 points per translation (from the "New spread" column), and the
 three evaluators' means across the eight targets converge to within a point of each other:
 `gemma4:31b` 90.1, `qwen3.6` 88.9, `gpt-oss:120b` 88.4. That last figure is dragged down by
@@ -235,6 +336,66 @@ call, `qwen3.6` medians 210s (~3.5 min); `gemma4:31b` medians 557s (~9.3 min), w
 call taking 2912s (~49 min). This matches the handoff note that `gemma4:31b` was the slow
 one to run. See the "Timing" table in [SCORES.md](SCORES.md).
 
+### Thinking off is much faster, and what it costs depends on the evaluator
+
+`evals-nt/` finished all 72 evaluations with no failures. The per-translation numbers are in
+the "Thinking on vs off" table in [SCORES.md](SCORES.md); per evaluator they average out as:
+
+| Evaluator | Mean score (think) | Mean score (no-think) | Mean call time (think) | Mean call time (no-think) | Mean run-to-run range |
+|---|---:|---:|---:|---:|---:|
+| `qwen3.6` | 88.9 | 74.0 | 245s | 23s | 9.6 -> 13.6 |
+| `gemma4:31b` | 90.1 | 89.8 | 798s | 110s | 6.8 -> 2.8 |
+| `gpt-oss:120b`* | 88.4 | 87.9 | 160s | 160s | 11.1 -> 12.5 |
+
+\* **`gpt-oss:120b` ignores `--no-think`.** Via Ollama it keeps emitting its reasoning with
+`think=False` set, confirmed directly against the running model. Its `evals-nt/` row is
+therefore "thinking on + `--no-evidence`", and the unchanged call time (160s either way,
+against 10x and 7x speedups for the two models that do honor the flag) is what that looks
+like from the outside. Read that row as an evidence-on-vs-off comparison, not a thinking one.
+
+For the two genuine cases the results diverge:
+
+- `qwen3.6` loses a lot. Its mean drops 14.9 points, and every one of the eight targets
+  scores the same or lower without thinking — two of them collapse by ~30 points
+  (`gemini-3.5-flash-lite/kn` 87 -> 56, `ox-alpha/ga` 89 -> 57). Its run-to-run range widens
+  too (9.6 -> 13.6), so the cheaper score is both harsher and noisier. The 10x speedup
+  (245s -> 23s per call) does not buy a usable evaluation.
+- `gemma4:31b` loses almost nothing. Its mean moves 0.4 points (differences scatter both
+  ways, -10 to +8), and its run-to-run range actually narrows from 6.8 to 2.8. At 798s ->
+  110s per call, turning thinking off makes the slowest evaluator in this set roughly as
+  cheap as the others while leaving its aggregate scores where they were.
+
+That `gemma4:31b`'s per-target differences still reach ±10 while its mean barely moves means
+this is not "no-think is free for `gemma4:31b`" — individual verdicts do move. It is that
+the movement has no consistent direction, which is what a model does when the 50-item rubric
+is carrying the judgement instead of the reasoning.
+
+Note that `evals-nt/` varies two things at once (thinking off *and* evidence off), so it
+cannot separate the two effects on its own. Attributing the `qwen3.6` drop to thinking alone
+would need a thinking-on/evidence-off run, which this experiment does not have.
+
+### Limitation: rare catastrophic defects are diluted, not just de-emphasized
+
+The old scheme's harshness was not pure noise. `examples/tr/onde/qwen3.6/tr/onde-kn.txt`
+(the `qwen3.6`-vs-`gpt-oss:120b` comparison earlier in this document, Kannada) has, in 2 of
+its 99 lines, a word that mixes Kannada with Arabic or Odia characters mid-word — genuinely
+unreadable at that point, not just awkward. `qwen3.6`'s old-scheme score (26) treats this as
+grounds to mark the whole document down across all five criteria; `gpt-oss:120b`'s (73)
+reads it as one defect among several and scores the other 97 lines on their own, mostly
+adequate, merits.
+
+Run the same 2-line defect through the new scheme's rule for the matching item
+(`b05_script_consistency`, "only the writing system the target language's orthography uses
+appears in the text"): 2 lines falls in the `partial` band (roughly 1-3 lines), costing 1 of
+2 points on that one item — 1 point out of the 100-point total. A model that reliably stays
+mediocre-but-coherent for 99 lines and a model that is excellent for 97 and produces
+unreadable garbage in 2 would score almost identically under this scheme, even though the
+second is arguably less trustworthy to deploy unsupervised. Spreading the rubric across 50
+independently-scored properties is exactly what narrows run-to-run and evaluator wobble (see
+above), but the same averaging also flattens a rare, severe failure into noise. The scheme
+was designed to measure average per-property quality, not worst-case reliability, and it
+does not distinguish the two.
+
 ### Conclusion
 
 Fifty narrow yes/partial/no items produce a score that is far more stable across runs and
@@ -243,7 +404,9 @@ noticeably (though not completely) more stable across evaluator models than five
 `gemma4:31b` both turned out to be artifacts of the old scale rather than properties of the
 models. The concrete case where an evaluator swing had a real number (49 vs 87-89 on one
 target) points to a difference in what each model actually inspects (line-level scrutiny vs
-whole-document impression), which naming the properties does not by itself resolve.
+whole-document impression), which naming the properties does not by itself resolve. The
+scheme also trades away the old scheme's (crude but real) sensitivity to rare catastrophic
+defects for its gain in run-to-run and evaluator stability — see the limitation above.
 
 ## Reproducing
 

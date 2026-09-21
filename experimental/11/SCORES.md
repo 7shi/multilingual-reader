@@ -51,6 +51,12 @@ How far the new scheme's aggregated score moves when the evaluator is swapped.
 | gemini-2.5-flash / ru | 85 | 98 | 98 | 97 | 1 |
 | gemini-3-flash / hi | 81 | 98 | 92 | 98 | 6 |
 
+### qwen3.6 vs gpt-oss:120b, new scheme, in the old table's terms
+
+README's "It moves when the evaluator changes" quotes the old scheme's qwen3.6-vs-gpt-oss:120b gap (mean 49.6 vs 69.5, mean absolute difference 21.6) on a different set of translations (examples/tr/onde/qwen3.6/*, all translated by qwen3.6). The same two evaluators on the new scheme, over targets.tsv's 8 translations:
+
+Mean 88.9 against 88.4, with a mean absolute difference of 10.5 points.
+
 ## Where the remaining wobble sits
 
 Combinations measured: 24
@@ -119,6 +125,46 @@ Per-call duration in seconds. Files that record their own "duration_seconds" use
 | gpt-oss-120b | 24 | 149s | 160s | 106s | 368s |
 | qwen3.6 | 24 | 210s | 245s | 149s | 640s |
 | all | 72 | 224s | 401s | 106s | 2912s |
+
+## Timing (new scheme, no-think)
+
+| Evaluator | Calls | Median | Mean | Min | Max |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| gemma4-31b | 24 | 104s | 110s | 93s | 149s |
+| gpt-oss-120b | 24 | 155s | 160s | 95s | 272s |
+| qwen3.6 | 24 | 19s | 23s | 17s | 44s |
+| all | 72 | 104s | 97s | 17s | 272s |
+
+## Thinking on vs off
+
+Same 50-item scheme, same targets and evaluators, run with `--no-think --no-evidence`. Score is the median-of-runs total; time is the mean call duration from "duration_seconds". gpt-oss:120b ignores `--no-think`, so its rows are thinking-on/evidence-off, not no-think.
+
+| Translation | Evaluator | Think score | No-think score | Diff | Think time | No-think time |
+| --- | --- | ---: | ---: | ---: | ---: | ---: |
+| gpt-5.6-terra / pl | gemma4-31b | 70 | 76 | +6 | 767s | 119s |
+| gpt-5.6-terra / pl | gpt-oss-120b | 92 | 96 | +4 | 162s | 157s |
+| gpt-5.6-terra / pl | qwen3.6 | 74 | 74 | +0 | 246s | 18s |
+| gpt-oss / ia | gemma4-31b | 94 | 87 | -7 | 1366s | 113s |
+| gpt-oss / ia | gpt-oss-120b | 88 | 88 | +0 | 163s | 143s |
+| gpt-oss / ia | qwen3.6 | 84 | 75 | -9 | 349s | 25s |
+| qwen3.8 / ja | gemma4-31b | 92 | 95 | +3 | 929s | 109s |
+| qwen3.8 / ja | gpt-oss-120b | 96 | 95 | -1 | 130s | 157s |
+| qwen3.8 / ja | qwen3.6 | 88 | 78 | -10 | 231s | 20s |
+| gemini-3.5-flash-lite / kn | gemma4-31b | 89 | 90 | +1 | 444s | 113s |
+| gemini-3.5-flash-lite / kn | gpt-oss-120b | 49 | 52 | +3 | 141s | 145s |
+| gemini-3.5-flash-lite / kn | qwen3.6 | 87 | 56 | -31 | 208s | 25s |
+| ox-alpha / ga | gemma4-31b | 96 | 93 | -3 | 701s | 104s |
+| ox-alpha / ga | gpt-oss-120b | 98 | 91 | -7 | 246s | 200s |
+| ox-alpha / ga | qwen3.6 | 89 | 57 | -32 | 252s | 20s |
+| qwen3.6-27b / ko | gemma4-31b | 84 | 92 | +8 | 1098s | 110s |
+| qwen3.6-27b / ko | gpt-oss-120b | 94 | 90 | -4 | 128s | 154s |
+| qwen3.6-27b / ko | qwen3.6 | 94 | 80 | -14 | 190s | 20s |
+| gemini-2.5-flash / ru | gemma4-31b | 98 | 97 | -1 | 494s | 102s |
+| gemini-2.5-flash / ru | gpt-oss-120b | 98 | 100 | +2 | 156s | 148s |
+| gemini-2.5-flash / ru | qwen3.6 | 97 | 85 | -12 | 273s | 27s |
+| gemini-3-flash / hi | gemma4-31b | 98 | 88 | -10 | 589s | 108s |
+| gemini-3-flash / hi | gpt-oss-120b | 92 | 91 | -1 | 152s | 177s |
+| gemini-3-flash / hi | qwen3.6 | 98 | 87 | -11 | 209s | 26s |
 
 ## Group subtotals (new scheme)
 

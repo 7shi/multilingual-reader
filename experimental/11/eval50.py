@@ -15,19 +15,16 @@ work down from one call to five (one per group) to fifty (one per item).
 
 import argparse
 import json
-import sys
 import time
 from pathlib import Path
 from typing import Literal
 
 from pydantic import BaseModel, Field, create_model
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+from trtools.llm import LLMClient, DEFAULT_RETRY_WAIT_SECONDS
+from trtools.statusline import StatusLine
 
-from items import GROUPS, ITEMS, ITEM_IDS, CRITERIA  # noqa: E402
-
-from trtools.llm import LLMClient, DEFAULT_RETRY_WAIT_SECONDS  # noqa: E402
-from trtools.statusline import StatusLine  # noqa: E402
+from items import GROUPS, ITEM_IDS, CRITERIA
 
 VERDICT_SCORES = {"yes": 2, "partial": 1, "no": 0}
 
@@ -41,23 +38,32 @@ ANCHOR = """Judge each item on three levels:
 - `no`: the defect recurs, or it affects a wide part of the document (roughly 4 lines or more,
   or a single occurrence whose effect spreads through the whole text).
 
-Read the ENTIRE document from beginning to end before judging. Judge only what you can point
-at in the text: for any item you do not answer `yes`, quote the passage that made you say so.
-Judge each item independently; do not let one item's verdict pull the others along."""
+Read the ENTIRE document from beginning to end before judging."""
+
+ANCHOR_EVIDENCE = ("Judge only what you can point at in the text: for any item you do not "
+                    "answer `yes`, quote the passage that made you say so.")
+
+ANCHOR_TAIL = ("Judge each item independently; do not let one item's verdict pull the "
+               "others along.")
+
+
+Verdict = Literal["yes", "partial", "no"]
 
 
 class ItemJudgement(BaseModel):
     evidence: str = Field(description="One sentence at most, quoting the passage responsible. Empty when the verdict is yes.")
-    verdict: Literal["yes", "partial", "no"] = Field(description="Whether the property holds")
-
-
-class BareJudgement(BaseModel):
-    verdict: Literal["yes", "partial", "no"] = Field(description="Whether the property holds")
+    verdict: Verdict = Field(description="Whether the property holds")
 
 
 def build_schema(item_ids, with_evidence=True, with_comment=False):
-    """Build a Pydantic model covering exactly the given items."""
-    judgement = ItemJudgement if with_evidence else BareJudgement
+    """Build a Pydantic model covering exactly the given items.
+
+    Without evidence, an item's field is the bare Verdict literal rather than a
+    single-field {"verdict": ...} object: models asked for a one-field object tend to
+    flatten it and hand back the value directly anyway (see check_sane / verdict_of),
+    so asking for the flat shape up front matches what they actually produce.
+    """
+    judgement = ItemJudgement if with_evidence else Verdict
     fields = {
         item_id: (judgement, Field(description=CRITERIA[item_id]))
         for item_id in item_ids
@@ -79,6 +85,17 @@ def chunks_for(split):
     return [[i] for i in ITEM_IDS]
 
 
+def verdict_of(judged):
+    """A judged item's verdict, whichever shape it came back as.
+
+    build_schema asks for a bare Verdict literal when evidence is off, but a model can
+    still wrap it in a single-field {"verdict": ...} object out of habit (the reverse of
+    the flattening this schema shape was chosen to avoid -- see build_schema), so both
+    shapes are accepted here rather than only the one the schema requested.
+    """
+    return judged["verdict"] if isinstance(judged, dict) else judged
+
+
 def check_sane(result, item_ids, with_evidence):
     """Reject degenerate output so call_json retries instead of recording it.
 
@@ -90,15 +107,18 @@ def check_sane(result, item_ids, with_evidence):
     verdicts = []
     for item_id in item_ids:
         judged = result.get(item_id)
-        if not isinstance(judged, dict) or "verdict" not in judged:
-            raise ValueError(f"missing verdict for {item_id}")
-        verdicts.append(judged["verdict"])
-        evidence = judged.get("evidence", "")
-        if evidence.strip().lower() in PLACEHOLDERS:
-            raise ValueError(f"placeholder evidence for {item_id}: {evidence!r}")
+        verdict = verdict_of(judged) if isinstance(judged, dict) else judged
+        if verdict not in VERDICT_SCORES:
+            raise ValueError(f"missing/invalid verdict for {item_id}: {judged!r}")
+        verdicts.append(verdict)
+        if isinstance(judged, dict):
+            evidence = judged.get("evidence", "")
+            if evidence.strip().lower() in PLACEHOLDERS:
+                raise ValueError(f"placeholder evidence for {item_id}: {evidence!r}")
 
     if with_evidence and all(v != "yes" for v in verdicts):
-        if not any(result[i].get("evidence", "").strip() for i in item_ids):
+        if not any(isinstance(result[i], dict) and result[i].get("evidence", "").strip()
+                   for i in item_ids):
             raise ValueError("every item reports a defect but none cites evidence")
 
     comment = result.get("overall_comment", "")
@@ -107,25 +127,33 @@ def check_sane(result, item_ids, with_evidence):
 
 
 def evaluate(client, original_text, translated_text, from_lang, to_lang, split, file,
-             prog=None, done=0):
+             no_evidence=False, prog=None, done=0):
     """Run every chunk and merge the judgements into one dict.
 
     Each chunk is one call, so the progress bar advances per chunk: with --split that
     is real movement through the item list, and with a single call it still marks the
     run as finished.
     """
-    with_evidence = split != "item"
+    # --split item calls are one item at a time with no shared context, so there is
+    # nothing to summarise at the "last" call -- overall_comment stays off there
+    # regardless of --no-evidence.
+    has_context = split != "item"
+    with_evidence = has_context and not no_evidence
     batches = chunks_for(split)
     merged = {}
     n_lines = original_text.count("\n") + 1
 
     for n, item_ids in enumerate(batches, 1):
         last = n == len(batches)
-        schema = build_schema(item_ids, with_evidence, with_comment=last and with_evidence)
+        schema = build_schema(item_ids, with_evidence, with_comment=last and has_context)
+        anchor = ANCHOR
+        if with_evidence:
+            anchor += f" {ANCHOR_EVIDENCE}"
+        anchor += f" {ANCHOR_TAIL}"
         task = (
             f"Evaluate this translation from {from_lang} to {to_lang}.\n\n"
             f"Both texts have {n_lines} lines, and line i of the translation is meant to "
-            f"render line i of the original.\n\n{ANCHOR}"
+            f"render line i of the original.\n\n{anchor}"
         )
         if len(batches) > 1:
             task += f"\n\nThis pass covers {len(item_ids)} of the {len(ITEM_IDS)} items."
@@ -147,7 +175,7 @@ def tally(evaluation):
     """Convert verdicts into per-group subtotals and a 0-100 total."""
     group_scores = {g: 0 for g in GROUPS}
     for item_id in ITEM_IDS:
-        score = VERDICT_SCORES[evaluation[item_id]["verdict"]]
+        score = VERDICT_SCORES[verdict_of(evaluation[item_id])]
         group_scores[item_id[0]] += score
     return group_scores, sum(group_scores.values())
 
@@ -163,12 +191,19 @@ def main():
     parser.add_argument("-w", "--retry-wait", type=int, default=DEFAULT_RETRY_WAIT_SECONDS,
                         help=f"Wait time on retry, in seconds (default: {DEFAULT_RETRY_WAIT_SECONDS}s)")
     parser.add_argument("--no-think", action="store_true", help="Disable thinking")
+    parser.add_argument("--no-evidence", action="store_true",
+                        help="Drop the per-item evidence field (verdict only); "
+                             "overall_comment is still produced")
     parser.add_argument("--split", choices=["none", "group", "item"], default="none",
                         help="How many calls to spread the 50 items over (default: none, a single call)")
     parser.add_argument("--run", type=int, default=1, help="Current evaluation run number")
     parser.add_argument("--runs", type=int, default=1, help="Total number of evaluation runs")
     parser.add_argument("--label", help="Label shown on the status line")
     parser.add_argument("--start", type=float, help="Batch start time (Unix timestamp)")
+    parser.add_argument("--attempt-start", type=float,
+                        help="Unix timestamp of the first attempt for this output file, so "
+                             "duration_seconds includes time spent on earlier failed retries "
+                             "(defaults to this process's own start time)")
     parser.add_argument("--index", type=int, help="Position of this evaluation within the batch")
     parser.add_argument("--count", type=int, help="Total number of evaluations in the batch")
     args = parser.parse_args()
@@ -189,11 +224,11 @@ def main():
     # than sitting still until the whole evaluation is done.
     steps = len(chunks_for(args.split))
     done = (args.run - 1) * steps
-    call_start = time.time()
+    call_start = args.attempt_start if args.attempt_start is not None else time.time()
     with ui.progress(args.runs * steps, start=done) as prog:
         evaluation = evaluate(client, original_text, translated_text,
                               args.from_lang, args.to_lang, args.split, ui.stream,
-                              prog=prog, done=done)
+                              no_evidence=args.no_evidence, prog=prog, done=done)
         ui.stream.end()
     duration_seconds = time.time() - call_start
 
@@ -207,7 +242,7 @@ def main():
 
     counts = {v: 0 for v in VERDICT_SCORES}
     for item_id in ITEM_IDS:
-        counts[evaluation[item_id]["verdict"]] += 1
+        counts[verdict_of(evaluation[item_id])] += 1
     ui.write(f"Verdicts: yes={counts['yes']} partial={counts['partial']} no={counts['no']}\n")
     ui.write(f"Duration: {duration_seconds:.1f}s\n")
 
@@ -220,6 +255,7 @@ def main():
             "model_used": args.model,
             "split": args.split,
             "no_think": args.no_think,
+            "no_evidence": args.no_evidence,
             "duration_seconds": round(duration_seconds, 1),
             "evaluation": evaluation,
             "group_scores": group_scores,

@@ -39,9 +39,14 @@ EVALUATORS[ollama:gpt-oss:120b]="gpt-oss-120b"
 EVAL_ORDER=(ollama:qwen3.6 ollama:gemma4:31b ollama:gpt-oss:120b)
 
 # Variant (directory name) -> extra eval50.py args
+#
+# evals-nt also passes --no-evidence: without thinking to hold the rationale, models were
+# padding every item with an unrequested overall_comment-like field instead of the requested
+# evidence, bloating the answer enough to hit --max-length. Dropping the per-item evidence
+# field removes that pressure; the run-level overall_comment is unaffected.
 declare -A VARIANTS
 VARIANTS[evals]=""
-VARIANTS[evals-nt]="--no-think"
+VARIANTS[evals-nt]="--no-think --no-evidence"
 
 VARIANT_ORDER=(evals evals-nt)
 
@@ -71,12 +76,15 @@ try_eval() {
 run_eval() {  # <failures_file> <output> <translation> <lang_name> <evaluator> <label> <run> <index> <extra_args...>
     local failures="$1" out="$2" translation="$3" lang_name="$4" evaluator="$5" label="$6" run="$7" index="$8"
     shift 8
+    local attempt_start
+    attempt_start=$(date +%s.%N)
     try_eval new "${failures}" "${out}" \
         uv run "${BASE_DIR}/eval50.py" \
         --original "${ORIGINAL}" --translation "${translation}" \
         -m "${evaluator}" -f English -t "${lang_name}" \
         --split "${SPLIT}" --run "${run}" --runs "${RUNS}" \
         --label "${label}" --start "${BATCH_START}" \
+        --attempt-start "${attempt_start}" \
         --index "${index}" --count "${TOTAL}" -o "${out}" "$@"
 }
 

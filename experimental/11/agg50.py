@@ -13,13 +13,10 @@ Writes a Markdown report to stdout.
 import argparse
 import json
 import re
-import sys
 from pathlib import Path
 from statistics import median, pstdev
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-
-from items import GROUPS, ITEM_IDS  # noqa: E402
+from items import GROUPS, ITEM_IDS
 
 BASE = Path(__file__).resolve().parent
 ONDE = Path("examples/tr/onde")
@@ -156,11 +153,21 @@ def timing_table(durations):
     return lines
 
 
+def verdict_of(judged):
+    """A judged item's verdict, whichever shape it came back as.
+
+    Without evidence, an item may be the bare verdict string the schema asked for, or
+    (if the model wrapped it anyway) a {"verdict": ...} object -- see eval50.py's
+    verdict_of / build_schema for why both occur.
+    """
+    return judged["verdict"] if isinstance(judged, dict) else judged
+
+
 def item_scores(data, new):
     """Per-criterion (old) or per-item (new) scores for one run."""
     ev = data["evaluation"]
     if new:
-        return {i: VERDICT_SCORES[ev[i]["verdict"]] for i in ITEM_IDS}
+        return {i: VERDICT_SCORES[verdict_of(ev[i])] for i in ITEM_IDS}
     return {c: ev[c]["score"] for c in OLD_CRITERIA}
 
 
@@ -247,6 +254,32 @@ def evaluator_spread_table(old, new, targets, evaluators, reference):
     return lines
 
 
+def pair_gap_summary(new, targets, evaluator_a, evaluator_b):
+    """Mean/mean-absolute-difference between two evaluators, in the old scheme's format.
+
+    README's "It moves when the evaluator changes" section quotes the old scheme's
+    qwen3.6-vs-gpt-oss-120b gap (mean 49.6 vs 69.5, mean absolute difference 21.6) on a
+    different set of translations (examples/tr/onde/qwen3.6/*, all translated by
+    qwen3.6). This computes the same statistic for the new scheme on targets.tsv's set,
+    so the two are directly comparable in the same units even though the underlying
+    translations differ.
+    """
+    a_scores, b_scores = [], []
+    for translator, lang in targets:
+        a = new.get((translator, lang, evaluator_a))
+        b = new.get((translator, lang, evaluator_b))
+        if not a or not b:
+            continue
+        a_scores.append(a["median_score"])
+        b_scores.append(b["median_score"])
+    if not a_scores:
+        return None
+    mean_a = sum(a_scores) / len(a_scores)
+    mean_b = sum(b_scores) / len(b_scores)
+    mad = sum(abs(x - y) for x, y in zip(a_scores, b_scores)) / len(a_scores)
+    return mean_a, mean_b, mad, len(a_scores)
+
+
 def unstable_items(new):
     """Count how often each item's verdict disagrees between runs.
 
@@ -330,6 +363,18 @@ def main():
     print("\n".join(evaluator_spread_table(old, new, targets, evaluators, reference)))
     print()
 
+    gap = pair_gap_summary(new, targets, "qwen3.6", "gpt-oss-120b")
+    if gap:
+        mean_q, mean_g, mad, n = gap
+        print("### qwen3.6 vs gpt-oss:120b, new scheme, in the old table's terms\n")
+        print("README's \"It moves when the evaluator changes\" quotes the old scheme's "
+              "qwen3.6-vs-gpt-oss:120b gap (mean 49.6 vs 69.5, mean absolute difference "
+              "21.6) on a different set of translations (examples/tr/onde/qwen3.6/*, all "
+              f"translated by qwen3.6). The same two evaluators on the new scheme, over "
+              f"targets.tsv's {n} translations:\n")
+        print(f"Mean {mean_q:.1f} against {mean_g:.1f}, with a mean absolute difference of "
+              f"{mad:.1f} points.\n")
+
     print("## Where the remaining wobble sits\n")
     print("\n".join(unstable_items(new)))
     print()
@@ -353,9 +398,10 @@ def main():
 
     if new_nt:
         print("## Thinking on vs off\n")
-        print("Same 50-item scheme, same targets and evaluators, run with `--no-think`. "
-              "Score is the median-of-runs total; time is the mean call duration from "
-              "\"duration_seconds\".\n")
+        print("Same 50-item scheme, same targets and evaluators, run with "
+              "`--no-think --no-evidence`. Score is the median-of-runs total; time is the "
+              "mean call duration from \"duration_seconds\". gpt-oss:120b ignores "
+              "`--no-think`, so its rows are thinking-on/evidence-off, not no-think.\n")
         print("\n".join(think_vs_nothink_table(new, new_nt, targets, evaluators)))
         print()
 
