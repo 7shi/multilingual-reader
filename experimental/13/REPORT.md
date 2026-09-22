@@ -1,10 +1,10 @@
 # Report: The Corpus on the Jev Scale
 
 Step 2 of [PORT.md](PORT.md) section 7: all 16 translators × 67 languages on the Jev scale,
-set beside the published old-evaluator numbers. It answers PORT.md section 8's first two
-questions and its fourth, and it turns up one thing neither asked about: **Jev penalises dropped
-speaker labels heavily, and the old evaluator barely notices them.** That, not the middle
-band, is what moves the ranking.
+set beside the published old-evaluator numbers. It answers the questions that step was
+set, and the slope's stability, and it turns up one thing none of them asked about: **Jev
+penalises dropped speaker labels heavily, and the old evaluator barely notices them.**
+That, not the middle band, is what moves the ranking.
 
 Every number here comes from [report.py](report.py); its full output is the appendix.
 
@@ -18,11 +18,11 @@ medians ([PLAN.md](PLAN.md) section 7). The Jev side is `jev.jsonl` read through
 
 ## 1. Short Answers
 
-| Question (PORT.md section 8) | Answer |
+| Question (PORT.md section 7, step 2) | Answer |
 |---|---|
-| 1. Does Jev separate the top four? | **Into two pairs, not within them.** `gpt-5.6-luna` and `union-alpha` stay tied; `gemini-3.7-flash` drops to the bottom of the four |
-| 2. Does the middle band hold? | **Per translation, no band holds, and the middle is not the worst.** Per translator, the middle of the ranking reorders, and the cause is speaker labels (section 4) |
-| 4. Is the 0.69 slope stable enough to invert? | **No.** Over all 1,072 it is 0.508 fitted one way and 0.718 the other; the four-translator 0.69 falls between them |
+| Does Jev separate the top four? | **Into two pairs, not within them.** `gpt-5.6-luna` and `union-alpha` stay tied; `gemini-3.7-flash` drops to the bottom of the four |
+| Does the middle band hold? | **Per translation, no band holds, and the middle is not the worst.** Per translator, the middle of the ranking reorders, and the cause is speaker labels (section 4) |
+| Is the 0.69 slope stable enough to invert? | **No.** Over all 1,072 it is 0.508 fitted one way and 0.718 the other; the four-translator 0.69 falls between them |
 
 ## 2. The Top Four
 
@@ -41,8 +41,8 @@ Per language, pair by pair (Wilcoxon p on the paired differences):
 | union vs ox | union, p = 3e-6 | union, p = 0.0002 |
 | gemini-3.7 vs ox | gemini-3.7, p = 0.07 | **ox**, p = 0.02 |
 
-- **luna vs union is a tie under both**, as README section 3.3 found. PORT.md section 8's
-  first question, on the pair that matters most, is answered no.
+- **luna vs union is a tie under both**, as README section 3.3 found. On the pair that
+  matters most, the answer is no (PORT.md section 8 item 2).
 - Jev separates both of them from `gemini-3.7-flash` more strongly than the old evaluator
   (dz +0.58 / +0.76 against +0.38 / +0.31), and from `ox-alpha` about as strongly or less.
 - **The bottom pair swaps.** Part of `gemini-3.7-flash`'s fall is section 4: 23 of its
@@ -64,7 +64,7 @@ Per language, pair by pair (Wilcoxon p on the paired differences):
 Inside any ten-point band of the old score the two evaluators barely agree — and that
 includes the top band, whose range is as narrow as the middle's. README section 4.2's
 warning generalises: the corpus-wide +0.81 is mostly range. The middle is not uniquely
-worse, which is the question PORT.md section 8 asked; but nothing here says which evaluator's
+worse, which is the question PORT.md asked; but nothing here says which evaluator's
 within-band ordering is right, and the answer is not "the middle holds" either.
 
 **Per translator.** The ranking moves in the middle (Spearman over the 16 means +0.84):
@@ -144,10 +144,7 @@ line is `dropped` or `swapped`:
 
 So Jev's direction is right, and the only open question is size: whether three points out
 of twenty is proportionate for one line in 99. That is a calibration question, not a
-defect, and it does not need settling before step 3. It may share a mechanism with
-`build_state`'s claim that line *i* renders line *i* (PORT.md section 5.3) — a line that
-has lost its label no longer looks like the line it renders — which the re-run that
-section needs could test at no extra cost.
+defect, and it does not need settling before step 3.
 
 The glossary check is also a better yardstick for this than any evaluator: it is exact
 for `dropped` and `swapped`, costs nothing, and sees `off-glossary`, which Jev cannot.
@@ -160,7 +157,7 @@ longer align with the original's.
 ## 5. The Other Direction
 
 The largest divergences the other way — old far below Jev — are the old evaluator's
-floor, which PORT.md section 8's fifth question already flags. One was checked:
+floor, which PORT.md section 8 item 3 already flags. One was checked:
 `gpt-5.6-terra`'s `hr` scores **9** under the old evaluator and **66.7** under Jev. Its
 line 23 is leaked model reasoning (`Camಿಕೆassistant to=python? no. Need translate …`);
 the other 98 lines are clean. The old evaluator's three runs gave it all zeros once and
@@ -191,13 +188,11 @@ tier counts per translator are in the appendix.
 
 ## 8. For Step 3
 
-Nothing here blocks step 3. One thing should still be decided before it, since it would
-change `SCHEME_ID` and so needs the one re-run ($0.32, five and a half minutes):
-`build_state`'s line count (PORT.md section 5.3). That re-run can also test whether the
-line-count claim is part of why a lost label costs three points (section 4).
+Nothing here blocks step 3.
 
-Separately, `generate_compare_rows.py` parses `SCORES.txt` as integers (`LINE_RE`,
-`int()`), and must accept one decimal before step 3 switches the file over.
+One change belongs to step 3 itself: `generate_compare_rows.py` parses `SCORES.txt` as
+integers (`LINE_RE`, `int()`), and must accept one decimal before step 3 switches the file
+over.
 
 ---
 

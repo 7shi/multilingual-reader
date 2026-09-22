@@ -25,8 +25,9 @@ untouched — that is section 7's step 3.
    as the trend column's switch in [experiment 14's PORT.md](../14/PORT.md) (section 9 is
    what it touches).
 
-Before step 3: settle `build_state`'s line count (section 5.3). `TIERS` stays as it is
-(section 5.2). Speaker labels need no decision first (REPORT.md section 4).
+Nothing else has to be settled before step 3: `TIERS` stays as it is (section 5.2),
+`build_state`'s wording stays as it is (section 5.3), and speaker labels need no decision
+(REPORT.md section 4).
 
 ---
 
@@ -159,7 +160,7 @@ reproduce: over 1,072 it is 0.508 fitted one way and 0.718 the other
 conversion. The decision does not depend on them. At the unchanged cuts the top four go
 from 37–48 languages at 90+ to 13–22.
 
-### 5.3 `build_state` tells the evaluator both texts have the same line count
+### 5.3 `build_state` tells the evaluator both texts have the same line count — accepted, not fixed
 
 `trtools/jev_criteria.py`'s `line_correspondence` reads *"Both texts have N lines, and line
 i of the translation is meant to render line i of the original"*, and `N` is counted from
@@ -170,23 +171,22 @@ evaluator, asserting a correspondence that does not exist.
 and Jev scores it `information_completeness` 2.34, its lowest criterion, for a total of
 **71.05**. The old evaluator gave it 63.
 
-Whether the wording is *why* the score is high is unproven. The test is cheap: re-evaluate
-that one language with the count taken from the translation, or with the sentence dropped,
-and compare. Until then it is a hypothesis, not a cause.
+Whether the wording is *why* the score is high is unproven, and it stays a hypothesis, not
+a cause.
 
 It is the only translation in the corpus under 90 lines, so nothing here suggests a
 systematic bias. It matters because the tail is the point of the corpus (PLAN.md
 section 1): a yardstick for how many languages a model handles cannot place an 18-line stub
 at 71.
 
-[REPORT.md](REPORT.md) section 4 adds a second reason to test it: a translation line that
-has lost its speaker label costs about three `information_completeness` points, and a
-line that no longer looks like the line it renders may be part of why. The same re-run can
-check both.
-
-**Fix**: settle the wording before step 3 regenerates anything. Changing it changes
-`SCHEME_ID` — correctly, since it is an input to the score — which means re-running all
-1,072 evaluations at the cost JEV.md records, $0.32 and five and a half minutes.
+**Decision: leave the wording as it is.** Changing it changes `SCHEME_ID` — correctly,
+since it is an input to the score — and `trtools jev` refuses to add to a file scored on
+another scheme, while totals on two schemes cannot sit in one comparison table. Any
+rewording means re-evaluating the whole corpus, which is out of proportion to one
+translation. A translation whose line count differs from the original's
+is found mechanically, without an evaluator, by counting lines: [report.py](report.py)
+already sets it aside as `unaligned`. `gemini-3-flash/eu`'s 71.05 is recorded here as that
+known exception, not read as a judgment of an 18-line stub.
 
 ## 6. `port.py`
 
@@ -219,7 +219,7 @@ an unverified run the record.
    summary, and `TIERS` counts**, which is the comparison README section 5.4 starts on four
    translators and this extends to all 16. Write that rather than stretching `agg13.py`,
    which is built for pairs: its section 1 gap and section 3 head-to-head read
-   `TRANSLATORS[0]` and `[1]` only. It is what answers section 8's first two questions:
+   `TRANSLATORS[0]` and `[1]` only. It is what answers two questions:
 
    - **Does Jev separate the top?** `gpt-5.6-luna` 90.39, `union-alpha` 90.18,
      `gemini-3.7-flash` 87.52, `ox-alpha` 85.90 under the old evaluator — five points of a
@@ -234,8 +234,21 @@ an unverified run the record.
    against the published corpus numbers, so it uses `SCORES.txt`'s definition of a total
    rather than `agg13.py`'s (PLAN.md section 7).
 
-   **Done**: `report.py` writes it and [REPORT.md](REPORT.md) reads it. Section 8 carries
-   the answers.
+   **Done**: `report.py` writes it and [REPORT.md](REPORT.md) reads it. The answers, with a
+   third question the full corpus settled for free:
+
+   - **Does Jev separate the top? Partly** (REPORT.md section 2). It separates
+     `gpt-5.6-luna` and `union-alpha` from `gemini-3.7-flash` more strongly than the old
+     scheme, but the two stay tied, and `gemini-3.7-flash` and `ox-alpha` swap places. The
+     tie is section 8 item 2.
+   - **Does the middle band hold? It is not specially weak** (REPORT.md section 3). Per
+     translation, Spearman inside every ten-point band of the old score is low (+0.07 to
+     +0.39), the top band included; the corpus-wide +0.81 is mostly range. Per translator,
+     the middle of the ranking does reorder, and the cause is lost speaker labels
+     (REPORT.md section 4), not the band.
+   - **Is the 0.69 slope stable enough to invert? No** (REPORT.md section 7; README
+     section 7 item 4). 0.508 fitted one way, 0.718 the other; 0.69 falls between them.
+     It only mattered for quoting an absolute number against a historical one.
 
 3. **Switch and regenerate** — `EVALUATOR` in `common.mk`, then `SCORES.txt` and the
    chart, in one pass. Section 9 is what it touches.
@@ -247,37 +260,21 @@ an unverified run the record.
 
 ## 8. Open Questions
 
-Ordered by how much they would change the plan.
+Ordered by how much they would change the plan. Step 2's questions are answered under
+section 7.
 
-1. **Does `jev` separate the top of the corpus?** README section 5.4 says it does not on the
-   one pair measured. The top four sit within five points under the old scheme, and that
-   compression is the yardstick's standing weakness. Step 2 answers it. If the answer is no,
-   the migration is still worth it for PLAN.md section 2's reason 1, but the top of the
-   table stays unresolved and needs a different idea.
-   **Answered: partly** ([REPORT.md](REPORT.md) section 2). Jev separates `gpt-5.6-luna` and
-   `union-alpha` from `gemini-3.7-flash` more strongly than the old scheme, but the two
-   remain tied, and `gemini-3.7-flash` and `ox-alpha` swap places. The top pair is still
-   unresolved.
-2. **Does the middle band hold?** Step 2. If Spearman collapses at 60–70, an evaluator that
-   works at the extremes and not the middle is a check, not a replacement.
-   **Answered** ([REPORT.md](REPORT.md) section 3). Per translation, Spearman inside every
-   ten-point band of the old score is low (+0.07 to +0.39), the top band included, so the
-   middle is not specially weak; the corpus-wide +0.81 is mostly range. Per translator, the
-   middle of the ranking does reorder, and the cause is lost speaker labels (section 4
-   there), not the band.
-3. **Scope.** This covers `examples/tr/onde/` only. `examples/tr/core/Makefile` and
+1. **Scope.** This covers `examples/tr/onde/` only. `examples/tr/core/Makefile` and
    `examples/tr/fr/Makefile` also pin `ollama:qwen3.6`, and nothing here measured anything
    about them. Proposed: leave them, revisit once `onde/` has settled.
-4. **Is the 0.69 slope stable enough to invert?** README section 7 item 4. Lower priority
-   than it was: ranking survives monotone compression, so this only matters for quoting an
-   absolute number against a historical one. Step 2 answers it at n=1,072 for free.
-   **Answered: no** ([REPORT.md](REPORT.md) section 7). 0.508 fitted one way, 0.718 the
-   other; 0.69 falls between them.
-5. **Is the ordering inside the old scheme's floor real?** README section 7 item 1. The 10
+2. **The top pair.** Jev ties `gpt-5.6-luna` and `union-alpha` as the old scheme does
+   ([REPORT.md](REPORT.md) section 2), so the compression at the top — the yardstick's
+   standing weakness — survives the migration. The migration is still worth it for PLAN.md
+   section 2's reason 1, but separating the top needs a different idea.
+3. **Is the ordering inside the old scheme's floor real?** README section 7 item 1. The 10
    translations the old scheme scores 0 come back spread over 2.6–31.2. It is the one place
    this scheme claims information its reference does not have. Checking it needs human
    judgment on ten translations. Not a blocker, but it should not be quoted as established.
-6. **A second source text.** README section 7 item 9. Everything the corpus knows is 67
+4. **A second source text.** README section 7 item 9. Everything the corpus knows is 67
    translations of one spoken-dialogue document. For a *multilingual ability* yardstick this
    is the largest unexamined assumption in the project — larger than anything about the
    evaluator — and it is orthogonal to this migration.

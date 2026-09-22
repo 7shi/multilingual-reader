@@ -2,9 +2,9 @@
 """Step 2 of PORT.md section 7: the whole corpus on the Jev scale, beside the old one.
 
 The experiment measured four translators; `trtools jev` has since evaluated all 16. This
-sets the two scales side by side over the full 16 x 67 and answers PORT.md section 8's
-first two questions -- does Jev separate the top four, and does the middle band hold --
-plus question 4, the slope, which n=1,072 answers for free.
+sets the two scales side by side over the full 16 x 67 and answers the two questions that
+step was set -- does Jev separate the top four, and does the middle band hold -- plus the
+slope's stability, which n=1,072 answers for free.
 
 The old side is `SCORES.txt`, the published numbers, so a total is the sum of the five
 criteria's medians (PLAN.md section 7), not `agg13.py`'s median of three totals. The Jev

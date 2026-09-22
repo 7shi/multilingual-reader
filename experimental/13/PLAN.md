@@ -126,9 +126,10 @@ for — the middle band and the top four.
 
 ## 4. Open Questions
 
-Moved to [PORT.md](PORT.md) section 8: whether Jev separates the top
-of the corpus, whether the middle band holds, scope, the 0.69 slope, the ordering inside the
-old scheme's floor, and a second source text.
+Moved to [PORT.md](PORT.md). Whether Jev separates the top of the corpus, whether the
+middle band holds and the 0.69 slope are answered under its section 7's step 2; scope, the
+top pair Jev leaves tied, the ordering inside the old scheme's floor and a second source
+text remain open in its section 8.
 
 **Removed from this list: fluency.** It was carried here as the one open question with a
 deadline, on the grounds that every corpus number would inherit the bias once the scale was

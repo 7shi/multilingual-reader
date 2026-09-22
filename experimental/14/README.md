@@ -132,7 +132,7 @@ measurement, and the run sections for the ones that rest on output.
 - Whether `analysis` and `score` disagreeing in a row is a problem to solve. Left to be read
   off the first full run.
 - Anything about `examples/tr/core/` or `examples/tr/fr/`, which pin the same evaluator and
-  are out of scope for now ([experiment 13's PORT.md](../13/PORT.md) section 8 item 3).
+  are out of scope for now ([experiment 13's PORT.md](../13/PORT.md) section 8 item 1).
 - Whether stage 1 can be made more accurate. The phrase inherits its errors, and nothing
   here tried to reduce them.
 - Whether faulting the translation for the original's own wording can be ruled out. It is a
