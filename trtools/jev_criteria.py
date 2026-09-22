@@ -12,7 +12,7 @@ matched against the text, to the point where a structurally sound Polish transla
 landed on "mixed languages, markup fragments" at probability 0.87.
 
 Everything in this file is an input to the score. `SCHEME_ID` hashes all of it, and
-experimental/13/PORT.md section 3 says why that matters and section 8 what it is checked
+experimental/13/PORT.md section 3 says why that matters and section 6 what it is checked
 against.
 """
 

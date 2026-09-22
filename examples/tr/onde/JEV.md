@@ -96,7 +96,8 @@ came back bit-identical: the evaluator is not deterministic, and was never claim
 still describe the `evals/` scale. `trtools agg` cannot read `jev.jsonl` yet — its file
 discovery requires three runs per language — and `trtools trend` has no prose to summarise
 under an evaluator that returns none. Both are open items in
-[PLAN.md](../../../experimental/13/PLAN.md).
+[experimental/13/PORT.md](../../../experimental/13/PORT.md) and
+[experimental/14/PORT.md](../../../experimental/14/PORT.md).
 
 ## Appendix: What Jev Was Asked
 

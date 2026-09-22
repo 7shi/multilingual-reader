@@ -21,8 +21,8 @@ are behind --locate.
 
 A second axis was tried and dropped: pointing the writer at whichever criteria sit below
 the record's own mean. It changed nothing that two runs of the same prompt did not change
-by more, including over FOCUS_TARGETS, the set built to give it its best chance. README
-section 6 is the comparison. `--axis-b` still switches it on, since a rejection nothing can
+by more, including over FOCUS_TARGETS, the set built to give it its best chance. PLAN.md
+sections 3 and 4 are the comparison. `--axis-b` still switches it on, since a rejection nothing can
 reproduce is not worth much.
 
 Nothing is written to examples/. This prints the phrase beside the one currently in
@@ -44,10 +44,10 @@ from pathlib import Path
 from llm7shi.usage import Usage, append_usage, find_usage_file, print_today_totals
 
 import trtools.llm as trtools_llm
-from trtools.jev_criteria import CRITERION_IDS, LEVELS, POINTS_PER_LEVEL
+from trtools.jev_criteria import CRITERIA, CRITERION_IDS, LEVELS, POINTS_PER_LEVEL
 from trtools.language import LANGUAGES
 from trtools.llm import LLMClient
-from trtools.trend import _clean
+from trtools.trend import _clean, _matches_lang
 
 BASE_DIR = Path(__file__).resolve().parent
 REPO_ROOT = BASE_DIR.parent.parent
@@ -330,7 +330,7 @@ STRICT_LEVEL_3 = ("The evaluation found that one to three lines fall short, and 
                   "quality: a phrase that could have been written without reading the "
                   "translation is not an answer.")
 
-# Axis B, kept behind --axis-b after the comparison in README section 6 rejected it.
+# Axis B, kept behind --axis-b after the comparison in PLAN.md sections 3 and 4 rejected it.
 # Short forms of the matching `criterion` description in trtools/jev_criteria.py.
 FOCUS_INSTRUCTIONS = {
     "readability": "whether the content can be understood -- unclear explanation, or "
@@ -464,6 +464,136 @@ def build_prompts(original_text, translated_text, lang_name, level, focus,
 
 
 # ---------------------------------------------------------------------------
+# Run 13: the old pipeline itself, in two stages.
+# ---------------------------------------------------------------------------
+# Runs 9-12 asked one call to play both parts: the writer's reasoning stood in for the
+# `overall_comment` and the phrase was its summary. This puts the two parts back into two
+# calls, each with its own old prompt. Stage 1 is `trtools/evaluate.py`'s prompt, asked for
+# the `overall_comment` alone and in plain text instead of the whole schema; stage 2 is
+# `trtools/trend.py`'s prompt, handed that one comment where it used to get three. Both run
+# without thinking, whatever --think says.
+#
+# The scores are Jev's. Its five criteria are evaluate.py's five, and a level times
+# POINTS_PER_LEVEL is a score out of 20 -- the scale evaluate.py's point bands are written
+# on. So stage 1 is handed the scores already given and writes the comment that goes with
+# them, as the old evaluator's comment went with its own scores; without them the comment
+# would be a second, independent verdict, and the column would not describe the score beside
+# it. Stage 2's block header carries the Jev total where trend.py's carried each run's.
+
+# evaluate.py's prompt verbatim, except the closing sentence: it asked for five scores, and
+# what replaces it is Jev's scores and the schema's description of `overall_comment`. The
+# point bands stay -- they are how that prompt says what a score means.
+#
+# The comment is always in English. The old schema kept it there without saying so; plain
+# text does not, and a comment written in the target language would make the evaluation of
+# a Hindi translation depend on how well the writer writes Hindi.
+def two_stage_eval_prompts(original_text, translated_text, lang_name, scores):
+    lines = "\n".join(
+        f"- {CRITERIA[key][0]}: {scores[key] * POINTS_PER_LEVEL:.1f}/20"
+        for key in CRITERION_IDS)
+    total = sum(scores.values()) * POINTS_PER_LEVEL
+    instruction = f"""Please evaluate this translation from English to {lang_name}.
+
+**CRITICAL GUIDELINES**:
+1. Verify translation exists and is in {lang_name}. If missing/incomplete, assign 0 points to ALL criteria.
+2. Evaluate the ENTIRE file from beginning to end, not just the first or last lines.
+3. Structural defects (mixed languages, JSON fragments, meta-commentary) are CRITICAL errors (0-5 points).
+4. Major defects (grammatical errors, untranslated text) = 6-12 points.
+5. Minor issues (awkward phrasing) = 13-17 points.
+6. High quality (natural, accurate) = 18-20 points.
+
+The translation has already been scored on each criterion:
+{lines}
+Total score: {total:.1f}/100
+
+Do not re-score it. Write an overall comprehensive evaluation comment about the translation quality as a whole, based on the ENTIRE document, that accounts for these scores.
+Write the comment in English — not in {lang_name}."""
+    return [
+        f"<original>\n{original_text}\n</original>",
+        f"<translation>\n{translated_text}\n</translation>",
+        instruction,
+    ]
+
+
+# trend.py's prompt, with its plurals made singular and the one sentence that has no
+# referent with a single evaluation -- `An issue mentioned in multiple runs is more reliable
+# than one mentioned only once` -- taken out.
+def two_stage_trend_prompts(comment, total, lang_name, output_lang_name,
+                            shortfall_rule=False, level=None):
+    level_text = "" if level is None else JEV_LEVEL.format(LEVELS[level])
+    rule = SHORTFALL_RULE if shortfall_rule else ""
+    return [
+        f"<evaluations lang=\"{lang_name}\">\n"
+        f"# Evaluation (Score {total:.1f})\n\n{comment}\n"
+        f"</evaluations>",
+        f"The block above contains an evaluation of one translation "
+        f"whose target language is {lang_name}. Trust this evaluation as given; "
+        f"do not re-evaluate the translation yourself. {level_text}Summarize the single "
+        f"most notable characteristic in one short phrase.\n"
+        f"{rule}"
+        f"IMPORTANT: The summary must be written in {output_lang_name}, but it "
+        f"describes a translation into {lang_name}. Never confuse the language you "
+        f"write in with the language being evaluated.\n"
+        f"IMPORTANT: State only what the evaluation actually says. Do not add "
+        f"details it does not mention. For example, if it reports a mixed-language "
+        f"defect without naming the intruding language, describe it generically "
+        f"rather than guessing which language it was.\n"
+        f"OUTPUT FORMAT: Reply with the summary phrase itself and nothing else. "
+        f"It goes directly into a Markdown table cell, so no labels, no quotation "
+        f"marks around the whole phrase, no bullet points, no line breaks, no "
+        f"trailing period, and no explanation before or after. "
+        f"If defects exist, state the most prominent one concretely. If the "
+        f"translation is sound, state that briefly. "
+        f"Keep it within 40 characters if written in Japanese, or a short phrase of "
+        f"about 8 words or fewer if written in English. "
+        f"Write it in {output_lang_name} — not in {lang_name}.",
+    ]
+
+
+# ---------------------------------------------------------------------------
+# Run 14: stage 2 biased toward the shortfall.
+# ---------------------------------------------------------------------------
+# Run 13's stage 2 answered 29 of the 44 phrases on its 89-and-over level-3 rows with praise
+# alone, where the old column did so for 29% of its 90-and-over rows -- and every one of the
+# 29 comments it was summarising named a shortfall, because stage 1 is told to account for
+# scores below full marks. The comment has the material and the summary drops it. So stage 2
+# is re-run over run 13's comments, with stage 1 left as it was.
+
+# --shortfall-rule (A). Jev never gives full marks, so this is a rule about the comment: a
+# phrase praises only when the comment names nothing.
+SHORTFALL_RULE = ("IMPORTANT: If the evaluation names any shortcoming, however minor, state "
+                  "the most prominent one rather than praising the translation. Praise it "
+                  "only if the evaluation names no shortcoming at all.\n")
+
+# --jev-level (B). Jev's own words for the level of the weakest criterion. Stage 1 read the
+# scores through evaluate.py's point bands, where 17-19 of 20 is "high quality"; on Jev's
+# scale the same level 3 means one to three lines falling short. LEVELS verbatim, since a
+# rewording would say something Jev was not asked.
+JEV_LEVEL = "The scoring behind it judged its weakest criterion as follows: {} "
+
+
+def two_stage(client, original_text, translated_text, lang_name, scores, output_lang,
+              output_lang_name):
+    """(comment, phrase). Stage 2 retries on the wrong language, as trend.py does."""
+    comment = client.call(
+        two_stage_eval_prompts(original_text, translated_text, lang_name, scores))
+    total = sum(scores.values()) * POINTS_PER_LEVEL
+    prompts = two_stage_trend_prompts(comment.strip(), total, lang_name, output_lang_name)
+    for attempt in range(3):
+        p = prompts if attempt == 0 else prompts + [
+            f"The previous reply was not in {output_lang_name}. "
+            f"Reply again with the same summary written in {output_lang_name}, "
+            f"and output nothing but the phrase itself."
+        ]
+        print("\n  -> ", end="", flush=True)
+        text = client.call(p)
+        if _matches_lang(text, output_lang):
+            break
+        print(f"  retrying: not in {output_lang_name} ({attempt + 1}/3)")
+    return comment.strip(), text
+
+
+# ---------------------------------------------------------------------------
 # Targets and plumbing.
 # ---------------------------------------------------------------------------
 
@@ -573,7 +703,7 @@ def read_axes(scores):
 # The switches a variant can carry, as `name:opt,opt` on the command line. They are the
 # superseded wordings and the two rejected inputs, each of which an earlier run was made
 # on; the names match the flags that set them globally.
-VARIANT_OPTS = ("summary", "summary-free",
+VARIANT_OPTS = ("two-stage", "shortfall-rule", "jev-level", "summary", "summary-free",
                 "locate", "examples", "word-rule", "extent-clause", "no-magnitude",
                 "axis-b", "no-original", "no-line-rule", "strict-level3",
                 "no-level3-split", "sound-rule", "backtrans-rule", "quote-rule")
@@ -592,8 +722,24 @@ def parse_variant(spec, defaults):
     return name, settings
 
 
+def args_comments():
+    """Whether this invocation re-runs stage 2 over saved comments; set in main()."""
+    return COMMENTS_DIR is not None
+
+
+COMMENTS_DIR = None
+
+
 def variant_label(settings):
     """What goes in the record's `variant` field."""
+    if settings["two-stage"]:
+        return "two-stage"
+    if args_comments():
+        label = "stage-2"
+        for opt in ("shortfall-rule", "jev-level"):
+            if settings[opt]:
+                label += "/" + opt
+        return label
     label = ("summary" if settings["summary"] else
              "locate" if settings["locate"] else "character")
     if settings["axis-b"]:
@@ -636,6 +782,21 @@ def main():
     parser.add_argument("--word-rule", action="store_true",
                         help="Allow naming a single word copied from the translation, "
                              "which is the only thing the old column ever quoted")
+    parser.add_argument("--two-stage", action="store_true",
+                        help="Run 13: evaluate.py's prompt writes an overall comment, then "
+                             "trend.py's prompt summarises it. Both calls run without "
+                             "thinking, and every other wording flag is ignored")
+    parser.add_argument("--comments", metavar="DIR",
+                        help="Run 14: re-run stage 2 alone over the stage-1 comments in "
+                             "DIR's two-stage*.jsonl. Each variant writes one file per "
+                             "source file, the source's -N suffix carried over; the "
+                             "target list is the sources' own")
+    parser.add_argument("--shortfall-rule", action="store_true",
+                        help="With --comments: state the shortfall the comment names "
+                             "rather than praise; praise only when it names none")
+    parser.add_argument("--jev-level", action="store_true",
+                        help="With --comments: give stage 2 Jev's own words for the "
+                             "level of the weakest criterion")
     parser.add_argument("--summary", action="store_true",
                         help="Run 9's genre: the task `trtools trend` gives its writer, "
                              "summarising an assessment rather than characterising a text. "
@@ -691,6 +852,8 @@ def main():
                         help="Print the instruction for each target and exit, without "
                              "calling the model")
     args = parser.parse_args()
+    if args.comments:
+        return run_comments(parser, args)
     for flag, targets in (("focus_targets", FOCUS_TARGETS),
                           ("slight_targets", SLIGHT_TARGETS),
                           ("all_targets", ALL_TARGETS)):
@@ -715,6 +878,8 @@ def main():
     original_text = ORIGINAL.read_text(encoding="utf-8").rstrip()
     output_lang_name = "Japanese" if args.lang == "ja" else "English"
     client = None if args.show_prompt else LLMClient(model=args.model, think=args.think)
+    # The two-stage variant runs without thinking regardless of --think.
+    client_no_think = None if args.show_prompt else LLMClient(model=args.model, think=False)
 
     global USAGE_PATH
     if args.model.startswith("openai:") or args.model.startswith("gpt-") or args.save_usage:
@@ -744,6 +909,38 @@ def main():
             print(f"  old ({old['score']}): {old['analysis']}")
 
         for name, settings in variants:
+            if settings["two-stage"]:
+                if args.show_prompt:
+                    print(f"--- {name or 'default'} (stage 1)")
+                    print(two_stage_eval_prompts("", "", lang_name, record["scores"])[-1])
+                    print(f"--- {name or 'default'} (stage 2)")
+                    print("\n".join(two_stage_trend_prompts("<comment>", total, lang_name,
+                                                            output_lang_name)))
+                    continue
+                print(f"  {name or 'new'}: ", end="", flush=True)
+                with track_usage() as get_usage:
+                    comment, text = two_stage(client_no_think, original_text,
+                                              translated_text, lang_name,
+                                              record["scores"], args.lang,
+                                              output_lang_name)
+                text = _clean(text)
+                if USAGE_PATH is not None:
+                    usage = get_usage()
+                    total_usage += usage
+                    print(f"    {usage}")
+                path = out_dir / f"{name}.jsonl" if out_dir else (
+                    Path(args.output_file) if args.output_file else None)
+                if path:
+                    result = {
+                        "model": model, "lang": lang, "score": round(total, 1),
+                        "level": level, "focus": focus, "analysis": text,
+                        "comment": comment,
+                        "writer": args.model, "variant": variant_label(settings),
+                    }
+                    with path.open("a", encoding="utf-8") as f:
+                        f.write(json.dumps(result, ensure_ascii=False) + "\n")
+                continue
+
             prompts = build_prompts(
                 original_text, translated_text, lang_name, level, focus,
                 with_original=not settings["no-original"], axis_b=settings["axis-b"],
@@ -792,6 +989,71 @@ def main():
         append_usage(total_usage, args.model, USAGE_PATH)
         print(f"\nTotal usage: {total_usage}\n")
         print_today_totals(USAGE_PATH)
+
+
+def run_comments(parser, args):
+    """Run 14: stage 2 over saved stage-1 comments, one output per (variant, source file).
+
+    Sources outer and variants inner, so every variant of one comment sends the same block
+    first and the cache holds it.
+    """
+    global COMMENTS_DIR
+    COMMENTS_DIR = Path(args.comments)
+    sources = sorted(COMMENTS_DIR.glob("two-stage*.jsonl"),
+                     key=lambda p: (len(p.stem), p.stem))
+    if not sources:
+        raise SystemExit(f"{COMMENTS_DIR}: no two-stage*.jsonl")
+    if not args.variants or not args.out_dir:
+        raise SystemExit("--comments needs --variant and --out-dir")
+    defaults = {opt: getattr(args, opt.replace("-", "_")) for opt in VARIANT_OPTS}
+    variants = [parse_variant(spec, defaults) for spec in args.variants]
+    out_dir = Path(args.out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    output_lang_name = "Japanese" if args.lang == "ja" else "English"
+    client = None if args.show_prompt else LLMClient(model=args.model, think=False)
+
+    for source in sources:
+        suffix = source.stem[len("two-stage"):]
+        records = [json.loads(line) for line in source.read_text(encoding="utf-8").splitlines()
+                   if line.strip()]
+        print(f"\n########## {source}")
+        for n, src in enumerate(records, 1):
+            model, lang = src["model"], src["lang"]
+            jev = load_jev(model, lang)
+            level, weakest, _ = read_axes(jev["scores"])
+            total = sum(jev["scores"].values()) * POINTS_PER_LEVEL
+            lang_name = LANGUAGES[lang]["en"]
+            print(f"\n=== ({n}/{len(records)}) {model}/{lang}  jev {total:.1f}  "
+                  f"level {level} ({weakest:.2f})")
+            print(f"  run13: {src['analysis']}")
+            for name, settings in variants:
+                prompts = two_stage_trend_prompts(
+                    src["comment"], total, lang_name, output_lang_name,
+                    shortfall_rule=settings["shortfall-rule"],
+                    level=level if settings["jev-level"] else None)
+                if args.show_prompt:
+                    print(f"--- {name}")
+                    print(prompts[-1])
+                    continue
+                print(f"  {name}: ", end="", flush=True)
+                for attempt in range(3):
+                    p = prompts if attempt == 0 else prompts + [
+                        f"The previous reply was not in {output_lang_name}. "
+                        f"Reply again with the same summary written in {output_lang_name}, "
+                        f"and output nothing but the phrase itself."
+                    ]
+                    text = client.call(p)
+                    if _matches_lang(text, args.lang):
+                        break
+                    print(f"  retrying: not in {output_lang_name} ({attempt + 1}/3)")
+                result = {
+                    "model": model, "lang": lang, "score": round(total, 1),
+                    "level": level, "analysis": _clean(text),
+                    "source": f"{source.parent.name}/{source.name}",
+                    "writer": args.model, "variant": variant_label(settings),
+                }
+                with (out_dir / f"{name}{suffix}.jsonl").open("a", encoding="utf-8") as f:
+                    f.write(json.dumps(result, ensure_ascii=False) + "\n")
 
 
 if __name__ == "__main__":

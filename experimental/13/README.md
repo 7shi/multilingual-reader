@@ -1,9 +1,10 @@
 # Experiment 13: Both Ends of the Corpus, Every Language, One Run
 
 This file is the experiment record: what was run, what it measured, and what that
-does and does not support. What is being *decided* on the strength of it — replacing
-the corpus evaluator, and the blockers in the way — is [PLAN.md](PLAN.md), kept
-separate so a plan changing does not edit a result.
+does and does not support. What was *decided* on the strength of it — replacing the
+corpus evaluator — is [PLAN.md](PLAN.md), and what is left to do about it, with the
+blockers in the way, is [PORT.md](PORT.md); both are kept separate so a plan changing does
+not edit a result.
 
 ## 1. What This Tests
 
@@ -768,7 +769,7 @@ Only 80 lands where it started, at the crossover. Left at 90/80/60 the tiers re-
 substantially — `gpt-5.6-luna` goes from 44 languages at 90+ to 24, and from 17 in 80–89 to
 35 — without any change in translation quality. The boundaries are rough guides and the one
 that defines "practical" is the one that holds, so this is recorded rather than treated as
-a problem; see [PLAN.md](PLAN.md) section 5.
+a problem; see [PORT.md](PORT.md) section 5.2.
 
 ### 5. The reference has two definitions, and this experiment uses the other one
 
@@ -839,15 +840,18 @@ averaged silently into the wrong table.
    31.2 here — is real or invented. It is the one place this scheme claims information the
    reference does not have, and checking it needs human judgment on ten translations, not
    another evaluator.
-2. **The middle of the corpus.** Now the only untested part of it, and the sharper
-   question for having both ends. Section 3.2 rests on translations the old scheme scores
-   in the 80s and 90s (Spearman +0.69) and section 4.2 on ones it scores 0–98 (+0.96),
-   and section 4.2 says most of that difference is range rather than accuracy. A
-   translator the old scheme puts at 60–70, where its own rankings are most contested,
-   has a narrow range *and* a contested reference — so it is the case where the two
-   explanations come apart, and it is what decides whether this is a general replacement
-   rather than a check on translations at the extremes. Section 4.3's slope predicts a
-   near-zero mean difference there, which is a second thing to check against.
+2. **The middle of the corpus.** **Evaluated, not yet compared:** all 16 translators went
+   through `trtools jev` on 2026-09-22 ([JEV.md](../../examples/tr/onde/JEV.md)), and the
+   comparison is [PORT.md](PORT.md) section 7 step 2. As written before that run: now the
+   only untested part of it, and the sharper question for having both ends. Section 3.2
+   rests on translations the old scheme scores in the 80s and 90s (Spearman +0.69) and
+   section 4.2 on ones it scores 0–98 (+0.96), and section 4.2 says most of that difference
+   is range rather than accuracy. A translator the old scheme puts at 60–70, where its own
+   rankings are most contested, has a narrow range *and* a contested reference — so it is
+   the case where the two explanations come apart, and it is what decides whether this is a
+   general replacement rather than a check on translations at the extremes. Section 4.3's
+   slope predicts a near-zero mean difference there, which is a second thing to check
+   against.
 3. ~~**Fluency.**~~ **Withdrawn — sections 5.1 and 5.2.** The wording reading is refuted by
    two independent measurements that were already on disk, and the proposed test would not
    have been decisive regardless, since experiment 12 had already shown level wording moves
@@ -890,11 +894,14 @@ averaged silently into the wrong table.
    measurement. At $0.09 per pair of 134 and the ranges already known to be small, this is
    the cheapest open question here, and it is the one the choice between the two schemes
    actually turns on.
-8. **Whether `jev` separates the top of the corpus.** Section 5.4's honest negative: the
-   median moves from 93/92 to 88.0/87.2 on the top pair, so nothing yet says this scheme
-   discriminates better where new models actually arrive. `gemini-3.7-flash` and `ox-alpha`
-   are the other two of the corpus's top four and are not measured under `jev`. That is 134
-   evaluations, and it is the question a yardstick lives or dies on.
+8. **Whether `jev` separates the top of the corpus.** **Evaluated, not yet compared:**
+   `gemini-3.7-flash` and `ox-alpha` went through `trtools jev` with the rest of the corpus
+   on 2026-09-22 ([JEV.md](../../examples/tr/onde/JEV.md)), and the comparison is
+   [PORT.md](PORT.md) section 7 step 2. As written before that run: section 5.4's honest
+   negative: the median moves from 93/92 to 88.0/87.2 on the top pair, so nothing yet says
+   this scheme discriminates better where new models actually arrive. `gemini-3.7-flash` and
+   `ox-alpha` are the other two of the corpus's top four and are not measured under `jev`.
+   That is 134 evaluations, and it is the question a yardstick lives or dies on.
 9. **A second source text.** Sections 5.1 and 5.3 both end at the same limit: everything
    the corpus knows is 67 translations of one document. Whether the fluency floor, the
    language difficulty ordering, and the per-model coverage counts survive a different

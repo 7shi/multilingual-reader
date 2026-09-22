@@ -1,4 +1,4 @@
-# Runs: run 1 to run 12
+# Runs: run 1 to run 14
 
 Working document, and a companion to [README.md](README.md). The README holds the design
 and what the corpus measurements say about it; this file is the ledger of what was actually
@@ -18,10 +18,13 @@ current `trend14.py` through a flag — `--locate`, `--no-line-rule`, `--axis-b`
 `--strict-level3`, `--no-original` — so each section still sends what its `runX/` was run
 on, even though the phrases will not come back identical. Runs 1–6 all carry `--locate`.
 
-**Status**: runs 1–12 done, 2026-09-23, 718 phrases. Runs 1–8 and 11–12 are
+**Status**: frozen, 2026-09-23. Runs 1–14 are done, 1,054 phrases, and the design is
+settled: section 15 closes with it, [README.md](README.md) is the result and
+[PORT.md](PORT.md) is what is left to do with it. This file is not edited again. Runs 1–8 and 11–14 are
 `ollama:qwen3.6`; runs 9 and 10 are `gpt-5.6-terra`, which is a yardstick rather than a
-candidate — section 10 is what its input costs, and sections 12 and 13 are what the local
-writer keeps of it with the thinking on and off. A two-variant attempt at run 12 was
+candidate — section 10 is what its input costs. Runs 1–12 had one call write the phrase
+from the translation; runs 13 and 14 go back to the old pipeline's two calls, an evaluator's
+comment and a summary of it, and that is what is adopted. A two-variant attempt at run 12 was
 discarded and not kept; section 13 opens with why its numbers should not be quoted.
 
 An earlier set of runs was discarded because it repeated variants an earlier run had already
@@ -49,13 +52,15 @@ combinations.
 | [10](#11-run-10--the-same-wording-with-the-reasoning-summary-off) | the same, without `--think` | 3 | `--think` does not stop an openai model reasoning, so this is not the run it was meant to be; `summary` matches the old column's quote rate and `summary-free` is ten times it |
 | [11](#12-run-11--the-same-wording-on-the-local-writer) | the same, on the local writer | 4 | Findings run 10 never reached, against three times its false phrases and a repeat agreement of 13–14 of 21 |
 | [12](#13-run-12--run-11-without-the-thinking) | run 11 without the thinking | 4 | The reasoning buys obedience, not accuracy: same 7 false in 84, but the ban on pointing goes from 0–5% to 19–29% and `summary` destabilises. 56× faster |
+| [13](#14-run-13--the-old-pipeline-itself-in-two-stages) | two calls: evaluate.py's prompt writes a comment on Jev's scores, trend.py's summarises it; no thinking | 4 draws | The old column's form, no quotes, 3.5 hours a pass; but the top of level 3 reads as praise, which the comments do not support |
+| [14](#15-run-14--stage-2-biased-toward-the-shortfall) | stage 2 alone over run 13's comments, with a shortfall rule and Jev's level | 3 | Praise at 89+ falls from 73% to 7% and nothing is invented; a phrase is as right as its comment. `level` adopted |
 
 ---
 
 ## 1. What Was Measured Before the First Run
 
 All of it over the 1,072 records in `examples/tr/onde/*/jev.jsonl`. Two of the three
-options [experiment 13's PORT.md](../13/PORT.md) section 5 recorded are ruled out here, and
+options [experiment 13's PORT.md](../13/PORT.md) section 5 then recorded are ruled out here, and
 the third is shaped by it.
 
 ### A fixed sentence from the criterion scores would be nearly constant
@@ -291,7 +296,7 @@ occurs six times perfectly well.
 
 Ten variants, 110 phrases: eight over `SLIGHT_TARGETS` — `base`, each rule alone, each
 pair, all three — and two over `DEFAULT_TARGETS`, the control and all three. Every phrase
-below was checked by section 15's procedure; the speaker check was run over all eleven
+below was checked by section 17's procedure; the speaker check was run over all eleven
 slight targets at once, mapping each file's speaker labels to their first-seen order, and
 **all eleven match the original on all 99 lines**, so every speaker claim made about them
 in this run is false.
@@ -397,7 +402,7 @@ presence,"` as an English gloss of a Danish phrase.
 
 So a quoted string missing from both files remains ambiguous between a fabrication and a
 mangled citation, which is exactly what the rule was supposed to resolve, and the automatic
-filter section 15 hoped for does not follow. The control is not worse: `base` has four of
+filter section 17 hoped for does not follow. The control is not worse: `base` has four of
 twelve in neither file, three of them corrections.
 
 `quote` also produced a claim that is inverted as well as misquoted — `Camille says "Što
@@ -584,7 +589,7 @@ False, and all of them in the specific half of a phrase rather than the general 
 `slight-char`'s `Inconsistent use of ты form in Luc's speech` for `gemma4-31b/ru` is
 **true**, which this section first recorded as half right on the ground that the shifting
 register was Camille's. Luc's is too: he says `Вы имеете в виду` on line 12 and `Погоди` on
-line 40, to the same person. The correction is section 7's and the check is section 15's.
+line 40, to the same person. The correction is section 7's and the check is section 17's.
 
 **`union-alpha/sk` line 43's `jednoty fiziky` is missed again**, by both slight variants, as
 it was by all four of run 6's `sound-*`. The one real defect in that band has now escaped
@@ -716,7 +721,7 @@ phrasing`.
 This is the genre's own shape rather than a wording fault. A level-3 translation has several
 things slightly off and the instruction asks for the kind, so any of them answers it. Under
 `--locate` the writer had to name a place, which pinned it. Whether a column that names a
-different true-ish aspect on a re-run is acceptable is not a wording question, and section 16
+different true-ish aspect on a re-run is acceptable is not a wording question, and section 18
 is where it has to be settled. Run 9 settles it after all.
 
 ### Changed for run 9
@@ -890,7 +895,7 @@ Nothing is obviously wrong with this wording, which is a first. What is not yet 
    column quotes in 2% of entries and `summary-free` quotes in a third of them, which is the
    argument for keeping the ban — and the findings are the argument against.
 3. **The original's half of the input has never been tested under this genre.** Dropping it
-   halves the 4,190 tokens, and [README.md](README.md) section 6 rejected it on run 1's
+   halves the 4,190 tokens, and section 2 rejected it on run 1's
    evidence — the writer made claims about an original it had not seen and got them wrong.
    That was the location genre, which no longer exists. `--no-original` is still a flag.
 4. **One writer, one corpus sample.** 21 rows of 1,072, and `gpt-5.6-terra` is one
@@ -1050,7 +1055,7 @@ document, which is what the column is for. Run 11 lost every one of run 9's and 
 strings — `atenuan`, `bril·lança`, `brilanța`, `fiziky` by name, `εξατμιζόμενα κύματα`,
 `isprepleeni`, `stubova` — and found this instead.
 
-The register claims carry over unchanged and all three check out under section 15's
+The register claims carry over unchanged and all three check out under section 17's
 both-forms procedure: `ox-alpha/ru` line 35 `твоей` against lines 12 and 51 `Вы`,
 `gpt-5.6-luna/uk` line 12 `Ти` against line 51 `Ви`, `gemma4-31b/ru` line 35 `твоей` against
 lines 12, 15 and 68. `gpt-oss/sv`'s missing labels are real — eight of 99 — and no variant
@@ -1060,7 +1065,7 @@ states a number.
 22 of 22; here `gemini-3.7-flash/ca` and `gemini-3.7-flash/ja` answer two level-3 rows with
 praise alone, and `ox-alpha/hr` and `gemini-3.7-flash/ja` with praise carrying a caveat.
 Two praise-only phrases in 56 level-3 phrases is under the old column's rate rather than
-over it — section 14 puts that at about 10% — so nothing here needs holding back.
+over it — section 16 puts that at about 10% — so nothing here needs holding back.
 
 ### What is false
 
@@ -1230,9 +1235,145 @@ checkable and two of them deny a defect that is there. Whether that trade is the
 for a 1,072-row table is a decision about the column and not a measurement this experiment
 can make.
 
-## 14. Evidence Behind the Fixed Decisions
+## 14. Run 13 — the old pipeline itself, in two stages
 
-The decisions themselves are [README.md](README.md) section 6; what they rest on is here.
+Runs 9–12 asked one call to be both the evaluator and the summariser: the writer's reasoning
+stood in for the `overall_comment` and the phrase summarised it. Run 12 found that the
+reasoning bought obedience rather than accuracy, at 56 times the wall clock. Run 13 goes back
+to what produced the column being replaced and splits it into two calls, each with its own old
+prompt, both without thinking:
+
+1. **Stage 1** is `trtools/evaluate.py`'s prompt, point bands and all, with its closing
+   sentence replaced. Instead of asking for five scores it hands over **Jev's** five, each a
+   level times `POINTS_PER_LEVEL` — which is evaluate.py's own 0–20 scale, since Jev's
+   criteria are evaluate.py's verbatim — and asks for the overall comment that accounts for
+   them, in English, as plain text. Without the scores the comment would be a second,
+   independent verdict and the column would not describe the score beside it, which is the
+   whole reason for replacing the old column. The comment is in English because a comment
+   written in the target language makes the evaluation of a Hindi translation depend on how
+   well the writer writes Hindi.
+2. **Stage 2** is `trtools/trend.py`'s prompt, made singular, with the Jev total in the block
+   header where each run's total used to be. The sentence about issues mentioned in several
+   runs is gone, there being one. It sees the comment and nothing else — the calls share no
+   history, as in the old pipeline, where the summariser never saw the translation.
+
+One wording drawn four times (`two-stage` to `two-stage-4`), so the run is run 12's size.
+The comment is stored beside the phrase, so every claim can be traced to the stage that made
+it.
+
+### The form
+
+| | Quoted strings | Median words | Three words or fewer | False |
+| --- | ---: | ---: | ---: | ---: |
+| Run 13, four draws | 0 in 84 | 6.0 | 0 | 2, and one of the surviving class |
+| Old column | 23 / 1,072 (2%) | 5.0 | — | — |
+
+All 84 comments are in English; the non-Latin text in them is quotation from the translation.
+Their median is about 270 words.
+
+### What it finds, and what is false
+
+The lower rows name real defects, each checked: `πλάτος και πλάτος` and `εξατμιζόμενα
+κύματα` in `gemini-3.7-flash/el`; the stray `细` on line 66 of `bonsai2-27b/ne`, which no
+earlier run named; the English in `gemma4-31b/ia` (`queTook`, `whether`, `pattern`);
+`qwen3.8/th`'s truncation and its 24 unlabelled lines; `gpt-oss/sv`'s eight.
+
+| Target | Draw | Claim | |
+|---|---|---|---|
+| `qwen3.6-27b/el` | 1 | `Severe linguistic contamination by Spanish and French` | `bueno` on line 1 is Spanish; the "French" is `Γουάου` and `Πέψα`, Wow and Wait garbled in Greek script |
+| `qwen3.6/he` | 3 | `...inconsistent speaker attribution` | the labels mapped in order of appearance match the original on all 99 lines |
+| `qwen3.8/th` | 4 | `Critical truncation and untranslated jargon` | the truncation is real; the "jargon" is `delta x`, `NSOM` and `psi`, the original's own notation — the class that has survived every genre |
+
+### The problem: the top of the scale reads as praise
+
+On the eleven level-3 rows at 89 and over, 28 to 29 of 44 phrases are praise alone —
+`Professional-grade quantum physics translation`, `Exceptionally high accuracy and
+naturalness` — against the old column's 29% at 90 and over (section 16). Among them are
+rows with documented defects: `ox-alpha/ru`'s `ты`/`вы`, `qwen3.8/es`'s `atenuan`,
+`gpt-5.6-luna/da`'s quotation marks.
+
+The cause is stage 1's point bands. Jev's 17–19 of 20 falls in evaluate.py's "high quality
+(18-20)" and the comment reads the score on the old scale, where Jev's level 3 means one to
+three lines falling short. **But every one of those 29 comments names a shortfall**, because
+stage 1 is told to account for scores below full marks: the material is there and stage 2
+drops it. Most of what they name is inferred rather than found — `likely stem from very
+subtle stylistic preferences` — and a few are concrete.
+
+### What it costs
+
+**16m44.182s for 84 phrases**, 12.0 seconds each, which puts a 1,072-phrase pass at about
+3.5 hours: a tenth of run 11's and six times run 12's. Run 14 puts stage 2 at 1.35 seconds, so
+nearly all of it is stage 1 reading the translation and writing the comment.
+
+## 15. Run 14 — stage 2 biased toward the shortfall
+
+Stage 1 is not re-run: run 13's 84 comments are read back with `--comments` and stage 2 alone
+is run over them, so a difference between the variants is the wording's alone. Three variants
+per comment, 252 phrases, each written to a file carrying its source's suffix:
+
+- `base` — run 13's stage 2 unchanged, drawn again, as the control.
+- `short` (`--shortfall-rule`) — `If the evaluation names any shortcoming, however minor,
+  state the most prominent one rather than praising the translation. Praise it only if the
+  evaluation names no shortcoming at all.`
+- `level` (`--shortfall-rule --jev-level`) — the same, plus `jev_criteria.LEVELS` verbatim for
+  the weakest criterion's level, so that stage 2 reads the score on Jev's scale rather than
+  on the point bands stage 1 used.
+
+### The form
+
+| | Praise alone, level 3 at 89+ | Quoted strings | Median words | Three words or fewer |
+| --- | ---: | ---: | ---: | ---: |
+| `base` | 32 / 44 (73%) | 0 | 5.0 | 8 |
+| `short` | 6 / 44 (14%) | 0 | 5.0 | 12 |
+| `level` | **3 / 44 (7%)** | 0 | 5.0 | 15 |
+| Old column, 90+ / 80–90 | 29% / 12% | 2% | 5.0 | — |
+
+`level`'s three are the counting pattern missing `Subtle nuance differences` and the like;
+read by hand, no level-3 phrase in it is praise alone. The only praise is on the one level-4
+row, `gpt-5.6-luna/it`, in one draw of four: `No shortcomings identified by evaluation`.
+`short`'s six are all level-3 rows — `Flawless professional-grade translation`, `Accurate and
+professional with no defects` — which Jev judged to fall short somewhere. `base` against run
+13's 64% is stage 2's own variation.
+
+The high rows now read as the old column did: `Slight stiffness in conversational fillers`,
+`Minor literal phrasing choices`, `Occasional slightly stiff phrasing`. Mostly not checkable,
+which is the old column's nature too.
+
+### What the bias brings out
+
+Real defects `base` had dropped: `gpt-5.6-luna/da` draw 4, `Slight inconsistencies in
+typography and formatting` — six lines use `» «` and one `„ “`, run 12's finding; and
+`ox-alpha/ru` draw 4, `Minor pronoun inconsistencies`.
+
+And stage 1's errors, at the same rate:
+
+| Target | Draw | Variants | Claim | |
+|---|---|---|---|---|
+| `qwen3.6/he` | 3 | `short`, `level` | speaker labels swapped | false; comment 3 says so, the labels match on all 99 lines, and `base-3` had dropped it |
+| `gemma4-31b/ru` | 4 | `short`, `level` | `Gender nuance issues` | mis-framed: the `ты`/`вы` shift is real (line 12 `Вы`, line 51 `Ты`) and comment 4 calls it gender |
+| `qwen3.8/th` | 4 | `short`, `level` | `untranslated segments`, `mixed English` | the original's notation, from comment 4 |
+| `gemini-3.7-flash/ca` | 3 | `level` | `Fillers and interjections are direct calques` | doubtful: `Hmm` and `Ah` are the original's |
+
+**The bias invents nothing.** Every claim in `short` and `level` is already in the comment it
+summarises; what the rule changes is how often a shortfall named there reaches the phrase.
+So stage 2 is not where accuracy is decided: a phrase is as right as the comment behind it.
+
+### What it costs
+
+**5m39.910s for 252 phrases**, 1.35 seconds each — about 24 minutes over the corpus. The
+rules add nothing measurable to it, and a full pass stays at stage 1's 3.5 hours.
+
+### What it settles
+
+**`level` is adopted.** It is the variant that reads the score in Jev's terms at both ends:
+stage 1 is handed Jev's numbers, and stage 2 is told what Jev's level means, so praise is left
+to the rows Jev found nothing wrong with. Its cost against `short` is three more phrases of
+three words or fewer, most of them still a finding — `Missing speaker tags`. Praise alone
+falls from the old column's tenth to the twelve level-4 records, which is what the scale says.
+
+## 16. Evidence Behind the Fixed Decisions
+
+The decisions themselves are [README.md](README.md) section 4; what they rest on is here.
 
 **The score column is one decimal place.** Jev compresses the corpus's top models into
 roughly 20 points, so rounding to integers ties 40–48 of 67 languages per model against
@@ -1273,7 +1414,7 @@ makes the ban in section 4 a bad trade.
 
 ---
 
-## 15. How a Claim Is Checked
+## 17. How a Claim Is Checked
 
 Every "false" in this file was established the same way, and a later session should not
 take one on trust without redoing it. The phrases are a generative model's, and about a
@@ -1305,61 +1446,8 @@ per language: `scores` holds five criteria as levels 0.0–4.0, and the corpus t
 sum times `POINTS_PER_LEVEL`, 5. The level a phrase is written under is the rounded weakest
 criterion, and the unrounded value is what section 6 splits on.
 
-## 16. When the Wording Settles
+## 18. When the Wording Settles
 
-None of this is wired into anything yet. `trtools/trend.py` is untouched, and so are
-`examples/tr/onde/`'s `TRENDS.jsonl`, `SCORES.txt`, model READMEs and `common.mk`. What is
-being designed here is one column of a file that does not exist.
-
-In order, once a wording is good enough:
-
-1. **Port the wording into `trtools`.** A `--jev` mode on `trtools trend`, or a subcommand
-   of its own, reading `jev.jsonl` and writing `TREND-jev.jsonl` with the three keys and
-   the decisions in [README.md](README.md) section 6. `experimental/14/` stays frozen, as
-   experiment 13 stayed frozen when `trtools jev` was built from it.
-2. **`trtools agg --jev`**, which is the other half of
-   [experiment 13's PLAN.md](../13/PLAN.md) section 5.2 and blocks its step 2:
-   `find_evaluation_groups` matches only three-run filenames and discards a one-run corpus
-   silently.
-3. **Then experiment 13's step 2 and step 3** — the comparison table on the Jev scale, then
-   `EVALUATOR`, `SUMMARIZER` and the regeneration of everything drawn from them.
-
-Two things outside this experiment are waiting on the same pass: `SUMMARIZER = $(EVALUATOR)`
-in `common.mk` has to be decoupled (13's PLAN.md 5.1), and `build_state` tells the
-evaluator both texts have the original's line count, which is false for `gemini-3-flash/eu`
-at 18 lines of 99 (13's PLAN.md 5.5).
-
-**Which writer, though, is now part of step 1 rather than after it.** The experiment was set
-up to hold the model fixed and vary the wording, on the ground that which generative model
-writes the column is a separate question (13's PLAN.md 5.1). Run 9 ends that separation: the
-wording is settled enough to port and the phrases it produces differ by more between two
-writers than they ever did between two wordings. A commercial writer is out — section 10 is
-the cost — so `SUMMARIZER` is a local model.
-
-Runs 11 and 12 are as far as that has got, and between them they leave one question rather
-than the two they were expected to.
-
-`ollama:qwen3.6` with `--think` is a usable column and not a good one: seven false phrases
-in 84, the two repeats agreeing on 13–14 of 21 rows, findings run 10 never reached in Greek,
-Hebrew, Croatian and Thai, and about 35 hours for a pass. Run 12 settled that the reasoning
-buys obedience rather than accuracy — the false rate is the same without it, but the ban on
-pointing stops being applied and `summary`, the adopted variant, is the one that comes
-apart. So the writer is used with `--think`, and the 35 hours is the price of the wording
-being followed.
-
-**What is left before step 1 is one comparison, and one decision that the comparison may
-moot.**
-
-1. **The other local writers.** `gemma4:31b-it-qat`, `qwen3.8` and `muse-glimmer` are on the
-   host. Same wording, same 21 targets, `--think`, read on the four numbers in section 12's
-   table. This is the run that is actually blocking, because `ollama:qwen3.6` is the only
-   local writer anyone has measured and it was pinned for reasons that no longer apply.
-2. **Whether the column wants the thinking at all.** Section 13's closing paragraph is the
-   awkward result: `summary-free` with the thinking off is the most old-column-like output
-   the experiment has produced — 18 of 21 stable, one false phrase in 42, a quote rate of
-   0–14%, a median of five words — at 37 minutes a pass instead of 35 hours. Its cost is
-   that a third of its phrases say nothing checkable and two of them deny a defect that is
-   documented. That is a judgement about what the column is for, not a measurement, and it
-   is the user's to make. Recorded here so that step 1 does not quietly assume the answer.
-
-Everything else in this list is unblocked.
+It has, and this file is closed. The trend column's port into `trtools trend --jev` is
+[PORT.md](PORT.md); the rest of the migration — `trtools agg --jev`, the comparison on the
+Jev scale and the switch — is [experiment 13's PORT.md](../13/PORT.md).

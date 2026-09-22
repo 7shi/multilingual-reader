@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """One-off: render this experiment's per-language JSON in the corpus's `jev.jsonl` format.
 
-[PORT.md](PORT.md) section 8. Four translators -- `gpt-5.6-luna`, `union-alpha`,
+[PORT.md](PORT.md) section 6. Four translators -- `gpt-5.6-luna`, `union-alpha`,
 `qwen3.8` and `bonsai2-27b` -- were evaluated here before the corpus had a format to
 receive the results, and every field the corpus needs is already in those 268 files:
 `expected_scores / 5` gives the levels, and `confidence`, `probabilities`, `usage` and
@@ -203,7 +203,7 @@ def main():
     print(f"\n{len(translators)} translators, {total_langs} languages, "
           f"{total_in:,} input and {total_out:,} output tokens already paid for, "
           f"{total_seconds:.0f}s of request time -- a lower bound on what a run costs.")
-    print(f"trtools/jev_criteria.py must produce {rubric}; see PORT.md section 8.")
+    print(f"trtools/jev_criteria.py must produce {rubric}; see PORT.md section 6.")
     print(f"Compare against examples/tr/onde/<translator>/jev.jsonl once `trtools jev` "
           f"has written it.")
 

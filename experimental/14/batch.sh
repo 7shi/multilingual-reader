@@ -3,7 +3,7 @@
 #
 #     bash experimental/14/batch.sh
 #
-# One section per wording, writing to run1/ .. run12/. A section whose directory already
+# One section per wording, writing to run1/ .. run14/. A section whose directory already
 # holds results is skipped, so this is safe to re-run after an interruption: it does what
 # is left and nothing else. To redo one, move its directory aside and run this again.
 #
@@ -343,6 +343,58 @@ if section run12; then
         -v summary-2:summary \
         -v summary-free:summary,summary-free \
         -v summary-free-2:summary,summary-free
+fi
+
+# --- run 13: the old pipeline, in two stages ---------------------------------------------
+# Runs 9-12 asked one call to be both the evaluator and the summariser: the writer's own
+# reasoning stood in for the `overall_comment`, and the phrase summarised it. Run 12 found
+# the reasoning buying obedience rather than accuracy, at 56 times the wall clock. This goes
+# back to what produced the column being replaced and splits the two parts into two calls,
+# each with its own old prompt: trtools/evaluate.py's, asked for the `overall_comment` alone
+# as plain text, then trtools/trend.py's, summarising that one comment where it used to get
+# three. Stage 1 is handed Jev's five scores and writes the comment that accounts for them --
+# Jev's criteria are evaluate.py's, and a level times five is its 0-20 scale -- so the phrase
+# describes the score beside it rather than a second verdict; that is the point of replacing
+# the old column at all. Stage 2's header carries the Jev total, as trend.py's carried each
+# run's. The comment is kept in the JSONL beside the phrase, so a false phrase can be traced
+# to the stage that made it.
+#
+# Both stages without thinking. The old pipeline evaluated with it and summarised without;
+# --two-stage runs both without it whatever --think says.
+#
+# One wording drawn four times, so that the run is run 12's size -- 84 phrases, for a wall
+# clock comparable with its 2m55.994s -- and the repeat agreement is read over six pairs
+# rather than one: a single pair of 42 is what run 12's discarded probe was.
+if section run13; then
+    run --all-targets \
+        -v two-stage:two-stage \
+        -v two-stage-2:two-stage \
+        -v two-stage-3:two-stage \
+        -v two-stage-4:two-stage
+fi
+
+# --- run 14: stage 2 biased toward the shortfall -----------------------------------------
+# Run 13 answered 29 of the 44 phrases on its 89-and-over level-3 rows with praise alone,
+# against the old column's 29% at 90 and over, and every one of the 29 comments behind them
+# named a shortfall: stage 1 is told to account for scores below full marks, and it does.
+# The material is in the comment and stage 2 drops it. So stage 1 is not re-run -- its 84
+# comments are in run13/ -- and stage 2 is run again over them, which also makes any
+# difference between the variants below the wording's alone.
+#
+# `shortfall-rule` (A) tells stage 2 to state the shortfall the comment names and to praise
+# only when it names none. `jev-level` (B) adds Jev's own words for the weakest criterion's
+# level: stage 1 read the scores through evaluate.py's point bands, where 17-19 of 20 is
+# "high quality", while on Jev's scale the same level 3 is one to three lines falling short.
+# `base` is run 13's stage 2 unchanged, drawn again, so that stage 2's own variation can be
+# told from the rules'.
+#
+# Each variant writes one file per source, carrying its suffix: base.jsonl .. base-4.jsonl,
+# and so on, 252 phrases in all.
+if section run14; then
+    run --comments $BASE/run13 \
+        -v base \
+        -v short:shortfall-rule \
+        -v level:shortfall-rule,jev-level
 fi
 
 echo

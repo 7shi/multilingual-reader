@@ -1,15 +1,14 @@
 # Plan: Replacing the Corpus Evaluator with the Five-Criterion Jev Scheme
 
-Working document. [README.md](README.md) is the experiment record and states only what was
-measured; this file holds the decision that record is being used for, and it changes as the
-decision does.
+[README.md](README.md) is the experiment record and states only what was measured; this
+file holds the decision that record was used for.
 
-**Status**: step 1 is done, and was done differently from what this file described — the
-whole corpus went through `trtools jev` rather than the experiment's script, so the
-production path's cost and wall time were measured at full scale. See
-[PORT.md](PORT.md) for that design and
-[examples/tr/onde/JEV.md](../../examples/tr/onde/JEV.md) for the run. Next session picks up
-at step 2.
+**Status**: frozen, 2026-09-23. The decision stands and step 1 is done — the whole corpus
+went through `trtools jev` rather than the experiment's script, so the production path's
+cost and wall time were measured at full scale; [PORT.md](PORT.md) is that design and
+[examples/tr/onde/JEV.md](../../examples/tr/onde/JEV.md) the run. **Everything still ahead —
+steps 2 and 3, the open questions, the blockers and the touch list — moved to
+[PORT.md](PORT.md)**, and this file is not edited again.
 
 ---
 
@@ -117,61 +116,19 @@ five-criterion scheme is what README section 3.7 recommends for it, and the fift
 scheme costs twice the input tokens to return the same ordering. It stays available for
 diagnosing one translator at a time.
 
-### Step 2 — report the corpus on the yardstick's own terms
+### Steps 2 and 3
 
-`agg13.py` is built for pairs: section 1's gap and section 3's head-to-head read
-`TRANSLATORS[0]` and `[1]` only, so passing 16 names gives a half-meaningful report. Its
-section 2 correlations and section 5 criterion means are fine at any count.
-
-What is actually wanted is the existing instrument's output on the new scale — **median,
-`pstdev`, boxplot five-number summary, and `TIERS` counts** — beside the current old-scale
-values, which is the comparison README section 5.4 starts on four translators and this run
-extends to all 16. Write that rather than stretching `agg13.py`.
-
-Two things to read off it before anything is switched:
-
-- **The middle band.** Spearman against the old reference, restricted to translators the
-  old scheme puts at 60–70. Section 4.2 warns that the +0.96 at the bottom is mostly range;
-  the middle band has a narrow range *and* a contested reference, so it is where the two
-  explanations come apart.
-- **The top four.** Whether `jev` spreads `gpt-5.6-luna`, `union-alpha`, `gemini-3.7-flash`
-  and `ox-alpha` — 90.39, 90.18, 87.52, 85.90 under the old scheme, five points of a
-  hundred-point scale for the four models anyone is choosing between.
-
-### Step 3 — switch and regenerate
-
-Only then: `common.mk`, then `SCORES.txt`, `TRENDS.jsonl`, each model `README.md` and the
-chart, in one pass.
+Reporting the corpus on the yardstick's own terms, then switching and regenerating: moved
+to [PORT.md](PORT.md) section 7, together with the two things the comparison has to be read
+for — the middle band and the top four.
 
 ---
 
 ## 4. Open Questions
 
-Ordered by how much they would change the plan.
-
-1. **Does `jev` separate the top of the corpus?** README section 5.4 says it does not on
-   the one pair measured. The top four sit within five points under the old scheme, and
-   that compression is the yardstick's standing weakness — a known concern from evaluator
-   selection generally, not just here. Step 1 supplies `gemini-3.7-flash` and `ox-alpha`,
-   so step 2 answers it. If the answer is no, the migration is still worth it for section
-   2's reason 1, but the top of the table stays unresolved and needs a different idea.
-2. **Does the middle band hold?** Step 2. If Spearman collapses at 60–70, an evaluator that
-   works at the extremes and not the middle is a check, not a replacement.
-3. **Scope.** This plan covers `examples/tr/onde/` only. `examples/tr/core/Makefile` and
-   `examples/tr/fr/Makefile` also pin `ollama:qwen3.6`, and nothing here measured anything
-   about them. Proposed: leave them, revisit once `onde/` has settled.
-4. **Is the 0.69 slope stable enough to invert?** README section 7 item 4. Lower priority
-   than it was: ranking survives monotone compression, so this only matters for quoting an
-   absolute number against a historical one. The full re-run answers it at n=1,072 for
-   free.
-5. **Is the ordering inside the old scheme's floor real?** README section 7 item 1. The 10
-   translations the old scheme scores 0 come back spread over 2.6–31.2. It is the one place
-   this scheme claims information its reference does not have. Checking it needs human
-   judgment on ten translations. Not a blocker, but it should not be quoted as established.
-6. **A second source text.** README section 7 item 9. Everything the corpus knows is 67
-   translations of one spoken-dialogue document. For a *multilingual ability* yardstick this
-   is the largest unexamined assumption in the project — larger than anything about the
-   evaluator — and it is orthogonal to this migration.
+Moved to [PORT.md](PORT.md) section 8: whether Jev separates the top
+of the corpus, whether the middle band holds, scope, the 0.69 slope, the ordering inside the
+old scheme's floor, and a second source text.
 
 **Removed from this list: fluency.** It was carried here as the one open question with a
 deadline, on the grounds that every corpus number would inherit the bias once the scale was
@@ -184,113 +141,15 @@ nothing to fix before the freeze.
 
 ## 5. Blockers
 
-Known and unsolved. Each has to be settled before step 3, not during it.
-
-### 5.1 `SUMMARIZER` cannot be Jev
-
-`examples/tr/onde/common.mk` line 10 reads `SUMMARIZER = $(EVALUATOR)`, so changing the
-evaluator silently changes what generates the trend prose too. `trtools/trend.py` passes
-merged results to an LLM to write a sentence per language; Jev is a System One model that
-returns typed judgments and cannot do it.
-
-**Fix**: decouple the two lines and leave the summarizer on a generative model. Whether it
-stays `ollama:qwen3.6` is a separate question.
-
-That is necessary and not sufficient: `trend.py` builds its prose from the three runs'
-`reasoning` text, and Jev returns none, so for a newly added model the summarizer would
-have nothing to read. [Experiment 14](../14/README.md) is where that is being settled: the
-phrase is written from the translation itself, with the per-criterion breakdown steering
-what the writer looks for, into a `TREND-jev.jsonl` of its own.
-
-### 5.2 Evaluation is solved; aggregation is not
-
-**Evaluation: done.** `trtools jev` writes `examples/tr/onde/{model}/jev.jsonl` and
-`make jev` runs it, separately from `evaluate:`. This file originally weighed a
-corpus-facing script (A) against a Jev backend inside `trtools` (B); what was built is a
-subcommand of its own, which keeps `trtools batch`'s generative path untouched and leaves
-experiments 11–13's frozen copies alone, so a later edit to the corpus evaluator still
-cannot change what experiment 13 claims to mean. [PORT.md](PORT.md) is the design and
-[JEV.md](../../examples/tr/onde/JEV.md) the run.
-
-**Aggregation: open, and it fails silently.** This section used to say that the output
-being in `trtools eval`'s schema meant `trtools agg` and `trtools trend` would read it as
-it stands. That is true of the schema and false of the file discovery:
-`find_evaluation_groups` (`aggregate.py:11`) matches only `^(.+)-([123])\.json$` and keeps
-only groups where all three runs are present (`aggregate.py:27`), so a one-run corpus
-matches nothing and is discarded with no error and no warning. `trtools trend` shares the
-function (`trend.py:9,168,200`).
-
-**Fix**: `trtools agg --jev`, reading `jev.jsonl` directly and requiring every line in a
-file to agree on `model` and `rubric`. Step 2 needs it, and so does step 3.
-
-### 5.3 `TRENDS.jsonl` is a time series
-
-`SCORES.txt`, the per-model tables and the chart are regenerated wholesale, so the scale
-change is fine for them. **`TRENDS.jsonl` accumulates**, and appending new-scale entries to
-old-scale ones corrupts it silently, with no error and no visible seam.
-
-**Fix**: regenerate in one pass, record the changeover point, and keep the existing
-`evals/` rather than deleting it so the old-scale record survives as its own thing. Never
-mix the two in one file.
-
-### 5.4 `TIERS` is calibrated to the old scale — accepted, not fixed
-
-`generate_compare_rows.py`'s `TIERS` cuts at 90 / 80 / 60. Under `jev = 0.69 × old + 24.7`
-those land at **86.8 / 79.9 / 66.1**, so only the `practical range` boundary at 80 survives
-— it sits almost exactly on the crossover. Left unchanged, the other two re-bucket without
-any change in translation quality: `gpt-5.6-luna` goes from 44 languages at 90+ to 24, and
-from 17 in 80–89 to 35 (README section 5.4).
-
-**Decision: leave 90/80/60 as they are.** The tiers are rough guides, the boundary that
-defines "practical" is the one that holds, and re-cutting them would trade a meaningful
-number for an arbitrary one. Recorded here so the shift is not later mistaken for a change
-in the models.
-
----
-
-### 5.5 `build_state` tells the evaluator both texts have the same line count
-
-`trtools/jev_criteria.py`'s `line_correspondence` reads *"Both texts have N lines, and line
-i of the translation is meant to render line i of the original"*, and `N` is counted from
-the **original only**. When a translation is short, that is a false statement handed to the
-evaluator, asserting a correspondence that does not exist.
-
-`gemini-3-flash/eu` is **18 lines against the original's 99** — 82% of the document gone —
-and Jev scores it `information_completeness` 2.34, its lowest criterion, for a total of
-**71.05**. The old evaluator gave it 63. Found while reading
-[experiment 14](../14/README.md)'s output, which under-describes the same translation for
-its own reasons (that README's section 7).
-
-Whether the wording is *why* the score is high is unproven. The test is cheap: re-evaluate
-that one language with the count taken from the translation, or with the sentence dropped,
-and compare. Until then it is a hypothesis, not a cause.
-
-It is the only translation in the corpus under 90 lines, so nothing here suggests a
-systematic bias. It matters because section 1 makes the tail the point of the corpus: a
-yardstick for how many languages a model handles cannot place an 18-line stub at 71.
-
-**Fix**: settle the wording before step 3 regenerates anything. Note that changing it
-changes `SCHEME_ID` — correctly, since it is an input to the score — which means re-running
-all 1,072 evaluations at the cost JEV.md records, $0.32 and five and a half minutes.
+Moved. The evaluator's to [PORT.md](PORT.md) section 5: 5.2 aggregation (now 5.1), 5.4
+`TIERS` accepted as it is (5.2), 5.5 `build_state`'s line count (5.3). The trend column's to
+[experiment 14's PORT.md](../14/PORT.md): 5.1 `SUMMARIZER` cannot be Jev (its section 2),
+5.3 `TRENDS.jsonl` is a time series (its section 4).
 
 ## 6. Touch List
 
-Everything that names the evaluator or depends on its scale, for when step 3 happens. Not
-exhaustive for prose mentions.
-
-| File | What |
-|---|---|
-| `examples/tr/onde/common.mk` | `EVALUATOR`, and `SUMMARIZER` decoupled from it (5.1) |
-| `examples/tr/onde/common.mk` | `evaluate:` target (5.2) |
-| `examples/tr/ADD_MODEL.md` | States the evaluator is fixed to `ollama:qwen3.6` "to keep the scoring criteria consistent" |
-| `examples/tr/onde/README.md` | Corpus-level description |
-| Each `examples/tr/onde/*/README.md` | Regenerated by `trtools trend --sync` |
-| Each `examples/tr/onde/*/SCORES.txt` | Regenerated by `trtools agg` |
-| Each `examples/tr/onde/*/TRENDS.jsonl` | See 5.3 — regenerate, do not append |
-| `examples/tr/generate_compare_rows.py` | `TIERS` shifts meaning; see 5.4 — no code change, but the README wording around the tiers may need one |
-| `examples/tr/MODELS.svg`, `compare/MODELS.png` | Regenerated by `generate_compare_rows.py graph`; note the SVG carries a timestamp, so it shows a diff even when the chart is identical |
-| `examples/tr/onde/gpt-oss/Makefile` | Has its own `OR_EVALUATOR`; decide whether it follows |
-| `examples/tr/onde/qwen3.6/Makefile` | Has `ALT_EVALUATOR = ollama:gpt-oss:120b`; probably unaffected |
+Moved to [PORT.md](PORT.md) section 9, and for the trend column's files to
+[experiment 14's PORT.md](../14/PORT.md).
 
 ---
 
