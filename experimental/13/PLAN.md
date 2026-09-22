@@ -4,8 +4,12 @@ Working document. [README.md](README.md) is the experiment record and states onl
 measured; this file holds the decision that record is being used for, and it changes as the
 decision does.
 
-**Status**: decision taken, step 1 ready to run and not yet run. Twelve translators remain
-to evaluate. Next session picks up at section 2.
+**Status**: step 1 is done, and was done differently from what this file described — the
+whole corpus went through `trtools jev` rather than the experiment's script, so the
+production path's cost and wall time were measured at full scale. See
+[PORT.md](PORT.md) for that design and
+[examples/tr/onde/JEV.md](../../examples/tr/onde/JEV.md) for the run. Next session picks up
+at step 2.
 
 ---
 
@@ -50,8 +54,8 @@ on one scale.
    ([experiment 12 section 3.1](../12/README.md)), which is what makes those statistics
    usable at all.
 2. **One run replaces three.** 16 translators × 67 languages = **1,072 evaluations**
-   against the current 3,216, at roughly **$0.21** and five minutes. Cost and wall time
-   stop being design constraints.
+   against the current 3,216, measured at **$0.3165 and 5m22.6s** (estimated at $0.21 and
+   five minutes). Cost and wall time stop being design constraints.
 3. **It tracks the corpus at both ends.** Spearman +0.69 against the old scheme on its two
    best translators (README section 3.2) and +0.96 on `qwen3.8` / `bonsai2-27b` (section
    4.2), with the caveat section 4.2 states about range.
@@ -74,7 +78,8 @@ open question.
 `qwen3.6` runs locally through Ollama: free, offline, and regenerable indefinitely. Jev is
 a paid API pinned to a version (`jev-1.13.0`). If that version is retired the corpus cannot
 be regenerated on its scale — it can only be re-pinned and re-run whole. At 1,072
-evaluations for $0.21 that is an acceptable answer, but it is a change in kind:
+evaluations for $0.3165 (estimated at $0.21) that is an acceptable answer, but it is a
+change in kind:
 reproducibility stops being a property of the tooling and becomes a property of the re-run
 being cheap. Accepted deliberately, not overlooked.
 
@@ -87,25 +92,25 @@ middle band — translators the old scheme scores at 60–70, the one part of th
 has been compared against. Switching `common.mk` before looking at that result would make
 an unverified run the record.
 
-### Step 1 — evaluate the remaining twelve (ready to run)
+### Step 1 — evaluate the whole corpus (done)
 
-Four translators are already done and their files are skipped, so the whole corpus can be
-named. From the repository root, with `TYPESAFE_API_KEY` set:
+This section planned 804 evaluations of the twelve translators not already covered, run by
+`eval5_jev.py` into `experimental/13/evals-degrees/` (estimated at about $0.16 and three to
+four minutes). It was carried out differently, for a reason this file did not anticipate:
+the estimates in section 2 were extrapolated from a quarter of the corpus run by the
+experiment's script, and converting the four already-evaluated translators would have left
+them unchecked at exactly the scale the decision rests on.
 
-```bash
-uv run experimental/13/eval5_jev.py \
-  gemma4 gemma4-31b gpt-oss qwen3.6-27b qwen3.6 qwen3.8 \
-  bonsai2-27b \
-  muse-glimmer ox-alpha union-alpha \
-  gpt-5.6-luna gpt-5.6-terra \
-  gemini-3.5-flash-lite gemini-2.5-flash gemini-3-flash gemini-3.7-flash
-```
+What ran instead was `make jev` from `examples/tr/onde/`, evaluating **all 16 translators,
+1,072 evaluations, for $0.3165 in 5m22.6s**, through `trtools jev` — the production path,
+designed in [PORT.md](PORT.md) and recorded in
+[JEV.md](../../examples/tr/onde/JEV.md). Results are in
+`examples/tr/onde/<translator>/jev.jsonl`, beside `evals/` rather than replacing it, so the
+current corpus stays untouched and reproducible while this is being decided.
 
-Same order as `onde/Makefile`'s `MODELS`. **804 new evaluations, about $0.16, three to four
-minutes**, pinned to `jev-1.13.0`, one run each, resumable. Results land in
-`experimental/13/evals-degrees/<translator>/<lang>.json`, beside the four already there and
-nowhere near `examples/tr/onde/*/evals/`, so the current corpus stays untouched and
-reproducible while this is being decided.
+Re-running the four also checked the port against this experiment: identical input token
+counts, Pearson 0.9995 over 268 translations, and a mean signed difference of -0.006
+points.
 
 **Do not run `eval50_jev.py` over the corpus.** Ranking is what the yardstick needs, the
 five-criterion scheme is what README section 3.7 recommends for it, and the fifty-item
@@ -191,21 +196,31 @@ returns typed judgments and cannot do it.
 **Fix**: decouple the two lines and leave the summarizer on a generative model. Whether it
 stays `ollama:qwen3.6` is a separate question.
 
-### 5.2 `trtools batch --eval-only` has no Jev backend
+That is necessary and not sufficient: `trend.py` builds its prose from the three runs'
+`reasoning` text, and Jev returns none, so for a newly added model the summarizer would
+have nothing to read. [PORT.md](PORT.md) section 5 holds what has been thought about that
+so far.
 
-`common.mk`'s `evaluate:` target runs `trtools batch --eval-only --evaluator $(EVALUATOR)`,
-which goes through `trtools`'s generative evaluation path. `eval5_jev.py` is a standalone
-script. Its output is in `trtools eval`'s schema, so `trtools agg` and `trtools trend` read
-it as it stands (README section 2) — but the filenames differ: the experiment writes
-`<dir>/<translator>/<lang>.json` and the corpus expects `evals/onde-<lang>-<run>.json`.
+### 5.2 Evaluation is solved; aggregation is not
 
-| | Change | Cost |
-|---|---|---|
-| **A** (preferred) | Point `common.mk`'s `evaluate:` at a corpus-facing Jev script, with the corpus's own naming | Small; leaves experiments 11–13's frozen copies alone |
-| B | Add a Jev backend inside `trtools` | Larger; puts a paid API dependency in the shared tool, and the frozen experiment copies still cannot use it |
+**Evaluation: done.** `trtools jev` writes `examples/tr/onde/{model}/jev.jsonl` and
+`make jev` runs it, separately from `evaluate:`. This file originally weighed a
+corpus-facing script (A) against a Jev backend inside `trtools` (B); what was built is a
+subcommand of its own, which keeps `trtools batch`'s generative path untouched and leaves
+experiments 11–13's frozen copies alone, so a later edit to the corpus evaluator still
+cannot change what experiment 13 claims to mean. [PORT.md](PORT.md) is the design and
+[JEV.md](../../examples/tr/onde/JEV.md) the run.
 
-A also keeps the property that made the experiment copies frozen: a later edit to the
-corpus evaluator must not change what experiment 13 claims to mean.
+**Aggregation: open, and it fails silently.** This section used to say that the output
+being in `trtools eval`'s schema meant `trtools agg` and `trtools trend` would read it as
+it stands. That is true of the schema and false of the file discovery:
+`find_evaluation_groups` (`aggregate.py:11`) matches only `^(.+)-([123])\.json$` and keeps
+only groups where all three runs are present (`aggregate.py:27`), so a one-run corpus
+matches nothing and is discarded with no error and no warning. `trtools trend` shares the
+function (`trend.py:9,168,200`).
+
+**Fix**: `trtools agg --jev`, reading `jev.jsonl` directly and requiring every line in a
+file to agree on `model` and `rubric`. Step 2 needs it, and so does step 3.
 
 ### 5.3 `TRENDS.jsonl` is a time series
 

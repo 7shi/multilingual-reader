@@ -19,6 +19,8 @@ Translates and evaluates the onde text with each model.
 - [gemini-3-flash](gemini-3-flash/)
 - [gemini-3.7-flash](gemini-3.7-flash/)
 
+Every model has also been evaluated by TypeSafe's Jev, in one pass over all 67 languages, with the results in `{model}/jev.jsonl`. The corpus's published scores are unaffected; see [JEV.md](JEV.md) for that run and what it measured.
+
 "onde" means "wave" in French. Here it's used in the sense of "wave" as a physics term.
 
 [TEMPLATE/](TEMPLATE/) is the template directory for adding a model (excluded from `make all`). See [ADD_MODEL.md](../ADD_MODEL.md) for the procedure for adding one.

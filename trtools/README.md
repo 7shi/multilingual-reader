@@ -45,6 +45,12 @@ Since the evaluation model's output varies from run to run, a single score is un
 
 The recommended evaluation model is **qwen3.6**. Its CoT-based logical verification correctly identifies technical defects. GPT-OSS 120B is not recommended, since its scores cap out at 92 points, making it hard to differentiate top-tier models. Evaluation is more reliable with CoT left enabled.
 
+### jev: One Run Instead of Three
+
+The median of 3 runs exists because a generative evaluator's score wanders: on the same translation it can swing by tens of points, since nothing in a 0-20 rubric separates a 14 from a 17. `jev` removes the discretionary number instead of averaging it away. Each criterion becomes one Score question over five ordered severity levels, and the score is the probability-weighted position across those levels, so it comes out of the distribution rather than out of the model picking a figure. Measured run-to-run range: **1.12 points**, against 52.4 for the generative path — which is what makes one run per language enough.
+
+It is a paid API, pinned to a model version rather than an alias, and it returns typed judgments with no prose. That last point matters downstream: there is no `reasoning` text for `trend` to summarize.
+
 ### Model Selection Guidelines
 
 The recommended translation model is **gemma4-26b** (`ollama:gemma4:26b`). Being MoE, it is fast, has high score stability, and also avoids self-evaluation bias since it has a different architecture from the evaluator (qwen3.6).
@@ -63,6 +69,7 @@ Both models can occasionally drop the speaker tag on short acknowledgment lines 
 | [`translate`](#translate) | Translate text line by line |
 | [`review`](#review) | Polish a translation via third-party review |
 | [`eval`](#eval) | Evaluate translation quality on 5 criteria |
+| [`jev`](#jev) | Evaluate translation quality with TypeSafe's Jev (one run per language) |
 | [`agg`](#agg) | Aggregate evaluation result JSON (median) |
 | [`trend`](#trend) | Summarize per-language trends from evaluation logs |
 | [`term extract`](#term-extract) | Extract technical terms from text |
@@ -265,6 +272,74 @@ for run in 1 2 3; do
     --run $run --runs 3 \
     -o evals/finetuning-es-$run.json
 done
+```
+
+---
+
+## jev
+
+Evaluates translation quality with TypeSafe's Jev on the same 5 criteria as `eval`, one request per language, appending one JSONL record each. Unlike `eval`, a single run per language is enough (see [Design Philosophy](#jev-one-run-instead-of-three)), and the output is a distribution rather than a number with a rationale.
+
+Requires `TYPESAFE_API_KEY` in the environment.
+
+```
+uv run trtools jev <original> --langs <lang...> [options]
+```
+
+### Required Arguments
+
+| Argument | Description |
+|---|---|
+| `original` | Original text file (e.g. `../../../onde-en.txt`). Not needed with `--show-scheme` |
+| `--langs` | Target language codes. The corpus's list of what should exist: a language with no translation is an error, not a shorter run |
+
+### Options
+
+| Option | Default | Description |
+|---|---|---|
+| `-f`, `--from` | `English` | Source language |
+| `--tr-dir` | `tr` | Directory holding the translations (`<topic>-<lang>.txt`) |
+| `-o`, `--output` | `jev.jsonl` | JSONL file to append to |
+| `-m`, `--model` | `jev-1.13.0` | Model version. A version, not the `jev-latest` alias, so a release cannot silently make later runs incomparable |
+| `--expect-model` | same as `-m` | Version the response must report; empty accepts whatever answers, which an alias needs |
+| `--attempts` | `3` | Attempts per language |
+| `--timeout` | `120` | Per-request timeout in seconds |
+| `--force` | false | Re-evaluate every language, discarding the existing file |
+| `--show-scheme` | false | Print what Jev is asked — scheme id, criteria, levels, state keys — as Markdown, and exit |
+
+### Output
+
+One record per language, appended and flushed as each finishes:
+
+```json
+{"lang":"ja","model":"jev-1.13.0","rubric":"degrees@f518286e",
+ "scores":{"readability":3.09,"...":0},
+ "confidence":{"readability":0.73,"...":0},
+ "probabilities":{"readability":[0.0,0.01,0.11,0.68,0.2],"...":[]},
+ "usage":{"input_tokens":6878,"output_tokens":83},"seconds":0.31}
+```
+
+- `scores` are levels, `0.0`-`4.0`, not the 0-20 points of `eval`. Multiply by 5 for that scale. They cannot be recomputed from `probabilities`, which the API returns rounded to two decimals
+- `rubric` identifies everything that determines a score — the questions, the level texts and the state's keys — as a hash. Reword any of it and the identifier changes
+- `seconds` is the processing time for that language, measured with `time.monotonic()`, not the API call's duration
+- Token usage is filed as one `usage.jsonl` entry per run
+
+### Behavior
+
+**Resuming**: at startup the output file is read and languages already present are skipped, so an interruption loses at most one language. A line that does not parse, or one scored on a different `rubric`, aborts the run rather than being skipped — appending today's judgments to a file scored on a reworded scheme is what nothing downstream could detect.
+
+**Aborting vs retrying**: a response reporting a model version other than the expected one aborts, since the alias having moved is not a transient failure. Other errors retry up to `--attempts`.
+
+**`agg` cannot read `jev.jsonl` yet.** `agg`'s file discovery requires three runs per language and silently discards anything else, so aggregation of Jev results is still to be built.
+
+### Examples
+
+```bash
+# Evaluate one model directory (from examples/tr/onde/<model>/)
+uv run trtools jev ../../../onde-en.txt --langs fr es de ja zh
+
+# Print the rubric the scores are placed on
+uv run trtools jev --show-scheme
 ```
 
 ---
