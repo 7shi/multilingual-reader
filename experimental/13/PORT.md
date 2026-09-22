@@ -2,8 +2,9 @@
 
 Working document, and a companion to [PLAN.md](PLAN.md). It designed the corpus's own Jev
 evaluation path; that path now exists and has been run over the whole corpus, so what is
-left here is the reasoning a reader would otherwise have to reconstruct, and the two things
-still open.
+left here is the reasoning a reader would otherwise have to reconstruct, and the one thing
+still open. The trend column, the other thing this file carried, moved to
+[experiment 14](../14/README.md).
 
 **Status**: implemented and run. `trtools jev` writes
 `examples/tr/onde/{model}/jev.jsonl`; all 16 translators were evaluated on 2026-09-22 and
@@ -106,16 +107,12 @@ nothing and is discarded with no error and no warning. `trtools trend` shares th
 asserting that every line in a file agrees on `model` and `rubric`. Now recorded in
 PLAN.md section 5.2, which previously said the output's schema was enough.
 
-**`TRENDS.jsonl`'s `analysis` column has no source under Jev.** The `score` column falls
-straight out of `jev.jsonl`; the prose does not, because `trend.py:198-250` builds it from
-three runs' `reasoning` text and Jev returns none. Models already evaluated keep their
-Qwen-written `analysis`; whether their `score` is refreshed to the Jev scale is part of the
-same question. Current idea for new models: pass the translation and its Jev scores to
-Qwen 3.6 and have it write the one-line summary, so the sentence rests on the text and the
-numbers rather than on an evaluator's prose. The alternatives are a fixed sentence derived
-from the five criterion scores — free and deterministic, but unable to name a defect kind,
-since the levels judge only how much of the document falls short and deliberately not what
-is wrong with it — or replacing the prose column with the five scores.
+**`TRENDS.jsonl`'s `analysis` column has no source under Jev** — `score` falls out of
+`jev.jsonl`, the prose does not, since `trend.py:198-250` builds it from three runs'
+`reasoning` text and Jev returns none. Taken over by
+[experiment 14](../14/README.md), which holds the design, the corpus measurements that
+chose it over the alternatives this section used to list, and the decisions settled since,
+including that the already-evaluated models' `score` is refreshed rather than frozen.
 
 ## 6. `port.py`
 
@@ -133,9 +130,9 @@ also remains the fallback if the paid path is ever unavailable.
 
 ## 7. Next, in Order
 
-1. **`TREND-jev.jsonl`.** Deferred to the next session. Section 5's second item is the
-   question; a trends file of its own is the shape of the answer, kept apart from
-   `TRENDS.jsonl` so that two scales never share a file (PLAN.md section 5.3).
+1. **`TREND-jev.jsonl`.** [Experiment 14](../14/README.md), which is where section 5's
+   second item went. A trends file of its own, kept apart from `TRENDS.jsonl` so that two
+   scales never share a file (PLAN.md section 5.3).
 
 2. **The comparison table, on the Jev scale.** Rebuild what
    [examples/tr/README.md](../../examples/tr/README.md) already shows — the per-language

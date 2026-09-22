@@ -198,8 +198,9 @@ stays `ollama:qwen3.6` is a separate question.
 
 That is necessary and not sufficient: `trend.py` builds its prose from the three runs'
 `reasoning` text, and Jev returns none, so for a newly added model the summarizer would
-have nothing to read. [PORT.md](PORT.md) section 5 holds what has been thought about that
-so far.
+have nothing to read. [Experiment 14](../14/README.md) is where that is being settled: the
+phrase is written from the translation itself, with the per-criterion breakdown steering
+what the writer looks for, into a `TREND-jev.jsonl` of its own.
 
 ### 5.2 Evaluation is solved; aggregation is not
 
@@ -246,6 +247,31 @@ number for an arbitrary one. Recorded here so the shift is not later mistaken fo
 in the models.
 
 ---
+
+### 5.5 `build_state` tells the evaluator both texts have the same line count
+
+`trtools/jev_criteria.py`'s `line_correspondence` reads *"Both texts have N lines, and line
+i of the translation is meant to render line i of the original"*, and `N` is counted from
+the **original only**. When a translation is short, that is a false statement handed to the
+evaluator, asserting a correspondence that does not exist.
+
+`gemini-3-flash/eu` is **18 lines against the original's 99** — 82% of the document gone —
+and Jev scores it `information_completeness` 2.34, its lowest criterion, for a total of
+**71.05**. The old evaluator gave it 63. Found while reading
+[experiment 14](../14/README.md)'s output, which under-describes the same translation for
+its own reasons (that README's section 7).
+
+Whether the wording is *why* the score is high is unproven. The test is cheap: re-evaluate
+that one language with the count taken from the translation, or with the sentence dropped,
+and compare. Until then it is a hypothesis, not a cause.
+
+It is the only translation in the corpus under 90 lines, so nothing here suggests a
+systematic bias. It matters because section 1 makes the tail the point of the corpus: a
+yardstick for how many languages a model handles cannot place an 18-line stub at 71.
+
+**Fix**: settle the wording before step 3 regenerates anything. Note that changing it
+changes `SCHEME_ID` — correctly, since it is an input to the score — which means re-running
+all 1,072 evaluations at the cost JEV.md records, $0.32 and five and a half minutes.
 
 ## 6. Touch List
 
