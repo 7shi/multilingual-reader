@@ -7,6 +7,8 @@ import re
 from statistics import median, mean, stdev
 from pathlib import Path
 
+from .jev_criteria import CRITERIA, CRITERION_IDS, POINTS_PER_LEVEL
+
 def find_evaluation_groups(files):
     """Search the file list for evaluation file groups"""
     pattern = re.compile(r'^(.+)-([123])\.json$')
@@ -108,15 +110,93 @@ def aggregate_evaluations(files):
 
     return results
 
+def aggregate_jev(path, prefix):
+    """Totals from one jev.jsonl, keyed `{prefix}-{lang}` like the three-run groups.
+
+    One run per language, so there is nothing to take a median of: the total is the sum
+    of the five levels times POINTS_PER_LEVEL. Every line must agree on `model` and
+    `rubric`; a file mixing two of either would be totalled as if it were one
+    measurement, so it stops here instead.
+    """
+    results = {}
+    first = None
+    for n, line in enumerate(Path(path).read_text(encoding="utf-8").splitlines(), 1):
+        if not line.strip():
+            continue
+        try:
+            record = json.loads(line)
+        except json.JSONDecodeError as e:
+            raise SystemExit(f"{path}:{n}: {e}")
+        key = (record.get("model"), record.get("rubric"))
+        if first is None:
+            first = key
+        elif key != first:
+            raise SystemExit(f"{path}:{n}: {key[0]} on {key[1]}, "
+                             f"but line 1 is {first[0]} on {first[1]}")
+        name = f"{prefix}-{record['lang']}"
+        if name in results:
+            raise SystemExit(f"{path}:{n}: {record['lang']} appears twice")
+        missing = [c for c in CRITERION_IDS if c not in record["scores"]]
+        if missing:
+            raise SystemExit(f"{path}:{n}: no score for {', '.join(missing)}")
+        levels = {c: record["scores"][c] for c in CRITERION_IDS}
+        results[name] = {
+            "model": record["model"],
+            "rubric": record["rubric"],
+            "levels": levels,
+            "total": sum(levels.values()) * POINTS_PER_LEVEL,
+        }
+    if first is None:
+        raise SystemExit(f"{path}: no records")
+    return dict(sorted(results.items()))
+
+def run_jev(args):
+    if len(args.files) != 1:
+        raise SystemExit("--jev takes exactly one jev.jsonl")
+    results = aggregate_jev(args.files[0], args.prefix)
+
+    if args.verbose:
+        first = next(iter(results.values()))
+        print(f"{first['model']} on {first['rubric']}")
+    for name, result in results.items():
+        if args.verbose:
+            print(f"\n{name}:")
+            for c in CRITERION_IDS:
+                level = result["levels"][c]
+                print(f"  {CRITERIA[c][0]:<32}: level={level:.2f}, "
+                      f"points={level * POINTS_PER_LEVEL:.1f}")
+            print(f"  Total score: {result['total']:.1f}/100")
+        else:
+            # One decimal, not an integer: on this scale int() ties most of a model's
+            # languages (experimental/14/README.md section 4).
+            print(f"{name}: {result['total']:.1f}")
+
+    if args.output_file:
+        with open(args.output_file, 'w', encoding='utf-8') as f:
+            json.dump(results, f, ensure_ascii=False, indent=2)
+        print(f"\nSaved aggregated result as JSON: {args.output_file}")
+
+    if args.verbose:
+        print(f"\nDone: aggregated {len(results)} language(s)")
+
 def add_parser(subparsers):
     parser = subparsers.add_parser("agg", help="Aggregate the median of evaluation result JSON files")
     parser.add_argument("files", nargs="+", help="Evaluation result JSON files (multiple allowed)")
     parser.add_argument("-o", "--output", dest="output_file", help="Filename to save the aggregated result as JSON")
     parser.add_argument("--verbose", action="store_true", help="Show detailed statistics")
+    parser.add_argument("--jev", action="store_true",
+                        help="Read one jev.jsonl from `trtools jev` instead of three-run JSON files")
+    parser.add_argument("--prefix",
+                        help="Name prefix for --jev, e.g. onde for onde-ja (jev.jsonl records only the language)")
     parser.set_defaults(func=run)
     return parser
 
 def run(args):
+    if args.jev:
+        if not args.prefix:
+            raise SystemExit("--jev requires --prefix")
+        run_jev(args)
+        return
     aggregated_results = aggregate_evaluations(args.files)
 
     for base_name, result in aggregated_results.items():

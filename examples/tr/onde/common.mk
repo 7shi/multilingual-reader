@@ -1,7 +1,7 @@
 # Shared definitions for each onde model directory
 # Each Makefile defines only its model-specific part (TRANSLATOR) and includes this.
 
-.PHONY: all translate evaluate jev scores trends
+.PHONY: all translate evaluate jev scores scores-jev trends
 
 DIR = ../../..
 include ../../common.mk
@@ -35,6 +35,10 @@ jev:
 
 scores:
 	uv run trtools agg evals/*.json | tee SCORES.txt
+
+# Totals from jev.jsonl, beside SCORES.txt until EVALUATOR switches over.
+scores-jev:
+	uv run trtools agg --jev --prefix onde jev.jsonl | tee SCORES-jev.txt
 
 trends:
 	uv run trtools trend evals/*.json -m $(SUMMARIZER) --no-think --sync README.md
