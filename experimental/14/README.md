@@ -8,6 +8,10 @@ how it goes into `trtools`.
 The question came from [experiment 13](../13/README.md), which chose Jev as the corpus
 evaluator: Jev returns no prose, so the column had nothing to summarise.
 
+**Status**: frozen, 2026-09-23. Section 5's first item is closed; the rest stay as recorded,
+and `core/` and `fr/` are tracked in [examples/tr/README.md](../../examples/tr/README.md)
+("Scope of the Comparison and Open Questions").
+
 ---
 
 ## 1. The Problem
@@ -129,8 +133,9 @@ measurement, and the run sections for the ones that rest on output.
 
 ## 5. Not Tested Here
 
-- Whether `analysis` and `score` disagreeing in a row is a problem to solve. Left to be read
-  off the first full run.
+- Whether `analysis` and `score` disagreeing in a row is a problem to solve. Closed without
+  reading: the full run surfaced nothing, and the trend column is a short indication of a
+  tendency, not something to make exact.
 - Anything about `examples/tr/core/` or `examples/tr/fr/`, which pin the same evaluator and
   are out of scope for now ([experiment 13's PORT.md](../13/PORT.md) section 8 item 1).
 - Whether stage 1 can be made more accurate. The phrase inherits its errors, and nothing

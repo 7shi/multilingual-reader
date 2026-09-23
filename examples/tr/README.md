@@ -185,6 +185,19 @@ Mean and standard deviation are automatically computed from the comparison table
 
 No universal translation model exists, strongly suggesting the importance of choosing a model to match the language.
 
+## Scope of the Comparison and Open Questions
+
+What the comparison above can and cannot be read as, and what is still open. These were carried over from [experimental/13/PORT.md](../../experimental/13/PORT.md) section 8 when experiments 13 and 14 were frozen; this section is where they are kept up to date.
+
+**Settled**
+
+- **One source text, chosen to be hard.** Every onde score is a translation of one document, [onde-en.txt](../onde-en.txt). It is deliberately spoken in form and technical in content, a combination that is hard to translate, so that translators differ. The scores are therefore not a general-purpose measure of multilingual ability, and whether the ranking would hold for another genre is untested. This is accepted as the corpus's design rather than treated as a gap to fill with a second source.
+- **The top two are even.** `gpt-5.6-luna` and `union-alpha` are not separated per language by either evaluator, qwen3.6 or Jev ([experimental/13/REPORT.md](../../experimental/13/REPORT.md) section 2), so they are treated as tied. The small difference in their means is not read as an order, and nothing further is being tried to separate them.
+
+**Open**
+
+- **core/ and fr/ are still on qwen3.6.** Their scores, and the core table above, are on the old scale and cannot be set against the comparison table. Moving them to Jev is pending.
+
 ## Evaluation Design Policy: Why Speaker Tags Aren't Separated
 
 In this verification, dialogue script speaker tags (like `Camille:` or `Luc:`) are currently not separated from the translation target and appended afterward.

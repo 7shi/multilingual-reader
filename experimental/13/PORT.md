@@ -31,9 +31,13 @@ tools that read scores take `--jev` explicitly and read the old record without i
 `TIERS` stayed as it is (section 5.2), `build_state`'s wording stayed as it is (section
 5.3), and speaker labels needed no decision (REPORT.md section 4).
 
-**What remains** is section 8: `core/` and `fr/` still on the old evaluator, the top pair
-Jev leaves tied, whether the ordering inside the old scheme's floor is real, and a second
-source text.
+**What remains** is section 8: `core/` and `fr/` still on the old evaluator. The top pair
+Jev leaves tied is taken as even, the ordering inside the old scheme's floor is real as a
+coarse order ([FLOOR.md](FLOOR.md)), and the single source text is a deliberate choice.
+
+**Frozen**, 2026-09-23. Section 8's questions moved to
+[examples/tr/README.md](../../examples/tr/README.md) ("Scope of the Comparison and Open
+Questions"), where they are kept up to date, and this file is not edited again.
 
 ---
 
@@ -276,15 +280,22 @@ section 7.
 2. **The top pair.** Jev ties `gpt-5.6-luna` and `union-alpha` as the old scheme does
    ([REPORT.md](REPORT.md) section 2), so the compression at the top — the yardstick's
    standing weakness — survives the migration. The migration is still worth it for PLAN.md
-   section 2's reason 1, but separating the top needs a different idea.
+   section 2's reason 1, but separating the top needs a different idea. **Settled for now:**
+   two evaluators leave the pair tied, so it is taken as even, and nothing further is looked
+   into at this stage.
 3. **Is the ordering inside the old scheme's floor real?** README section 7 item 1. The 10
    translations the old scheme scores 0 come back spread over 2.6–31.2. It is the one place
-   this scheme claims information its reference does not have. Checking it needs human
-   judgment on ten translations. Not a blocker, but it should not be quoted as established.
+   this scheme claims information its reference does not have. **Answered in
+   [FLOOR.md](FLOOR.md): real, as a coarse order.** Reading the ten, Jev's order follows how
+   much of the dialogue each translation carries before it collapses; between translations
+   of similar coverage the gap is not an order.
 4. **A second source text.** README section 7 item 9. Everything the corpus knows is 67
    translations of one spoken-dialogue document. For a *multilingual ability* yardstick this
    is the largest unexamined assumption in the project — larger than anything about the
-   evaluator — and it is orthogonal to this migration.
+   evaluator — and it is orthogonal to this migration. **Settled as a choice, not a gap:**
+   the source is deliberately spoken in form and technical in content, a combination that
+   is hard to translate, chosen to make translators differ. The scores are therefore not a
+   general-purpose measure, and that is accepted rather than fixed with a second source.
 
 ## 9. Touch List
 

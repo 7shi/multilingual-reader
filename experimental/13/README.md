@@ -6,6 +6,11 @@ corpus evaluator — is [PLAN.md](PLAN.md), and what is left to do about it, wit
 blockers in the way, is [PORT.md](PORT.md); both are kept separate so a plan changing does
 not edit a result.
 
+**Status**: frozen, 2026-09-23. Section 7 item 1's remainder is closed by
+[FLOOR.md](FLOOR.md); the items still open are kept in
+[examples/tr/README.md](../../examples/tr/README.md) ("Scope of the Comparison and Open
+Questions").
+
 ## 1. What This Tests
 
 Experiment 12 ends with a working evaluator and no idea whether it works. Its `degrees`
@@ -453,7 +458,8 @@ an ordering where the reference has a single value. This is section 3.3's point 
 old scheme's 13 ties, seen at the other end of the scale — and here it costs the reference
 real information, because a quantization this severe fails by degrees.
 
-Whether that ordering inside the floor is *correct* is not something this run can check.
+Whether that ordering inside the floor is *correct* is not something this run can check;
+[FLOOR.md](FLOOR.md) checks it by reading the ten, and it holds as a coarse order.
 What it establishes is that the cheap scheme is usable for the one question quantization
 work actually asks — did this hurt, and where — and that the old scheme stops answering it
 first.
@@ -835,14 +841,18 @@ averaged silently into the wrong table.
    scheme's 26-point quantization gap to within 0.25 points while separating 66 of 67
    languages against its 62. What it turned up instead is section 4.3: the scheme is
    compressed against the old one at a slope of 0.69, so the -3.7 offset of section 3.2 is
-   not a constant. **What is left of this one** is whether the ordering `jev` produces
-   inside the old scheme's floor — 10 translations it scores a flat 0, spread over 2.6 to
-   31.2 here — is real or invented. It is the one place this scheme claims information the
-   reference does not have, and checking it needs human judgment on ten translations, not
-   another evaluator.
-2. **The middle of the corpus.** **Evaluated, not yet compared:** all 16 translators went
-   through `trtools jev` on 2026-09-22 ([JEV.md](../../examples/tr/onde/JEV.md)), and the
-   comparison is [PORT.md](PORT.md) section 7 step 2. As written before that run: now the
+   not a constant. **What was left of this one** — whether the ordering `jev` produces
+   inside the old scheme's floor, 10 translations it scores a flat 0, spread over 2.6 to
+   31.2 here, is real or invented — **is answered in [FLOOR.md](FLOOR.md): real, as a
+   coarse order.** It follows how much of the dialogue each translation carries before it
+   collapses; between translations of similar coverage the gap is not an order.
+2. **The middle of the corpus.** **Compared — [REPORT.md](REPORT.md) section 3:** all 16
+   translators went through `trtools jev` on 2026-09-22
+   ([JEV.md](../../examples/tr/onde/JEV.md)). The middle band is not specially weak: per
+   translation, agreement inside every ten-point band of the old score is low, the top band
+   included, and the corpus-wide +0.81 is mostly range; per translator, the middle of the
+   ranking reorders because of lost speaker labels (REPORT.md section 4), not the band. As
+   written before that run: now the
    only untested part of it, and the sharper question for having both ends. Section 3.2
    rests on translations the old scheme scores in the 80s and 90s (Spearman +0.69) and
    section 4.2 on ones it scores 0–98 (+0.96), and section 4.2 says most of that difference
@@ -894,10 +904,12 @@ averaged silently into the wrong table.
    measurement. At $0.09 per pair of 134 and the ranges already known to be small, this is
    the cheapest open question here, and it is the one the choice between the two schemes
    actually turns on.
-8. **Whether `jev` separates the top of the corpus.** **Evaluated, not yet compared:**
-   `gemini-3.7-flash` and `ox-alpha` went through `trtools jev` with the rest of the corpus
-   on 2026-09-22 ([JEV.md](../../examples/tr/onde/JEV.md)), and the comparison is
-   [PORT.md](PORT.md) section 7 step 2. As written before that run: section 5.4's honest
+8. **Whether `jev` separates the top of the corpus.** **Compared — [REPORT.md](REPORT.md)
+   section 2:** `gemini-3.7-flash` and `ox-alpha` went through `trtools jev` with the rest
+   of the corpus on 2026-09-22 ([JEV.md](../../examples/tr/onde/JEV.md)). Into two pairs,
+   not within them: `gpt-5.6-luna` and `union-alpha` stay tied as under the old scheme, and
+   are taken as even ([PORT.md](PORT.md) section 8 item 2). As written before that run:
+   section 5.4's honest
    negative: the median moves from 93/92 to 88.0/87.2 on the top pair, so nothing yet says
    this scheme discriminates better where new models actually arrive. `gemini-3.7-flash` and
    `ox-alpha` are the other two of the corpus's top four and are not measured under `jev`.
@@ -906,4 +918,7 @@ averaged silently into the wrong table.
    the corpus knows is 67 translations of one document. Whether the fluency floor, the
    language difficulty ordering, and the per-model coverage counts survive a different
    genre is untested, and it is the largest unexamined assumption in the whole corpus —
-   larger than anything about the evaluator.
+   larger than anything about the evaluator. **Accepted as a choice:** the source is
+   deliberately spoken in form and technical in content, which is hard to translate and
+   chosen to make translators differ; the scores are not meant as a general-purpose
+   measure ([PORT.md](PORT.md) section 8 item 4).
