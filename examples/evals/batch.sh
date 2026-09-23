@@ -1,91 +1,50 @@
 #!/bin/bash
+# Evaluates the reference translations in examples/ with TypeSafe's Jev (pinned in
+# trtools/jev.py), one run per language. The *.json files and SCORES.txt are the previous
+# evaluator's record (ollama:qwen3.6, three runs each) and are no longer written.
 set -e
-EVALUATOR="ollama:qwen3.6"
 
-declare -A LANG_NAME=(
-    [en]="English"  [fr]="French"   [es]="Spanish"
-    [de]="German"   [ja]="Japanese" [zh]="Chinese"
-    [eo]="Esperanto" [hi]="Hindi"
-)
+TOPICS="finetuning momentum onde transformer"
 
-# Languages re-translated from English
-declare -A EN_TARGETS=(
-    [finetuning]="de ja zh"
-    [transformer]="de ja zh"
-    [onde]="de ja zh eo hi"
-    [momentum]="de ja zh"
-)
+# Source language -> targets translated from it
+declare -A SRC_NAME=([en]="English" [fr]="French")
+declare -A TARGETS=([fr]="en es" [en]="de ja zh")
 
-for topic in finetuning transformer onde momentum; do
-    # Evaluate FR → EN, ES (French is the source)
-    fr_file="../$topic-fr.txt"
-    [ -f "$fr_file" ] || continue
-    for tgt_lang in en es; do
-        tgt_file="../$topic-$tgt_lang.txt"
-        [ -f "$tgt_file" ] || continue
-        for run in {1..3}; do
-            eval_out="$topic-fr-$tgt_lang-$run.json"
-            if [ -f "$eval_out" ]; then
-                echo "Skipping $eval_out (already exists)"
-                continue
-            fi
-            echo -e "\nEvaluating $tgt_file (run $run)..."
-            uv run trtools eval \
-                --original "$fr_file" --translation "$tgt_file" \
-                -f French -t "${LANG_NAME[$tgt_lang]}" \
-                -m "$EVALUATOR" -w 3 \
-                -o "$eval_out"
-        done
-    done
-
-    # Evaluate EN → DE, JA, ZH, (EO, HI for onde only) (English is the source)
-    en_file="../$topic-en.txt"
-    [ -f "$en_file" ] || continue
-    for tgt_lang in ${EN_TARGETS[$topic]}; do
-        tgt_file="../$topic-$tgt_lang.txt"
-        [ -f "$tgt_file" ] || continue
-        for run in {1..3}; do
-            eval_out="$topic-en-$tgt_lang-$run.json"
-            if [ -f "$eval_out" ]; then
-                echo "Skipping $eval_out (already exists)"
-                continue
-            fi
-            echo -e "\nEvaluating $tgt_file (run $run)..."
-            uv run trtools eval \
-                --original "$en_file" --translation "$tgt_file" \
-                -f English -t "${LANG_NAME[$tgt_lang]}" \
-                -m "$EVALUATOR" -w 3 \
-                -o "$eval_out"
-        done
+# One file per topic and source, since a record names only its target language.
+# trtools jev skips the languages a file already holds.
+for topic in $TOPICS; do
+    for src in en fr; do
+        uv run trtools jev "../$topic-$src.txt" -f "${SRC_NAME[$src]}" \
+            --tr-dir .. --langs ${TARGETS[$src]} -o "jev-$topic-$src.jsonl"
     done
 done
 
 # --- Aggregation ---
-jsons=(*.json)
-if [ -e "${jsons[0]}" ]; then
-    echo -e "\nAggregating ..."
-    uv run trtools agg "${jsons[@]}" | tee SCORES.txt
+echo -e "\nAggregating ..."
+for topic in $TOPICS; do
+    for src in en fr; do
+        uv run trtools agg --jev --prefix "$topic-$src" "jev-$topic-$src.jsonl"
+    done
+done > SCORES-jev.txt.tmp
+mv SCORES-jev.txt.tmp SCORES-jev.txt
+cat SCORES-jev.txt
 
-    echo -e "\nPer-language average (mean of medians):"
-    python3 -c "
+echo -e "\nPer-language average (mean over topics):"
+python3 -c "
 import re
 from collections import defaultdict
 
 scores = defaultdict(list)
-with open('SCORES.txt') as f:
+with open('SCORES-jev.txt') as f:
     for line in f:
-        m = re.match(r'\w+-\w+-(\w+): (\d+)', line)
+        m = re.match(r'\w+-\w+-(\w+): (\d+(?:\.\d+)?)', line)
         if m:
-            lang, score = m.group(1), int(m.group(2))
+            lang, score = m.group(1), float(m.group(2))
             scores[lang].append(score)
 
-lang_names = {'en':'English','de':'German','es':'Spanish','ja':'Japanese',
-              'zh':'Chinese','eo':'Esperanto','hi':'Hindi'}
+lang_names = {'en':'English','de':'German','es':'Spanish','ja':'Japanese','zh':'Chinese'}
 for lang, vals in sorted(scores.items(), key=lambda x: -sum(x[1])/len(x[1])):
     avg = sum(vals) / len(vals)
     name = lang_names.get(lang, lang)
     print(f'  {name}: {avg:.2f} ({len(vals)} topics)')
 "
-else
-    echo "No eval files found, skipping aggregation"
-fi

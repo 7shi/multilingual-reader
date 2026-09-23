@@ -34,7 +34,7 @@ multilingual-reader/
 ├── trtools/                       # Translation/evaluation tool package
 ├── examples/                      # Multilingual source-of-truth texts and reference-translation evaluations
 │   ├── {topic}-{lang}.txt         # 4 topics × 6 languages = 24 files
-│   ├── evals/                     # Reference-translation evaluations from trtools eval
+│   ├── evals/                     # Reference-translation evaluations from trtools jev
 │   └── tr/                        # Local-LLM translations and evaluations from trtools translate
 ├── DEPLOY.md                      # Build/runtime/deploy architecture details
 ├── Makefile                       # build / clean / serve / deploy targets
@@ -65,17 +65,17 @@ Packages the tooling shared across all experiments. See [trtools/README.md](trto
 
 Proper nouns and show names shared across all topics are pinned in [examples/tr/terms/common.tsv](examples/tr/terms/common.tsv) to avoid translation drift between runs.
 
-[examples/evals/](examples/evals/) holds the JSON output of 3 evaluation runs from `trtools eval` (evaluator: `ollama:qwen3.6`) along with the aggregated results ([SCORES.txt](examples/evals/SCORES.txt)). Re-evaluation or additional evaluation can be run via [examples/evals/batch.sh](examples/evals/batch.sh).
+[examples/evals/](examples/evals/) holds the evaluations of these reference translations by TypeSafe's Jev (`jev-1.13.0`, one run per language, via `trtools jev`) along with the aggregated results ([SCORES-jev.txt](examples/evals/SCORES-jev.txt)). Re-evaluation can be run via [examples/evals/batch.sh](examples/evals/batch.sh). The previous evaluator's record (`ollama:qwen3.6`, median of 3 runs) is kept beside it; [examples/evals/README.md](examples/evals/README.md) gives the history and compares the two.
 
-**Evaluation results across all topics (median of 3 evaluations per topic, averaged per language):**
+**Evaluation results across all topics (Jev, one evaluation per topic, averaged per language):**
 
 | Language | Average | Topics | Translated from | Translation | Proofreading |
 |-----------|------:|---:|---|---|---|
-| English   | 98.25 |  4 | French | Gemini 2.5 Pro | Claude Sonnet 4.5 |
-| Japanese  | 97.00 |  4 | English | Gemini 2.5 Pro | Claude Sonnet 4.5 |
-| Spanish   | 96.75 |  4 | French | Gemma 4 26B | Gemini 3.1 Pro Preview |
-| Chinese   | 96.50 |  4 | English | Gemma 4 26B | Gemini 3.1 Pro Preview |
-| German    | 96.25 |  4 | English | Gemma 4 26B | Gemini 3.1 Pro Preview |
+| English   | 91.80 |  4 | French | Gemini 2.5 Pro | Claude Sonnet 4.5 |
+| German    | 91.60 |  4 | English | Gemma 4 26B | Gemini 3.1 Pro Preview |
+| Spanish   | 90.70 |  4 | French | Gemma 4 26B | Gemini 3.1 Pro Preview |
+| Chinese   | 90.55 |  4 | English | Gemma 4 26B | Gemini 3.1 Pro Preview |
+| Japanese  | 87.85 |  4 | English | Gemini 2.5 Pro | Claude Sonnet 4.5 |
 
 For the other languages, see [MEMO.md](MEMO.md) and [examples/tr/README.md](examples/tr/README.md).
 
