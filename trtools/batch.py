@@ -4,7 +4,8 @@ import os
 import time
 from argparse import Namespace
 from pathlib import Path
-from . import translate, evaluate, aggregate
+from llm7shi.usage import print_today_totals
+from . import llm, translate, evaluate, aggregate
 from .language import LANG_NAMES
 
 
@@ -34,6 +35,8 @@ def add_parser(subparsers):
     parser.add_argument("--eval-dir", default="evals", help="Evaluation output directory (default: evals)")
     parser.add_argument("-w", "--retry-wait", type=int, default=3,
                         help="Retry wait time in seconds (default: 3)")
+    parser.add_argument("--save-usage", action="store_true",
+                        help="Record translation usage regardless of model name (recorded by default for openai: and gpt- models)")
     parser.set_defaults(func=run)
     return parser
 
@@ -67,6 +70,14 @@ def _eval_path(topic, lang, trrun, tr_runs, evrun, eval_dir="evals"):
 
 
 def run(args):
+    _run(args)
+    # Printed once for the whole batch; translate.run() only appends per language
+    if llm.USAGE_PATH is not None:
+        print()
+        print_today_totals(llm.USAGE_PATH)
+
+
+def _run(args):
     if args.tr_only and args.eval_only:
         print("Error: --tr-only and --eval-only cannot be specified together")
         return
@@ -126,6 +137,8 @@ def run(args):
                         no_think=args.no_think,
                         retry_wait=args.retry_wait,
                         fix=False,
+                        save_usage=args.save_usage,
+                        batch=True,
                         label=lang,
                         start=tr_start,
                         index=tr_index,

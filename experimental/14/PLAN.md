@@ -861,8 +861,8 @@ One phrase per language over the whole corpus is 1,072 calls, so roughly **4.5M 
 the same two texts, so this is one evaluation pass in input terms and a fraction of one in
 output.
 
-`USAGE_PATH` in [trend14.py](trend14.py) records it, on `experimental/11/eval50.py`'s
-condition and through its `track_usage`. Every call's `Usage` is summed and the sum appended
+[trend14.py](trend14.py) records it, on `trtools.llm.init_usage_path()`'s condition and
+through `LLMClient.usage`. Every call's `Usage` is summed and the sum appended
 once at the end, so a section of [batch.sh](batch.sh) leaves one row rather than 84.
 
 ### This writer is the yardstick, not the choice
@@ -1106,8 +1106,8 @@ hours**. The thinking is most of it: the run's console output came to 1.9 MB ove
 about 23 KB of reasoning a phrase, measured while [batch.sh](batch.sh) still teed it to a
 file.
 
-`USAGE_PATH` records nothing here, by design: the condition in
-[trend14.py](trend14.py) is an `openai:`/`gpt-` model or `--save-usage`.
+[trend14.py](trend14.py) records no usage here, by design: the condition in
+`trtools.llm.init_usage_path()` is an `openai:`/`gpt-` model or `--save-usage`.
 
 ### What it settles, and what run 12 asks
 

@@ -31,17 +31,15 @@ since a missing output file already records what didn't complete.
 import argparse
 import json
 import time
-from contextlib import contextmanager
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Literal
 
 from pydantic import BaseModel, Field, create_model
 
-import trtools.llm as trtools_llm
-from trtools.llm import LLMClient, DEFAULT_RETRY_WAIT_SECONDS
+from trtools.llm import LLMClient, DEFAULT_RETRY_WAIT_SECONDS, init_usage_path
 from trtools.statusline import StatusLine
-from llm7shi.usage import Usage, append_usage, find_usage_file, print_today_totals
+from llm7shi.usage import Usage, append_usage, print_today_totals
 
 from items import GROUPS, ITEM_IDS, CRITERIA
 
@@ -51,31 +49,6 @@ RUNS = 3
 ATTEMPTS = 3
 
 VERDICT_SCORES = {"yes": 2, "partial": 1, "no": 0}
-
-
-@contextmanager
-def track_usage():
-    """Sum the Usage of every LLMClient call made inside the with-block.
-
-    LLMClient.call() discards the response's usage info, and LLMClient itself is
-    shared with other, unrelated callers, so this leaves it alone and instead wraps
-    the generate_with_schema it calls, for the duration of the with-block only.
-    """
-    total = Usage()
-    original = trtools_llm.generate_with_schema
-
-    def wrapper(*args, **kwargs):
-        nonlocal total
-        result = original(*args, **kwargs)
-        if result.usage:
-            total = total + result.usage
-        return result
-
-    trtools_llm.generate_with_schema = wrapper
-    try:
-        yield lambda: total
-    finally:
-        trtools_llm.generate_with_schema = original
 
 
 # Values a model emits when it echoes the schema instead of filling it in.
@@ -250,11 +223,10 @@ def run(args, ui, prog, done):
     client = LLMClient(model=args.model, think=(not args.no_think), retry_wait=args.retry_wait)
 
     call_start = args.attempt_start if args.attempt_start is not None else time.time()
-    with track_usage() as get_usage:
-        evaluation = evaluate(client, original_text, translated_text,
-                              args.from_lang, args.to_lang, args.split, ui.stream,
-                              no_evidence=args.no_evidence, prog=prog, done=done)
-        ui.stream.end()
+    evaluation = evaluate(client, original_text, translated_text,
+                          args.from_lang, args.to_lang, args.split, ui.stream,
+                          no_evidence=args.no_evidence, prog=prog, done=done)
+    ui.stream.end()
     duration_seconds = time.time() - call_start
 
     group_scores, total_score = tally(evaluation)
@@ -271,7 +243,7 @@ def run(args, ui, prog, done):
     ui.write(f"Verdicts: yes={counts['yes']} partial={counts['partial']} no={counts['no']}\n")
     ui.write(f"Duration: {duration_seconds:.1f}s\n")
 
-    usage = get_usage()
+    usage = client.usage
     ui.write(f"{usage}\n")
 
     if args.output_file:
@@ -386,9 +358,7 @@ def main():
     eval_dir = BASE_DIR / variant
     eval_dir.mkdir(parents=True, exist_ok=True)
 
-    usage_path = None
-    if cli_args.model.startswith("openai:") or cli_args.model.startswith("gpt-") or cli_args.save_usage:
-        usage_path = find_usage_file()
+    usage_path = init_usage_path(cli_args.model, cli_args.save_usage)
 
     targets = load_targets(cli_args.targets)
     total = len(targets)

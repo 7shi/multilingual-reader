@@ -38,15 +38,13 @@ JSONL for diffing two wordings against each other.
 import argparse
 import json
 import statistics
-from contextlib import contextmanager
 from pathlib import Path
 
-from llm7shi.usage import Usage, append_usage, find_usage_file, print_today_totals
+from llm7shi.usage import Usage, append_usage, print_today_totals
 
-import trtools.llm as trtools_llm
 from trtools.jev_criteria import CRITERIA, CRITERION_IDS, LEVELS, POINTS_PER_LEVEL
 from trtools.language import LANGUAGES
-from trtools.llm import LLMClient
+from trtools.llm import LLMClient, init_usage_path
 from trtools.trend import _clean, _matches_lang
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -56,42 +54,6 @@ ORIGINAL = REPO_ROOT / "examples" / "onde-en.txt"
 
 DEFAULT_MODEL = "ollama:qwen3.6"
 
-# Where the cost of a run is recorded, or None when it is not worth recording. Set in
-# main() on experimental/11/eval50.py's condition. Every call's Usage is summed and the sum
-# is appended as one line at the end, so a section of batch.sh leaves one row per invocation
-# rather than one per phrase. Runs 1-8 were a local model and cost nothing, so this stays None
-# for them; run 9 is the first with a commercial writer, and a run over 21 targets times
-# four variants is worth knowing the price of before it becomes 67 languages times sixteen
-# models. A commercial writer that is neither openai: nor gpt- needs --save-usage, the same
-# way it does in eval50.py.
-USAGE_PATH = None
-
-
-@contextmanager
-def track_usage():
-    """Sum the Usage of every LLMClient call made inside the with-block.
-
-    Copied from experimental/11/eval50.py, which needed it for the same reason:
-    LLMClient.call() returns only the text and discards the response's usage, and
-    LLMClient is shared with unrelated callers, so this leaves it alone and wraps the
-    generate_with_schema underneath it for the duration of the block. `call` and
-    `call_json` both go through that one function.
-    """
-    total = Usage()
-    original = trtools_llm.generate_with_schema
-
-    def wrapper(*args, **kwargs):
-        nonlocal total
-        result = original(*args, **kwargs)
-        if result.usage:
-            total = total + result.usage
-        return result
-
-    trtools_llm.generate_with_schema = wrapper
-    try:
-        yield lambda: total
-    finally:
-        trtools_llm.generate_with_schema = original
 
 # ---------------------------------------------------------------------------
 # The wording under test. Everything below this line is the experiment.
@@ -881,9 +843,15 @@ def main():
     # The two-stage variant runs without thinking regardless of --think.
     client_no_think = None if args.show_prompt else LLMClient(model=args.model, think=False)
 
-    global USAGE_PATH
-    if args.model.startswith("openai:") or args.model.startswith("gpt-") or args.save_usage:
-        USAGE_PATH = find_usage_file()
+    # Where the cost of a run is recorded, or None when it is not worth recording, on
+    # trtools.llm.init_usage_path()'s condition. Every call's Usage is summed and the sum is
+    # appended as one line at the end, so a section of batch.sh leaves one row per
+    # invocation rather than one per phrase. Runs 1-8 were a local model and cost nothing,
+    # so this stays None for them; run 9 is the first with a commercial writer, and a run
+    # over 21 targets times four variants is worth knowing the price of before it becomes
+    # 67 languages times sixteen models. A commercial writer that is neither openai: nor
+    # gpt- needs --save-usage.
+    usage_path = init_usage_path(args.model, args.save_usage)
     total_usage = Usage()
 
     # Targets outer, variants inner. Every variant of one target sends the same original
@@ -918,14 +886,14 @@ def main():
                                                             output_lang_name)))
                     continue
                 print(f"  {name or 'new'}: ", end="", flush=True)
-                with track_usage() as get_usage:
-                    comment, text = two_stage(client_no_think, original_text,
-                                              translated_text, lang_name,
-                                              record["scores"], args.lang,
-                                              output_lang_name)
+                client_no_think.usage = Usage()
+                comment, text = two_stage(client_no_think, original_text,
+                                          translated_text, lang_name,
+                                          record["scores"], args.lang,
+                                          output_lang_name)
                 text = _clean(text)
-                if USAGE_PATH is not None:
-                    usage = get_usage()
+                if usage_path is not None:
+                    usage = client_no_think.usage
                     total_usage += usage
                     print(f"    {usage}")
                 path = out_dir / f"{name}.jsonl" if out_dir else (
@@ -967,10 +935,10 @@ def main():
             # llm7shi streams the reply as it arrives, so the label goes out first and the
             # text lands after it. Printing it again would show every phrase twice.
             print(f"  {name or 'new'}: ", end="", flush=True)
-            with track_usage() as get_usage:
-                text = _clean(client.call(prompts))
-            if USAGE_PATH is not None:
-                usage = get_usage()
+            client.usage = Usage()
+            text = _clean(client.call(prompts))
+            if usage_path is not None:
+                usage = client.usage
                 total_usage += usage
                 print(f"    {usage}")
 
@@ -985,10 +953,10 @@ def main():
                 with path.open("a", encoding="utf-8") as f:
                     f.write(json.dumps(result, ensure_ascii=False) + "\n")
 
-    if USAGE_PATH is not None:
-        append_usage(total_usage, args.model, USAGE_PATH)
+    if usage_path is not None:
+        append_usage(total_usage, args.model, usage_path)
         print(f"\nTotal usage: {total_usage}\n")
-        print_today_totals(USAGE_PATH)
+        print_today_totals(usage_path)
 
 
 def run_comments(parser, args):

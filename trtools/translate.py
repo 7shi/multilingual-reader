@@ -8,7 +8,8 @@ import csv
 import json
 import os
 import time
-from .llm import LLMClient, DEFAULT_RETRY_WAIT_SECONDS
+from llm7shi.usage import append_usage, print_today_totals
+from .llm import LLMClient, DEFAULT_RETRY_WAIT_SECONDS, init_usage_path
 from .statusline import StatusLine
 from .summary import load_summaries
 
@@ -39,6 +40,8 @@ def add_parser(subparsers):
                         help=f"Wait time on retry, in seconds (default: {DEFAULT_RETRY_WAIT_SECONDS}s)")
     parser.add_argument("--fix", action="store_true",
                         help="Retranslate only the empty lines in the existing output and rewrite the whole file (normal mode determines resume position from line count alone)")
+    parser.add_argument("--save-usage", action="store_true",
+                        help="Record usage regardless of model name (recorded by default for openai: and gpt- models)")
     parser.set_defaults(func=run)
 
 
@@ -123,6 +126,8 @@ def _build_summary_messages(summary_text):
 
 
 def run(args):
+    usage_path = init_usage_path(args.model, getattr(args, "save_usage", False))
+
     from_lang = args.from_lang
     to_lang = args.to_lang
     threshold = args.threshold
@@ -280,8 +285,15 @@ def run(args):
         out_f.writelines(all_lines[next_write_idx:])
     finally:
         out_f.close()
+        # Recorded even on failure, since the tokens were spent either way
+        if usage_path is not None:
+            append_usage(client.usage, args.model, usage_path)
 
     elapsed = time.time() - start_time
 
     ui.write(f"\nTranslation complete: {from_lang} -> {to_lang} ({args.output_file})\n")
     ui.write(f"Elapsed time: {elapsed:.1f}s ({elapsed/60:.1f}min)\n")
+    if usage_path is not None:
+        ui.write(f"Usage: {client.usage}\n")
+        if not getattr(args, "batch", False):
+            print_today_totals(usage_path)

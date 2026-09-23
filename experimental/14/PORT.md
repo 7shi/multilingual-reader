@@ -124,7 +124,7 @@ corrupt it silently, with no error and no visible seam. The existing `TRENDS.jso
   wording.
 - The comparison with the phrase in `TRENDS.jsonl`, which was how the experiment judged a
   wording.
-- `USAGE_PATH`: the summarizer is local, and nothing is billed.
+- Usage recording: the summarizer is local, and nothing is billed.
 
 ## 6. Checking the Port
 

@@ -14,12 +14,13 @@ import json
 import time
 from pathlib import Path
 
-from llm7shi.usage import Usage, append_usage, find_usage_file, print_today_totals
+from llm7shi.usage import Usage, append_usage, print_today_totals
 from typesafe_sdk import TypeSafeClient
 
 from .jev_criteria import (CRITERIA, CRITERION_IDS, JUDGE, LEVELS, POINTS_PER_LEVEL,
                            SCHEME_ID, SCOPE, build_questions, build_state)
 from .language import LANGUAGES
+from .llm import init_usage_path
 from .statusline import StatusLine
 
 # A version, not the `jev-latest` alias, so a model release cannot silently make later
@@ -187,7 +188,8 @@ def run(args):
 
     # A version is its own pin; only an alias needs --expect-model spelled out.
     expect_model = args.model if args.expect_model is None else args.expect_model
-    usage_path = find_usage_file()
+    # Jev is a paid API, so usage is always recorded
+    usage_path = init_usage_path(args.model, save_usage=True)
     total_usage = Usage()
     served_model = args.model
     run_start = time.monotonic()
