@@ -6,6 +6,10 @@ set, and the slope's stability, and it turns up one thing none of them asked abo
 penalises dropped speaker labels heavily, and the old evaluator barely notices them.**
 That, not the middle band, is what moves the ranking.
 
+**Status**: frozen, 2026-09-23. Section 4's question of size is not pursued: the deduction
+for a lost label is accepted as it stands, as the corpus's speaker-tag policy
+([examples/tr/README.md](../../examples/tr/README.md)) takes it.
+
 Every number here comes from [report.py](report.py); its full output is the appendix.
 
 ```bash
@@ -144,7 +148,8 @@ line is `dropped` or `swapped`:
 
 So Jev's direction is right, and the only open question is size: whether three points out
 of twenty is proportionate for one line in 99. That is a calibration question, not a
-defect, and it does not need settling before step 3.
+defect, and it does not need settling before step 3. **Not pursued:** the deduction is
+accepted as it stands.
 
 The glossary check is also a better yardstick for this than any evaluator: it is exact
 for `dropped` and `swapped`, costs nothing, and sees `off-glossary`, which Jev cannot.

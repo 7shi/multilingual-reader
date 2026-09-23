@@ -9,6 +9,8 @@ translations against the source.
 translation carries before it collapses, and the one pair out of order trades length for
 accuracy. Between translations that carry about the same amount, the gap is not an order.
 
+**Status**: frozen, 2026-09-23.
+
 ## The Ten
 
 The Jev column is the corpus run's `SCORES-jev.txt` (section 4.4 quotes the experiment's own

@@ -3,8 +3,8 @@
 Working document, and a companion to [PLAN.md](PLAN.md). It designed the corpus's own Jev
 evaluation path, and that path now exists, has been run over the whole corpus, and has
 been measured against the old evaluator ([REPORT.md](REPORT.md)), and the corpus has
-switched to it. The port is done; what is left is section 8's open questions, which go
-beyond it.
+switched to it. The port is done, and section 8's open questions, which go beyond it, are
+all resolved.
 The trend column, the other thing this file carried, is [experiment 14](../14/README.md),
 and everything about it — its port into `trtools` and its regeneration — is
 [that experiment's PORT.md](../14/PORT.md).
