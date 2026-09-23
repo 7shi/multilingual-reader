@@ -152,7 +152,7 @@ uv run trtools translate <input_file> -f <from_lang> -t <to_lang> -o <output> -m
 | `--fix` | false | Retranslate only the empty lines in the existing output. Normal mode determines resume position from line count alone, so it does not detect empty lines and simply continues; `--fix` rewrites the whole output file, retranslating only the empty spots |
 | `--save-usage` | false | Record token usage regardless of model name |
 
-Token usage is recorded for `openai:` and `gpt-` models, and for any model with `--save-usage`: one `usage.jsonl` entry per language, written even if the translation fails partway. Each language's usage is printed with the day's totals when it finishes. Local models record nothing.
+Token usage is recorded for `openai:` and `gpt-` models, and for any model with `--save-usage`: one `usage.jsonl` entry per language, written even if the translation fails partway. Each language's usage is printed with the day's totals for that model when it finishes. Local models record nothing.
 
 ### Examples
 
@@ -325,7 +325,7 @@ One record per language, appended and flushed as each finishes:
 - `scores` are levels, `0.0`-`4.0`, not the 0-20 points of `eval`. Multiply by 5 for that scale. They cannot be recomputed from `probabilities`, which the API returns rounded to two decimals
 - `rubric` identifies everything that determines a score — the questions, the level texts and the state's keys — as a hash. Reword any of it and the identifier changes
 - `seconds` is the processing time for that language, measured with `time.monotonic()`, not the API call's duration
-- Token usage is filed as one `usage.jsonl` entry per run
+- Token usage is filed as one `usage.jsonl` entry per run, followed by the day's totals for that model
 
 ### Behavior
 
@@ -677,7 +677,7 @@ uv run trtools batch <files...> --langs <lang...> -m <model> [options]
 | `-w`, `--retry-wait` | `3` | Retry wait time in seconds |
 | `--save-usage` | false | Record translation usage regardless of model name |
 
-Translation usage is recorded and printed per language as in [`translate`](#translate). After all phases finish, the total over every language translated and the day's totals are printed. Evaluation usage is not recorded.
+Translation usage is recorded and printed per language as in [`translate`](#translate). After all phases finish, the total over every language translated and the day's totals for the translation model are printed. Evaluation usage is not recorded.
 
 ### Output File Layout
 

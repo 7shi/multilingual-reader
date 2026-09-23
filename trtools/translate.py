@@ -295,5 +295,5 @@ def run(args):
     ui.write(f"Elapsed time: {elapsed:.1f}s ({elapsed/60:.1f}min)\n")
     if usage_path is not None:
         ui.write(f"Usage: {client.usage}\n")
-        print_today_totals(usage_path)
+        print_today_totals(usage_path, models=[args.model])
     return client.usage

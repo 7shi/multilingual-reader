@@ -75,7 +75,7 @@ def run(args):
     # The whole batch's translation usage, after everything else has finished
     if llm.USAGE_PATH is not None:
         print(f"\nTotal usage: {sum(usages, Usage())}\n")
-        print_today_totals(llm.USAGE_PATH)
+        print_today_totals(llm.USAGE_PATH, models=[args.model])
 
 
 def _run(args, usages):

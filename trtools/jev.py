@@ -240,4 +240,4 @@ def run(args):
     append_usage(total_usage, served_model, usage_path)
     print(f"\n{len(pending)} languages in {elapsed:.1f}s "
           f"({elapsed / len(pending):.2f}s each), {total_usage}\n")
-    print_today_totals(usage_path)
+    print_today_totals(usage_path, models=[served_model])
