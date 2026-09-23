@@ -34,10 +34,14 @@ evaluate:
 # The previous evaluator's totals, from evals/. Kept beside SCORES-jev.txt as its record;
 # not in all:, since evaluate no longer writes evals/.
 scores:
-	uv run trtools agg evals/*.json | tee SCORES.txt
+	uv run trtools agg evals/*.json > SCORES.txt.tmp
+	mv SCORES.txt.tmp SCORES.txt
+	cat SCORES.txt
 
 scores-jev:
-	uv run trtools agg --jev --prefix onde jev.jsonl | tee SCORES-jev.txt
+	uv run trtools agg --jev --prefix onde jev.jsonl > SCORES-jev.txt.tmp
+	mv SCORES-jev.txt.tmp SCORES-jev.txt
+	cat SCORES-jev.txt
 
 # The trend column, in its own file so the old scale's TRENDS.jsonl is never appended to.
 trends-jev:
