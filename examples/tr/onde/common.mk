@@ -1,14 +1,13 @@
 # Shared definitions for each onde model directory
 # Each Makefile defines only its model-specific part (TRANSLATOR) and includes this.
 
-.PHONY: all translate evaluate jev scores scores-jev trends trends-jev
+.PHONY: all translate evaluate scores scores-jev trends-jev
 
 DIR = ../../..
 include ../../common.mk
 
-EVALUATOR  = ollama:qwen3.6
-# Written out rather than following EVALUATOR: Jev writes no prose, so a summarizer
-# that followed it once it becomes the evaluator would have nothing to write with.
+# The evaluator is Jev, pinned in trtools/jev.py. The trend column's writer is a
+# generative model of its own, since Jev writes no prose.
 SUMMARIZER = ollama:qwen3.6
 OPTIONS   ?= --no-think
 
@@ -22,34 +21,25 @@ TRANSLATE = uv run trtools batch \
 	$(DIR)/onde-en.txt \
 	--langs $(LANGS)
 
-all: translate evaluate scores trends
+all: translate evaluate scores-jev trends-jev
 
 translate:
 	$(TRANSLATE) --tr-only -m $(TRANSLATOR)
 
+# Jev, one run per language, appended to jev.jsonl. evals/ and TRENDS.jsonl are the
+# previous evaluator's record (ollama:qwen3.6, three runs each) and are no longer written.
 evaluate:
-	$(TRANSLATE) --eval-only --evaluator $(EVALUATOR)
-
-# Jev evaluation, alongside evaluate: it writes jev.jsonl and leaves evals/ untouched.
-# One run per language; the model version is pinned in trtools/jev.py.
-jev:
 	uv run trtools jev $(DIR)/onde-en.txt --langs $(LANGS)
 
+# The previous evaluator's totals, from evals/. Kept beside SCORES-jev.txt as its record;
+# not in all:, since evaluate no longer writes evals/.
 scores:
 	uv run trtools agg evals/*.json | tee SCORES.txt
 
-# Totals from jev.jsonl, beside SCORES.txt until EVALUATOR switches over.
 scores-jev:
 	uv run trtools agg --jev --prefix onde jev.jsonl | tee SCORES-jev.txt
 
-trends:
-	uv run trtools trend evals/*.json -m $(SUMMARIZER) --no-think --sync README.md
-
-# The trend column on the Jev scale, in its own file: TRENDS.jsonl stays the old scale's
-# record. Takes the place of trends in all: when EVALUATOR switches over. TREND_SYNC=
-# writes TREND-jev.jsonl without touching README.md, for generating ahead of the switch.
-TREND_SYNC = --sync README.md
-
+# The trend column, in its own file so the old scale's TRENDS.jsonl is never appended to.
 trends-jev:
 	uv run trtools trend --jev jev.jsonl --original $(DIR)/onde-en.txt \
-		-m $(SUMMARIZER) -o TREND-jev.jsonl $(TREND_SYNC)
+		-m $(SUMMARIZER) -o TREND-jev.jsonl --sync README.md

@@ -8,15 +8,16 @@ Target languages: `CORE_LANGS` + `EXTRA_LANGS` defined in [common.mk](../../comm
 
 ## Running
 
-`make` runs translation, evaluation, and aggregation in one batch. Translations go to `tr/`, evaluations to `evals/`, and scores to `SCORES.txt`.
+`make` runs translation, evaluation, aggregation, and the trend column in one batch. Translations go to `tr/`, Jev's evaluations to `jev.jsonl`, scores to `SCORES-jev.txt`, and the trend column to `TREND-jev.jsonl`.
 
 - Translation model: <!-- TODO: model name -->
-- Evaluation model: qwen3.6
+- Evaluation model: jev-1.13.0
+- Trend column: written by qwen3.6 from Jev's scores
 - Settings: threshold=20, keep=5, no CoT, term file injection (`../../terms/*-en.{json,tsv}`)
 
 ## Translation quality overview
 
-After running `make`, append each language's quality trend here, based on the evaluation results (`SCORES.txt`) and manual content verification.
+The score is Jev's total, and the trend analysis is a phrase written by qwen3.6 to describe it (`trtools trend --jev`), as follows.
 
 Guide: high quality (90+), practical range (80-89), medium quality (60-79), critical defects (below 60)
 

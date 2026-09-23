@@ -11,7 +11,7 @@ Procedure for reflecting a newly added translation model in the comparison table
 When adding a new model to the benchmark, duplicate [onde/TEMPLATE/](onde/TEMPLATE/) as the base structure. `TEMPLATE/` is a directory reserved for the template and is not included in the `make all` target.
 
 1. Copy `TEMPLATE/` to a directory named after the target model
-2. In the copy's `Makefile`, change `TRANSLATOR` to the target model (everything else uses the common definitions in [onde/common.mk](onde/common.mk). The evaluator is fixed to `ollama:qwen3.6` to keep the scoring criteria consistent. `TRANSLATOR` isn't used by automated runs — it's a value for recording which model did the translation)
+2. In the copy's `Makefile`, change `TRANSLATOR` to the target model (everything else uses the common definitions in [onde/common.mk](onde/common.mk). The evaluator is Jev, pinned in `trtools/jev.py` and the same for every model to keep the scoring criteria consistent. `TRANSLATOR` isn't used by automated runs — it's a value for recording which model did the translation)
 3. Rewrite the `TODO` spots (title, translation model name) in the copy's `README.md`
 4. Add the target model's directory name to `MODELS` in the parent [onde/Makefile](onde/Makefile), and also add it to the directory list in [onde/README.md](onde/README.md) (`MODELS` is also the source data `generate_compare_rows.py` reads automatically for the comparison table's model columns)
 
@@ -28,15 +28,15 @@ Using the target model, manually create `onde/{model}/tr/onde-{lang}.txt` for ea
 
 ### 3.1 Running `make`
 
-Run `make` in `onde/{model}/`. If translated files are already in place in `tr/`, the translation phase is entirely skipped, and only evaluation, aggregation, and trend generation (`evaluate` → `scores` → `trends`) run. Evaluation logs are output to `evals/`, and scores to `SCORES.txt`.
+Run `make` in `onde/{model}/`. If translated files are already in place in `tr/`, the translation phase is entirely skipped, and only evaluation, aggregation, and trend generation (`evaluate` → `scores-jev` → `trends-jev`) run. Jev's evaluations are output to `jev.jsonl`, scores to `SCORES-jev.txt`, and the trend column to `TREND-jev.jsonl`. `evaluate` calls TypeSafe's API, which is billed.
 
 ### 3.2 Checking Scores and Evaluation Logs
-- Check the output scores (`SCORES.txt`).
-- Read the translations (text files under `tr/`) and evaluation logs (JSON files under `evals/`) to understand the specific issues noted for each language (terminology accuracy, unnatural literal translation, garbled text, hallucinations such as system-prompt or other-language contamination, etc.).
+- Check the output scores (`SCORES-jev.txt`).
+- Jev returns scores without prose, so there are no evaluation logs to read. Read the translations (text files under `tr/`) alongside each language's per-criterion levels in `jev.jsonl` and its trend column to understand the specific issues (terminology accuracy, unnatural literal translation, garbled text, speaker-tag dropout, hallucinations such as system-prompt or other-language contamination, etc.). `trends-jev` prints the comment each trend phrase was written from while it runs; it is not saved.
 
 ### 3.3 Updating `README.md`
 Update `onde/{model}/README.md` as follows.
-- **Check the "Translation Quality Overview"**: this table is auto-generated from the evaluation logs by `make` (the `trends` target) via `trtools trend --sync`, so no manual entry is needed. Check that the generated trend for each language is appropriate (see [ADD_LANG.md's 1.2.1](ADD_LANG.md#121-writing-policy-for-trend-analysis) for the writing policy).
+- **Check the "Translation Quality Overview"**: this table is auto-generated from Jev's scores by `make` (the `trends-jev` target) via `trtools trend --jev --sync`, so no manual entry is needed. Check that the generated trend for each language is appropriate (see [ADD_LANG.md's 1.2.1](ADD_LANG.md#121-writing-policy-for-trend-analysis) for the writing policy).
 - **Unify notation**: make sure the language notation is consistent throughout the file, avoiding inconsistencies with existing mentions (e.g. spelling variants of the same language).
 
 ### 3.4 Updating the Consolidated Results (`examples/tr/README.md`)
@@ -49,7 +49,7 @@ Once all directories have been updated, update the top-level `examples/tr/README
 
 #### 3.4.1 Updating the Comparison Table
 - Reflect the added model's column in the table under "Comparison Between Translation Models". Columns follow the order of `MODELS` in `onde/Makefile`, so if you added it to `MODELS` in step 1.4, no manual column editing is needed on the table side.
-- Enter each model's representative score (the number recorded in the base `SCORES.txt`), and bold (`**`) the **cell with the maximum score** in that row. If the maximum is tied, bold all tied cells.
+- Enter each model's representative score (the number recorded in the base `SCORES-jev.txt`), and bold (`**`) the **cell with the maximum score** in that row. If the maximum is tied, bold all tied cells.
 - Update the comparison table by running `make sync` in `examples/tr/`. The header row (each model name links to `onde/{model}/README.md`), separator row, and body rows are all rewritten together.
 - Then run `make compare` in `examples/tr/` to regenerate the per-model score-distribution boxplot (`compare/MODELS.png`).
 - See [ADD_LANG.md's 2.1](ADD_LANG.md#21-updating-the-comparison-table) for details on the generation process, including the row-ordering algorithm.

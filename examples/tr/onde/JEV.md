@@ -1,14 +1,18 @@
 # Jev Evaluation of the Corpus
 
-A record of the run that produced `{model}/jev.jsonl`. It evaluates nothing that
-`evals/` evaluates and replaces nothing: the corpus's published scores still come from
-`ollama:qwen3.6` over `evals/`, and switching that over is a separate decision
-([experimental/13/PLAN.md](../../../experimental/13/PLAN.md)).
+A record of the run that produced `{model}/jev.jsonl`. When it ran it replaced nothing:
+the corpus's published scores still came from `ollama:qwen3.6` over `evals/`, and switching
+that over was a separate decision
+([experimental/13/PLAN.md](../../../experimental/13/PLAN.md)). The corpus has since
+switched: `SCORES-jev.txt`, the trend column and the charts come from these files, and
+`evals/`, `SCORES.txt` and `TRENDS.jsonl` remain beside them as the previous evaluator's
+record.
 
 ## What Ran
 
 `make jev` from this directory, on 2026-09-22, evaluating all 16 models in
-`MODELS` order.
+`MODELS` order. That target has since gone: each model's `make evaluate` runs the same
+command now.
 
 | | |
 |---|---|
@@ -97,7 +101,8 @@ still describe the `evals/` scale. `trtools agg` cannot read `jev.jsonl` yet —
 discovery requires three runs per language — and `trtools trend` has no prose to summarise
 under an evaluator that returns none. Both are open items in
 [experimental/13/PORT.md](../../../experimental/13/PORT.md) and
-[experimental/14/PORT.md](../../../experimental/14/PORT.md).
+[experimental/14/PORT.md](../../../experimental/14/PORT.md). Both have since been done,
+with `trtools agg --jev` and `trtools trend --jev`.
 
 ## Appendix: What Jev Was Asked
 

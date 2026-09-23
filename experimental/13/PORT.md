@@ -2,32 +2,38 @@
 
 Working document, and a companion to [PLAN.md](PLAN.md). It designed the corpus's own Jev
 evaluation path, and that path now exists, has been run over the whole corpus, and has
-been measured against the old evaluator ([REPORT.md](REPORT.md)). What is left is to switch
-the evaluator over: sections 5, 7, 8 and 9.
+been measured against the old evaluator ([REPORT.md](REPORT.md)), and the corpus has
+switched to it. The port is done; what is left is section 8's open questions, which go
+beyond it.
 The trend column, the other thing this file carried, is [experiment 14](../14/README.md),
 and everything about it — its port into `trtools` and its regeneration — is
 [that experiment's PORT.md](../14/PORT.md).
 
-**Status**: implemented and run; work remains. `trtools jev` writes
-`examples/tr/onde/{model}/jev.jsonl`; all 16 translators were evaluated on 2026-09-22 and
-[examples/tr/onde/JEV.md](../../examples/tr/onde/JEV.md) records the run.
-`trtools agg --jev` totals them into `{model}/SCORES-jev.txt`, beside `SCORES.txt`, and
-[REPORT.md](REPORT.md) compares the two scales. `EVALUATOR`, `SCORES.txt` and the chart are
-untouched — that is section 7's step 3.
+**Status**: switched. `trtools jev` writes `examples/tr/onde/{model}/jev.jsonl`; all 16
+translators were evaluated on 2026-09-22 and
+[examples/tr/onde/JEV.md](../../examples/tr/onde/JEV.md) records the run. `common.mk`'s
+`evaluate:` now runs `trtools jev`, `scores-jev:` totals it into `SCORES-jev.txt`, and the
+comparison tables and charts are regenerated from it, in the same pass as
+[experiment 14's](../14/PORT.md) trend column. `SCORES.txt` is not replaced: it stays beside
+`SCORES-jev.txt`, with `evals/` and `TRENDS.jsonl`, as the old evaluator's record. The
+tools that read scores take `--jev` explicitly and read the old record without it;
+`examples/tr/Makefile` passes it.
 
-**What remains**, in order (section 7):
+**Done**, in order (section 7):
 
-1. ~~**`trtools agg --jev`**~~ — done (section 5.1).
-2. ~~**Measure the corpus on Jev**~~ — done: [REPORT.md](REPORT.md). Jev splits the top
-   four into two pairs but not within them, and what reorders the middle of the ranking
-   is lost speaker labels, which Jev penalises and the old evaluator does not see.
-3. **Switch and regenerate** — `EVALUATOR`, then `SCORES.txt` and the chart, in the same pass
-   as the trend column's switch in [experiment 14's PORT.md](../14/PORT.md) (section 9 is
-   what it touches).
+1. **`trtools agg --jev`** (section 5.1).
+2. **Measure the corpus on Jev**: [REPORT.md](REPORT.md). Jev splits the top four into two
+   pairs but not within them, and what reorders the middle of the ranking is lost speaker
+   labels, which Jev penalises and the old evaluator does not see.
+3. **Switch and regenerate**, in the same pass as the trend column's switch in
+   [experiment 14's PORT.md](../14/PORT.md) (section 9).
 
-Nothing else has to be settled before step 3: `TIERS` stays as it is (section 5.2),
-`build_state`'s wording stays as it is (section 5.3), and speaker labels need no decision
-(REPORT.md section 4).
+`TIERS` stayed as it is (section 5.2), `build_state`'s wording stayed as it is (section
+5.3), and speaker labels needed no decision (REPORT.md section 4).
+
+**What remains** is section 8: `core/` and `fr/` still on the old evaluator, the top pair
+Jev leaves tied, whether the ordering inside the old scheme's floor is real, and a second
+source text.
 
 ---
 
@@ -37,12 +43,10 @@ Nothing else has to be settled before step 3: `TIERS` stays as it is (section 5.
 |---|---|
 | `trtools/jev_criteria.py` | the scheme: five criteria, five levels, `JUDGE`/`SCOPE`, `build_state`, `build_questions`, `SCHEME_ID` |
 | `trtools/jev.py` | the `jev` subcommand, registered in `trtools/__main__.py` |
-| `examples/tr/onde/common.mk` | `jev:`, separate from `evaluate:` |
-| `examples/tr/onde/Makefile` | `jev` for all models, `jev-<model>` for one |
-| `examples/tr/onde/{model}/jev.jsonl` | 67 records, beside `evals/` rather than replacing it |
+| `examples/tr/onde/common.mk` | `evaluate:` runs `trtools jev`; `scores-jev:` runs `agg --jev` into `SCORES-jev.txt` |
+| `examples/tr/onde/{model}/jev.jsonl` | 67 records; `evals/` beside it is the old evaluator's record |
 | `trtools/aggregate.py` | `agg --jev --prefix onde`: totals from one `jev.jsonl`, one decimal |
-| `examples/tr/onde/common.mk` | `scores-jev:`, writing `SCORES-jev.txt` |
-| `examples/tr/onde/{model}/SCORES-jev.txt` | the Jev totals, beside `SCORES.txt` until step 3 |
+| `examples/tr/onde/{model}/SCORES-jev.txt` | the Jev totals, beside the old evaluator's `SCORES.txt` |
 | `experimental/13/report.py`, `REPORT.md` | step 2: the corpus on both scales |
 
 `--langs` takes `common.mk`'s `LANGS` rather than discovering languages from `tr/`: the
@@ -119,9 +123,10 @@ points, with run 1 alone reproducing the median of three at Pearson 0.998.
 `experimental/13/` itself is untouched and stays frozen, so a later edit to the corpus
 evaluator cannot change what this experiment claims to mean.
 
-## 5. Still Open
+## 5. Settled Before the Switch
 
-Known and unsolved. Each has to be settled before section 7's step 3, not during it.
+What was known to be unsolved before section 7's step 3, and how each was settled before it:
+5.1 fixed, 5.2 and 5.3 accepted as they are.
 
 ### 5.1 Evaluation is solved; aggregation is not
 
@@ -138,8 +143,8 @@ mixed `model` or `rubric`, a language twice, a missing criterion or an empty fil
 prefix is an argument because `jev.jsonl` records only the language. The total is
 `sum(levels) × POINTS_PER_LEVEL`, printed to **one decimal** as `onde-xx: 85.7` — an integer
 ties most of a model's languages on this scale, the reason experiment 14 keeps one decimal
-(its README section 4). `make scores-jev` writes it to `SCORES-jev.txt`; `SCORES.txt` is
-not touched until step 3.
+(its README section 4). `make scores-jev` writes it to `SCORES-jev.txt`, beside the old
+scale's `SCORES.txt`, which step 3 left in place.
 
 ### 5.2 `TIERS` is calibrated to the old scale — accepted, not fixed
 
@@ -265,7 +270,9 @@ section 7.
 
 1. **Scope.** This covers `examples/tr/onde/` only. `examples/tr/core/Makefile` and
    `examples/tr/fr/Makefile` also pin `ollama:qwen3.6`, and nothing here measured anything
-   about them. Proposed: leave them, revisit once `onde/` has settled.
+   about them. They were left as they are, and `onde/` has now switched, so this is the one
+   to take up next. It already shows: `examples/tr/README.md`'s core table stays on the old
+   scale, its onde column included, beside a comparison table on Jev's (section 9).
 2. **The top pair.** Jev ties `gpt-5.6-luna` and `union-alpha` as the old scheme does
    ([REPORT.md](REPORT.md) section 2), so the compression at the top — the yardstick's
    standing weakness — survives the migration. The migration is still worth it for PLAN.md
@@ -281,19 +288,29 @@ section 7.
 
 ## 9. Touch List
 
-Everything that names the evaluator or depends on its scale, for step 3. Not exhaustive for
-prose mentions. The trend column's files are
+Everything that names the evaluator or depends on its scale, and what step 3 did with it.
+Not exhaustive for prose mentions. The trend column's files are
 [experiment 14's PORT.md](../14/PORT.md) section 8.
 
 | File | What |
 |---|---|
-| `trtools/aggregate.py` | `agg --jev` (5.1) — done |
-| `examples/tr/onde/common.mk` | `EVALUATOR`, `evaluate:`, `scores:`; `scores:` takes over `scores-jev:`'s command, and `scores-jev:` goes |
-| Each `examples/tr/onde/*/SCORES-jev.txt` | Removed once `SCORES.txt` carries the same numbers |
-| `examples/tr/ADD_MODEL.md` | States the evaluator is fixed to `ollama:qwen3.6` "to keep the scoring criteria consistent" |
-| `examples/tr/onde/README.md` | Corpus-level description |
-| Each `examples/tr/onde/*/SCORES.txt` | Regenerated by `trtools agg` |
-| `examples/tr/generate_compare_rows.py` | `LINE_RE` matches `(\d+)` and `parse_scores` casts with `int()`: both must accept one decimal, or the regenerated `SCORES.txt` stops it. `TIERS` shifts meaning; see 5.2 — no change to the cuts, but the README wording around the tiers may need one |
-| `examples/tr/MODELS.svg`, `compare/MODELS.png` | Regenerated by `generate_compare_rows.py graph`; note the SVG carries a timestamp, so it shows a diff even when the chart is identical |
-| `examples/tr/onde/gpt-oss/Makefile` | Has its own `OR_EVALUATOR`; decide whether it follows |
-| `examples/tr/onde/qwen3.6/Makefile` | Has `ALT_EVALUATOR = ollama:gpt-oss:120b`; probably unaffected |
+| `trtools/aggregate.py` | `agg --jev` (5.1) |
+| `examples/tr/onde/common.mk` | `evaluate:` runs `trtools jev`; `all:` takes `scores-jev` in place of `scores`, which stays for regenerating the old record; `jev:`, `trends:` and `EVALUATOR` are gone |
+| `examples/tr/onde/Makefile` | The all-model `jev` target is gone; each directory's `make` covers it |
+| Each `examples/tr/onde/*/SCORES.txt`, `SCORES-jev.txt` | Both kept: the old scale's and Jev's, side by side, rather than one replacing the other |
+| `examples/tr/generate_compare_rows.py` | `--jev` reads `SCORES-jev.txt` and prints one decimal; without it, `SCORES.txt` as before. `TIERS` is unchanged (5.2) |
+| `examples/tr/plot_comparison.py` | `--jev` reads `TREND-jev.jsonl`; without it, `TRENDS.jsonl` as before |
+| `examples/tr/Makefile` | `sync` and `compare` pass `--jev` |
+| `examples/tr/README.md` | Evaluator named as Jev; the tiers' shift noted; the Notes column and the Google and failure-pattern sections rewritten on Jev's numbers, without restating what the tables show; speaker-tag policy updated with REPORT.md section 4 |
+| `examples/tr/MODELS.svg`, `compare/*.png` | Regenerated by `make compare` |
+| `examples/tr/ADD_MODEL.md`, `ADD_LANG.md` | Evaluator, targets and what to read, now that there are no evaluation logs |
+| `examples/tr/onde/README.md`, `JEV.md`, each model's `README.md`, `TEMPLATE/` | Evaluator and output files |
+| `examples/tr/onde/gpt-oss/Makefile` | Its past OpenRouter experiment pins `EVALUATOR = ollama:qwen3.6` itself, since `common.mk` no longer defines it |
+| `examples/tr/onde/qwen3.6/Makefile` | `ALT_EVALUATOR` is its own; unaffected |
+
+`examples/tr/README.md`'s core table was found overwritten by the comparison table: the
+sync matched the first header starting `| Language | `, which was the core table's. The sync
+now matches the comparison header by its first link, the core table has a sync of its own,
+and it is restored. `core/` is still on the old evaluator (section 8 item 1), so the table
+takes its onde column from `gemma4`'s `SCORES.txt`, on the same scale, with or without
+`--jev`.

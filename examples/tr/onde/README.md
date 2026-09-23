@@ -19,7 +19,7 @@ Translates and evaluates the onde text with each model.
 - [gemini-3-flash](gemini-3-flash/)
 - [gemini-3.7-flash](gemini-3.7-flash/)
 
-Every model has also been evaluated by TypeSafe's Jev, in one pass over all 67 languages, with the results in `{model}/jev.jsonl`. The corpus's published scores are unaffected; see [JEV.md](JEV.md) for that run and what it measured.
+Every model is evaluated by TypeSafe's Jev, one run per language, into `{model}/jev.jsonl`; `SCORES-jev.txt` and the trend column (`TREND-jev.jsonl`) come from it. The evaluator was previously `ollama:qwen3.6` with the median of three runs, and its record remains beside them as `{model}/evals/`, `SCORES.txt`, and `TRENDS.jsonl`. `generate_compare_rows.py` and `plot_comparison.py` read that record unless given `--jev`, which `examples/tr/Makefile` passes. See [JEV.md](JEV.md) for the run over the corpus and what it measured.
 
 "onde" means "wave" in French. Here it's used in the sense of "wave" as a physics term.
 

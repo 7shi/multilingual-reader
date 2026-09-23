@@ -9,6 +9,8 @@ include ../common.mk
 
 OR_TRANSLATOR = openrouter:openai/gpt-oss-120b:free
 OR_EVALUATOR  = openrouter:qwen/qwen3.6-35b-a3b
+# The corpus evaluator at the time; onde's common.mk now evaluates with Jev.
+EVALUATOR     = ollama:qwen3.6
 OR = openrouter
 
 openrouter: LANGS = eo hi te kn tr et sr ko

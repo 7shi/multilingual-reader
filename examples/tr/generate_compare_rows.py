@@ -32,21 +32,31 @@ def load_onde_models() -> tuple[str, ...]:
 
 
 ONDE_MODELS = load_onde_models()
-ONDE_SCORE_FILES = {
-    model: ROOT / "onde" / model / "SCORES.txt" for model in ONDE_MODELS
-}
+# --jev reads Jev's totals; without it, the previous evaluator's (qwen3.6, median of three),
+# which stay beside them as the old scale's record. Set in main().
+JEV = False
+
+
+def onde_score_file(model: str, jev: bool | None = None) -> Path:
+    jev = JEV if jev is None else jev
+    return ROOT / "onde" / model / ("SCORES-jev.txt" if jev else "SCORES.txt")
+
+
 CORE_TOPICS = ("finetuning", "transformer", "momentum")
 CORE_SCORE_FILE = ROOT / "core" / "SCORES.txt"
 CORE_ONDE_MODEL = "gemma4"
 CORE_CODES = ("ja", "zh", "es", "fr", "de")
-LINE_RE = re.compile(r"^([a-z0-9.]+)-([a-z0-9.]+):\s+(\d+)$")
+LINE_RE = re.compile(r"^([a-z0-9.]+)-([a-z0-9.]+):\s+(\d+(?:\.\d+)?)$")
 README_FILE = ROOT / "README.md"
 GRAPH_OUTPUT = ROOT / "compare" / "MODELS.png"
 GRAPH_SVG_OUTPUT = ROOT / "MODELS.svg"
 STATS_HEADER = "| Model | Mean | Median | Stdev | Notes |"
+# The compare header is matched with its first link, since the core table's header also
+# starts with "| Language | " and precedes it in README.md.
 SYNC_HEADERS = {
-    "compare": "| Language | ",
+    "compare": "| Language | [",
     "stats": STATS_HEADER,
+    "core": "| Language | finetuning |",
 }
 
 
@@ -54,12 +64,12 @@ SYNC_HEADERS = {
 class CompareRow:
     code: str
     display_name: str
-    scores: tuple[int, ...]
+    scores: tuple[float, ...]
     sort_key: tuple
 
 
-def parse_scores(path: Path) -> dict[tuple[str, str], int]:
-    scores: dict[tuple[str, str], int] = {}
+def parse_scores(path: Path) -> dict[tuple[str, str], float]:
+    scores: dict[tuple[str, str], float] = {}
     for raw_line in path.read_text(encoding="utf-8").splitlines():
         line = raw_line.strip()
         if not line:
@@ -68,19 +78,22 @@ def parse_scores(path: Path) -> dict[tuple[str, str], int]:
         if match is None:
             raise ValueError(f"unexpected line in {path}: {line}")
         prefix, code, score = match.groups()
-        scores[(prefix, code)] = int(score)
+        scores[(prefix, code)] = float(score)
     if not scores:
         raise ValueError(f"no scores found in {path}")
     return scores
 
 
-def format_score(score: int, max_score: int) -> str:
-    return f"**{score}**" if score == max_score else str(score)
+def format_score(score: float, max_score: float) -> str:
+    # One decimal for Jev: its totals are not integers, and rounding them would tie most
+    # of a model's languages. The previous evaluator's are integers.
+    text = f"{score:.1f}" if JEV else f"{score:g}"
+    return f"**{text}**" if score == max_score else text
 
 
 def load_compare_rows() -> list[CompareRow]:
     per_model_scores = {
-        model: parse_scores(path) for model, path in ONDE_SCORE_FILES.items()
+        model: parse_scores(onde_score_file(model)) for model in ONDE_MODELS
     }
     code_sets = {
         model: {code for prefix, code in scores if prefix == "onde"}
@@ -235,9 +248,19 @@ def plot_model_stats(top: int | None = None) -> None:
         )
 
 
+def render_core_header() -> list[str]:
+    return [
+        "| Language | finetuning | transformer | momentum | onde | Average |",
+        "| --- | ---: | ---: | ---: | ---: | ---: |",
+    ]
+
+
 def render_core_rows() -> list[str]:
+    # core/ is still scored by the previous evaluator, so its onde column is too,
+    # whatever --jev says.
     core_scores = parse_scores(CORE_SCORE_FILE)
-    onde_scores = parse_scores(ONDE_SCORE_FILES[CORE_ONDE_MODEL])
+    onde_file = onde_score_file(CORE_ONDE_MODEL, jev=False)
+    onde_scores = parse_scores(onde_file)
 
     missing_names = sorted(code for code in CORE_CODES if code not in LANG_NAMES)
     if missing_names:
@@ -256,9 +279,7 @@ def render_core_rows() -> list[str]:
 
         onde_key = ("onde", code)
         if onde_key not in onde_scores:
-            raise ValueError(
-                f"missing onde-{code} in {ONDE_SCORE_FILES[CORE_ONDE_MODEL]}"
-            )
+            raise ValueError(f"missing onde-{code} in {onde_file}")
         onde_score = onde_scores[onde_key]
         average = (sum(topic_scores) + onde_score) / 4
         name = LANG_NAMES[code]
@@ -270,8 +291,8 @@ def render_core_rows() -> list[str]:
     rendered = []
     for average, code, topic_scores, onde_score, name in rows:
         rendered.append(
-            f"| {name} | {topic_scores[0]} | {topic_scores[1]} | "
-            f"{topic_scores[2]} | {onde_score} | {average:.2f} |"
+            f"| {name} | {topic_scores[0]:g} | {topic_scores[1]:g} | "
+            f"{topic_scores[2]:g} | {onde_score:g} | {average:.2f} |"
         )
     return rendered
 
@@ -344,32 +365,47 @@ def main() -> int:
     parser = argparse.ArgumentParser(
         description="Generate README rows for examples/tr score tables."
     )
+    # On every subcommand, so it can follow the subcommand's name like --sync does.
+    scale = argparse.ArgumentParser(add_help=False)
+    scale.add_argument(
+        "--jev",
+        action="store_true",
+        help="read Jev's totals (SCORES-jev.txt) instead of the previous evaluator's "
+             "(SCORES.txt)",
+    )
     subparsers = parser.add_subparsers(dest="section")
 
-    compare_parser = subparsers.add_parser("compare", help="onde comparison table (default)")
+    compare_parser = subparsers.add_parser("compare", help="onde comparison table (default)", parents=[scale])
     compare_parser.add_argument(
         "--sync",
         action="store_true",
         help="write the generated rows into README.md between the section's markers",
     )
-    subparsers.add_parser("core", help="core language table")
-    subparsers.add_parser("all", help="compare + stats + core tables")
-    graph_parser = subparsers.add_parser("graph", help="generate compare/MODELS.png (score boxplot per model)")
+    core_parser = subparsers.add_parser("core", help="core language table", parents=[scale])
+    core_parser.add_argument(
+        "--sync",
+        action="store_true",
+        help="write the generated rows into README.md's core table",
+    )
+    subparsers.add_parser("all", help="compare + stats + core tables", parents=[scale])
+    graph_parser = subparsers.add_parser("graph", help="generate compare/MODELS.png (score boxplot per model)", parents=[scale])
     graph_parser.add_argument(
         "--top",
         type=int,
         default=None,
         help="use only each model's top-N languages by score (writes compare/MODELS<N>.png)",
     )
-    classify_parser = subparsers.add_parser("classify", help="classify languages by score tier")
+    classify_parser = subparsers.add_parser("classify", help="classify languages by score tier", parents=[scale])
     classify_parser.add_argument(
         "--overall",
         action="store_true",
         help="show overall best-score classification instead of per-model",
     )
 
-    parser.set_defaults(section="compare", sync=False, overall=False)
+    parser.set_defaults(section="compare", sync=False, overall=False, jev=False)
     args = parser.parse_args()
+    global JEV
+    JEV = args.jev
 
     if args.section == "graph":
         try:
@@ -384,7 +420,7 @@ def main() -> int:
             compare_lines = render_compare_header(linked=args.sync) + render_compare_rows()
             stats_lines = render_stats_header() + render_stats_rows()
         elif args.section == "core":
-            lines = render_core_rows()
+            lines = render_core_header() + render_core_rows()
         elif args.section == "classify":
             lines = render_classify_rows(overall=args.overall)
         else:
@@ -398,6 +434,7 @@ def main() -> int:
                 *render_stats_rows(),
                 "",
                 "<!-- core -->",
+                *render_core_header(),
                 *render_core_rows(),
             ]
     except ValueError as exc:

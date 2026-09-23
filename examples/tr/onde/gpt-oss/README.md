@@ -6,91 +6,90 @@ Target languages: `CORE_LANGS` + `EXTRA_LANGS` defined in [common.mk](../../comm
 
 ## Running
 
-`make` runs translation, evaluation, and aggregation in one batch.
+`make` runs translation, evaluation, aggregation, and the trend column in one batch. Translations go to `tr/`, Jev's evaluations to `jev.jsonl`, scores to `SCORES-jev.txt`, and the trend column to `TREND-jev.jsonl`. `evals/`, `SCORES.txt`, and `TRENDS.jsonl` are the record of the previous evaluator, qwen3.6.
 
 - Translation model: `gpt-oss:120b` (Ollama)
-- Evaluation model: `qwen3.6` (Ollama)
+- Evaluation model: jev-1.13.0 (qwen3.6 before it)
+- Trend column: written by qwen3.6 from Jev's scores
 - Settings: threshold=20, keep=5, no CoT, term file injection (`../../terms/*-en.{json,tsv}`)
-
-**Output**: translations `tr/`, evaluations `evals/`, scores `SCORES.txt`
 
 **Note**: `gpt-oss:120b` cannot disable CoT (thinking process) output, so translation takes a very long time. Running translation in this directory is intended purely for quality verification.
 
 ## Translation quality overview
 
-The quality trend for each language, based on the evaluation results (`SCORES.txt`) and manual content verification, is as follows.
+The score is Jev's total, and the trend analysis is a phrase written by qwen3.6 to describe it (`trtools trend --jev`), as follows.
 
 Guide: high quality (90+), practical range (80-89), medium quality (60-79), critical defects (below 60)
 
 | Language | Score | Trend Analysis |
 | --- | ---: | --- |
-| Spanish | 98 | Minor missing speaker tags |
-| French | 97 | Professional quality with occasional missing speaker tags |
-| Catalan | 96 | High quality with missing speaker tags |
-| Italian | 95 | Inconsistent speaker attribution formatting |
-| Japanese | 94 | Inconsistent omission of speaker tags |
-| Vietnamese | 93 | Missing speaker labels disrupts flow |
-| Portuguese | 90 | Speaker labels dropped; technical accuracy high |
-| Swedish | 89 | Missing speaker tags and minor grammatical errors |
-| Ukrainian | 88 | Missing speaker tags and literal phrasing |
-| Dutch | 86 | Accurate content marred by formatting and fluency issues |
-| Arabic | 83 | Minor fluency and formatting issues |
-| German | 83 | Frequent omission of speaker attribution tags |
-| Turkish | 83 | Minor formatting and phrasing issues |
-| Afrikaans | 81 | Missing speaker labels disrupt dialogue format |
-| Bulgarian | 80 | Missing speaker attribution and formatting inconsistencies |
-| Czech | 80 | Missing speaker tags and minor errors |
-| Galician | 80 | Missing speaker labels and gender errors |
-| Russian | 79 | Systematic omission of speaker tags |
-| Chinese | 79 | Missed speaker attribution tags |
-| Indonesian | 78 | Structural formatting errors |
-| Danish | 77 | Missing speaker tags and grammatical errors |
-| Hungarian | 77 | Structural flaws and grammatical errors |
-| Nepali | 77 | Systemic grammatical errors and typos |
-| Macedonian | 75 | Lack of proofreading and structural errors |
-| Persian | 74 | Missing speaker tags disrupt flow |
-| Interlingua | 73 | Inconsistencies between evaluations on quality and errors |
-| Slovene | 73 | Significant formatting errors and grammatical fractures |
-| Slovak | 71 | Critical omission of speaker labels and minor typos |
-| Urdu | 70 | Inconsistent scientific transliteration and terminology |
-| Belarusian | 69 | Notable terminology errors and formatting issues |
-| Malay | 69 | Significant terminology errors and missing speaker labels |
-| Norwegian | 69 | Missing speaker tags and awkward calques |
-| Polish | 67 | Missing speaker labels |
-| Tagalog | 67 | Significant linguistic and grammatical flaws |
-| Greek | 66 | Significant terminology and structural errors |
-| Azerbaijani | 65 | Missing speaker tags disrupt dialogue format |
-| Hebrew | 65 | Missing speaker labels and grammatical errors |
-| Korean | 65 | Missing speaker tags disrupt readability |
-| Finnish | 63 | Missing speaker labels and typos |
-| Latvian | 61 | Missing speaker labels and grammatical errors |
-| Serbian | 61 | Missing speaker tags and formatting issues |
-| Marathi | 60 | Pervasive orthographic errors |
-| Swahili | 58 | Significant scientific terminology errors |
-| Esperanto | 57 | Missing dialogue speaker tags |
-| Croatian | 57 | Severe formatting and structural defects |
-| Romanian | 56 | Significant structural and formatting defects |
-| Malayalam | 54 | Pervasive orthographic and grammatical errors |
-| Albanian | 54 | Missing speaker tags and grammatical errors |
-| Estonian | 53 | Severe grammatical errors and terminology inaccuracies |
-| Welsh | 52 | severe grammatical and terminology flaws |
-| Mongolian | 52 | Heavy machine-translation artifacts and terminology errors |
-| Bengali | 50 | Severe orthographic and grammatical errors |
-| Kannada | 49 | pervasive linguistic and technical defects |
-| Lithuanian | 48 | Major structural and terminological defects |
-| Basque | 45 | Systematic grammatical errors and missing speaker labels |
-| Icelandic | 45 | Grammatical errors and awkward calques |
-| Thai | 42 | Pervasive orthographic errors throughout |
-| Armenian | 41 | Frequent lexical and critical mistranslations |
-| Hindi | 39 | Major typographical and formatting defects |
-| Telugu | 39 | Severe mixed-script corruption and pervasive grammatical errors |
-| Burmese | 38 | Severe spelling errors |
-| Sinhala | 33 | Pervasive orthographic errors and unnatural phrasing |
-| Khmer | 32 | Systematic orthographic errors and rigid syntax |
-| Georgian | 31 | Severe grammatical and structural errors |
-| Tamil | 30 | Severe orthographic and grammatical errors |
-| Irish | 29 | Major grammatical and terminology defects |
-| Lao | 23 | Critical terminology errors and mixed language |
+| French | 78.3 | Severe structural and formatting errors |
+| Spanish | 77.8 | Frequent misattribution of dialogue lines |
+| Arabic | 74.0 | Mechanical dialogue attribution errors |
+| Russian | 71.6 | Severe speaker misalignment |
+| Romanian | 71.3 | Severe structural and editing errors |
+| Japanese | 71.2 | Inconsistent dialogue attribution |
+| Swedish | 71.2 | Inconsistent speaker tags and missing attributions |
+| Hungarian | 70.5 | Structural chaos and grammatical errors |
+| Ukrainian | 70.4 | Significant structural integrity issues with speaker labels |
+| Thai | 70.0 | Inconsistent speaker attribution |
+| Tagalog | 69.9 | Severe terminology errors and unnatural phrasing |
+| Catalan | 69.4 | Missing speaker labels |
+| Bulgarian | 68.7 | Severe dialogue attribution loss |
+| Slovak | 68.7 | Major formatting breakdown and awkward syntax |
+| Chinese | 68.3 | Inconsistent dialogue tagging |
+| Czech | 68.0 | Structural instability and grammatical errors |
+| Polish | 68.0 | Missing speaker labels |
+| Belarusian | 67.5 | Terminological inaccuracies and unnatural phrasing |
+| Galician | 67.5 | Incomplete and structurally defective translation |
+| Vietnamese | 67.0 | Broken speaker attribution and formatting errors |
+| Hebrew | 66.8 | Flawed dialogue attribution and translation accuracy |
+| Dutch | 66.8 | Severe structural errors and inconsistencies |
+| Slovene | 66.8 | Severe structural and formatting defects |
+| Indonesian | 66.2 | Severe formatting errors and structural flaws |
+| Korean | 66.2 | Inconsistent speech levels and formatting errors |
+| Macedonian | 66.2 | Severe structural and grammatical defects |
+| Malay | 66.2 | Lack of dialogue speaker labels |
+| Icelandic | 65.8 | Systematic failure to translate psi squared |
+| Italian | 65.6 | Missing speaker tags |
+| Lithuanian | 65.5 | Severe structural and editorial failures |
+| Turkish | 65.5 | Critical dialogue attribution errors |
+| Portuguese | 65.3 | severe structural and coherence errors |
+| German | 65.2 | Broken speaker attribution |
+| Norwegian | 65.2 | Missing speaker attributions |
+| Finnish | 64.8 | Catastrophic structural and terminological errors |
+| Welsh | 64.7 | Critical mechanical failures and pervasive linguistic errors |
+| Serbian | 64.3 | Broken dialogue structure and repetition |
+| Tamil | 64.1 | Unnatural syntax and awkward interjections |
+| Hindi | 63.9 | Missing speaker labels and untranslated English words |
+| Persian | 63.8 | Broken dialogue structure and missing content |
+| Latvian | 63.8 | Critical grammatical errors and unnatural phrasing |
+| Albanian | 63.8 | Severe structural and grammatical flaws |
+| Estonian | 63.6 | Missing speaker tags and omissions |
+| Urdu | 63.5 | Missing speaker attribution |
+| Esperanto | 63.2 | Missing speaker labels and grammar errors |
+| Armenian | 62.9 | Lexical errors reversing meaning |
+| Bengali | 62.7 | Severe fluency and structural defects |
+| Swahili | 61.9 | Severe systematic errors rendering text unintelligible |
+| Danish | 61.5 | Missing speaker labels and untranslated fillers |
+| Azerbaijani | 60.9 | Unattributed dialogue lines |
+| Khmer | 60.9 | Severe language mixing and script corruption |
+| Basque | 60.8 | Severe speaker labeling inconsistencies |
+| Kannada | 60.5 | Severe fluency and terminology issues |
+| Afrikaans | 60.1 | Severe structural defects and missing content |
+| Interlingua | 60.0 | Inconsistent dialogue tags |
+| Marathi | 60.0 | Severe speaker attribution and script errors |
+| Greek | 59.5 | Severe dialogue formatting breakdown |
+| Nepali | 59.1 | Inconsistent speaker attribution |
+| Malayalam | 59.0 | Systematic text loss and missing dialogue |
+| Burmese | 59.0 | Severe accuracy and coherence issues |
+| Mongolian | 58.8 | Structural breakdowns and grammar errors |
+| Croatian | 57.8 | Missing content and intrusive meta-text |
+| Irish | 54.6 | Systematic misuse of vocabulary and severe grammatical errors |
+| Sinhala | 52.9 | Severe degradation and unreadability |
+| Georgian | 52.7 | Unintelligible and broken |
+| Telugu | 50.7 | Severe mixed-language and formatting errors |
+| Lao | 50.4 | Severe lexical and grammatical errors |
 
 Overall, contrary to the model's scale, translation of low-resource languages was extremely unstable, with frequent multilingual contamination, leakage of situational awareness, and speaker-tag dropout.
 

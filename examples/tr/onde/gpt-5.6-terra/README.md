@@ -6,84 +6,85 @@ Target languages: `CORE_LANGS` + `EXTRA_LANGS` defined in [common.mk](../../comm
 
 ## Running
 
-`make` runs translation, evaluation, and aggregation in one batch. Translations go to `tr/`, evaluations to `evals/`, and scores to `SCORES.txt`.
+`make` runs translation, evaluation, aggregation, and the trend column in one batch. Translations go to `tr/`, Jev's evaluations to `jev.jsonl`, scores to `SCORES-jev.txt`, and the trend column to `TREND-jev.jsonl`. `evals/`, `SCORES.txt`, and `TRENDS.jsonl` are the record of the previous evaluator, qwen3.6.
 
 - Translation model: gpt-5.6-terra
-- Evaluation model: qwen3.6
+- Evaluation model: jev-1.13.0 (qwen3.6 before it)
+- Trend column: written by qwen3.6 from Jev's scores
 - Settings: threshold=20, keep=5, no CoT, term file injection (`../../terms/*-en.{json,tsv}`)
 
 ## Translation quality overview
 
-After running `make`, append each language's quality trend here, based on the evaluation results (`SCORES.txt`) and manual content verification.
+The score is Jev's total, and the trend analysis is a phrase written by qwen3.6 to describe it (`trtools trend --jev`), as follows.
 
 Guide: high quality (90+), practical range (80-89), medium quality (60-79), critical defects (below 60)
 
 | Language | Score | Trend Analysis |
 | --- | ---: | --- |
-| German | 98 | Slightly literal spoken-phrasing choices |
-| Danish | 97 | Minor editorial artifact and phrasing glitches |
-| Spanish | 97 | Minor speaker name typos |
-| Persian | 97 | Outstanding academic accuracy and natural flow |
-| Georgian | 97 | Flawless publication-ready physics translation |
-| Portuguese | 97 | Minor typo 'Camian' instead of 'Camille' |
-| Hebrew | 96 | Minor typographical issues and inconsistencies |
-| Hungarian | 96 | Excellent translation with minor formatting issues |
-| Japanese | 96 | Minor typo in speaker name consistency |
-| Russian | 96 | Exemplary scientific and conversational quality |
-| Ukrainian | 96 | Excellent quality with minor stylistic flaws |
-| Afrikaans | 95 | Flawless scientific precision and natural tone |
-| Macedonian | 95 | Minor stylistic issues and literal phrasing |
-| Nepali | 95 | High accuracy with minor stylistic flaws |
-| Slovene | 95 | Minor literal phrasing and one typo |
-| Bengali | 93 | High quality with minor terminology slips |
-| Urdu | 92 | High accuracy with minor terminology inconsistencies |
-| Bulgarian | 91 | Single corrupted encoding artifact |
-| Greek | 91 | Minor non-standard physics terminology |
-| Galician | 91 | Minor typos and terminology issues |
-| Armenian | 91 | Minor literal phrasing affects fluency |
-| Malayalam | 91 | Minor stylistic refinements needed for fluency |
-| Marathi | 91 | Minor grammatical and typographical errors |
-| Romanian | 91 | Minor typos and awkward phrasing |
-| Serbian | 91 | Minor typos in names and terms |
-| Turkish | 91 | Minor structural artifact disrupts flow |
-| Burmese | 90 | Balanced technical accuracy with accessible tone |
-| Latvian | 89 | Minor terminology inconsistencies and typos |
-| Azerbaijani | 88 | Minor terminological and grammatical errors |
-| Belarusian | 88 | Minor terminology and stylistic issues |
-| Mongolian | 88 | Minor lexical calques impact fluency |
-| Telugu | 88 | Minor terminology inconsistencies and anglicized phrasing |
-| Thai | 86 | Mixed encoding and embedded English notes |
-| Lithuanian | 85 | Uncleaned translator notes and typos |
-| Italian | 83 | Critical mixed-language structural artifacts |
-| Hindi | 82 | Minor structural glitches and slightly literal phrasing |
-| Khmer | 82 | Inconsistent physics terminology and formatting |
-| Tamil | 81 | Minor terminology inconsistencies and copy-paste artifacts |
-| Kannada | 80 | Inconsistent technical accuracy and terminology |
-| Slovak | 80 | Critical structural artifact disrupts coherence |
-| Swedish | 79 | Encoding artifacts and typos |
-| Interlingua | 78 | Structural artifact and literal phrasing |
-| Albanian | 77 | Corrupted structural artifact disrupts flow |
-| Esperanto | 76 | Terminology errors and non-standard phrasing |
-| Czech | 74 | Embedded meta-commentary artifact |
-| Estonian | 74 | Notable multilingual intrusion and terminology errors |
-| French | 74 | Critical structural artifact and line omissions |
-| Sinhala | 74 | Mixed-language typographical corruption |
-| Chinese | 73 | Corrupted mixed-language artifacts |
-| Basque | 71 | Critical structural defect: unedited English text artifact |
-| Tagalog | 71 | Non-standard terminology and unnatural phrasing |
-| Polish | 69 | Critical structural defects and editing artifacts |
-| Catalan | 66 | Untranslatable English meta-comments disrupt structure |
-| Indonesian | 64 | Mixed-language artifact and structural defects |
-| Malay | 61 | Critical structural glitch and inaccurate physics terminology |
-| Finnish | 58 | Corrupted mixed-script artifacts disrupt readability |
-| Icelandic | 56 | Persistent mixed-language artifact and grammatical errors |
-| Irish | 54 | Critical structural defect and lexical errors |
-| Vietnamese | 50 | Unremoved English meta-commentary |
-| Swahili | 49 | Critical terminology errors and structural defects |
-| Lao | 45 | English meta-commentary disrupts text |
-| Arabic | 41 | Mixed-language meta-text intrusion disrupts flow |
-| Korean | 39 | Random non-Korean characters disrupt fluency |
-| Norwegian | 37 | Severe structural corruption from injected meta-prompts and mixed languages |
-| Welsh | 32 | Critical structural defect: mixed-language spam insertion |
-| Dutch | 24 | Critical structural artifacts disrupt narrative flow |
-| Croatian | 9 | Mixed-language artifacts and editorial notes |
+| Russian | 91.5 | Register consistency |
+| Latvian | 90.8 | Minor stylistic rigidity in colloquial exchanges |
+| Persian | 90.6 | Subtle stylistic nuances |
+| Macedonian | 90.6 | Swapped speaker names in one exchange |
+| Ukrainian | 90.2 | Minor stylistic awkwardness in gendered terms and flow |
+| Belarusian | 88.8 | Occasional literal phrasing reduces fluency |
+| Japanese | 88.4 | Minor speaker name inconsistency |
+| Nepali | 84.0 | Lacks naturalness and idiomatic fluency |
+| Bengali | 83.0 | Awkward phrasing and stiff dialogue |
+| Hebrew | 81.9 | Inconsistent transliteration of "Luc" |
+| Basque | 81.6 | Intrusive meta-commentary artifacts |
+| Malayalam | 81.4 | Translationese style disrupts naturalness |
+| Thai | 80.7 | Mixed-language script errors |
+| Czech | 80.2 | Mixed-language meta-commentary |
+| Georgian | 80.0 | Reads rigidly and literally |
+| Urdu | 79.8 | Rigid literal sentence structure |
+| German | 79.7 | Awkward fragmented sentences and literal phrasing |
+| Burmese | 79.7 | Slightly stiff phrasing |
+| Greek | 79.4 | Mechanical errors and typos |
+| Slovene | 78.8 | Imprecise physics terminology like delček |
+| Marathi | 77.5 | Incomplete proofreading of transliterated names |
+| Bulgarian | 77.2 | Critical corrupted text encoding error |
+| Danish | 77.0 | Literal phrasing and visible meta-commentary disrupt flow |
+| Armenian | 77.0 | Stiff phrasing and punctuation issues |
+| Kannada | 76.9 | Inconsistent technical terminology |
+| Portuguese | 76.0 | Speaker name typo and stiff phrasing |
+| Serbian | 75.7 | Hallucinated character name |
+| Italian | 75.2 | Mixed language artifacts and typos |
+| Estonian | 74.9 | Unexplained Georgian script insertion |
+| Romanian | 74.8 | Accidental insertion of English labels into the Romanian text |
+| Slovak | 74.5 | Severe text generation glitches and awkward phrasing |
+| Galician | 74.3 | Unreadable mixed-language text and typos |
+| French | 74.2 | severe formatting breaks and omissions |
+| Spanish | 74.0 | Missing dialogue and name typos |
+| Hindi | 74.0 | Mixed-language fragments and formatting errors |
+| Khmer | 73.7 | Inconsistent speaker attribution |
+| Polish | 73.6 | Unexplained meta-tags and untranslated English |
+| Albanian | 73.6 | Contains non-Albanian text fragment |
+| Catalan | 73.3 | Structural defects and corrupted text |
+| Esperanto | 73.3 | Significant mechanical and editing errors |
+| Tamil | 72.8 | Intrusive Bengali script fragment |
+| Vietnamese | 72.8 | Missing dialogue lines and translator notes |
+| Lao | 72.7 | Untranslated meta-commentary interrupts dialogue |
+| Indonesian | 72.5 | Corrupted text fragments disrupt readability |
+| Dutch | 72.5 | Severe artifact insertion breaking fluency |
+| Arabic | 71.8 | Missing segment and meta-text |
+| Icelandic | 71.8 | Mixed language artifacts and broken dialogue tags |
+| Telugu | 71.8 | Stiff phrasing and fluency issues |
+| Norwegian | 71.7 | Severe structural integrity issues with mixed artifacts |
+| Afrikaans | 71.5 | Untranslated English sentence inserted |
+| Chinese | 71.5 | Inexplicable machine-generated glitches in speaker labels |
+| Welsh | 71.4 | Critical data corruption (spam insertion) and grammatical inaccuracies |
+| Turkish | 71.4 | System glitch artifact present |
+| Azerbaijani | 71.2 | Insertion of non-translational instructions |
+| Lithuanian | 71.2 | Occasional awkward phrasing and typo |
+| Swedish | 71.1 | Severe mechanical errors and mixed-language intrusion |
+| Hungarian | 70.8 | Major typographical error with character name |
+| Finnish | 70.6 | Code snippets and formatting errors |
+| Korean | 70.1 | Mixed-language fragments disrupt fluency |
+| Irish | 69.8 | Untranslated English fragments and awkward grammar |
+| Swahili | 69.7 | Consistency errors and terminology issues |
+| Mongolian | 69.3 | Significant issues in fluency, naturalness, and consistency |
+| Malay | 69.2 | Disruptive code artifacts and speaker tag errors |
+| Sinhala | 69.1 | Corrupted encoding artifacts and poor linguistic quality |
+| Tagalog | 68.2 | Persistent spelling errors |
+| Croatian | 66.7 | Untranslated meta-commentary and English fragments remain |
+| Interlingua | 63.4 | Mixed language contamination and truncations |

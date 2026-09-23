@@ -19,8 +19,9 @@ from trtools.language import resolve_lang
 ONDE_DIR = HERE / "onde"
 
 
-def load_scores(model: str) -> dict[str, int]:
-    path = ONDE_DIR / model / "TRENDS.jsonl"
+def load_scores(model: str, jev: bool) -> dict[str, float]:
+    # With --jev, Jev's scores; otherwise the previous evaluator's (qwen3.6), kept beside them.
+    path = ONDE_DIR / model / ("TREND-jev.jsonl" if jev else "TRENDS.jsonl")
     scores = {}
     for line in path.read_text(encoding="utf-8").splitlines():
         entry = json.loads(line)
@@ -33,7 +34,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("-o", "--output", required=True, type=Path, help="Output file path")
     parser.add_argument(
         "-i", "--model", action="append", required=True,
-        help="Model name (refers to onde/<model>/TRENDS.jsonl; the first one given is the sort basis)",
+        help="Model name (refers to onde/<model>/TRENDS.jsonl, or TREND-jev.jsonl with --jev; the first one given is the sort basis)",
+    )
+    parser.add_argument(
+        "--jev", action="store_true",
+        help="read Jev's scores (TREND-jev.jsonl) instead of the previous evaluator's "
+             "(TRENDS.jsonl)",
     )
     parser.add_argument("-l", "--label", action="append", required=True, help="Legend label")
     args = parser.parse_args()
@@ -44,7 +50,7 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
-    scores_list = [load_scores(model) for model in args.model]
+    scores_list = [load_scores(model, args.jev) for model in args.model]
 
     langs = sorted(scores_list[0], key=lambda lang: scores_list[0][lang], reverse=True)
     names = [resolve_lang(lang) for lang in langs]

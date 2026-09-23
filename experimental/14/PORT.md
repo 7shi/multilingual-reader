@@ -1,13 +1,13 @@
 # Port: The Trend Column into `trtools trend --jev`
 
-Working document, and a companion to [README.md](README.md). The README is the design this
-experiment settled; this is how it goes into `trtools`. It changes as the port does.
+A companion to [README.md](README.md). The README is the design this experiment settled;
+this is how it went into `trtools`.
 
-**Status**: ported and run over the corpus; the switch remains. `trtools trend --jev`
-exists (sections 1–4), `common.mk` has `trends-jev:` and a written-out `SUMMARIZER`, and
-the prompts match experiment 14's (section 6). Every model directory has its
-`TREND-jev.jsonl`, written without syncing; `examples/tr/onde/`'s `TRENDS.jsonl`, model
-READMEs and `all:` are untouched until section 7. This file covers the trend column end to end:
+**Status**: frozen, 2026-09-23. The port is done and the corpus has switched; nothing is
+left for this file. `trtools trend --jev` exists (sections 1–4) and its prompts match
+experiment 14's (section 6); every model directory has its `TREND-jev.jsonl`, and its table
+is synced into the model's README. `common.mk`'s `all:` runs `trends-jev` in place of
+`trends`, and `TRENDS.jsonl` stays as the old-scale record. This file covers the trend column end to end:
 the port, `SUMMARIZER`, and regenerating the column and the README tables it renders.
 Measuring the corpus on Jev and switching the evaluator over is the other half of the
 migration and is [experiment 13's PORT.md](../13/PORT.md); the two meet only at the switch
@@ -63,16 +63,14 @@ uv run trtools trend --jev jev.jsonl --original ../../../onde-en.txt \
 ```make
 SUMMARIZER = ollama:qwen3.6
 
-TREND_SYNC = --sync README.md
-
 trends-jev:
 	uv run trtools trend --jev jev.jsonl --original $(DIR)/onde-en.txt \
-		-m $(SUMMARIZER) -o TREND-jev.jsonl $(TREND_SYNC)
+		-m $(SUMMARIZER) -o TREND-jev.jsonl --sync README.md
 ```
 
-`TREND_SYNC=` writes the file without syncing, which is how it is generated ahead of the
-switch (section 7). `examples/tr/onde/Makefile`'s `trends-jev` runs every model directory
-that way, one directory at a time.
+Until the switch it took `TREND_SYNC=` to write the file without syncing, and
+`examples/tr/onde/Makefile` had a `trends-jev` that ran every model directory that way; both
+went at the switch, once the sync was due.
 
 `SUMMARIZER = $(EVALUATOR)` has to be decoupled first: once `EVALUATOR` is Jev, a
 summarizer that follows it would be a model that writes no prose. Today both are
@@ -114,7 +112,8 @@ corrupt it silently, with no error and no visible seam. The existing `TRENDS.jso
 - **The comment is not kept** in the file. It is printed to the console as it streams, so a
   suspect phrase can be traced while the run is watched; experiment 14 found that the
   phrase is only as right as the comment behind it (PLAN.md section 15). Keeping comments on
-  disk is a later decision, not this port's.
+  disk was considered after the port and declined: the column is a short phrase, and
+  tracing it is not worth a second file.
 - **Resume** is `trend.py`'s: a language already in the file is skipped, and each is
   appended as it finishes, so an interruption loses at most one.
 
@@ -133,7 +132,7 @@ corrupt it silently, with no error and no visible seam. The existing `TRENDS.jso
   prompts must equal `trend14.py --two-stage` stage 1 and `--comments --shortfall-rule
   --jev-level` stage 2, character for character.
 - **One model directory end to end**, then the table synced into its README, before the
-  corpus.
+  corpus. In the event the trial below stood in for it, and the corpus was run next.
 - **Wall time.** Experiment 14 measured 12.0 seconds a phrase: about 13 minutes for a
   model's 67 languages and 3.5 hours for all 16.
 
@@ -152,6 +151,11 @@ keys only; the phrases run to a median of five words and nine at most.
 
 ## 7. The Switch
 
+**Done**, in the same pass as the evaluator's. The corpus's `TREND-jev.jsonl` was written
+ahead of it (section 6); the switch synced each table into its README and moved `all:` over.
+`SCORES.txt` was in the end not regenerated but kept as the old scale's record, beside
+`SCORES-jev.txt`; the README table shows the same numbers as the latter.
+
 Once the port is checked, per model directory: `make trends-jev`, which writes
 `TREND-jev.jsonl` and syncs its table into the model's `README.md`; then `all:` takes
 `trends-jev` in place of `trends`. About 3.5 hours for all 16.
@@ -169,8 +173,9 @@ what has to coincide.
 |---|---|
 | `trtools/trend.py` | `--jev` (sections 1–4) |
 | `trtools/evaluate.py` | The guideline lines moved into `GUIDELINES`, its prompt unchanged (section 3) |
-| `examples/tr/onde/common.mk` | `SUMMARIZER` decoupled from `EVALUATOR`; `trends-jev:`; `all:` switched from `trends` to `trends-jev` (section 2) |
-| `examples/tr/onde/Makefile` | `trends-jev`: every model directory, without syncing (section 2) |
+| `examples/tr/onde/common.mk` | `SUMMARIZER` decoupled from `EVALUATOR`; `trends-jev:`; `all:` switched from `trends` to `trends-jev`, and `trends:` removed (section 2) |
+| `examples/tr/onde/Makefile` | `trends-jev` for every model directory, without syncing, until the switch (section 2) |
+| `examples/tr/plot_comparison.py` | Reads its scores from `TREND-jev.jsonl` |
 | Each `examples/tr/onde/*/TREND-jev.jsonl` | New, written by `trtools trend --jev` (section 4) |
 | Each `examples/tr/onde/*/README.md` | Its table regenerated by `--sync` from `TREND-jev.jsonl` |
 | Each `examples/tr/onde/*/TRENDS.jsonl` | Not appended to; kept as the old-scale record (section 4) |

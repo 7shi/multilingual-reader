@@ -6,84 +6,85 @@ Target languages: `CORE_LANGS` + `EXTRA_LANGS` defined in [common.mk](../../comm
 
 ## Running
 
-`make` runs translation, evaluation, and aggregation in one batch. Translations go to `tr/`, evaluations to `evals/`, and scores to `SCORES.txt`.
+`make` runs translation, evaluation, aggregation, and the trend column in one batch. Translations go to `tr/`, Jev's evaluations to `jev.jsonl`, scores to `SCORES-jev.txt`, and the trend column to `TREND-jev.jsonl`. `evals/`, `SCORES.txt`, and `TRENDS.jsonl` are the record of the previous evaluator, qwen3.6.
 
 - Translation model: Ternary-Bonsai-2-27B-PTQ1_0 (ternary quantized Qwen 3.8 27B)
-- Evaluation model: qwen3.6
+- Evaluation model: jev-1.13.0 (qwen3.6 before it)
+- Trend column: written by qwen3.6 from Jev's scores
 - Settings: threshold=20, keep=5, no CoT, term file injection (`../../terms/*-en.{json,tsv}`)
 
 ## Translation quality overview
 
-After running `make`, append each language's quality trend here, based on the evaluation results (`SCORES.txt`) and manual content verification.
+The score is Jev's total, and the trend analysis is a phrase written by qwen3.6 to describe it (`trtools trend --jev`), as follows.
 
 Guide: high quality (90+), practical range (80-89), medium quality (60-79), critical defects (below 60)
 
 | Language | Score | Trend Analysis |
 | --- | ---: | --- |
-| Spanish | 96 | Minor lexical inaccuracies and unnatural phrasing |
-| Chinese | 93 | Minor terminology and phrasing adjustments needed |
-| French | 91 | Minor inconsistencies and typos |
-| Portuguese | 90 | Minor unlocalized English words like 'ripple' and 'stop' |
-| Vietnamese | 81 | Presence of English word 'told' |
-| Italian | 73 | Untranslated English phrase and typos |
-| German | 59 | High frequency of grammatical errors and typos |
-| Catalan | 58 | Persistent Spanish interference and false friends |
-| Turkish | 58 | Severe grammatical errors and unnatural syntax |
-| Malay | 53 | Major physics terminology errors and awkward phrasing |
-| Polish | 50 | Severe grammatical errors and unnatural phrasing |
-| Persian | 45 | Severe truncation and logical errors |
-| Japanese | 44 | Mixed-language typos and abrupt truncation |
-| Ukrainian | 40 | Severe errors and mixed-language artifacts |
-| Galician | 36 | Heavy Portuguese/Spanish interference and lexical errors |
-| Danish | 35 | Pervasive grammatical and lexical errors |
-| Russian | 34 | Severe mixed-language intrusions and linguistic errors |
-| Dutch | 32 | Severe truncation and mixed language errors |
-| Swedish | 32 | Severe machine-translation artifacts and mixed language |
-| Basque | 31 | Severe grammatical corruption and broken syntax |
-| Hungarian | 31 | Severe errors and hallucinations |
-| Bengali | 30 | Severe grammatical errors and mixed-language artifacts |
-| Lithuanian | 30 | Severe grammatical and terminological errors |
-| Nepali | 30 | Severe infinite text repetition loop |
-| Malayalam | 29 | Severe grammatical corruption and incomprehensibility |
-| Bulgarian | 28 | Severe mixed-language structural defects |
-| Macedonian | 28 | Severe vocabulary errors and mixed language artifacts |
-| Romanian | 28 | Severe structural fragmentation and untranslated text |
-| Telugu | 28 | Severe grammatical errors and inaccurate technical translations |
-| Urdu | 28 | Severe mistranslation of physics terms and fillers |
-| Marathi | 27 | Severe linguistic and structural flaws |
-| Norwegian | 27 | Severe lexical and grammatical errors |
-| Belarusian | 24 | Severe grammatical and spelling errors |
-| Hindi | 24 | Severe truncations and corrupted speaker names |
-| Kannada | 23 | Severe structural and grammatical breakdown |
-| Afrikaans | 21 | Heavy contamination with non-Afrikaans languages |
-| Azerbaijani | 21 | Extensive structural corruption |
-| Sinhala | 21 | Severe machine translation defects |
-| Irish | 20 | Severe machine-translation artifacts and broken Irish grammar |
-| Serbian | 20 | Pervasive errors and truncations |
-| Tamil | 20 | Severe linguistic and technical failure |
-| Tagalog | 19 | Critical structural and grammatical defects |
-| Arabic | 18 | Structural collapse and mixed-language artifacts |
-| Korean | 18 | severe mid-sentence truncations and code-mixing |
-| Greek | 17 | Mixed language intrusions (Chinese, Korean, etc.) |
-| Albanian | 17 | Pervasive grammatical errors and structural corruption |
-| Latvian | 16 | Severe mixed-language corruption and structural defects |
-| Khmer | 15 | Severe structural corruption and gibberish |
-| Estonian | 13 | Catastrophic errors rendering it unintelligible |
-| Icelandic | 13 | Severe lexical hallucination and grammatical collapse |
-| Burmese | 12 | Massive character repetition loops |
-| Esperanto | 11 | Catastrophic degradation and repetitive nonsense |
-| Hebrew | 11 | Severe repetition loops and mixed-language fragments |
-| Lao | 9 | Extensive repetition loops |
-| Mongolian | 6 | Severe recursive repetition loops |
-| Armenian | 5 | Severe lexical looping and grammatical collapse |
-| Georgian | 5 | Catastrophic structural corruption and mixed-language artifacts |
-| Czech | 0 | Severe truncation and broken formatting |
-| Welsh | 0 | Severe corruption and repetition loops |
-| Finnish | 0 | Missing Finnish translation |
-| Croatian | 0 | Severe truncation and structural collapse |
-| Interlingua | 0 | Critically incomplete and structurally broken |
-| Indonesian | 0 | Severe structural corruption and missing content |
-| Slovak | 0 | Truncated with repetitive speaker names |
-| Slovene | 0 | Severe truncation and repetitive name dumping |
-| Swahili | 0 | Critically incomplete with repetitive speaker names |
-| Thai | 0 | Catastrophic corruption with repetitive garbage characters |
+| Chinese | 90.2 | Occasional slight stiffness in phrasing |
+| Spanish | 79.7 | Awkward phrasings and calques from English source structure |
+| French | 78.7 | Inconsistent use of tu and vous |
+| Portuguese | 77.5 | Lexical error: untranslated English word "ripple" |
+| Vietnamese | 75.0 | Mixed-language error in Luc's first sentence |
+| Italian | 74.8 | Untranslated English fragments |
+| Polish | 73.4 | Significant mechanical errors |
+| Malay | 70.6 | Inconsistent register and mistranslated technical terms |
+| German | 67.8 | Severe grammatical and lexical errors |
+| Catalan | 67.0 | Severe grammatical errors and lack of fluency |
+| Ukrainian | 65.3 | Severe grammar errors and mixed-language corruption |
+| Swedish | 65.1 | Mixed languages and severe grammatical errors |
+| Galician | 63.1 | Intrusion of non-Galician elements and severe grammatical errors |
+| Russian | 58.9 | Severe mixed-language defects and incomplete translation |
+| Turkish | 58.9 | Severe terminological errors and malformed vocabulary |
+| Japanese | 55.1 | Fatal truncation and mixed-language errors |
+| Danish | 53.3 | Severe grammatical errors and unnatural phrasing |
+| Norwegian | 53.0 | Severe grammatical breakdowns and nonsense |
+| Urdu | 51.7 | Severe terminology and grammatical errors |
+| Persian | 51.5 | Severe content omissions and grammatical errors |
+| Bulgarian | 49.8 | Severe mixed-language artifacts and Chinese characters |
+| Lithuanian | 49.5 | Catastrophic linguistic and semantic failure |
+| Nepali | 49.3 | Corrupted text with nonsensical repetition |
+| Dutch | 47.2 | Catastrophic truncation and mixed-language artifacts |
+| Macedonian | 43.0 | Severe lexical hallucinations and grammatical collapse |
+| Bengali | 42.3 | Severe linguistic degradation and mixed languages |
+| Romanian | 41.9 | Severe incoherence and terminology failures |
+| Hungarian | 40.7 | Grammatical and syntactic collapse |
+| Telugu | 40.4 | Pervasive nonsense words |
+| Marathi | 40.2 | severe language mixing and grammatical errors |
+| Basque | 40.0 | Catastrophic lexical errors and hallucinations |
+| Hindi | 39.6 | Severe structural and linguistic failures |
+| Tamil | 38.8 | Severe lexical hallucinations and nonsense |
+| Arabic | 38.5 | Mixed Chinese characters and severe fragmentation |
+| Tagalog | 37.6 | Catastrophic grammatical errors and mixed languages |
+| Belarusian | 37.5 | Severe grammatical and lexical errors |
+| Afrikaans | 37.2 | Severe mixed-language contamination and untranslated segments |
+| Serbian | 36.8 | Severely flawed and unintelligible translation |
+| Kannada | 34.6 | Severe grammatical and terminology errors |
+| Latvian | 33.8 | Mixed language artifacts and severe grammatical errors |
+| Sinhala | 32.5 | Complete failure of meaning and grammar |
+| Greek | 31.2 | Severe code-switching with Chinese and Russian |
+| Indonesian | 30.7 | Mechanical repetition of dialogue tags with missing content |
+| Estonian | 30.1 | Severe grammatical and hallucinatory defects |
+| Korean | 29.4 | Collapsed into gibberish |
+| Azerbaijani | 28.6 | Massive nonsensical repetition |
+| Albanian | 28.0 | Severe grammatical errors and lexical hallucinations |
+| Croatian | 26.6 | Catastrophic incompleteness and gibberish |
+| Irish | 26.5 | Severe machine translation errors and nonsensical gibberish |
+| Hebrew | 26.2 | Pervasive severe lexical and grammatical errors |
+| Malayalam | 26.0 | Completely unintelligible gibberish |
+| Khmer | 25.6 | Extensive corruption and severe grammatical errors |
+| Icelandic | 24.4 | Incomprehensible and nonsensical gibberish |
+| Czech | 23.7 | Severe truncation and repetitive loops cause massive information loss |
+| Interlingua | 18.1 | Severe incompleteness and structural breakdown |
+| Burmese | 17.9 | Utterly unintelligible due to severe errors |
+| Slovak | 17.1 | Catastrophic failure and non-existent translation |
+| Slovene | 14.9 | Complete content loss due to truncation |
+| Esperanto | 14.8 | Severe gibberish and nonsense repetition throughout |
+| Lao | 13.4 | Severely defective and incomprehensible |
+| Thai | 13.3 | Catastrophic failure with severe structural defects and garbage data |
+| Mongolian | 11.7 | Severe degradation and infinite repetition loops |
+| Swahili | 9.6 | Severe structural defects and incomplete translation |
+| Georgian | 8.1 | Completely unintelligible and corrupted nonsense |
+| Armenian | 6.7 | Complete loss of meaning and grammatical nonsense |
+| Finnish | 3.8 | Structurally broken and meaningless |
+| Welsh | 2.6 | Extensive meaningless repetition and word salad |
