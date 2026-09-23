@@ -11,11 +11,11 @@ Model-by-model trends, comparisons between Google's models, and language classif
 - Translation quality seems to depend more strongly on training data volume and the richness of standardized digital resources than on the language's structure itself
 - The same model can locally break down for just one specific language; this seems more naturally explained as crosstalk within that model's internal representation space than as a general difficulty of the language
 - Bigger models aren't always better — for low-to-mid resource languages, a smaller but more stable model can sometimes be more practical
-- There's an asymmetry between evaluation ability and generation ability — a model that's strong at reading isn't necessarily strong at writing
+- There's an asymmetry between evaluation ability and generation ability — a model that's strong at reading isn't necessarily strong at writing (observed while `qwen3.6` was the evaluator)
 
 ### Trends in the revision (peer-review) approach
 
-We ran an experiment (experiment 09) across all 67 languages where `qwen3.6` revised each language's highest-scoring baseline line by line. The result was 30 languages improved, 32 degraded, and 5 unchanged (average change −1.2 points), showing that the effect of revision depends heavily on the language and the state of the base score.
+We ran an experiment (experiment 09) across all 67 languages where `qwen3.6` revised each language's highest-scoring baseline line by line. The scores in this section are on the scale of the evaluator at the time, `qwen3.6`, and are not comparable with Jev's. The result was 30 languages improved, 32 degraded, and 5 unchanged (average change −1.2 points), showing that the effect of revision depends heavily on the language and the state of the base score.
 
 **Languages where revision worked well** (delta of +6 or more, and 80+ points after revision): Bulgarian (97:+17), Hungarian (96:+13), Slovene (95:+22), Azerbaijani (91:+13), Czech (89:+9), Basque (87:+42), Estonian (82:+29), Latvian (82:+17), Macedonian (82:+6), Belarusian (81:+12)
 
@@ -30,29 +30,55 @@ Because of this asymmetric effect, whether to apply revision can't be judged fro
 
 ### Operational decisions
 
-- Purely on quality, `gpt-5.6-luna` (closed) is the most generally capable, but `gemma4` remains a reasonable baseline if open-weight operation is desired. `ox-alpha` is a time-limited test stealth model, and its production release is expected to be 500B+ parameters, which would be hard to self-host — so if going to the cloud anyway, the more efficient `gpt-5.6-luna` is a more sensible choice
-- Keeping the evaluation "ruler" fixed to `qwen3.6` makes comparisons easier
-- For low-resource languages, weight not just "is the meaning conveyed" but also whether speaker tags are preserved and whether other languages leak in
+- Purely on quality, `gpt-5.6-luna` (closed) is the most generally capable single model. It ties with `union-alpha`, but that turned out to be Pareto 26.9, a router over several open and frontier models rather than one model, so which model does the work can change from task to task and it does not serve as a fixed point of comparison. If open-weight operation is desired, `gemma4` remains a reasonable baseline, with the dense `gemma4-31b` on par with it. `ox-alpha` is a time-limited test stealth model, and its production release is expected to be 500B+ parameters, which would be hard to self-host — so if going to the cloud anyway, the more efficient `gpt-5.6-luna` is a more sensible choice
+- Keeping the evaluation "ruler" fixed is what makes comparisons possible; it is now Jev, pinned to one version (see the next section)
+- For low-resource languages, weight not just "is the meaning conveyed" but also whether speaker tags are preserved and whether other languages leak in. Jev deducts for dropped speaker tags; `qwen3.6` did not
 - Revision (`trtools review`) is especially effective for mid-resource languages, but backfires when the baseline is structurally broken or already too polished. Don't judge by score alone — check the translation's structural soundness before applying it
 - Differences between models matter more than differences between providers, but there are environment-specific differences in how JSON breaks or how generation stops, so automation needs to handle that separately
 
+## Evaluator: from qwen3.6 to Jev
+
+Every set is now evaluated by TypeSafe's Jev instead of `qwen3.6` (median of three runs): `examples/tr/onde/`, `core/`, `fr/`, and the reference translations in `examples/evals/`. The old evaluator's scores are kept beside Jev's as a record, not replaced.
+
+**Why it was replaced**
+
+- The corpus is a yardstick for how many languages a model handles acceptably, so it needs counts and minimums — how many languages reach 80, where a model's floor is. `qwen3.6` varied too much from run to run for those; only the mean over many languages was stable. Jev varies so little that one run per language is enough.
+- Speed and cost. Evaluating one model took about five hours with `qwen3.6` locally; with Jev it takes about 20 seconds, and the whole corpus costs little ([examples/tr/onde/JEV.md](examples/tr/onde/JEV.md) is the measured run). Re-evaluating everything stops being a design constraint.
+- `qwen3.6` bunched its scores near the top, and it was also one of the translators being compared, so it evaluated its own output.
+
+**How it was decided**: [experiment 11](experimental/11/README.md) tried a fifty-item yes/partial/no scheme, [experiment 12](experimental/12/README.md) asked Jev the old five criteria, and [experiment 13](experimental/13/README.md) checked it on the whole corpus and chose it. Jev writes no prose, so [experiment 14](experimental/14/README.md) redesigned the trend column: `qwen3.6` now writes it from Jev's scores.
+
+**What Jev is**: for each of five criteria it returns a probability distribution over five ordered severity levels, rather than a number and a rationale. There is no reasoning to read, and no rubric wording for the model to interpret loosely. What it is asked, criteria and levels word for word, is the appendix of [examples/tr/onde/JEV.md](examples/tr/onde/JEV.md).
+
+**What was given up**: evaluation was local, free and offline; it is now a paid cloud API. The version is pinned (`jev-1.13.0`) so a model release cannot silently change scores, but when the provider retires it, every score has to be regenerated ([examples/tr/README.md](examples/tr/README.md) lists what).
+
+**What did not improve**: the top of the ranking. `gpt-5.6-luna` and `union-alpha` are tied under either evaluator.
+
+**What changed in reading scores**
+
+- Jev deducts for dropped speaker tags, which `qwen3.6` did not register, so models that drop them sit lower than before.
+- The two scales cannot be converted into each other; old and new scores are not compared number to number.
+- The quality tiers keep their cuts (90/80/60). Jev's scale is narrower at the top, so fewer languages reach 90+ without the translations changing.
+
 ## ROCm/Vulkan backend trends
+
+This is a record from when the evaluator was `qwen3.6` running locally. Evaluation now goes to Jev's API, so the evaluation half no longer applies; the host has also since been moved to Ollama 0.30.6, on which ROCm works (it cannot load `qwen3.8` or `muse-glimmer`).
 
 After the evaluator (`qwen3.6`) started misbehaving on the ROCm backend, we compared switching the backend used for translation and for evaluation separately (`examples/tr/onde/qwen3.8/`, `examples/tr/onde/muse-glimmer/`).
 
-- **Evaluation is unusable on ROCm**: running `qwen3.6` as the evaluator on ROCm produces hallucinated reports of language contamination that isn't actually there, or output claiming the source/translation text was never passed to the prompt (i.e. the context itself is corrupted), and scores collapse. Switching evaluation back to Vulkan resolves these anomalies and restores reasonable scoring aligned with the actual translation content. Evaluation should always be pinned to Vulkan.
+- **Evaluation is unusable on ROCm**: running `qwen3.6` as the evaluator on ROCm produces hallucinated reports of language contamination that isn't actually there, or output claiming the source/translation text was never passed to the prompt (i.e. the context itself is corrupted), and scores collapse. Switching evaluation back to Vulkan resolves these anomalies and restores reasonable scoring aligned with the actual translation content. Evaluation had to be pinned to Vulkan.
 - **The impact of ROCm on translation depends on the model**: with evaluation fixed to Vulkan, comparing only the translation backend (ROCm/Vulkan) shows behavior that varies by model.
   - `qwen3.8`: with ROCm translation, some languages (Spanish, Galician, Romanian) stop partway through generation and score 0. Right up until it cuts off, the grammar and vocabulary look natural, suggesting a generation-completion failure rather than a capability shortfall.
   - `muse-glimmer`: no 0-score languages occur even with ROCm translation, and score differences stay within normal variance (some languages like Malay swing ±20-40 points, but the swings go both up and down with no consistent bias).
-- Operationally: always pin evaluation to Vulkan, and when translating on ROCm, check each model individually for 0-score languages (generation stopping partway through).
+- Operationally: evaluation was pinned to Vulkan, and when translating on ROCm, each model has to be checked individually for 0-score languages (generation stopping partway through).
 
-**Suspected cause**: this problem didn't occur on ROCm at the time of the initial evaluation (May 2026) using Gemma 4, GPT-OSS 120B, and Qwen 3.6. The only major change to Ollama since then is the complete removal of its own inference engine in `v0.30.0` (June 2026) in favor of consolidating on the upstream `llama-server` (llama.cpp), along with the new compatibility layer (`llama/compat/`) that came with it — this change is suspected to be the cause of the broken inference / corrupted context on the ROCm backend.
+**Suspected cause**: this problem didn't occur on ROCm at the time of the initial evaluation (May 2026) using Gemma 4, GPT-OSS 120B, and Qwen 3.6. The only major change to Ollama since then is the complete removal of its own inference engine in `v0.30.0` (June 2026) in favor of consolidating on the upstream `llama-server` (llama.cpp), along with the new compatibility layer (`llama/compat/`) that came with it — this change is suspected to be the cause of the broken inference / corrupted context on the ROCm backend. That ROCm works on 0.30.6, which comes after `v0.30.0`, means the consolidation alone does not explain it; the cause was not pinned down further.
 
 The compatibility layer dynamically converts the metadata and tensor names of legacy Ollama-format GGUF files into the format upstream `llama-server` expects. Models released after this consolidation (Qwen 3.8, Muse Glimmer) are natively compatible and don't need this conversion, while older models predating the consolidation (Qwen 3.6, Gemma 4) depend on it. This distinction matches the observed result that only the former work correctly on ROCm while only the latter break.
 
 ## Using GPT-OSS 120B outside of evaluation
 
-`gpt-oss` shows a ceiling effect on evaluation tasks, so it isn't used as a primary evaluator. On the other hand, it seems well-suited to auxiliary tasks that take advantage of its fast inference.
+`gpt-oss` showed a ceiling effect on evaluation tasks, which is why it was not chosen as the evaluator. On the other hand, it seems well-suited to auxiliary tasks that take advantage of its fast inference.
 
 - Terminology checks: enumerating candidate translations, validating the soundness of existing translations
 - Background knowledge supplementation: explaining proper nouns and cultural context
