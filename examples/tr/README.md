@@ -11,7 +11,7 @@ Directory for translating the English source text into various languages and upd
 - **bonsai2-27b**: Ternary Bonsai 2 27B PTQ1_0 (ternary-quantized Qwen 3.8 27B)
 - **muse-glimmer**: 30B (dense)
 - **ox-alpha**: Ox Alpha 320B-A18B (GLM-5.3-Flash stealth)
-- **union-alpha**: stealth model, details unknown
+- **union-alpha**: Pareto 26.9 by The Unbiased Co. (stealth listing); by its maker's announcement a router over several open and frontier models, not a single set of weights
 - **gpt-5.6-luna**: GPT-5.6 Luna
 - **gpt-5.6-terra**: GPT-5.6 Terra
 - **gemini-3.5-flash-lite**: Gemini 3.5 Flash-Lite
@@ -145,7 +145,7 @@ Mean and standard deviation are automatically computed from the comparison table
 | Model | Mean | Median | Stdev | Notes |
 | --- | ---: | ---: | ---: | --- |
 | gpt-5.6-luna | 86.16 | 88.10 | 5.79 | Tied with `union-alpha` at the top. Multilingual contamination, system-prompt leakage, and speaker-tag dropout — all frequent in other models — were rarely observed, and it keeps every speaker label in every language; currently the most general-purpose and stable |
-| union-alpha | 86.86 | 87.60 | 5.10 | Tied with `gpt-5.6-luna` at the top, with a practical-to-high-quality floor across most low-resource languages; its rare deep failures are concentrated on a handful of outliers, most notably a Chinese-character injection into Irish |
+| union-alpha | 86.86 | 87.60 | 5.10 | A router over several models rather than one model, so its languages need not all have been translated by the same model. Tied with `gpt-5.6-luna` at the top, with a practical-to-high-quality floor across most low-resource languages; its rare deep failures are concentrated on a handful of outliers, most notably a Chinese-character injection into Irish |
 | ox-alpha (320B-A18B) | 84.79 | 86.40 | 6.46 | Broadly stable across medium-to-low-resource languages. On the other hand, some failures leave English meta-commentary unremoved |
 | gemini-3.7-flash | 82.62 | 82.70 | 7.53 | Even at its low-resource floor, failures stay ordinary (Romance-language code-switching on Interlingua, terminology/lexical looseness on Welsh, Irish, Tagalog) rather than the non-natural-language contamination seen in `gemini-3-flash`, though Bengali suffers a distinct glyph-level corruption resembling a font/encoding fault. Drops a speaker label in about a third of its languages |
 | gemma4-31b | 75.60 | 80.60 | 15.52 | Stable on medium-to-high-resource languages, but breaks down catastrophically, with garbled text, on low-resource languages such as Irish, Welsh, Basque, and Estonian |
@@ -190,7 +190,7 @@ No universal translation model exists, strongly suggesting the importance of cho
 What the comparison above can and cannot be read as. These were carried over from [experimental/13/PORT.md](../../experimental/13/PORT.md) section 8 when experiments 13 and 14 were frozen; this section is where they are kept up to date.
 
 - **One source text, chosen to be hard.** Every onde score is a translation of one document, [onde-en.txt](../onde-en.txt). It is deliberately spoken in form and technical in content, a combination that is hard to translate, so that translators differ. The scores are therefore not a general-purpose measure of multilingual ability, and whether the ranking would hold for another genre is untested. This is accepted as the corpus's design rather than treated as a gap to fill with a second source.
-- **The top two are even.** `gpt-5.6-luna` and `union-alpha` are not separated per language by either evaluator, qwen3.6 or Jev ([experimental/13/REPORT.md](../../experimental/13/REPORT.md) section 2), so they are treated as tied. The small difference in their means is not read as an order, and nothing further is being tried to separate them.
+- **The top two are even.** `gpt-5.6-luna` and `union-alpha` are not separated per language by either evaluator, qwen3.6 or Jev ([experimental/13/REPORT.md](../../experimental/13/REPORT.md) section 2), so they are treated as tied. The small difference in their means is not read as an order, and nothing further is being tried to separate them. `union-alpha` turned out to be a router that calls a stronger model when a task needs one, so the tie is between a single model and a system of several.
 
 ## Evaluation Design Policy: Why Speaker Tags Aren't Separated
 

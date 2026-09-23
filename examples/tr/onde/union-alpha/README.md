@@ -8,7 +8,7 @@ Target languages: `CORE_LANGS` + `EXTRA_LANGS` defined in [common.mk](../../comm
 
 `make` runs translation, evaluation, aggregation, and the trend column in one batch. Translations go to `tr/`, Jev's evaluations to `jev.jsonl`, scores to `SCORES-jev.txt`, and the trend column to `TREND-jev.jsonl`. `evals/`, `SCORES.txt`, and `TRENDS.jsonl` are the record of the previous evaluator, qwen3.6.
 
-- Translation model: union-alpha
+- Translation model: union-alpha (Pareto 26.9 by The Unbiased Co., stealth listing). By its maker's announcement it is a router, not a single set of weights: several open and frontier models work the task, and a harness checks the work and calls in a stronger model when needed. Which model translated each language is not known.
 - Evaluation model: jev-1.13.0 (qwen3.6 before it)
 - Trend column: written by qwen3.6 from Jev's scores
 - Settings: threshold=20, keep=5, no CoT, term file injection (`../../terms/*-en.{json,tsv}`)
