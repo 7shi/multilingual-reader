@@ -3,10 +3,11 @@
 Working document, and a companion to [README.md](README.md). The README is the design this
 experiment settled; this is how it goes into `trtools`. It changes as the port does.
 
-**Status**: ported, not yet run over the corpus. `trtools trend --jev` exists (sections
-1–4), `common.mk` has `trends-jev:` and a written-out `SUMMARIZER`, and the prompts match
-experiment 14's (section 6). No `TREND-jev.jsonl` has been written, and `examples/tr/onde/`'s
-`TRENDS.jsonl`, model READMEs and `all:` are untouched. This file covers the trend column end to end:
+**Status**: ported and run over the corpus; the switch remains. `trtools trend --jev`
+exists (sections 1–4), `common.mk` has `trends-jev:` and a written-out `SUMMARIZER`, and
+the prompts match experiment 14's (section 6). Every model directory has its
+`TREND-jev.jsonl`, written without syncing; `examples/tr/onde/`'s `TRENDS.jsonl`, model
+READMEs and `all:` are untouched until section 7. This file covers the trend column end to end:
 the port, `SUMMARIZER`, and regenerating the column and the README tables it renders.
 Measuring the corpus on Jev and switching the evaluator over is the other half of the
 migration and is [experiment 13's PORT.md](../13/PORT.md); the two meet only at the switch
@@ -140,8 +141,12 @@ corrupt it silently, with no error and no visible seam. The existing `TRENDS.jso
 `FOCUS_TARGETS` together, every level from 0 to 4, stage 2 fed run 13's own comments where
 it has one. A trial on `gemini-3-flash`'s `de`, `eu` and `ja`, into a copy of its README,
 ran end to end — `eu` at 18 lines included — resumed, rendered with `--render-only`, and
-stopped on a `jev.jsonl` mixing two rubrics. What remains is one directory's 67 languages
-end to end, and then the corpus.
+stopped on a `jev.jsonl` mixing two rubrics.
+
+**The corpus run.** `make trends-jev` in `examples/tr/onde/` wrote all 16 directories'
+`TREND-jev.jsonl` in 290 minutes: 1,072 phrases at 16.2 seconds each, against experiment
+14's 12.0. Every file holds the 67 languages of its `jev.jsonl` once each, with the three
+keys only; the phrases run to a median of five words and nine at most.
 - The phrases themselves are not re-judged here. Their quality is experiment 14's result,
   and claims in them are checked the way [PLAN.md](PLAN.md) section 17 describes.
 
