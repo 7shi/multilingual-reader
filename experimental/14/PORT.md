@@ -3,18 +3,19 @@
 Working document, and a companion to [README.md](README.md). The README is the design this
 experiment settled; this is how it goes into `trtools`. It changes as the port does.
 
-**Status**: not started. `trtools/trend.py` is untouched, and so are `examples/tr/onde/`'s
-`TRENDS.jsonl`, model READMEs and `common.mk`. This file covers the trend column end to end:
+**Status**: ported, not yet run over the corpus. `trtools trend --jev` exists (sections
+1–4), `common.mk` has `trends-jev:` and a written-out `SUMMARIZER`, and the prompts match
+experiment 14's (section 6). No `TREND-jev.jsonl` has been written, and `examples/tr/onde/`'s
+`TRENDS.jsonl`, model READMEs and `all:` are untouched. This file covers the trend column end to end:
 the port, `SUMMARIZER`, and regenerating the column and the README tables it renders.
 Measuring the corpus on Jev and switching the evaluator over is the other half of the
 migration and is [experiment 13's PORT.md](../13/PORT.md); the two meet only at the switch
 (section 7).
 
-**Not to be started before experiment 13's PORT.md steps 1 and 2 and its section 5.3.** Step
-2 is what decides whether Jev replaces the evaluator at all — if the middle band does not
-hold, it is a check rather than a replacement, and there is no column to port. Section 5.3
-may change `SCHEME_ID` and so every score in `jev.jsonl`; stage 1 is handed those scores, so
-a `TREND-jev.jsonl` written before it would have to be written again, at 3.5 hours a pass.
+**What it waited on is settled.** Experiment 13's PORT.md steps 1 and 2 are done and Jev
+replaces the evaluator; its section 5.3 left `build_state` as it is, so `SCHEME_ID` stays
+`degrees@f518286e` and the `jev.jsonl` files already on disk are stage 1's input as they
+stand.
 
 ---
 
@@ -45,8 +46,10 @@ uv run trtools trend --jev jev.jsonl --original ../../../onde-en.txt \
 ```
 
 - `--jev FILE` replaces the positional evaluation files. Every line must agree on `model`
-  and `rubric`, as `trtools agg --jev` will require ([experiment 13's PORT.md](../13/PORT.md)
-  section 5.1); a mixed file aborts.
+  and `rubric`, as `trtools agg --jev` requires ([experiment 13's PORT.md](../13/PORT.md)
+  section 5.1); a mixed file aborts. The file is read by `aggregate.py`'s `aggregate_jev`
+  itself, with the prefix taken from `--original` (`onde-en.txt` → `onde`), so the check,
+  the total and the translation's file name all come from one place.
 - `--original` is the source text; the translation is `tr/onde-{lang}.txt`, found the way
   `trtools jev` finds it (`--tr-dir`, default `tr`).
 - `-o` defaults to `TREND-jev.jsonl` under `--jev`, never `TRENDS.jsonl`.
@@ -59,10 +62,16 @@ uv run trtools trend --jev jev.jsonl --original ../../../onde-en.txt \
 ```make
 SUMMARIZER = ollama:qwen3.6
 
+TREND_SYNC = --sync README.md
+
 trends-jev:
 	uv run trtools trend --jev jev.jsonl --original $(DIR)/onde-en.txt \
-		-m $(SUMMARIZER) -o TREND-jev.jsonl --sync README.md
+		-m $(SUMMARIZER) -o TREND-jev.jsonl $(TREND_SYNC)
 ```
+
+`TREND_SYNC=` writes the file without syncing, which is how it is generated ahead of the
+switch (section 7). `examples/tr/onde/Makefile`'s `trends-jev` runs every model directory
+that way, one directory at a time.
 
 `SUMMARIZER = $(EVALUATOR)` has to be decoupled first: once `EVALUATOR` is Jev, a
 summarizer that follows it would be a model that writes no prose. Today both are
@@ -78,7 +87,10 @@ variant — copied as fixed strings. None of the experiment's switches come acro
 - Stage 1 is `evaluate.py`'s prompt with its closing sentence replaced, so the guideline
   lines are shared text. Keep them in one place, since the two drifting apart would make
   stage 1 read the scores against bands the old evaluator no longer used; but copy rather
-  than import `evaluate.py`'s prompt-building, which lives inside its `run()`.
+  than import `evaluate.py`'s prompt-building, which lives inside its `run()`. Both hold:
+  the guideline lines are `evaluate.py`'s module-level `GUIDELINES`, which its `run()`
+  formats and `trend.py` imports, and the lines around them are `trend.py`'s own.
+  `evaluate.py`'s prompt was checked to be unchanged by the move, byte for byte.
 - Stage 1 must **not** go through `evaluate.py`'s `run()`: it refuses a translation whose
   line count differs from the original's, and `gemini-3-flash/eu` has 18 lines of 99 and
   still needs a phrase.
@@ -123,6 +135,13 @@ corrupt it silently, with no error and no visible seam. The existing `TRENDS.jso
   corpus.
 - **Wall time.** Experiment 14 measured 12.0 seconds a phrase: about 13 minutes for a
   model's 67 languages and 3.5 hours for all 16.
+
+**Done so far.** The prompts equal `trend14.py`'s for all 32 targets of `ALL_TARGETS` and
+`FOCUS_TARGETS` together, every level from 0 to 4, stage 2 fed run 13's own comments where
+it has one. A trial on `gemini-3-flash`'s `de`, `eu` and `ja`, into a copy of its README,
+ran end to end — `eu` at 18 lines included — resumed, rendered with `--render-only`, and
+stopped on a `jev.jsonl` mixing two rubrics. What remains is one directory's 67 languages
+end to end, and then the corpus.
 - The phrases themselves are not re-judged here. Their quality is experiment 14's result,
   and claims in them are checked the way [PLAN.md](PLAN.md) section 17 describes.
 
@@ -144,7 +163,9 @@ what has to coincide.
 | File | What |
 |---|---|
 | `trtools/trend.py` | `--jev` (sections 1–4) |
+| `trtools/evaluate.py` | The guideline lines moved into `GUIDELINES`, its prompt unchanged (section 3) |
 | `examples/tr/onde/common.mk` | `SUMMARIZER` decoupled from `EVALUATOR`; `trends-jev:`; `all:` switched from `trends` to `trends-jev` (section 2) |
+| `examples/tr/onde/Makefile` | `trends-jev`: every model directory, without syncing (section 2) |
 | Each `examples/tr/onde/*/TREND-jev.jsonl` | New, written by `trtools trend --jev` (section 4) |
 | Each `examples/tr/onde/*/README.md` | Its table regenerated by `--sync` from `TREND-jev.jsonl` |
 | Each `examples/tr/onde/*/TRENDS.jsonl` | Not appended to; kept as the old-scale record (section 4) |

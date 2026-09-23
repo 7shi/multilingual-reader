@@ -29,6 +29,17 @@ class TranslationEvaluation(BaseModel):
         description="Overall comprehensive evaluation comment about the translation quality as a whole"
     )
 
+# The guidelines and their point bands, kept apart from run() because `trtools trend
+# --jev` sends them too: its stage 1 reads Jev's scores against these bands, so the two
+# prompts must not drift apart. `{to_lang}` is the target language's name.
+GUIDELINES = """**CRITICAL GUIDELINES**:
+1. Verify translation exists and is in {to_lang}. If missing/incomplete, assign 0 points to ALL criteria.
+2. Evaluate the ENTIRE file from beginning to end, not just the first or last lines.
+3. Structural defects (mixed languages, JSON fragments, meta-commentary) are CRITICAL errors (0-5 points).
+4. Major defects (grammatical errors, untranslated text) = 6-12 points.
+5. Minor issues (awkward phrasing) = 13-17 points.
+6. High quality (natural, accurate) = 18-20 points."""
+
 def add_parser(subparsers):
     parser = subparsers.add_parser("eval", help="Evaluate translation quality on 5 criteria")
     parser.add_argument("--original", required=True, help="Original text file")
@@ -69,13 +80,7 @@ def run(args):
 
     evaluation_prompt = f"""Please evaluate this translation from {args.from_lang} to {args.to_lang}.
 
-**CRITICAL GUIDELINES**:
-1. Verify translation exists and is in {args.to_lang}. If missing/incomplete, assign 0 points to ALL criteria.
-2. Evaluate the ENTIRE file from beginning to end, not just the first or last lines.
-3. Structural defects (mixed languages, JSON fragments, meta-commentary) are CRITICAL errors (0-5 points).
-4. Major defects (grammatical errors, untranslated text) = 6-12 points.
-5. Minor issues (awkward phrasing) = 13-17 points.
-6. High quality (natural, accurate) = 18-20 points.
+{GUIDELINES.format(to_lang=args.to_lang)}
 
 Score each criterion from 0-20 points based on the ENTIRE document."""
 

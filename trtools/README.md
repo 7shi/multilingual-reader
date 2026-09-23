@@ -49,7 +49,7 @@ The recommended evaluation model is **qwen3.6**. Its CoT-based logical verificat
 
 The median of 3 runs exists because a generative evaluator's score wanders: on the same translation it can swing by tens of points, since nothing in a 0-20 rubric separates a 14 from a 17. `jev` removes the discretionary number instead of averaging it away. Each criterion becomes one Score question over five ordered severity levels, and the score is the probability-weighted position across those levels, so it comes out of the distribution rather than out of the model picking a figure. Measured run-to-run range: **1.12 points**, against 52.4 for the generative path — which is what makes one run per language enough.
 
-It is a paid API, pinned to a model version rather than an alias, and it returns typed judgments with no prose. That last point matters downstream: there is no `reasoning` text for `trend` to summarize.
+It is a paid API, pinned to a model version rather than an alias, and it returns typed judgments with no prose. That last point matters downstream: there is no `reasoning` text for `trend` to summarize, so `trend --jev` has an LLM write the comment first ([below](#describing-jevs-scores---jev)).
 
 ### Model Selection Guidelines
 
@@ -396,10 +396,14 @@ uv run trtools trend <json_files...> -m <model> [options]
 | Option | Default | Description |
 |---|---|---|
 | `-m`, `--model` | none | Model used for summarization (not needed with `--render-only`) |
-| `-o`, `--output` | `TRENDS.jsonl` | Intermediate result JSONL |
+| `-o`, `--output` | `TRENDS.jsonl` (`TREND-jev.jsonl` with `--jev`) | Intermediate result JSONL |
+| `--jev` | none | A `jev.jsonl` to describe, in place of the evaluation files |
+| `--original` | none | Original text file; required with `--jev` |
+| `-f`, `--from` | `English` | Source language, with `--jev` |
+| `--tr-dir` | `tr` | Directory holding the translations, with `--jev` |
 | `--sync` | none | Path of the `README.md` to write the table back into after generation |
 | `--render-only` | false | Only output/sync the table from the JSONL, without generating |
-| `--no-think` | false | Disable thinking |
+| `--no-think` | false | Disable thinking (`--jev` always runs without it) |
 | `-w`, `--retry-wait` | 3 | Wait time on retry, in seconds |
 | `-l`, `--lang` | `en` | Output language of the summary (`en`/`ja`) |
 
@@ -415,6 +419,15 @@ Since the output is a single item, structured output is not used; plain text is 
 
 **Table sync**: With `--sync` specified, the entire table in the target file whose header is `| 言語 | スコア | 傾向の分析 |` (`ja`) or `| Language | Score | Trend Analysis |` (`en`) is replaced. Only tables with a matching header are targeted, so other tables in the same file are unaffected. Since the header itself is generated according to `-l`/`--lang`, the existing table can be detected and replaced regardless of which language it was written in. Rows are sorted by score descending, then language code ascending, and language names use the `-l`/`--lang`-corresponding notation (`en`/`ja`) from `LANGUAGES` ([language.py](language.py)).
 
+### Describing Jev's Scores (`--jev`)
+
+`jev` returns no prose, so with `--jev` each language takes two calls to the same model, without thinking and sharing no history:
+
+1. **Stage 1** is `eval`'s prompt — the original, the translation and the same guidelines (`GUIDELINES` in [evaluate.py](evaluate.py)) — with Jev's five scores handed over as points out of 20, asking for an overall comment in English that accounts for them. It does not go through `eval`, so a translation whose line count differs from the original's still gets a phrase.
+2. **Stage 2** summarizes that one comment with the prompt above made singular, plus two sentences: state the shortfall the comment names rather than praise, and Jev's own wording for the level of the weakest criterion.
+
+The comment is streamed to the console and not kept. `score` is the Jev total with one decimal. Every line of the `jev.jsonl` must agree on `model` and `rubric`, as in `agg --jev`. The output goes to `TREND-jev.jsonl` by default, never `TRENDS.jsonl`, so the two scales are not mixed in one file. [experimental/14](../experimental/14/README.md) is the design.
+
 ### Examples
 
 ```bash
@@ -426,6 +439,9 @@ uv run trtools trend evals/*.json -m ollama:qwen3.6 --no-think --sync README.md
 
 # Only re-output/sync the table from the existing JSONL
 uv run trtools trend --render-only --sync README.md
+
+# Describe Jev's scores instead (writes TREND-jev.jsonl)
+uv run trtools trend --jev jev.jsonl --original ../../../onde-en.txt -m ollama:qwen3.6 --sync README.md
 ```
 
 ---
