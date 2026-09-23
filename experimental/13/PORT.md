@@ -35,9 +35,9 @@ tools that read scores take `--jev` explicitly and read the old record without i
 Jev leaves tied is taken as even, the ordering inside the old scheme's floor is real as a
 coarse order ([FLOOR.md](FLOOR.md)), and the single source text is a deliberate choice.
 
-**Frozen**, 2026-09-23. Section 8's questions moved to
-[examples/tr/README.md](../../examples/tr/README.md) ("Scope of the Comparison and Open
-Questions"), where they are kept up to date, and this file is not edited again.
+**Frozen**, 2026-09-23, and this file is not edited again. Section 8's questions are all
+resolved: `core/` and `fr/` were moved to Jev the same day, and the rest are settled as
+above.
 
 ---
 

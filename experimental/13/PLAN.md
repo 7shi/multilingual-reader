@@ -8,7 +8,7 @@ went through `trtools jev` rather than the experiment's script, so the productio
 cost and wall time were measured at full scale; [PORT.md](PORT.md) is that design and
 [examples/tr/onde/JEV.md](../../examples/tr/onde/JEV.md) the run. **Everything still ahead —
 steps 2 and 3, the open questions, the blockers and the touch list — moved to
-[PORT.md](PORT.md)**, and this file is not edited again.
+[PORT.md](PORT.md)**, where they are all resolved, and this file is not edited again.
 
 ---
 

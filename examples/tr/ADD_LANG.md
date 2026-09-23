@@ -29,7 +29,7 @@ For the "Trend Analysis" column in the per-language table in each model director
 Once all directories have been updated, update the top-level `examples/tr/README.md` to summarize.
 
 - `uv run examples/tr/generate_compare_rows.py compare --jev` outputs the "Comparison Between Translation Models" table (header row, separator row, body rows). With `--sync`, it directly rewrites the entire table whose header starts with `| Language | [` in README.md.
-- `uv run examples/tr/generate_compare_rows.py core` outputs the table for "Evaluation Results for Core Languages (core)", and `--sync` writes it into README.md. core/ is still scored by qwen3.6, so its onde column is gemma4's score on that scale, taken from `onde/gemma4/SCORES.txt`.
+- `uv run examples/tr/generate_compare_rows.py core --jev` outputs the table for "Evaluation Results for Core Languages (core)", and `--sync` writes it into README.md. Its onde column is gemma4's score, taken from `onde/gemma4/SCORES-jev.txt`.
 - `make sync` in `examples/tr/` runs both with `--sync`.
 - In `core` mode, rows are ordered by descending average; ties are stabilized by ascending language code.
 

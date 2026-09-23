@@ -37,13 +37,19 @@ ONDE_MODELS = load_onde_models()
 JEV = False
 
 
-def onde_score_file(model: str, jev: bool | None = None) -> Path:
-    jev = JEV if jev is None else jev
-    return ROOT / "onde" / model / ("SCORES-jev.txt" if jev else "SCORES.txt")
+def score_file_name() -> str:
+    return "SCORES-jev.txt" if JEV else "SCORES.txt"
+
+
+def onde_score_file(model: str) -> Path:
+    return ROOT / "onde" / model / score_file_name()
+
+
+def core_score_file() -> Path:
+    return ROOT / "core" / score_file_name()
 
 
 CORE_TOPICS = ("finetuning", "transformer", "momentum")
-CORE_SCORE_FILE = ROOT / "core" / "SCORES.txt"
 CORE_ONDE_MODEL = "gemma4"
 CORE_CODES = ("ja", "zh", "es", "fr", "de")
 LINE_RE = re.compile(r"^([a-z0-9.]+)-([a-z0-9.]+):\s+(\d+(?:\.\d+)?)$")
@@ -256,10 +262,10 @@ def render_core_header() -> list[str]:
 
 
 def render_core_rows() -> list[str]:
-    # core/ is still scored by the previous evaluator, so its onde column is too,
-    # whatever --jev says.
-    core_scores = parse_scores(CORE_SCORE_FILE)
-    onde_file = onde_score_file(CORE_ONDE_MODEL, jev=False)
+    # The onde column is gemma4's, the translator of core/, on the same scale.
+    core_file = core_score_file()
+    core_scores = parse_scores(core_file)
+    onde_file = onde_score_file(CORE_ONDE_MODEL)
     onde_scores = parse_scores(onde_file)
 
     missing_names = sorted(code for code in CORE_CODES if code not in LANG_NAMES)
@@ -274,7 +280,7 @@ def render_core_rows() -> list[str]:
         for topic in CORE_TOPICS:
             key = (topic, code)
             if key not in core_scores:
-                raise ValueError(f"missing {topic}-{code} in {CORE_SCORE_FILE}")
+                raise ValueError(f"missing {topic}-{code} in {core_file}")
             topic_scores.append(core_scores[key])
 
         onde_key = ("onde", code)
@@ -288,12 +294,11 @@ def render_core_rows() -> list[str]:
         )
     rows.sort(key=lambda row: (-row[0], row[1]))
 
+    fmt = ".1f" if JEV else "g"
     rendered = []
     for average, code, topic_scores, onde_score, name in rows:
-        rendered.append(
-            f"| {name} | {topic_scores[0]:g} | {topic_scores[1]:g} | "
-            f"{topic_scores[2]:g} | {onde_score:g} | {average:.2f} |"
-        )
+        cells = [format(score, fmt) for score in (*topic_scores, onde_score)]
+        rendered.append(f"| {name} | {' | '.join(cells)} | {average:.2f} |")
     return rendered
 
 

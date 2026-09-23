@@ -31,7 +31,7 @@ GPTOSS     = -i gpt-oss -l "GPT-OSS 120B"
 
 sync:
 	uv run generate_compare_rows.py compare --jev --sync
-	uv run generate_compare_rows.py core --sync
+	uv run generate_compare_rows.py core --jev --sync
 
 compare:
 	uv run generate_compare_rows.py graph --jev

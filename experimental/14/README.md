@@ -9,8 +9,7 @@ The question came from [experiment 13](../13/README.md), which chose Jev as the 
 evaluator: Jev returns no prose, so the column had nothing to summarise.
 
 **Status**: frozen, 2026-09-23. Section 5's first item is closed; the rest stay as recorded,
-and `core/` and `fr/` are tracked in [examples/tr/README.md](../../examples/tr/README.md)
-("Scope of the Comparison and Open Questions").
+except `core/` and `fr/`, which were moved to Jev the same day.
 
 ---
 

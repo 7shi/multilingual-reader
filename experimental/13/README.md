@@ -6,10 +6,11 @@ corpus evaluator — is [PLAN.md](PLAN.md), and what is left to do about it, wit
 blockers in the way, is [PORT.md](PORT.md); both are kept separate so a plan changing does
 not edit a result.
 
-**Status**: frozen, 2026-09-23. Section 7 item 1's remainder is closed by
-[FLOOR.md](FLOOR.md); the items still open are kept in
-[examples/tr/README.md](../../examples/tr/README.md) ("Scope of the Comparison and Open
-Questions").
+**Status**: frozen, 2026-09-23. Every item of section 7 is closed: item 1's remainder by
+[FLOOR.md](FLOOR.md); items 2, 4 and 8 by [REPORT.md](REPORT.md), with the top pair Jev
+leaves tied taken as even; item 3 withdrawn; items 5–7 not pursued, since the choice
+between the two schemes is made; and item 9, the single source text, which leaves item 3's
+fluency floor untested, kept as the corpus's design.
 
 ## 1. What This Tests
 
@@ -879,7 +880,13 @@ averaged silently into the wrong table.
    numbers do, or whether the level wording is doing it — and whether it is stable enough
    to invert. If it is, corpus scores and `jev` scores can be put on one scale; if the
    slope moves with the translator, section 3.7's "ranking only" restriction is permanent.
-5. **Whether the fifty-item verdicts can be rescued.** Narrowed by section 4.5: the
+   **Answered — [REPORT.md](REPORT.md) section 7: not stable enough.** Over all 1,072
+   translations the fit is 0.508 one way and 0.718 the other, so scores are not converted
+   between the scales and the restriction stands. Why the slope is what it is is not
+   pursued: it mattered only for that conversion.
+5. **Whether the fifty-item verdicts can be rescued.** **Not pursued:** the five-criterion
+   scheme was chosen ([PLAN.md](PLAN.md)) and is the corpus's evaluator, so the fifty-item
+   scheme is not used. As written before that: narrowed by section 4.5: the
    96.1% `yes` is a ceiling effect on good translations, not a broken scale. On this pair
    the same items return 24.1% `no`, 49 of 50 fire at least once, and rounding costs
    0.01 of correlation instead of 0.18. So the rewrite that was being considered for the
@@ -888,7 +895,9 @@ averaged silently into the wrong table.
    trying first: keep the three levels and reword only their top, against the top two's
    134 translations where the failure is measurable. Experiment 12 is still the precedent
    — there, level wording moved the corpus mean by 15 points.
-6. **Whether +0.90 says anything about the rubrics at all.** Two rubrics sharing nothing
+6. **Whether +0.90 says anything about the rubrics at all.** **Not pursued:** it bore on
+   the choice between the two schemes, which is made ([PLAN.md](PLAN.md)). As written
+   before that: two rubrics sharing nothing
    but an evaluator agree at +0.90 on the top two and +0.95 on this pair; a third rubric
    asked of the same evaluator would say whether that is a property of the rubrics or of
    Jev. If everything Jev is asked correlates at +0.90, the number is about the model, and
@@ -896,7 +905,8 @@ averaged silently into the wrong table.
    not pure model artifact — the two rubrics disagree systematically on `bonsai2-27b`,
    where fifty independent properties cannot see that a translation has failed as a whole
    — but that is one direction of disagreement, not a test.
-7. **Spread per unit of noise, measured rather than borrowed.** Section 4.6 finds the
+7. **Spread per unit of noise, measured rather than borrowed.** **Not pursued:** the
+   choice it turned on is made ([PLAN.md](PLAN.md)). As written before that: section 4.6 finds the
    five-criterion scheme carrying 2–3× the spread per unit of its own run-to-run noise at
    every quality level, which is the sharpest form of section 3.7's recommendation — and
    it rests on 1.12 and 2.25, two figures measured in different experiments on different

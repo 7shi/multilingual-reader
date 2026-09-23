@@ -23,9 +23,9 @@ As a prerequisite, terms for the target language must be added to the term files
 
 - [terms/](terms/): term translations
 
-Each set manages its own evaluation model and target languages separately. [onde/](onde/) is evaluated by TypeSafe's Jev; [core/](core/) and [fr/](fr/) are still evaluated by qwen3.6. The `make` command can run these sets in sequence.
+Each set manages its own target languages separately, and all of them are evaluated by TypeSafe's Jev, so their scores are on one scale. Each set's earlier scores from qwen3.6 (median of three runs) are kept beside Jev's (`SCORES.txt` beside `SCORES-jev.txt`) as the previous evaluator's record. The `make` command can run these sets in sequence.
 
-- [core/](core/): translation of core languages (de, ja, zh) (gemma4)
+- [core/](core/): translation of core languages (fr, es, de, ja, zh) (gemma4)
 - [onde/](onde/): translation by each model, including additional languages
   - [gemma4/](onde/gemma4/): the baseline verification set
   - [gpt-oss/](onde/gpt-oss/): includes past experiments (verifying behavioral differences between local (Ollama) and cloud (OpenRouter) execution environments)
@@ -38,25 +38,25 @@ Translation starting from French was done in the past, with results stored in th
 
 ## Evaluation Results for Core Languages (core)
 
-For core languages with abundant training resources (French, Spanish, German, Japanese, Chinese), gemma4 produces stable, high-quality translations.
+For core languages with abundant training resources (French, Spanish, German, Japanese, Chinese), gemma4 produces practical translations across all four topics.
 
-This table is on the previous evaluator's scale (qwen3.6, median of three runs), since core/ has not been re-evaluated with Jev; its onde column is gemma4's score on that scale, not the one in the comparison below.
+The onde column is gemma4's score from the comparison below.
 
 | Language | finetuning | transformer | momentum | onde | Average |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| Japanese | 95 | 97 | 95 | 97 | 96.00 |
-| Chinese | 95 | 97 | 96 | 96 | 96.00 |
-| Spanish | 96 | 97 | 93 | 93 | 94.75 |
-| French | 96 | 100 | 82 | 100 | 94.50 |
-| German | 96 | 99 | 88 | 94 | 94.25 |
+| German | 92.2 | 89.5 | 88.6 | 89.2 | 89.88 |
+| Japanese | 85.2 | 90.2 | 86.1 | 86.5 | 87.00 |
+| French | 92.2 | 86.8 | 77.6 | 91.1 | 86.93 |
+| Chinese | 92.6 | 86.9 | 78.0 | 87.3 | 86.20 |
+| Spanish | 87.1 | 82.6 | 75.7 | 94.3 | 84.92 |
 
-In the momentum topic, French and German scores are lower than in other topics, but this is mainly due to expression/formatting issues such as literal English-style phrasing (German) or broken dialogue formatting from missing speaker labels (French). There are no major issues with content accuracy or practical usability. See [core/README.md](core/README.md) for details.
+In the momentum topic, Spanish, French and Chinese score lower than in the other topics. The main cause is dropped speaker labels, mostly on short lines such as the back-channel "Oh?" or "Sure.": the label is left out on about a third of the lines in Spanish and French and on fewer lines in Chinese. Jev deducts for that under information completeness, their lowest criterion. German and Japanese keep every label. See [core/README.md](core/README.md) for details.
 
 ## Background on Model Selection and Verification
 
 - **Purpose of additional verification**: gemma4's results showed unusually low scores for some languages. Based on this, sets were created to verify whether switching the translation model to gpt-oss or the qwen family improves translation quality.
-- **Unifying the evaluation model**: For relative quality comparison, the most important thing is to keep the scoring criteria (the ruler) consistent across all sets. For this reason, every onde set is scored by the same evaluator. That evaluator was qwen3.6 (median of three runs, including self-evaluation) until it was replaced by TypeSafe's Jev, which reads each criterion as a distribution over five severity levels and varies so little between runs that one run per language is enough. [experimental/13](../../experimental/13/README.md) is how it was chosen and [onde/JEV.md](onde/JEV.md) the run over the corpus.
-- **Pinning the evaluator's version**: Jev is pinned to `jev-1.13.0` (`DEFAULT_MODEL` in [trtools/jev.py](../../trtools/jev.py)) rather than an alias, and stays on it until the provider retires that version. Changing it changes every score, so it means regenerating the whole onde corpus — `jev.jsonl`, `SCORES-jev.txt`, `TREND-jev.jsonl` — and updating the evaluation model named in each model's `README.md` in the same pass.
+- **Unifying the evaluation model**: For relative quality comparison, the most important thing is to keep the scoring criteria (the ruler) consistent across all sets. For this reason, every set is scored by the same evaluator. That evaluator was qwen3.6 (median of three runs, including self-evaluation) until it was replaced by TypeSafe's Jev, which reads each criterion as a distribution over five severity levels and varies so little between runs that one run per language is enough. [experimental/13](../../experimental/13/README.md) is how it was chosen and [onde/JEV.md](onde/JEV.md) the run over the corpus.
+- **Pinning the evaluator's version**: Jev is pinned to `jev-1.13.0` (`DEFAULT_MODEL` in [trtools/jev.py](../../trtools/jev.py)) rather than an alias, and stays on it until the provider retires that version. Changing it changes every score, so it means regenerating every set's Jev output — onde's `jev.jsonl`, `SCORES-jev.txt` and `TREND-jev.jsonl`, and core/'s and fr/'s `jev-{topic}.jsonl` and `SCORES-jev.txt` — and updating the evaluation model named in each model's `README.md` and in core/'s and fr/'s in the same pass.
 
 ## Comparison Between Translation Models
 
@@ -185,18 +185,12 @@ Mean and standard deviation are automatically computed from the comparison table
 
 No universal translation model exists, strongly suggesting the importance of choosing a model to match the language.
 
-## Scope of the Comparison and Open Questions
+## Scope of the Comparison
 
-What the comparison above can and cannot be read as, and what is still open. These were carried over from [experimental/13/PORT.md](../../experimental/13/PORT.md) section 8 when experiments 13 and 14 were frozen; this section is where they are kept up to date.
-
-**Settled**
+What the comparison above can and cannot be read as. These were carried over from [experimental/13/PORT.md](../../experimental/13/PORT.md) section 8 when experiments 13 and 14 were frozen; this section is where they are kept up to date.
 
 - **One source text, chosen to be hard.** Every onde score is a translation of one document, [onde-en.txt](../onde-en.txt). It is deliberately spoken in form and technical in content, a combination that is hard to translate, so that translators differ. The scores are therefore not a general-purpose measure of multilingual ability, and whether the ranking would hold for another genre is untested. This is accepted as the corpus's design rather than treated as a gap to fill with a second source.
 - **The top two are even.** `gpt-5.6-luna` and `union-alpha` are not separated per language by either evaluator, qwen3.6 or Jev ([experimental/13/REPORT.md](../../experimental/13/REPORT.md) section 2), so they are treated as tied. The small difference in their means is not read as an order, and nothing further is being tried to separate them.
-
-**Open**
-
-- **core/ and fr/ are still on qwen3.6.** Their scores, and the core table above, are on the old scale and cannot be set against the comparison table. Moving them to Jev is pending.
 
 ## Evaluation Design Policy: Why Speaker Tags Aren't Separated
 
