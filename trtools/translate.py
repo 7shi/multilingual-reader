@@ -295,5 +295,5 @@ def run(args):
     ui.write(f"Elapsed time: {elapsed:.1f}s ({elapsed/60:.1f}min)\n")
     if usage_path is not None:
         ui.write(f"Usage: {client.usage}\n")
-        if not getattr(args, "batch", False):
-            print_today_totals(usage_path)
+        print_today_totals(usage_path)
+    return client.usage

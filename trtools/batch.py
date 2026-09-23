@@ -4,7 +4,7 @@ import os
 import time
 from argparse import Namespace
 from pathlib import Path
-from llm7shi.usage import print_today_totals
+from llm7shi.usage import Usage, print_today_totals
 from . import llm, translate, evaluate, aggregate
 from .language import LANG_NAMES
 
@@ -70,14 +70,16 @@ def _eval_path(topic, lang, trrun, tr_runs, evrun, eval_dir="evals"):
 
 
 def run(args):
-    _run(args)
-    # Printed once for the whole batch; translate.run() only appends per language
+    usages = []
+    _run(args, usages)
+    # The whole batch's translation usage, after everything else has finished
     if llm.USAGE_PATH is not None:
-        print()
+        print(f"\nTotal usage: {sum(usages, Usage())}\n")
         print_today_totals(llm.USAGE_PATH)
 
 
-def _run(args):
+def _run(args, usages):
+    """The batch itself; appends the Usage of each translation run to `usages`."""
     if args.tr_only and args.eval_only:
         print("Error: --tr-only and --eval-only cannot be specified together")
         return
@@ -138,13 +140,14 @@ def _run(args):
                         retry_wait=args.retry_wait,
                         fix=False,
                         save_usage=args.save_usage,
-                        batch=True,
                         label=lang,
                         start=tr_start,
                         index=tr_index,
                         count=tr_total,
                     )
-                    translate.run(tr_args)
+                    usage = translate.run(tr_args)
+                    if usage is not None:
+                        usages.append(usage)
 
     if args.tr_only:
         return

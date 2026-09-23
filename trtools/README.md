@@ -152,7 +152,7 @@ uv run trtools translate <input_file> -f <from_lang> -t <to_lang> -o <output> -m
 | `--fix` | false | Retranslate only the empty lines in the existing output. Normal mode determines resume position from line count alone, so it does not detect empty lines and simply continues; `--fix` rewrites the whole output file, retranslating only the empty spots |
 | `--save-usage` | false | Record token usage regardless of model name |
 
-Token usage is recorded for `openai:` and `gpt-` models, and for any model with `--save-usage`: one `usage.jsonl` entry per language, written even if the translation fails partway, followed by the day's totals. Local models record nothing.
+Token usage is recorded for `openai:` and `gpt-` models, and for any model with `--save-usage`: one `usage.jsonl` entry per language, written even if the translation fails partway. Each language's usage is printed with the day's totals when it finishes. Local models record nothing.
 
 ### Examples
 
@@ -677,7 +677,7 @@ uv run trtools batch <files...> --langs <lang...> -m <model> [options]
 | `-w`, `--retry-wait` | `3` | Retry wait time in seconds |
 | `--save-usage` | false | Record translation usage regardless of model name |
 
-Translation usage is recorded as in [`translate`](#translate), one `usage.jsonl` entry per language, and the day's totals are printed once after all phases finish. Evaluation usage is not recorded.
+Translation usage is recorded and printed per language as in [`translate`](#translate). After all phases finish, the total over every language translated and the day's totals are printed. Evaluation usage is not recorded.
 
 ### Output File Layout
 
