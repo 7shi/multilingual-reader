@@ -1,7 +1,7 @@
 import argparse
 import time
 from tqdm import tqdm
-from trtools.llm import LLMClient
+from llm7shi import Client
 
 parser = argparse.ArgumentParser(description="Translation revision script using third-party evaluation")
 parser.add_argument("--original", required=True, help="Original text file")
@@ -22,7 +22,8 @@ with open(args.translation, "r", encoding="utf-8") as f:
 if len(orig_lines) != len(tr_lines):
     print("Warning: The number of lines in original and translation files do not match.")
 
-client = LLMClient(model=args.model, think=(not args.no_think))
+client = Client(model=args.model, include_thoughts=(not args.no_think),
+                show_params=False, max_length=8192, keep_history=False)
 
 context_history = []
 results = []
@@ -68,11 +69,12 @@ for i, (orig_line, tr_line) in enumerate(zip(orig_lines, tr_lines)):
 
     # Prompt 1: Analysis
     prompt1 = f"Original {args.from_lang} text:\n{text}\n\nBase {args.to_lang} translation:\n{tr_text}\n\nPlease analyze this translation. Point out any literal translations, interference from other languages, unnatural phrasing, or grammar issues. If it's perfect, just say 'No issues'."
-    chat_history.append({"role": "user", "content": prompt1})
-    
+
     print("\nAnalysis:")
     # Streamed in real time, so no need to print the return value
-    analysis = client.call(chat_history)
+    client.history = chat_history
+    analysis = client(prompt1).text
+    chat_history.append({"role": "user", "content": prompt1})
     print()
     chat_history.append({"role": "assistant", "content": analysis})
 
@@ -84,11 +86,10 @@ for i, (orig_line, tr_line) in enumerate(zip(orig_lines, tr_lines)):
     else:
         # Prompt 2: Refinement
         prompt2 = f"Now, provide the improved {args.to_lang} translation for the original text based on your analysis. Output ONLY the improved translation text. Do not include the speaker name '{speaker}:', quotes, or any explanations."
-        chat_history.append({"role": "user", "content": prompt2})
-
         print("\nRefined:")
         # Streamed in real time, so no need to print the return value
-        improved_tr = client.call(chat_history)
+        client.history = chat_history
+        improved_tr = client(prompt2).text
         improved_tr = improved_tr.strip()
 
         # clean up quotes if the model wrapped it

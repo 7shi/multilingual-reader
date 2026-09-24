@@ -1,6 +1,6 @@
 import csv
 from .language import LANG_NAMES
-from .llm import LLMClient
+from llm7shi import Client
 from .statusline import StatusLine
 
 
@@ -53,7 +53,12 @@ def run(args):
             except ValueError as e:
                 ui.write(f"Warning: {e} in terms TSV\n")
 
-    client = LLMClient(model=args.model, think=(not args.no_think))
+    # History is rebuilt for every line, so each call sends it explicitly
+    client = Client(model=args.model, include_thoughts=(not args.no_think),
+                    file=ui.stream, show_params=False, max_length=8192, keep_history=False)
+    # The refinement is shown in a panel afterwards, so it is not streamed
+    quiet_client = client.copy()
+    quiet_client.file = None
     context_history = []
     results = []
 
@@ -102,9 +107,10 @@ def run(args):
                 f"Please analyze this translation. Point out any literal translations, interference from other languages, "
                 f"unnatural phrasing, or grammar issues. If it's perfect, just say 'No issues'."
             )
-            chat_history.append({"role": "user", "content": prompt1})
-            analysis = client.call(chat_history, file=ui.stream)
+            client.history = chat_history
+            analysis = client(prompt1).text
             ui.stream.end()
+            chat_history.append({"role": "user", "content": prompt1})
             chat_history.append({"role": "assistant", "content": analysis})
 
             if "No issues" in analysis or "no issues" in analysis.lower():
@@ -114,9 +120,8 @@ def run(args):
                     f"Now, provide the improved {to_lang} translation for the original text based on your analysis. "
                     f"Output ONLY the improved translation text. Do not include the speaker name '{speaker}:', quotes, or any explanations."
                 )
-                chat_history.append({"role": "user", "content": prompt2})
-                improved_tr = client.call(chat_history, file=None)
-                improved_tr = improved_tr.strip()
+                quiet_client.history = chat_history
+                improved_tr = quiet_client(prompt2).text.strip()
                 if improved_tr.startswith('"') and improved_tr.endswith('"'):
                     improved_tr = improved_tr[1:-1].strip()
 

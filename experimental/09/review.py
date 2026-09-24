@@ -8,7 +8,7 @@ from rich.table import Table
 from rich.progress import Progress, ProgressColumn, SpinnerColumn, TextColumn, BarColumn, TaskProgressColumn, TimeElapsedColumn
 from rich.text import Text
 from trtools.language import LANG_NAMES
-from trtools.llm import LLMClient
+from llm7shi import Client
 
 parser = argparse.ArgumentParser(description="Translation revision script using third-party evaluation")
 parser.add_argument("--original", required=True, help="Original text file")
@@ -57,7 +57,8 @@ if args.terms:
         except ValueError as e:
             print(f"Warning: {e} in terms TSV")
 
-client = LLMClient(model=args.model, think=(not args.no_think))
+client = Client(model=args.model, include_thoughts=(not args.no_think),
+                show_params=False, max_length=8192, keep_history=False)
 console = Console()
 
 
@@ -190,9 +191,11 @@ with Progress(
             f"Please analyze this translation. Point out any literal translations, interference from other languages, "
             f"unnatural phrasing, or grammar issues. If it's perfect, just say 'No issues'."
         )
-        chat_history.append({"role": "user", "content": prompt1})
-        analysis = client.call(chat_history, file=stream)
+        client.file = stream
+        client.history = chat_history
+        analysis = client(prompt1).text
         stream.end()
+        chat_history.append({"role": "user", "content": prompt1})
         chat_history.append({"role": "assistant", "content": analysis})
 
         if "No issues" in analysis or "no issues" in analysis.lower():
@@ -203,9 +206,9 @@ with Progress(
                 f"Now, provide the improved {args.to_lang} translation for the original text based on your analysis. "
                 f"Output ONLY the improved translation text. Do not include the speaker name '{speaker}:', quotes, or any explanations."
             )
-            chat_history.append({"role": "user", "content": prompt2})
-
-            improved_tr = client.call(chat_history, file=None)
+            client.file = None
+            client.history = chat_history
+            improved_tr = client(prompt2).text
             improved_tr = improved_tr.strip()
 
             if improved_tr.startswith('"') and improved_tr.endswith('"'):

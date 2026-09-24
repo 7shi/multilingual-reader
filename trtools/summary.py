@@ -9,7 +9,7 @@
 
 import json
 from pathlib import Path
-from .llm import LLMClient, DEFAULT_RETRY_WAIT_SECONDS
+from llm7shi import Client
 
 
 def add_parser(subparsers):
@@ -24,8 +24,6 @@ def add_parser(subparsers):
                         help="Number of lines to keep for checkpoint calculation (match translate; default: 5)")
     parser.add_argument("--no-think", action="store_true",
                         help="Disable thinking (for Qwen3 models)")
-    parser.add_argument("-w", "--retry-wait", type=int, default=DEFAULT_RETRY_WAIT_SECONDS,
-                        help=f"Wait time on retry, in seconds (default: {DEFAULT_RETRY_WAIT_SECONDS}s)")
     parser.set_defaults(func=run)
 
 
@@ -102,41 +100,39 @@ def _generate_one(input_file, from_lang, threshold, keep, client):
         print(f"Summary already generated: {path}")
         return
 
-    system_msg = {
-        "role": "system",
-        "content": (
-            f"You are analyzing a {from_lang} text. Summarize the text so far in 2-3 "
-            f"sentences (in English). Focus on topics and narrative context. If a "
-            f"previous summary exists, integrate the new content with it rather than "
-            f"starting over."
-        ),
-    }
-    history = [system_msg]
+    # The conversation starts over for each file
+    client.history = []
+    client.set_system_prompt(
+        f"You are analyzing a {from_lang} text. Summarize the text so far in 2-3 "
+        f"sentences (in English). Focus on topics and narrative context. If a "
+        f"previous summary exists, integrate the new content with it rather than "
+        f"starting over."
+    )
     prev_end = 0
     with open(path, "a", encoding="utf-8") as out_f:
         for i in checkpoints:
             chunk_text = "\n".join(line for _, line in content_lines[prev_end:i])
-            user_msg = {"role": "user", "content": chunk_text}
-            history.append(user_msg)
             if i in summaries:
-                summary_text = summaries[i]
+                # Cached summaries are replayed into the history without a call
+                client.history.append({"role": "user", "content": chunk_text})
+                client.history.append({"role": "assistant", "content": summaries[i]})
             else:
-                summary_text = client.call(history).strip()
+                summary_text = client(chunk_text).text.strip()
                 summaries[i] = summary_text
                 out_f.write(json.dumps({"i": i, "summary": summary_text}, ensure_ascii=False) + "\n")
                 out_f.flush()
                 print(f"Generated summary ({i}/{total} lines)")
-            history.append({"role": "assistant", "content": summary_text})
             prev_end = i
 
     print(f"Saved summary: {path}")
 
 
 def run(args):
-    client = LLMClient(
+    client = Client(
         model=args.model,
-        think=(not args.no_think),
-        retry_wait=args.retry_wait,
+        include_thoughts=(not args.no_think),
+        show_params=False,
+        max_length=8192,
     )
 
     n = len(args.input_files)

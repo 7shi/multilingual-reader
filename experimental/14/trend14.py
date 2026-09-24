@@ -40,11 +40,12 @@ import json
 import statistics
 from pathlib import Path
 
+from llm7shi import Client
 from llm7shi.usage import Usage, append_usage, print_today_totals
 
 from trtools.jev_criteria import CRITERIA, CRITERION_IDS, LEVELS, POINTS_PER_LEVEL
 from trtools.language import LANGUAGES
-from trtools.llm import LLMClient, init_usage_path
+from trtools.llm import init_usage_path
 from trtools.trend import _clean, _matches_lang
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -537,8 +538,8 @@ JEV_LEVEL = "The scoring behind it judged its weakest criterion as follows: {} "
 def two_stage(client, original_text, translated_text, lang_name, scores, output_lang,
               output_lang_name):
     """(comment, phrase). Stage 2 retries on the wrong language, as trend.py does."""
-    comment = client.call(
-        two_stage_eval_prompts(original_text, translated_text, lang_name, scores))
+    comment = client(
+        two_stage_eval_prompts(original_text, translated_text, lang_name, scores)).text
     total = sum(scores.values()) * POINTS_PER_LEVEL
     prompts = two_stage_trend_prompts(comment.strip(), total, lang_name, output_lang_name)
     for attempt in range(3):
@@ -548,7 +549,7 @@ def two_stage(client, original_text, translated_text, lang_name, scores, output_
             f"and output nothing but the phrase itself."
         ]
         print("\n  -> ", end="", flush=True)
-        text = client.call(p)
+        text = client(p).text
         if _matches_lang(text, output_lang):
             break
         print(f"  retrying: not in {output_lang_name} ({attempt + 1}/3)")
@@ -839,9 +840,13 @@ def main():
 
     original_text = ORIGINAL.read_text(encoding="utf-8").rstrip()
     output_lang_name = "Japanese" if args.lang == "ja" else "English"
-    client = None if args.show_prompt else LLMClient(model=args.model, think=args.think)
+    client = None if args.show_prompt else Client(
+        model=args.model, include_thoughts=args.think, show_params=False, max_length=8192,
+        keep_history=False)
     # The two-stage variant runs without thinking regardless of --think.
-    client_no_think = None if args.show_prompt else LLMClient(model=args.model, think=False)
+    client_no_think = None if args.show_prompt else Client(
+        model=args.model, include_thoughts=False, show_params=False, max_length=8192,
+        keep_history=False)
 
     # Where the cost of a run is recorded, or None when it is not worth recording, on
     # trtools.llm.init_usage_path()'s condition. Every call's Usage is summed and the sum is
@@ -886,14 +891,14 @@ def main():
                                                             output_lang_name)))
                     continue
                 print(f"  {name or 'new'}: ", end="", flush=True)
-                client_no_think.usage = Usage()
+                client_no_think.usages.clear()
                 comment, text = two_stage(client_no_think, original_text,
                                           translated_text, lang_name,
                                           record["scores"], args.lang,
                                           output_lang_name)
                 text = _clean(text)
                 if usage_path is not None:
-                    usage = client_no_think.usage
+                    usage = sum(client_no_think.usages, Usage())
                     total_usage += usage
                     print(f"    {usage}")
                 path = out_dir / f"{name}.jsonl" if out_dir else (
@@ -935,10 +940,10 @@ def main():
             # llm7shi streams the reply as it arrives, so the label goes out first and the
             # text lands after it. Printing it again would show every phrase twice.
             print(f"  {name or 'new'}: ", end="", flush=True)
-            client.usage = Usage()
-            text = _clean(client.call(prompts))
+            client.usages.clear()
+            text = _clean(client(prompts).text)
             if usage_path is not None:
-                usage = client.usage
+                usage = sum(client.usages, Usage())
                 total_usage += usage
                 print(f"    {usage}")
 
@@ -978,7 +983,9 @@ def run_comments(parser, args):
     out_dir = Path(args.out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
     output_lang_name = "Japanese" if args.lang == "ja" else "English"
-    client = None if args.show_prompt else LLMClient(model=args.model, think=False)
+    client = None if args.show_prompt else Client(
+        model=args.model, include_thoughts=False, show_params=False, max_length=8192,
+        keep_history=False)
 
     for source in sources:
         suffix = source.stem[len("two-stage"):]
@@ -1010,7 +1017,7 @@ def run_comments(parser, args):
                         f"Reply again with the same summary written in {output_lang_name}, "
                         f"and output nothing but the phrase itself."
                     ]
-                    text = client.call(p)
+                    text = client(p).text
                     if _matches_lang(text, args.lang):
                         break
                     print(f"  retrying: not in {output_lang_name} ({attempt + 1}/3)")

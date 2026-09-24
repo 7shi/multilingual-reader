@@ -107,7 +107,6 @@ uv run trtools summary <input_file...> -f <from_lang> -m <model> [options]
 | `--threshold` | `10` | Interval for summary generation, in lines. Match with `translate` |
 | `--keep` | `5` | Number of lines to keep for checkpoint calculation. Match with `translate` |
 | `--no-think` | false | Disable thinking (for Qwen3 models) |
-| `-w`, `--retry-wait` | 3 | Retry wait time in seconds |
 
 ### Examples
 
@@ -148,11 +147,10 @@ uv run trtools translate <input_file> -f <from_lang> -t <to_lang> -o <output> -m
 | `--terms-json` | none | Output JSON file from `term extract` |
 | `--terms-tsv` | none | Output TSV file from `term translate` |
 | `--no-think` | false | Disable thinking (for Qwen3 models) |
-| `-w`, `--retry-wait` | 3 | Retry wait time in seconds |
 | `--fix` | false | Retranslate only the empty lines in the existing output. Normal mode determines resume position from line count alone, so it does not detect empty lines and simply continues; `--fix` rewrites the whole output file, retranslating only the empty spots |
 | `--save-usage` | false | Record token usage regardless of model name |
 
-Token usage is recorded for `openai:` and `gpt-` models, and for any model with `--save-usage`: one `usage.jsonl` entry per language, written even if the translation fails partway. Each language's usage is printed with the day's totals for that model when it finishes. Local models record nothing.
+Token usage is recorded for `openai:` and `gpt-` models, and for any model with `--save-usage`: one `usage.jsonl` entry per language, written even if the translation fails partway. Each language's usage is printed when it finishes, followed by the day's totals for that model when recorded. Local models record nothing, but their usage is still printed if the server reports it.
 
 ### Examples
 
@@ -241,7 +239,6 @@ uv run trtools eval --original <orig> --translation <tr> -f <from> -t <to> -m <m
 | Option | Default | Description |
 |---|---|---|
 | `-o`, `--output` | none | Where to save the evaluation result JSON |
-| `-w`, `--retry-wait` | 3 | Retry wait time in seconds |
 | `--no-think` | false | Disable thinking |
 | `--run` | `1` | Current evaluation run number (used for the progress bar) |
 | `--runs` | `1` | Total number of evaluation runs (used for the progress bar) |
@@ -407,7 +404,6 @@ uv run trtools trend <json_files...> -m <model> [options]
 | `--sync` | none | Path of the `README.md` to write the table back into after generation |
 | `--render-only` | false | Only output/sync the table from the JSONL, without generating |
 | `--no-think` | false | Disable thinking (`--jev` always runs without it) |
-| `-w`, `--retry-wait` | 3 | Wait time on retry, in seconds |
 | `-l`, `--lang` | `en` | Output language of the summary (`en`/`ja`) |
 
 ### Behavior
@@ -471,7 +467,6 @@ uv run trtools term extract <input_file> -f <from_lang> -m <model> -o <output.js
 | Option | Default | Description |
 |---|---|---|
 | `--keep` | `5` | Chunk size, in lines |
-| `-w`, `--retry-wait` | 3 | Retry wait time in seconds |
 | `--no-think` | false | Disable thinking |
 
 ### Example
@@ -507,7 +502,6 @@ uv run trtools term translate <extract.json> -t <lang> [-t <lang> ...] -m <model
 | Option | Default | Description |
 |---|---|---|
 | `-c`, `--common` | none | Common glossary TSV file (reuse existing translations) |
-| `-w`, `--retry-wait` | 3 | Retry wait time in seconds |
 | `--no-think` | false | Disable thinking |
 
 ### Examples
@@ -674,10 +668,9 @@ uv run trtools batch <files...> --langs <lang...> -m <model> [options]
 | `--no-think` | false | Disable CoT |
 | `--tr-dir` | `tr` | Translation output directory |
 | `--eval-dir` | `evals` | Evaluation output directory |
-| `-w`, `--retry-wait` | `3` | Retry wait time in seconds |
 | `--save-usage` | false | Record translation usage regardless of model name |
 
-Translation usage is recorded and printed per language as in [`translate`](#translate). After all phases finish, the total over every language translated and the day's totals for the translation model are printed. Evaluation usage is not recorded.
+Translation usage is recorded and printed per language as in [`translate`](#translate). After all phases finish, the total over every language translated is printed, followed by the day's totals for the translation model when recorded. Evaluation usage is not recorded.
 
 ### Output File Layout
 

@@ -194,50 +194,58 @@ def run(args):
     served_model = args.model
     run_start = time.monotonic()
 
-    ui = StatusLine(label=pending[0][0], left_count=True)
-    with TypeSafeClient(timeout=args.timeout) as client, \
-            ui.progress(len(args.langs), start=len(done)) as prog:
-        for offset, (lang, lang_name, tr_file) in enumerate(pending, len(done) + 1):
-            prog.update(offset - 1, label=lang)
-            # The whole processing of this language, not the request alone: the file
-            # read, the retries and building the record are part of what a run costs.
-            started = time.monotonic()
+    evaluated = 0
+    try:
+        ui = StatusLine(label=pending[0][0], left_count=True)
+        with TypeSafeClient(timeout=args.timeout) as client, \
+                ui.progress(len(args.langs), start=len(done)) as prog:
+            for offset, (lang, lang_name, tr_file) in enumerate(pending, len(done) + 1):
+                prog.update(offset - 1, label=lang)
+                # The whole processing of this language, not the request alone: the file
+                # read, the retries and building the record are part of what a run costs.
+                started = time.monotonic()
 
-            translated_text = tr_file.read_text(encoding="utf-8").rstrip()
-            state = build_state(original_text, translated_text, args.from_lang, lang_name)
-            for attempt in range(1, args.attempts + 1):
-                try:
-                    answers, usage, served_model = evaluate(client, args, state,
-                                                            expect_model)
-                    break
-                except SystemExit:
-                    raise
-                except Exception as e:
-                    ui.write(f"  attempt {attempt}/{args.attempts} failed for {lang}: {e}\n")
-            else:
-                raise SystemExit(f"GIVING UP on {lang} after {args.attempts} attempts")
+                translated_text = tr_file.read_text(encoding="utf-8").rstrip()
+                state = build_state(original_text, translated_text, args.from_lang,
+                                    lang_name)
+                for attempt in range(1, args.attempts + 1):
+                    try:
+                        answers, usage, served_model = evaluate(client, args, state,
+                                                                expect_model)
+                        break
+                    except SystemExit:
+                        raise
+                    except Exception as e:
+                        ui.write(f"  attempt {attempt}/{args.attempts} failed "
+                                 f"for {lang}: {e}\n")
+                else:
+                    raise SystemExit(f"GIVING UP on {lang} after {args.attempts} attempts")
 
-            total_usage = total_usage + usage
-            record = {
-                "lang": lang,
-                "model": served_model,
-                "rubric": SCHEME_ID,
-                "scores": {key: round(answers[key][0], 4) for key in CRITERION_IDS},
-                "confidence": {key: round(answers[key][1], 4) for key in CRITERION_IDS},
-                "probabilities": {key: answers[key][2] for key in CRITERION_IDS},
-                "usage": usage.to_dict(),
-                "seconds": round(time.monotonic() - started, 2),
-            }
-            # Append per language, so an interruption loses at most one.
-            with out_path.open("a", encoding="utf-8") as f:
-                f.write(json.dumps(record, ensure_ascii=False) + "\n")
-                f.flush()
-            prog.update(offset, label=lang)
+                total_usage = total_usage + usage
+                evaluated += 1
+                record = {
+                    "lang": lang,
+                    "model": served_model,
+                    "rubric": SCHEME_ID,
+                    "scores": {key: round(answers[key][0], 4) for key in CRITERION_IDS},
+                    "confidence": {key: round(answers[key][1], 4) for key in CRITERION_IDS},
+                    "probabilities": {key: answers[key][2] for key in CRITERION_IDS},
+                    "usage": usage.to_dict(),
+                    "seconds": round(time.monotonic() - started, 2),
+                }
+                # Append per language, so an interruption loses at most one.
+                with out_path.open("a", encoding="utf-8") as f:
+                    f.write(json.dumps(record, ensure_ascii=False) + "\n")
+                    f.flush()
+                prog.update(offset, label=lang)
+    finally:
+        # One usage.jsonl entry for the whole run: it is account-level state, and one
+        # line per language would bury everything else in it. Recorded even when
+        # interrupted, since the tokens were spent either way.
+        if evaluated:
+            append_usage(total_usage, served_model, usage_path)
 
     elapsed = time.monotonic() - run_start
-    # One usage.jsonl entry for the whole run: it is account-level state, and one line
-    # per language would bury everything else in it.
-    append_usage(total_usage, served_model, usage_path)
     print(f"\n{len(pending)} languages in {elapsed:.1f}s "
           f"({elapsed / len(pending):.2f}s each), {total_usage}\n")
     print_today_totals(usage_path, models=[served_model])

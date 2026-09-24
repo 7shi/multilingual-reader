@@ -37,7 +37,8 @@ from typing import Literal
 
 from pydantic import BaseModel, Field, create_model
 
-from trtools.llm import LLMClient, DEFAULT_RETRY_WAIT_SECONDS, init_usage_path
+from llm7shi import Client
+from trtools.llm import init_usage_path
 from trtools.statusline import StatusLine
 from llm7shi.usage import Usage, append_usage, print_today_totals
 
@@ -120,7 +121,7 @@ def verdict_of(judged):
 
 
 def check_sane(result, item_ids, with_evidence):
-    """Reject degenerate output so call_json retries instead of recording it.
+    """Reject degenerate output so the run is retried instead of recorded.
 
     Existing runs show two failure shapes: every criterion scored 0 with an empty
     rationale, and schema placeholders emitted verbatim. Both look like real data
@@ -149,7 +150,7 @@ def check_sane(result, item_ids, with_evidence):
         raise ValueError(f"placeholder overall_comment: {comment!r}")
 
 
-def evaluate(client, original_text, translated_text, from_lang, to_lang, split, file,
+def evaluate(client, original_text, translated_text, from_lang, to_lang, split,
              no_evidence=False, prog=None, done=0):
     """Run every chunk and merge the judgements into one dict.
 
@@ -185,7 +186,10 @@ def evaluate(client, original_text, translated_text, from_lang, to_lang, split, 
             f"<translation>\n{translated_text}\n</translation>",
             task,
         ]
-        result = client.call_json(prompts, schema=schema, file=file)
+        data = client(prompts, schema=schema).data
+        if data is None:
+            raise ValueError(f"no valid JSON after {client.retries} attempts")
+        result = data.model_dump()
         check_sane(result, item_ids, with_evidence)
         merged.update(result)
         if prog is not None:
@@ -220,11 +224,13 @@ def run(args, ui, prog, done):
     if orig_lines != tr_lines:
         ui.write(f"Warning: line count mismatch ({orig_lines} vs {tr_lines})\n")
 
-    client = LLMClient(model=args.model, think=(not args.no_think), retry_wait=args.retry_wait)
+    client = Client(model=args.model, include_thoughts=(not args.no_think), file=ui.stream,
+                    show_params=False, max_length=8192, keep_history=False,
+                    add_json_descriptions=True)
 
     call_start = args.attempt_start if args.attempt_start is not None else time.time()
     evaluation = evaluate(client, original_text, translated_text,
-                          args.from_lang, args.to_lang, args.split, ui.stream,
+                          args.from_lang, args.to_lang, args.split,
                           no_evidence=args.no_evidence, prog=prog, done=done)
     ui.stream.end()
     duration_seconds = time.time() - call_start
@@ -243,7 +249,7 @@ def run(args, ui, prog, done):
     ui.write(f"Verdicts: yes={counts['yes']} partial={counts['partial']} no={counts['no']}\n")
     ui.write(f"Duration: {duration_seconds:.1f}s\n")
 
-    usage = client.usage
+    usage = sum(client.usages, Usage())
     ui.write(f"{usage}\n")
 
     if args.output_file:
@@ -349,7 +355,6 @@ def main():
     parser.add_argument("--targets", default=str(BASE_DIR / "targets.tsv"))
     parser.add_argument("--runs", type=int, default=RUNS)
     parser.add_argument("--split", choices=["none", "group", "item"], default="none")
-    parser.add_argument("-w", "--retry-wait", type=int, default=DEFAULT_RETRY_WAIT_SECONDS)
     parser.add_argument("--save-usage", action="store_true",
                         help="Record usage regardless of model name")
     cli_args = parser.parse_args()
@@ -380,7 +385,6 @@ def main():
                 original=ORIGINAL, translation=str(tr_file),
                 model=cli_args.model, from_lang="English", to_lang=lang_name,
                 output_file=str(eval_dir / f"{stem}-{run_no}.json"),
-                retry_wait=cli_args.retry_wait,
                 no_think=cli_args.no_think, no_evidence=cli_args.no_evidence,
                 split=cli_args.split, run=run_no, runs=cli_args.runs,
                 label=label, start=batch_start, attempt_start=time.time(),

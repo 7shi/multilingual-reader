@@ -2,7 +2,7 @@
 
 import json
 from pydantic import BaseModel, Field
-from .llm import LLMClient, DEFAULT_RETRY_WAIT_SECONDS
+from llm7shi import Client
 from .statusline import StatusLine
 
 class ReasoningAndScore(BaseModel):
@@ -48,8 +48,6 @@ def add_parser(subparsers):
     parser.add_argument("-f", "--from", dest="from_lang", required=True, help="Source language (e.g. English, Japanese)")
     parser.add_argument("-t", "--to", dest="to_lang", required=True, help="Target language (e.g. English, Japanese)")
     parser.add_argument("-o", "--output", dest="output_file", help="Filename to save the evaluation result as JSON")
-    parser.add_argument("-w", "--retry-wait", type=int, default=DEFAULT_RETRY_WAIT_SECONDS,
-                        help=f"Wait time on retry, in seconds (default: {DEFAULT_RETRY_WAIT_SECONDS}s)")
     parser.add_argument("--no-think", action="store_true", help="Disable thinking (for Qwen3 models)")
     parser.add_argument("--run", type=int, default=1, help="Current evaluation run number (default: 1)")
     parser.add_argument("--runs", type=int, default=1, help="Total number of evaluation runs (default: 1)")
@@ -91,17 +89,23 @@ Score each criterion from 0-20 points based on the ENTIRE document."""
         evaluation_prompt,
     ]
 
-    client = LLMClient(
+    client = Client(
         model=args.model,
-        think=(not args.no_think),
-        retry_wait=args.retry_wait,
+        include_thoughts=(not args.no_think),
+        file=ui.stream,
+        show_params=False,
+        max_length=8192,
+        add_json_descriptions=True,
     )
 
     run = getattr(args, 'run', 1)
     runs = getattr(args, 'runs', 1)
     with ui.progress(runs, start=run - 1) as prog:
-        evaluation_result = client.call_json(prompts, schema=schema, file=ui.stream)
+        response = client(prompts, schema=schema)
         ui.stream.end()
+        if response.data is None:
+            raise RuntimeError(f"No valid evaluation JSON after {client.retries} attempts")
+        evaluation_result = response.data.model_dump()
         prog.update(run)
 
     labels = [

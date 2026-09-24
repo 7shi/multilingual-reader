@@ -4,7 +4,7 @@ import os
 import time
 from argparse import Namespace
 from pathlib import Path
-from llm7shi.usage import Usage, print_today_totals
+from llm7shi.usage import print_today_totals
 from . import llm, translate, evaluate, aggregate
 from .language import LANG_NAMES
 
@@ -33,8 +33,6 @@ def add_parser(subparsers):
     parser.add_argument("--no-agg", action="store_true", help="Skip aggregation (do not generate SCORES.txt)")
     parser.add_argument("--tr-dir", default="tr", help="Translation output directory (default: tr)")
     parser.add_argument("--eval-dir", default="evals", help="Evaluation output directory (default: evals)")
-    parser.add_argument("-w", "--retry-wait", type=int, default=3,
-                        help="Retry wait time in seconds (default: 3)")
     parser.add_argument("--save-usage", action="store_true",
                         help="Record translation usage regardless of model name (recorded by default for openai: and gpt- models)")
     parser.set_defaults(func=run)
@@ -73,9 +71,11 @@ def run(args):
     usages = []
     _run(args, usages)
     # The whole batch's translation usage, after everything else has finished
-    if llm.USAGE_PATH is not None:
-        print(f"\nTotal usage: {sum(usages, Usage())}\n")
-        print_today_totals(llm.USAGE_PATH, models=[args.model])
+    if usages:
+        print(f"\n--- Total Usage ---\n{sum(usages)}")
+        if llm.USAGE_PATH is not None:
+            print()
+            print_today_totals(llm.USAGE_PATH, models=[args.model])
 
 
 def _run(args, usages):
@@ -137,7 +137,6 @@ def _run(args, usages):
                         terms_json=terms_json,
                         terms_tsv=terms_tsv,
                         no_think=args.no_think,
-                        retry_wait=args.retry_wait,
                         fix=False,
                         save_usage=args.save_usage,
                         label=lang,
@@ -181,7 +180,6 @@ def _run(args, usages):
                         from_lang=from_lang,
                         to_lang=lang_name,
                         output_file=eval_out,
-                        retry_wait=args.retry_wait,
                         no_think=False,
                         run=evrun,
                         runs=args.eval_runs,

@@ -1,7 +1,7 @@
 import argparse
 import time
 from tqdm import tqdm
-from trtools.llm import LLMClient
+from llm7shi import Client
 
 parser = argparse.ArgumentParser(description="Translation revision script using third-party evaluation (single-step CoT)")
 parser.add_argument("--original", required=True, help="Original text file")
@@ -22,7 +22,8 @@ with open(args.translation, "r", encoding="utf-8") as f:
 if len(orig_lines) != len(tr_lines):
     print("Warning: The number of lines in original and translation files do not match.")
 
-client = LLMClient(model=args.model, think=not args.no_think)
+client = Client(model=args.model, include_thoughts=not args.no_think,
+                show_params=False, max_length=8192, keep_history=False)
 
 context_history = []
 results = []
@@ -76,11 +77,10 @@ Base {args.to_lang} translation:
 Analyze this translation internally for literal translations, interference from other languages, unnatural phrasing, or grammar issues.
 Then output ONLY the final improved {args.to_lang} translation text — nothing else. No analysis, no labels, no speaker name '{speaker}:', no quotes, no explanations. If the base translation is already perfect, output it exactly as-is."""
 
-    chat_history.append({"role": "user", "content": prompt})
-    
     print("\nRefined:")
-    # The llm7shi client streams output in real time and uses CoT (think=True)
-    improved_tr = client.call(chat_history)
+    # The llm7shi client streams output in real time and uses CoT (include_thoughts=True)
+    client.history = chat_history
+    improved_tr = client(prompt).text
     improved_tr = improved_tr.strip()
     
     # clean up quotes if the model wrapped it

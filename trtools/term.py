@@ -6,7 +6,7 @@ import os
 import sys
 from pathlib import Path
 from pydantic import BaseModel, Field
-from .llm import LLMClient, DEFAULT_RETRY_WAIT_SECONDS
+from llm7shi import Client
 from .language import resolve_lang, resolve_langs
 
 
@@ -79,8 +79,6 @@ def _add_extract_parser(subparsers):
                         help="Term extraction file (JSON)")
     parser.add_argument("--keep", type=int, default=5,
                         help="Chunk size (default: 5)")
-    parser.add_argument("-w", "--retry-wait", type=int, default=DEFAULT_RETRY_WAIT_SECONDS,
-                        help=f"Wait time on retry, in seconds (default: {DEFAULT_RETRY_WAIT_SECONDS}s)")
     parser.add_argument("--no-think", action="store_true",
                         help="Disable thinking (for Qwen3 models)")
     parser.set_defaults(func=run_extract)
@@ -96,8 +94,6 @@ def _add_translate_parser(subparsers):
                         help="Output TSV file")
     parser.add_argument("-c", "--common", dest="common_file", default=None,
                         help="Common glossary TSV file (matching terms are taken from it, skipping the LLM)")
-    parser.add_argument("-w", "--retry-wait", type=int, default=DEFAULT_RETRY_WAIT_SECONDS,
-                        help=f"Wait time on retry, in seconds (default: {DEFAULT_RETRY_WAIT_SECONDS}s)")
     parser.add_argument("--no-think", action="store_true",
                         help="Disable thinking (for Qwen3 models)")
     parser.set_defaults(func=run_translate)
@@ -129,6 +125,25 @@ def chunk_ranges(total, keep):
         yield cidx, start, end
 
 
+def _new_client(args):
+    return Client(
+        model=args.model,
+        include_thoughts=(not args.no_think),
+        show_params=False,
+        max_length=8192,
+        keep_history=False,
+        add_json_descriptions=True,
+    )
+
+
+def _call_json(client, prompt, schema):
+    """Return the reply validated against `schema`, raising if every attempt failed."""
+    response = client(prompt, schema=schema)
+    if response.data is None:
+        raise RuntimeError(f"No valid JSON after {client.retries} attempts")
+    return response.data
+
+
 def _call_translate(client, from_lang, to_lang, terms):
     listing = "\n".join(f"- {t}" for t in terms)
     prompt = (
@@ -137,16 +152,15 @@ def _call_translate(client, from_lang, to_lang, terms):
         f"(e.g., person name) that should remain unchanged, output it as-is.\n\n"
         f"Terms:\n{listing}"
     )
-    data = client.call_json([prompt], schema=Glossary)
-    pairs = data.get("glossary", [])
+    pairs = _call_json(client, prompt, Glossary).glossary
     original_set = set(terms)
     mapping = {}
     for p in pairs:
-        orig = p["original"]
+        orig = p.original
         if orig not in original_set:
             print(f"  WARNING: unexpected term in glossary response '{orig}', ignoring.")
             continue
-        mapping[orig] = p["translation"]
+        mapping[orig] = p.translation
     return mapping
 
 
@@ -188,8 +202,7 @@ def extract_terms(client, from_lang, chunk_text):
         f"(e.g., output 'affinage', not 'l'affinage' or 'le affinage').\n\n"
         f"Text:\n{chunk_text}"
     )
-    data = client.call_json([prompt], schema=TermList)
-    return data.get("terms", [])
+    return _call_json(client, prompt, TermList).terms
 
 
 def run_extract(args):
@@ -200,11 +213,7 @@ def run_extract(args):
 
     entries = load_entries(args.input_file)
     total = len(entries)
-    client = LLMClient(
-        model=args.model,
-        think=(not args.no_think),
-        retry_wait=args.retry_wait,
-    )
+    client = _new_client(args)
     chunks = list(chunk_ranges(total, args.keep))
     print(f"Starting term extraction: {len(chunks)} chunk(s) (keep={args.keep})")
     chunk_terms_map = {}
@@ -297,11 +306,7 @@ def run_translate(args):
                 if term:
                     common[term] = row
 
-    client = LLMClient(
-        model=args.model,
-        think=(not args.no_think),
-        retry_wait=args.retry_wait,
-    )
+    client = _new_client(args)
 
     # Fill in the blanks per language
     for to_lang in args.to_langs:

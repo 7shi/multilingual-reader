@@ -8,12 +8,11 @@ import csv
 import json
 import os
 import time
+from llm7shi import Client
 from llm7shi.usage import append_usage, print_today_totals
-from .llm import LLMClient, DEFAULT_RETRY_WAIT_SECONDS, init_usage_path
+from .llm import init_usage_path
 from .statusline import StatusLine
 from .summary import load_summaries
-
-LINE_RETRY_COUNT = 3
 
 
 def add_parser(subparsers):
@@ -36,13 +35,30 @@ def add_parser(subparsers):
                         help="Output TSV file from trtools term translate")
     parser.add_argument("--no-think", action="store_true",
                         help="Disable thinking (for Qwen3 models)")
-    parser.add_argument("-w", "--retry-wait", type=int, default=DEFAULT_RETRY_WAIT_SECONDS,
-                        help=f"Wait time on retry, in seconds (default: {DEFAULT_RETRY_WAIT_SECONDS}s)")
     parser.add_argument("--fix", action="store_true",
                         help="Retranslate only the empty lines in the existing output and rewrite the whole file (normal mode determines resume position from line count alone)")
     parser.add_argument("--save-usage", action="store_true",
                         help="Record usage regardless of model name (recorded by default for openai: and gpt- models)")
     parser.set_defaults(func=run)
+
+
+class LineClient(Client):
+    """Client whose retry loop also rejects a reply that is not a single line.
+
+    One source line must map to one output line, so a multi-line reply is regenerated
+    the same way an empty one is, with no second retry loop in the caller. `problem`
+    describes why the last reply was rejected, or is empty when it was accepted.
+    """
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.problem = ""
+
+    def should_retry(self, resp, schema=None):
+        self.problem = super().should_retry(resp, schema) or ""
+        if not self.problem and "\n" in resp.text.strip():
+            self.problem = "multi-line reply"
+        return self.problem or None
 
 
 def _load_terms(terms_json, terms_tsv, from_lang, to_lang, write=None):
@@ -187,10 +203,15 @@ def run(args):
     if args.terms_json and args.terms_tsv:
         chunk_data, glossary = _load_terms(args.terms_json, args.terms_tsv, from_lang, to_lang, ui.write)
 
-    client = LLMClient(
+    # chat_history is maintained here (compressed at each summary checkpoint), so the
+    # client only sends it and does not append to it
+    client = LineClient(
         model=args.model,
-        think=(not args.no_think),
-        retry_wait=args.retry_wait,
+        include_thoughts=(not args.no_think),
+        file=ui.stream,
+        show_params=False,
+        max_length=8192,
+        keep_history=False,
     )
 
     system_message = {
@@ -227,22 +248,17 @@ def run(args):
     chat_history, translation_messages = build_chat_history(resume_count)
 
     def translate_line(prompt):
-        for attempt in range(1, LINE_RETRY_COUNT + 1):
-            user_msg = {"role": "user", "content": prompt}
-            chat_history.append(user_msg)
-            translated = client.call(chat_history, file=ui.stream)
-            ui.stream.end()
-            stripped = translated.strip()
-            if stripped and "\n" not in stripped:
-                asst_msg = {"role": "assistant", "content": stripped}
-                chat_history.append(asst_msg)
-                return stripped, user_msg, asst_msg
-            chat_history.pop()
-            if attempt < LINE_RETRY_COUNT:
-                ui.stream.error("Invalid translation result.")
-                ui.stream.wait_retry(args.retry_wait, f"Retrying ({attempt}/{LINE_RETRY_COUNT})...")
-            else:
-                raise RuntimeError(f"Invalid translation result (failed {LINE_RETRY_COUNT} times): {prompt!r}")
+        client.history = chat_history
+        translated = client(prompt).text.strip()
+        ui.stream.end()
+        if client.problem:
+            raise RuntimeError(f"Invalid translation result ({client.problem} after "
+                               f"{client.retries} attempts): {prompt!r}")
+        user_msg = {"role": "user", "content": prompt}
+        asst_msg = {"role": "assistant", "content": translated}
+        chat_history.append(user_msg)
+        chat_history.append(asst_msg)
+        return translated, user_msg, asst_msg
 
     start_time = time.time()
     next_compression = None
@@ -286,14 +302,17 @@ def run(args):
     finally:
         out_f.close()
         # Recorded even on failure, since the tokens were spent either way
-        if usage_path is not None:
-            append_usage(client.usage, args.model, usage_path)
+        total_usage = sum(client.usages) if client.usages else None
+        if total_usage is not None and usage_path is not None:
+            append_usage(total_usage, args.model, usage_path)
 
     elapsed = time.time() - start_time
 
     ui.write(f"\nTranslation complete: {from_lang} -> {to_lang} ({args.output_file})\n")
     ui.write(f"Elapsed time: {elapsed:.1f}s ({elapsed/60:.1f}min)\n")
-    if usage_path is not None:
-        ui.write(f"Usage: {client.usage}\n")
-        print_today_totals(usage_path, models=[args.model])
-    return client.usage
+    if total_usage is not None:
+        ui.write(f"Usage: {total_usage}\n")
+        if usage_path is not None:
+            print()
+            print_today_totals(usage_path, models=[args.model])
+    return total_usage

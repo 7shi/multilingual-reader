@@ -16,7 +16,7 @@ from .evaluate import GUIDELINES
 from .jev_criteria import (CRITERIA as JEV_CRITERIA, CRITERION_IDS as JEV_CRITERION_IDS,
                            LEVELS, POINTS_PER_LEVEL)
 from .language import LANGUAGES, LANG_NAMES
-from .llm import LLMClient, DEFAULT_RETRY_WAIT_SECONDS
+from llm7shi import Client
 from .statusline import StatusLine
 
 CRITERIA = [
@@ -58,8 +58,6 @@ def add_parser(subparsers):
                         help="Only output/sync the table from the JSONL, without generating")
     parser.add_argument("--no-think", action="store_true",
                         help="Disable thinking (--jev always runs without it)")
-    parser.add_argument("-w", "--retry-wait", type=int, default=DEFAULT_RETRY_WAIT_SECONDS,
-                        help=f"Wait time on retry, in seconds (default: {DEFAULT_RETRY_WAIT_SECONDS}s)")
     parser.add_argument("-l", "--lang", choices=["en", "ja"], default="en",
                         help="Output language of the summary (default: en)")
     parser.set_defaults(func=run)
@@ -145,7 +143,7 @@ def _call_phrase(client, prompts, ui, lang):
             f"Reply again with the same summary written in {output_lang_name}, "
             f"and output nothing but the phrase itself."
         ]
-        text = client.call(p, file=ui.stream)
+        text = client(p).text
         ui.stream.end()
         if _matches_lang(text, lang):
             break
@@ -298,8 +296,9 @@ def _generate_jev(args, records):
     print(f"Describing {first['model']} on {first['rubric']} with {args.model}.")
     output_lang_name = "Japanese" if args.lang == "ja" else "English"
     # Both stages run without thinking, whatever --no-think says.
-    client = LLMClient(model=args.model, think=False, retry_wait=args.retry_wait)
     ui = StatusLine(label=pending[0][1], left_count=True)
+    client = Client(model=args.model, include_thoughts=False, file=ui.stream,
+                    show_params=False, max_length=8192, keep_history=False)
     with ui.progress(len(results), start=skipped) as prog:
         for offset, (name, code, tr_file, result) in enumerate(pending, skipped + 1):
             prog.update(offset - 1, label=code)
@@ -311,10 +310,9 @@ def _generate_jev(args, records):
             # The comment is not kept; it is streamed here so a suspect phrase can be
             # traced to it while the run is watched.
             print(f"\nEvaluating {name} (Jev {total:.1f}) ...")
-            comment = client.call(
+            comment = client(
                 _stage1_prompts(original_text, translated_text, args.from_lang,
-                                lang_name, levels),
-                file=ui.stream)
+                                lang_name, levels)).text
             ui.stream.end()
 
             print(f"\nSummarizing {name} ...")
@@ -375,15 +373,18 @@ def run(args):
         output_lang_name = "Japanese" if args.lang == "ja" else "English"
 
         if pending:
-            client = LLMClient(
-                model=args.model,
-                think=(not args.no_think),
-                retry_wait=args.retry_wait,
-            )
             # Each language is processed only once, so show a single bar across all languages
             # The denominator stays the total across all languages on resume too, treating skipped ones as complete
             total = len(groups)
             ui = StatusLine(label=pending[0][1], left_count=True)
+            client = Client(
+                model=args.model,
+                include_thoughts=(not args.no_think),
+                file=ui.stream,
+                show_params=False,
+                max_length=8192,
+                keep_history=False,
+            )
             with ui.progress(total, start=skipped) as prog:
                 for offset, (base_name, code, runs) in enumerate(pending, skipped + 1):
                     prog.update(offset - 1, label=code)
