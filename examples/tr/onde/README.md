@@ -10,14 +10,14 @@ Translates and evaluates the onde text with each model.
 - [qwen3.8](qwen3.8/) (27B)
 - [bonsai2-27b](bonsai2-27b/) (Ternary Bonsai 2 27B PTQ1_0: ternary-quantized Qwen 3.8 27B)
 - [muse-glimmer](muse-glimmer/)
-- [ox-alpha](ox-alpha/) (glm-5.3-flash stealth 320B-A18B)
-- [union-alpha](union-alpha/) (Pareto 26.9 stealth, a router over several models)
 - [gpt-5.6-luna](gpt-5.6-luna/)
 - [gpt-5.6-terra](gpt-5.6-terra/)
 - [gemini-3.5-flash-lite](gemini-3.5-flash-lite/)
 - [gemini-2.5-flash](gemini-2.5-flash/)
 - [gemini-3-flash](gemini-3-flash/)
 - [gemini-3.7-flash](gemini-3.7-flash/)
+- [ox-alpha](ox-alpha/) (glm-5.3-flash stealth 320B-A18B)
+- [union-alpha](union-alpha/) (Pareto 26.9 stealth, a router over several models)
 
 Every model is evaluated by TypeSafe's Jev, one run per language, into `{model}/jev.jsonl`; `SCORES-jev.txt` and the trend column (`TREND-jev.jsonl`) come from it. The evaluator was previously `ollama:qwen3.6` with the median of three runs, and its record remains beside them as `{model}/evals/`, `SCORES.txt`, and `TRENDS.jsonl`. `generate_compare_rows.py` and `plot_comparison.py` read that record unless given `--jev`, which `examples/tr/Makefile` passes. See [JEV.md](JEV.md) for the run over the corpus and what it measured.
 
