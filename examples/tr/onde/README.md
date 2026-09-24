@@ -18,6 +18,7 @@ Translates and evaluates the onde text with each model.
 - [gemini-3.7-flash](gemini-3.7-flash/)
 - [ox-alpha](ox-alpha/) (glm-5.3-flash stealth 320B-A18B)
 - [union-alpha](union-alpha/) (Pareto 26.9 stealth, a router over several models)
+- [space-bunny-alpha](space-bunny-alpha/) (stealth)
 
 Every model is evaluated by TypeSafe's Jev, one run per language, into `{model}/jev.jsonl`; `SCORES-jev.txt` and the trend column (`TREND-jev.jsonl`) come from it. The evaluator was previously `ollama:qwen3.6` with the median of three runs, and its record remains beside them as `{model}/evals/`, `SCORES.txt`, and `TRENDS.jsonl`. `generate_compare_rows.py` and `plot_comparison.py` read that record unless given `--jev`, which `examples/tr/Makefile` passes. See [JEV.md](JEV.md) for the run over the corpus and what it measured.
 
