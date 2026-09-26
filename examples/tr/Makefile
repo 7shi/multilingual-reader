@@ -21,7 +21,12 @@ GEMINI35FL = -i gemini-3.5-flash-lite -l "Gemini 3.5 Flash Lite"
 GEMINI25F  = -i gemini-2.5-flash -l "Gemini 2.5 Flash"
 GEMMA4     = -i gemma4 -l "Gemma 4 26B-A4B"
 GEMMA4_31B = -i gemma4-31b -l "Gemma 4 31B"
+GEMMA4_12B = -i gemma4-12b -l "Gemma 4 12B"
+GEMMA4_E4B = -i gemma4-e4b -l "Gemma 4 E4B"
+GEMMA4_E2B = -i gemma4-e2b -l "Gemma 4 E2B"
 GEMINI3F   = -i gemini-3-flash -l "Gemini 3 Flash Preview"
+QWEN35_9B  = -i qwen3.5-9b -l "Qwen 3.5 9B"
+QWEN35_4B  = -i qwen3.5-4b -l "Qwen 3.5 4B"
 QWEN36     = -i qwen3.6 -l "Qwen 3.6 35B-A3B"
 QWEN36_27B = -i qwen3.6-27b -l "Qwen 3.6 27B"
 QWEN38     = -i qwen3.8 -l "Qwen 3.8 27B"
@@ -41,5 +46,6 @@ compare:
 	uv run plot_comparison.py --jev -o compare/gemma4.png $(GEMMA4) $(GEMINI35FL) $(GEMINI25F) $(GEMMA4_31B) $(GEMINI3F)
 	uv run plot_comparison.py --jev -o compare/gemma4_31b.png $(GEMMA4_31B) $(GEMINI35FL) $(GEMINI25F) $(GEMMA4) $(GEMINI3F)
 	uv run plot_comparison.py --jev -o compare/gemini3f.png $(GEMINI3F) $(GEMINI35FL) $(GEMINI25F) $(GEMMA4) $(GEMMA4_31B)
-	uv run plot_comparison.py --jev -o compare/qwen38.png $(QWEN38) $(QWEN36) $(QWEN36_27B)
+	uv run plot_comparison.py --jev -o compare/gemma4_sizes.png $(GEMMA4_E2B) $(GEMMA4_E4B) $(GEMMA4_12B) $(GEMMA4) $(GEMMA4_31B)
+	uv run plot_comparison.py --jev -o compare/qwen38.png $(QWEN38) $(QWEN36) $(QWEN36_27B) $(QWEN35_9B) $(QWEN35_4B)
 	uv run plot_comparison.py --jev -o compare/gpt56luna.png $(GPT56LUNA) $(GPT56TERRA) $(GPT6LUNA) $(GPTOSS)

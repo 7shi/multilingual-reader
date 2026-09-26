@@ -4,7 +4,12 @@ Directory for translating the English source text into various languages and upd
 
 - **gemma4**: Gemma 4 26B-A4B (MoE)
 - **gemma4-31b**: Gemma 4 31B (dense)
+- **gemma4-12b**: Gemma 4 12B (dense, QAT)
+- **gemma4-e4b**: Gemma 4 E4B (dense, 4B effective)
+- **gemma4-e2b**: Gemma 4 E2B (dense, 2B effective)
 - **gpt-oss**: GPT-OSS 120B-A5.1B (MoE)
+- **qwen3.5-9b**: Qwen 3.5 9B (dense)
+- **qwen3.5-4b**: Qwen 3.5 4B (dense)
 - **qwen3.6-27b**: Qwen 3.6 27B (dense)
 - **qwen3.6**: Qwen 3.6 35B-A3B (MoE)
 - **qwen3.8**: Qwen 3.8 27B (dense)
@@ -68,75 +73,75 @@ Guide: high quality (90+), practical range (80-89), medium quality (60-79), crit
 
 The guide keeps the cuts it had under qwen3.6. Jev's scale is narrower at the top, so fewer languages reach 90+ than before without any change in the translations; the boundary at 80 is the one that carries over ([experimental/13/PORT.md](../../experimental/13/PORT.md) section 5.2).
 
-| Language | [gemma4](onde/gemma4/README.md) | [gemma4-31b](onde/gemma4-31b/README.md) | [gpt-oss](onde/gpt-oss/README.md) | [qwen3.6-27b](onde/qwen3.6-27b/README.md) | [qwen3.6](onde/qwen3.6/README.md) | [qwen3.8](onde/qwen3.8/README.md) | [bonsai2-27b](onde/bonsai2-27b/README.md) | [muse-glimmer](onde/muse-glimmer/README.md) | [gpt-5.6-luna](onde/gpt-5.6-luna/README.md) | [gpt-5.6-terra](onde/gpt-5.6-terra/README.md) | [gpt-6-luna](onde/gpt-6-luna/README.md) | [gemini-3.5-flash-lite](onde/gemini-3.5-flash-lite/README.md) | [gemini-2.5-flash](onde/gemini-2.5-flash/README.md) | [gemini-3-flash](onde/gemini-3-flash/README.md) | [gemini-3.7-flash](onde/gemini-3.7-flash/README.md) | [ox-alpha](onde/ox-alpha/README.md) | [union-alpha](onde/union-alpha/README.md) | [space-bunny-alpha](onde/space-bunny-alpha/README.md) |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| French | 91.1 | 94.7 | 78.3 | 86.9 | 78.9 | 90.5 | 78.7 | 74.6 | 84.5 | 74.2 | 94.2 | 79.2 | 85.1 | 73.2 | 93.0 | **95.9** | 94.4 | 66.3 |
-| Catalan | 72.9 | 73.2 | 69.4 | 89.1 | 80.8 | 86.3 | 67.0 | 76.4 | 89.5 | 73.3 | **95.0** | 68.8 | 81.3 | 74.8 | 93.8 | 92.8 | 94.5 | 60.9 |
-| Spanish | 94.3 | 94.5 | 77.8 | 88.7 | 93.0 | 94.2 | 79.7 | 90.6 | 93.0 | 74.0 | 93.3 | 92.8 | 81.5 | 73.7 | 94.5 | 94.1 | **94.6** | 63.0 |
-| Italian | 79.6 | 92.3 | 65.6 | 92.9 | 79.7 | 82.2 | 74.8 | 93.1 | 92.3 | 75.2 | 83.1 | 84.5 | 63.8 | 66.9 | **94.5** | 82.0 | 94.0 | 62.4 |
-| Swedish | 87.2 | 92.7 | 71.2 | 77.5 | 83.1 | 79.0 | 65.1 | 74.9 | 91.4 | 71.1 | **93.8** | 78.5 | 73.7 | 75.8 | 89.8 | 92.8 | 93.0 | 63.4 |
-| Czech | 76.2 | 80.5 | 68.0 | 80.4 | 78.8 | 74.8 | 23.7 | 78.5 | 92.0 | 80.2 | **93.4** | 76.3 | 78.7 | 78.1 | 91.0 | 88.1 | 87.3 | 60.0 |
-| Croatian | 85.6 | 86.0 | 57.8 | 78.5 | 84.6 | 77.7 | 26.6 | 81.3 | 91.6 | 66.7 | 90.9 | 75.2 | 78.4 | 77.3 | 88.0 | **93.4** | 90.8 | 68.0 |
-| Romanian | 81.7 | 90.8 | 71.3 | 75.2 | 86.9 | 87.0 | 41.9 | 88.8 | 93.0 | 74.8 | 92.3 | 73.5 | 90.9 | 73.5 | 77.7 | 91.0 | **93.2** | 71.3 |
-| Russian | 87.8 | **92.8** | 71.6 | 88.4 | 82.2 | 78.5 | 58.9 | 58.8 | 92.5 | 91.5 | 92.7 | 77.7 | 68.6 | 72.0 | 77.5 | **92.8** | **92.8** | 69.8 |
-| Dutch | 89.6 | 90.2 | 66.8 | 88.2 | 80.9 | 77.1 | 47.2 | 87.6 | 90.9 | 72.5 | **92.8** | 71.8 | 76.3 | 70.1 | 87.3 | 89.8 | 89.7 | 67.4 |
-| Slovak | 80.2 | 79.3 | 68.7 | 80.5 | 77.5 | 70.5 | 17.1 | 81.5 | 91.5 | 74.5 | 91.3 | 53.7 | 79.5 | 69.3 | 89.2 | 91.2 | **92.7** | 69.5 |
-| Polish | 91.5 | 88.2 | 68.0 | 82.4 | 86.5 | 79.6 | 73.4 | 90.8 | **92.5** | 73.6 | 91.6 | 77.2 | 70.0 | 69.0 | 91.6 | 91.1 | 89.6 | 70.2 |
-| Serbian | 89.5 | 89.8 | 64.3 | 69.6 | 81.9 | 73.0 | 36.8 | 71.9 | 90.9 | 75.7 | 92.1 | 69.1 | 72.2 | 76.0 | 89.4 | **92.2** | 91.3 | 63.7 |
-| Danish | 86.2 | 88.6 | 61.5 | 74.5 | 77.4 | 77.2 | 53.3 | 84.4 | **92.2** | 77.0 | 90.0 | 63.8 | 71.5 | 69.7 | 89.4 | 88.4 | 87.1 | 68.7 |
-| Albanian | 77.8 | 77.1 | 63.8 | 64.0 | 79.3 | 71.7 | 28.0 | 66.2 | **92.1** | 73.6 | 91.2 | 63.5 | 71.2 | 71.4 | 90.1 | 90.7 | 91.9 | 54.8 |
-| Galician | 82.7 | 90.0 | 67.5 | 81.1 | 86.5 | 77.4 | 63.1 | 84.8 | 91.5 | 74.3 | 91.7 | 76.5 | 71.4 | 64.3 | **92.0** | 90.9 | 89.5 | 59.3 |
-| Ukrainian | 89.1 | 91.4 | 70.4 | 87.2 | 84.7 | 82.0 | 65.3 | 75.7 | **92.0** | 90.2 | 77.8 | 72.2 | 71.7 | 75.5 | 91.6 | 89.0 | 90.5 | 77.6 |
-| Arabic | 86.0 | 80.9 | 74.0 | 71.6 | 67.1 | 87.7 | 38.5 | 81.2 | **91.8** | 71.8 | 90.8 | 73.4 | 77.0 | 74.1 | 90.1 | 89.7 | 89.4 | 41.1 |
-| Finnish | 90.6 | 88.0 | 64.8 | 68.0 | 75.7 | 76.1 | 3.8 | 74.6 | **91.6** | 70.6 | 89.8 | 71.4 | 72.8 | 76.9 | 78.5 | 84.5 | 89.4 | 70.3 |
-| German | 89.2 | 91.0 | 65.2 | 80.1 | 86.1 | 82.3 | 67.8 | 78.5 | 89.8 | 79.7 | 90.9 | 76.6 | 76.9 | 68.3 | 78.7 | **91.5** | 89.2 | 64.5 |
-| Latvian | 40.9 | 57.3 | 63.8 | 75.0 | 71.4 | 58.9 | 33.8 | 74.1 | 90.4 | 90.8 | 74.2 | 67.3 | 76.7 | 66.5 | 90.1 | 86.2 | **91.2** | 58.2 |
-| Macedonian | 73.4 | 63.7 | 66.2 | 73.0 | 69.2 | 73.2 | 43.0 | 86.2 | **91.1** | 90.6 | 90.2 | 70.1 | 72.8 | 69.4 | 89.7 | 89.7 | 89.1 | 61.6 |
-| Slovene | 74.5 | 65.0 | 66.8 | 76.7 | 63.9 | 65.1 | 14.9 | 74.2 | 83.0 | 78.8 | 89.3 | 82.7 | 75.7 | 73.8 | 79.2 | 90.3 | **91.0** | 61.2 |
-| Estonian | 49.0 | 48.3 | 63.6 | 70.5 | 74.8 | 55.5 | 30.1 | 83.9 | 89.8 | 74.9 | 89.9 | 67.2 | 70.2 | 68.2 | 88.2 | 83.0 | **91.0** | 54.3 |
-| Bulgarian | 86.7 | 88.4 | 68.7 | 82.1 | 77.4 | 77.5 | 49.8 | 81.5 | 90.5 | 77.2 | 89.5 | 72.6 | 65.5 | 70.3 | 88.1 | 89.1 | **90.9** | 65.3 |
-| Hungarian | 60.9 | 62.9 | 70.5 | 77.4 | 76.5 | 67.3 | 40.7 | 73.5 | 89.9 | 70.8 | 77.0 | 73.3 | 63.0 | 66.1 | **90.8** | 77.5 | 88.8 | 66.2 |
-| Thai | 87.1 | **90.8** | 70.0 | 73.1 | 56.6 | 49.5 | 13.3 | 54.8 | 73.6 | 80.7 | 77.0 | 77.0 | 66.4 | 73.1 | 70.9 | 88.4 | 88.1 | 64.2 |
-| Georgian | 69.2 | 50.4 | 52.7 | 60.0 | 64.0 | 44.6 | 8.1 | 68.8 | **90.6** | 80.0 | 89.8 | 71.2 | 69.2 | 75.2 | 90.1 | 85.2 | 89.1 | 41.7 |
-| Persian | 88.1 | 88.1 | 63.8 | 81.2 | 82.7 | 73.8 | 51.5 | 76.0 | 89.5 | **90.6** | 89.1 | 71.3 | 77.5 | 67.8 | 85.6 | 88.2 | 88.4 | 65.8 |
-| Chinese | 87.3 | 89.2 | 68.3 | 87.7 | 81.7 | 90.3 | 90.2 | 85.3 | 89.3 | 71.5 | 87.5 | 69.0 | 78.8 | 73.9 | 78.8 | 78.5 | **90.5** | 69.6 |
-| Belarusian | 63.8 | 69.5 | 67.5 | 69.1 | 77.0 | 65.5 | 37.5 | 65.1 | 88.6 | 88.8 | 84.6 | 68.0 | 66.2 | 69.1 | 86.4 | 88.9 | **90.5** | 65.1 |
-| Indonesian | 81.8 | 86.0 | 66.2 | 73.5 | 72.8 | 75.3 | 30.7 | 71.0 | 87.6 | 72.5 | **90.5** | 68.6 | 73.9 | 71.8 | 87.9 | 88.4 | 85.7 | 51.0 |
-| Esperanto | 72.4 | 84.1 | 63.2 | 69.8 | 61.7 | 57.9 | 14.8 | 73.0 | **90.3** | 73.3 | 87.0 | 82.0 | 66.5 | 59.2 | 86.2 | 87.0 | 87.0 | 52.7 |
-| Japanese | 86.5 | 83.0 | 71.2 | 88.4 | 74.4 | 75.1 | 55.1 | 79.9 | 76.0 | 88.4 | **90.2** | 79.8 | 73.0 | 79.3 | 89.5 | 87.3 | 88.2 | 28.0 |
-| Azerbaijani | 82.3 | 77.4 | 60.9 | 69.5 | 71.4 | 62.2 | 28.6 | 71.2 | 86.8 | 71.2 | **89.9** | 71.9 | 68.3 | 69.9 | 86.5 | 86.3 | 86.6 | 58.4 |
-| Hindi | 82.5 | 82.9 | 63.9 | 79.6 | 47.0 | 69.8 | 39.6 | 50.8 | 89.2 | 74.0 | **89.5** | 74.6 | 66.3 | 66.5 | 77.2 | 87.1 | 87.0 | 69.4 |
-| Vietnamese | **89.5** | 87.0 | 67.0 | 81.5 | 77.2 | 84.1 | 75.0 | 87.7 | 88.5 | 72.8 | 87.0 | 70.2 | 78.3 | 74.2 | 89.0 | 86.4 | 87.7 | 68.0 |
-| Malay | 80.8 | 80.6 | 66.2 | 73.7 | 70.5 | 83.8 | 70.6 | 75.5 | **89.4** | 69.2 | 86.1 | 69.2 | 72.6 | 67.6 | 82.4 | 86.4 | 89.3 | 33.4 |
-| Norwegian | 84.7 | 86.5 | 65.2 | 75.0 | 79.6 | 75.2 | 53.0 | 74.8 | 81.8 | 71.7 | **89.2** | 72.0 | 79.0 | 66.9 | 77.5 | 87.1 | 86.7 | 63.4 |
-| Korean | 84.5 | **88.9** | 66.2 | 72.9 | 71.6 | 57.0 | 29.4 | 71.4 | 87.7 | 70.1 | 86.4 | 82.7 | 65.0 | 73.0 | 75.7 | 84.7 | 86.2 | 55.9 |
-| Turkish | 77.8 | 88.3 | 65.5 | 69.9 | 71.5 | 81.8 | 58.9 | 81.9 | **88.4** | 71.4 | 87.8 | 69.0 | 73.3 | 72.0 | 86.5 | 87.3 | 87.6 | 70.5 |
-| Armenian | 75.8 | 69.3 | 62.9 | 55.9 | 66.8 | 45.1 | 6.7 | 71.7 | **88.1** | 77.0 | 87.6 | 79.8 | 73.2 | 73.0 | 82.8 | 83.7 | 85.6 | 49.2 |
-| Basque | 37.8 | 44.5 | 60.8 | 59.1 | 52.6 | 53.8 | 40.0 | 70.0 | 86.1 | 81.6 | 77.0 | 83.5 | 66.5 | 71.1 | 72.8 | 85.0 | **88.0** | 46.2 |
-| Marathi | 73.5 | 76.7 | 60.0 | 67.3 | 51.8 | 56.6 | 40.2 | 53.8 | 83.0 | 77.5 | **88.0** | 69.0 | 68.9 | 73.1 | 82.7 | 80.9 | 84.2 | 58.0 |
-| Lithuanian | 43.0 | 51.1 | 65.5 | 78.9 | 78.3 | 73.3 | 49.5 | 74.8 | 87.3 | 71.2 | 77.4 | 54.2 | 69.9 | 69.2 | 79.8 | **87.9** | 84.9 | 47.9 |
-| Icelandic | 60.2 | 67.2 | 65.8 | 66.0 | 68.8 | 41.9 | 24.4 | 74.8 | 72.8 | 71.8 | **87.6** | 70.0 | 78.7 | 66.8 | 85.8 | 84.0 | 85.4 | 53.8 |
-| Hebrew | 73.0 | 82.3 | 66.8 | 66.0 | 71.2 | 57.3 | 26.2 | 79.8 | 87.3 | 81.9 | 85.8 | 82.3 | 70.6 | 75.0 | 79.8 | 86.8 | **87.5** | 65.8 |
-| Malayalam | 77.6 | 57.0 | 59.0 | 53.0 | 42.1 | 38.0 | 26.0 | 58.1 | 81.6 | 81.4 | 86.9 | 74.5 | 69.0 | 69.5 | 81.2 | 74.4 | **87.4** | 39.8 |
-| Tamil | 69.3 | 77.2 | 64.1 | 61.2 | 42.1 | 51.8 | 38.8 | 60.0 | 85.4 | 72.8 | **87.4** | 64.2 | 68.9 | 73.8 | 67.0 | 77.1 | 83.0 | 49.5 |
-| Portuguese | 84.8 | 85.5 | 65.3 | 79.8 | **87.0** | 84.5 | 77.5 | 85.3 | 82.7 | 76.0 | 85.8 | 71.4 | 69.4 | 72.2 | 83.7 | 85.8 | 84.0 | 63.8 |
-| Afrikaans | 85.2 | 81.0 | 60.1 | 73.2 | 81.7 | 74.9 | 37.2 | 78.3 | 85.7 | 71.5 | 85.9 | 76.0 | 69.8 | 65.8 | 73.8 | 84.1 | **86.0** | 60.1 |
-| Welsh | 32.2 | 37.2 | 64.7 | 59.5 | 52.6 | 39.8 | 2.6 | 69.4 | 85.1 | 71.4 | 75.9 | 59.5 | 74.2 | 74.9 | 80.5 | 78.3 | **85.7** | 35.4 |
-| Swahili | 84.0 | 82.6 | 61.9 | 64.8 | 65.9 | 56.2 | 9.6 | 73.8 | 84.4 | 69.7 | **85.2** | 62.8 | 66.7 | 57.8 | 69.2 | 82.7 | 84.8 | 51.2 |
-| Nepali | 76.2 | 74.8 | 59.1 | 65.8 | 53.8 | 63.6 | 49.3 | 45.5 | 82.5 | 84.0 | **84.8** | 68.6 | 62.0 | 64.0 | 73.0 | 82.6 | 76.1 | 65.7 |
-| Tagalog | 78.5 | 78.1 | 69.9 | 57.6 | 57.5 | 55.5 | 37.6 | 70.8 | 82.7 | 68.2 | **84.5** | 67.6 | 74.4 | 54.1 | 82.2 | 81.1 | 82.0 | 46.3 |
-| Bengali | 76.2 | 83.1 | 62.7 | 64.6 | 60.0 | 62.6 | 42.3 | 50.7 | 81.4 | 83.0 | 75.4 | 64.0 | 65.2 | 55.1 | 80.3 | 83.1 | **84.2** | 64.8 |
-| Urdu | 72.2 | 76.2 | 63.5 | 69.7 | 61.8 | 66.7 | 51.7 | 69.3 | 76.5 | 79.8 | 81.7 | 68.3 | 68.5 | 67.3 | 71.3 | 70.8 | **84.1** | 54.4 |
-| Khmer | 71.5 | 52.7 | 60.9 | 60.5 | 60.5 | 55.8 | 25.6 | 40.6 | 81.9 | 73.7 | **83.6** | 77.1 | 73.6 | 73.9 | 75.5 | 76.7 | 83.5 | 39.2 |
-| Mongolian | 71.3 | 65.5 | 58.8 | 63.8 | 65.6 | 38.7 | 11.7 | 65.0 | 82.2 | 69.3 | 73.7 | 59.1 | 71.4 | 69.2 | 81.5 | 82.0 | **82.7** | 51.6 |
-| Kannada | 70.2 | 60.6 | 60.5 | 57.5 | 50.1 | 40.8 | 34.6 | 51.3 | 80.1 | 76.9 | **81.8** | 66.8 | 67.8 | 69.5 | 75.2 | 77.3 | 81.3 | 45.2 |
-| Burmese | 79.2 | 64.0 | 59.0 | 46.2 | 42.2 | 40.8 | 17.9 | 22.5 | **81.3** | 79.7 | 81.0 | 72.2 | 70.5 | 68.0 | 80.4 | 76.2 | 81.1 | 37.1 |
-| Lao | 76.9 | 56.2 | 50.4 | 58.8 | 71.5 | 49.3 | 13.4 | 50.0 | 80.2 | 72.7 | 75.1 | 67.6 | 65.2 | 50.8 | 80.5 | 76.2 | **81.2** | 38.1 |
-| Irish | 23.6 | 27.5 | 54.6 | 51.8 | 49.6 | 47.3 | 26.5 | 62.1 | **81.0** | 69.8 | 69.8 | 56.3 | 61.7 | 66.0 | 69.3 | 72.2 | 71.7 | 30.2 |
-| Sinhala | 73.8 | 66.2 | 52.9 | 50.4 | 57.5 | 45.5 | 32.5 | 38.1 | 76.2 | 69.1 | **80.3** | 59.8 | 67.2 | 71.1 | 73.8 | 70.9 | 75.2 | 33.6 |
-| Telugu | 75.0 | 74.2 | 50.7 | 52.5 | 48.2 | 49.6 | 40.4 | 57.0 | 73.3 | 71.8 | **80.1** | 63.0 | 69.0 | 67.8 | 76.9 | 77.0 | 75.6 | 54.5 |
-| Greek | 60.6 | 59.5 | 59.5 | 50.8 | 57.0 | 51.9 | 31.2 | 58.1 | 71.2 | **79.4** | 79.1 | 60.8 | 65.2 | 61.0 | 68.0 | 64.0 | 73.8 | 60.0 |
-| Interlingua | 54.5 | 45.0 | 60.0 | 69.5 | 61.2 | 64.1 | 18.1 | 63.8 | 73.9 | 63.4 | 74.9 | 59.5 | 62.2 | 55.7 | 64.8 | **75.5** | 75.1 | 42.7 |
+| Language | [gemma4](onde/gemma4/README.md) | [gemma4-31b](onde/gemma4-31b/README.md) | [gemma4-12b](onde/gemma4-12b/README.md) | [gemma4-e4b](onde/gemma4-e4b/README.md) | [gemma4-e2b](onde/gemma4-e2b/README.md) | [gpt-oss](onde/gpt-oss/README.md) | [qwen3.5-9b](onde/qwen3.5-9b/README.md) | [qwen3.5-4b](onde/qwen3.5-4b/README.md) | [qwen3.6-27b](onde/qwen3.6-27b/README.md) | [qwen3.6](onde/qwen3.6/README.md) | [qwen3.8](onde/qwen3.8/README.md) | [bonsai2-27b](onde/bonsai2-27b/README.md) | [muse-glimmer](onde/muse-glimmer/README.md) | [gpt-5.6-luna](onde/gpt-5.6-luna/README.md) | [gpt-5.6-terra](onde/gpt-5.6-terra/README.md) | [gpt-6-luna](onde/gpt-6-luna/README.md) | [gemini-3.5-flash-lite](onde/gemini-3.5-flash-lite/README.md) | [gemini-2.5-flash](onde/gemini-2.5-flash/README.md) | [gemini-3-flash](onde/gemini-3-flash/README.md) | [gemini-3.7-flash](onde/gemini-3.7-flash/README.md) | [ox-alpha](onde/ox-alpha/README.md) | [union-alpha](onde/union-alpha/README.md) | [space-bunny-alpha](onde/space-bunny-alpha/README.md) |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| French | 91.1 | 94.7 | 92.1 | 92.4 | 72.6 | 78.3 | 77.2 | 63.7 | 86.9 | 78.9 | 90.5 | 78.7 | 74.6 | 84.5 | 74.2 | 94.2 | 79.2 | 85.1 | 73.2 | 93.0 | **95.9** | 94.4 | 66.3 |
+| Catalan | 72.9 | 73.2 | 59.1 | 62.4 | 45.7 | 69.4 | 72.0 | 60.2 | 89.1 | 80.8 | 86.3 | 67.0 | 76.4 | 89.5 | 73.3 | **95.0** | 68.8 | 81.3 | 74.8 | 93.8 | 92.8 | 94.5 | 60.9 |
+| Spanish | 94.3 | 94.5 | 91.8 | 86.2 | 76.1 | 77.8 | 79.0 | 72.8 | 88.7 | 93.0 | 94.2 | 79.7 | 90.6 | 93.0 | 74.0 | 93.3 | 92.8 | 81.5 | 73.7 | 94.5 | 94.1 | **94.6** | 63.0 |
+| Italian | 79.6 | 92.3 | 84.5 | 89.4 | 70.3 | 65.6 | 85.0 | 71.5 | 92.9 | 79.7 | 82.2 | 74.8 | 93.1 | 92.3 | 75.2 | 83.1 | 84.5 | 63.8 | 66.9 | **94.5** | 82.0 | 94.0 | 62.4 |
+| Swedish | 87.2 | 92.7 | 79.8 | 90.2 | 69.8 | 71.2 | 80.2 | 44.3 | 77.5 | 83.1 | 79.0 | 65.1 | 74.9 | 91.4 | 71.1 | **93.8** | 78.5 | 73.7 | 75.8 | 89.8 | 92.8 | 93.0 | 63.4 |
+| Czech | 76.2 | 80.5 | 59.8 | 69.2 | 54.6 | 68.0 | 61.1 | 49.2 | 80.4 | 78.8 | 74.8 | 23.7 | 78.5 | 92.0 | 80.2 | **93.4** | 76.3 | 78.7 | 78.1 | 91.0 | 88.1 | 87.3 | 60.0 |
+| Croatian | 85.6 | 86.0 | 56.8 | 67.8 | 63.0 | 57.8 | 67.4 | 43.8 | 78.5 | 84.6 | 77.7 | 26.6 | 81.3 | 91.6 | 66.7 | 90.9 | 75.2 | 78.4 | 77.3 | 88.0 | **93.4** | 90.8 | 68.0 |
+| Romanian | 81.7 | 90.8 | 51.4 | 68.1 | 53.5 | 71.3 | 78.5 | 54.4 | 75.2 | 86.9 | 87.0 | 41.9 | 88.8 | 93.0 | 74.8 | 92.3 | 73.5 | 90.9 | 73.5 | 77.7 | 91.0 | **93.2** | 71.3 |
+| Russian | 87.8 | **92.8** | 88.4 | 91.2 | 64.8 | 71.6 | 79.9 | 62.9 | 88.4 | 82.2 | 78.5 | 58.9 | 58.8 | 92.5 | 91.5 | 92.7 | 77.7 | 68.6 | 72.0 | 77.5 | **92.8** | **92.8** | 69.8 |
+| Dutch | 89.6 | 90.2 | 89.1 | 82.0 | 88.3 | 66.8 | 74.5 | 55.5 | 88.2 | 80.9 | 77.1 | 47.2 | 87.6 | 90.9 | 72.5 | **92.8** | 71.8 | 76.3 | 70.1 | 87.3 | 89.8 | 89.7 | 67.4 |
+| Slovak | 80.2 | 79.3 | 48.4 | 53.2 | 43.8 | 68.7 | 60.6 | 48.6 | 80.5 | 77.5 | 70.5 | 17.1 | 81.5 | 91.5 | 74.5 | 91.3 | 53.7 | 79.5 | 69.3 | 89.2 | 91.2 | **92.7** | 69.5 |
+| Polish | 91.5 | 88.2 | 78.8 | 80.3 | 67.7 | 68.0 | 66.8 | 53.4 | 82.4 | 86.5 | 79.6 | 73.4 | 90.8 | **92.5** | 73.6 | 91.6 | 77.2 | 70.0 | 69.0 | 91.6 | 91.1 | 89.6 | 70.2 |
+| Serbian | 89.5 | 89.8 | 81.2 | 84.5 | 74.5 | 64.3 | 70.2 | 61.3 | 69.6 | 81.9 | 73.0 | 36.8 | 71.9 | 90.9 | 75.7 | 92.1 | 69.1 | 72.2 | 76.0 | 89.4 | **92.2** | 91.3 | 63.7 |
+| Danish | 86.2 | 88.6 | 84.2 | 76.3 | 64.9 | 61.5 | 68.2 | 49.4 | 74.5 | 77.4 | 77.2 | 53.3 | 84.4 | **92.2** | 77.0 | 90.0 | 63.8 | 71.5 | 69.7 | 89.4 | 88.4 | 87.1 | 68.7 |
+| Albanian | 77.8 | 77.1 | 54.0 | 53.0 | 49.1 | 63.8 | 50.1 | 41.0 | 64.0 | 79.3 | 71.7 | 28.0 | 66.2 | **92.1** | 73.6 | 91.2 | 63.5 | 71.2 | 71.4 | 90.1 | 90.7 | 91.9 | 54.8 |
+| Galician | 82.7 | 90.0 | 62.5 | 64.3 | 53.0 | 67.5 | 69.1 | 54.6 | 81.1 | 86.5 | 77.4 | 63.1 | 84.8 | 91.5 | 74.3 | 91.7 | 76.5 | 71.4 | 64.3 | **92.0** | 90.9 | 89.5 | 59.3 |
+| Ukrainian | 89.1 | 91.4 | 86.3 | 81.1 | 68.1 | 70.4 | 73.2 | 63.5 | 87.2 | 84.7 | 82.0 | 65.3 | 75.7 | **92.0** | 90.2 | 77.8 | 72.2 | 71.7 | 75.5 | 91.6 | 89.0 | 90.5 | 77.6 |
+| Arabic | 86.0 | 80.9 | 89.8 | 88.7 | 68.2 | 74.0 | 67.0 | 44.8 | 71.6 | 67.1 | 87.7 | 38.5 | 81.2 | **91.8** | 71.8 | 90.8 | 73.4 | 77.0 | 74.1 | 90.1 | 89.7 | 89.4 | 41.1 |
+| Finnish | 90.6 | 88.0 | 69.7 | 75.6 | 51.6 | 64.8 | 53.2 | 35.4 | 68.0 | 75.7 | 76.1 | 3.8 | 74.6 | **91.6** | 70.6 | 89.8 | 71.4 | 72.8 | 76.9 | 78.5 | 84.5 | 89.4 | 70.3 |
+| German | 89.2 | 91.0 | 64.8 | 81.9 | 63.5 | 65.2 | 75.8 | 63.7 | 80.1 | 86.1 | 82.3 | 67.8 | 78.5 | 89.8 | 79.7 | 90.9 | 76.6 | 76.9 | 68.3 | 78.7 | **91.5** | 89.2 | 64.5 |
+| Latvian | 40.9 | 57.3 | 35.4 | 31.4 | 24.0 | 63.8 | 58.5 | 38.1 | 75.0 | 71.4 | 58.9 | 33.8 | 74.1 | 90.4 | 90.8 | 74.2 | 67.3 | 76.7 | 66.5 | 90.1 | 86.2 | **91.2** | 58.2 |
+| Macedonian | 73.4 | 63.7 | 46.8 | 56.8 | 49.3 | 66.2 | 64.1 | 43.5 | 73.0 | 69.2 | 73.2 | 43.0 | 86.2 | **91.1** | 90.6 | 90.2 | 70.1 | 72.8 | 69.4 | 89.7 | 89.7 | 89.1 | 61.6 |
+| Slovene | 74.5 | 65.0 | 43.6 | 48.5 | 38.0 | 66.8 | 62.2 | 39.8 | 76.7 | 63.9 | 65.1 | 14.9 | 74.2 | 83.0 | 78.8 | 89.3 | 82.7 | 75.7 | 73.8 | 79.2 | 90.3 | **91.0** | 61.2 |
+| Estonian | 49.0 | 48.3 | 31.9 | 34.7 | 26.4 | 63.6 | 50.2 | 35.5 | 70.5 | 74.8 | 55.5 | 30.1 | 83.9 | 89.8 | 74.9 | 89.9 | 67.2 | 70.2 | 68.2 | 88.2 | 83.0 | **91.0** | 54.3 |
+| Bulgarian | 86.7 | 88.4 | 70.9 | 66.6 | 45.7 | 68.7 | 63.5 | 55.7 | 82.1 | 77.4 | 77.5 | 49.8 | 81.5 | 90.5 | 77.2 | 89.5 | 72.6 | 65.5 | 70.3 | 88.1 | 89.1 | **90.9** | 65.3 |
+| Hungarian | 60.9 | 62.9 | 36.2 | 43.8 | 38.6 | 70.5 | 63.4 | 36.7 | 77.4 | 76.5 | 67.3 | 40.7 | 73.5 | 89.9 | 70.8 | 77.0 | 73.3 | 63.0 | 66.1 | **90.8** | 77.5 | 88.8 | 66.2 |
+| Thai | 87.1 | **90.8** | 77.5 | 83.8 | 73.5 | 70.0 | 64.5 | 64.0 | 73.1 | 56.6 | 49.5 | 13.3 | 54.8 | 73.6 | 80.7 | 77.0 | 77.0 | 66.4 | 73.1 | 70.9 | 88.4 | 88.1 | 64.2 |
+| Georgian | 69.2 | 50.4 | 36.9 | 64.5 | 53.4 | 52.7 | 37.9 | 21.4 | 60.0 | 64.0 | 44.6 | 8.1 | 68.8 | **90.6** | 80.0 | 89.8 | 71.2 | 69.2 | 75.2 | 90.1 | 85.2 | 89.1 | 41.7 |
+| Persian | 88.1 | 88.1 | 68.0 | 79.5 | 66.2 | 63.8 | 67.8 | 52.1 | 81.2 | 82.7 | 73.8 | 51.5 | 76.0 | 89.5 | **90.6** | 89.1 | 71.3 | 77.5 | 67.8 | 85.6 | 88.2 | 88.4 | 65.8 |
+| Chinese | 87.3 | 89.2 | 79.8 | 87.2 | 68.3 | 68.3 | **90.5** | 74.2 | 87.7 | 81.7 | 90.3 | 90.2 | 85.3 | 89.3 | 71.5 | 87.5 | 69.0 | 78.8 | 73.9 | 78.8 | 78.5 | **90.5** | 69.6 |
+| Belarusian | 63.8 | 69.5 | 35.9 | 40.4 | 38.1 | 67.5 | 55.1 | 36.5 | 69.1 | 77.0 | 65.5 | 37.5 | 65.1 | 88.6 | 88.8 | 84.6 | 68.0 | 66.2 | 69.1 | 86.4 | 88.9 | **90.5** | 65.1 |
+| Indonesian | 81.8 | 86.0 | 83.8 | 88.0 | 71.3 | 66.2 | 85.0 | 65.1 | 73.5 | 72.8 | 75.3 | 30.7 | 71.0 | 87.6 | 72.5 | **90.5** | 68.6 | 73.9 | 71.8 | 87.9 | 88.4 | 85.7 | 51.0 |
+| Esperanto | 72.4 | 84.1 | 37.9 | 42.7 | 35.0 | 63.2 | 58.0 | 41.6 | 69.8 | 61.7 | 57.9 | 14.8 | 73.0 | **90.3** | 73.3 | 87.0 | 82.0 | 66.5 | 59.2 | 86.2 | 87.0 | 87.0 | 52.7 |
+| Japanese | 86.5 | 83.0 | 74.3 | 79.2 | 67.0 | 71.2 | 69.3 | 56.4 | 88.4 | 74.4 | 75.1 | 55.1 | 79.9 | 76.0 | 88.4 | **90.2** | 79.8 | 73.0 | 79.3 | 89.5 | 87.3 | 88.2 | 28.0 |
+| Azerbaijani | 82.3 | 77.4 | 59.3 | 72.6 | 50.1 | 60.9 | 48.3 | 29.4 | 69.5 | 71.4 | 62.2 | 28.6 | 71.2 | 86.8 | 71.2 | **89.9** | 71.9 | 68.3 | 69.9 | 86.5 | 86.3 | 86.6 | 58.4 |
+| Hindi | 82.5 | 82.9 | 78.4 | 78.5 | 72.1 | 63.9 | 54.8 | 41.5 | 79.6 | 47.0 | 69.8 | 39.6 | 50.8 | 89.2 | 74.0 | **89.5** | 74.6 | 66.3 | 66.5 | 77.2 | 87.1 | 87.0 | 69.4 |
+| Vietnamese | **89.5** | 87.0 | 88.2 | 86.5 | 71.1 | 67.0 | 75.1 | 63.2 | 81.5 | 77.2 | 84.1 | 75.0 | 87.7 | 88.5 | 72.8 | 87.0 | 70.2 | 78.3 | 74.2 | 89.0 | 86.4 | 87.7 | 68.0 |
+| Malay | 80.8 | 80.6 | 75.5 | 88.0 | 71.3 | 66.2 | 67.8 | 51.6 | 73.7 | 70.5 | 83.8 | 70.6 | 75.5 | **89.4** | 69.2 | 86.1 | 69.2 | 72.6 | 67.6 | 82.4 | 86.4 | 89.3 | 33.4 |
+| Norwegian | 84.7 | 86.5 | 85.9 | 84.2 | 68.2 | 65.2 | 55.9 | 46.7 | 75.0 | 79.6 | 75.2 | 53.0 | 74.8 | 81.8 | 71.7 | **89.2** | 72.0 | 79.0 | 66.9 | 77.5 | 87.1 | 86.7 | 63.4 |
+| Korean | 84.5 | **88.9** | 73.8 | 80.4 | 64.0 | 66.2 | 61.8 | 40.9 | 72.9 | 71.6 | 57.0 | 29.4 | 71.4 | 87.7 | 70.1 | 86.4 | 82.7 | 65.0 | 73.0 | 75.7 | 84.7 | 86.2 | 55.9 |
+| Turkish | 77.8 | 88.3 | 78.6 | 83.9 | 66.4 | 65.5 | 54.8 | 43.7 | 69.9 | 71.5 | 81.8 | 58.9 | 81.9 | **88.4** | 71.4 | 87.8 | 69.0 | 73.3 | 72.0 | 86.5 | 87.3 | 87.6 | 70.5 |
+| Armenian | 75.8 | 69.3 | 35.0 | 38.4 | 49.1 | 62.9 | 31.0 | 24.0 | 55.9 | 66.8 | 45.1 | 6.7 | 71.7 | **88.1** | 77.0 | 87.6 | 79.8 | 73.2 | 73.0 | 82.8 | 83.7 | 85.6 | 49.2 |
+| Basque | 37.8 | 44.5 | 26.0 | 25.0 | 21.7 | 60.8 | 43.2 | 23.7 | 59.1 | 52.6 | 53.8 | 40.0 | 70.0 | 86.1 | 81.6 | 77.0 | 83.5 | 66.5 | 71.1 | 72.8 | 85.0 | **88.0** | 46.2 |
+| Marathi | 73.5 | 76.7 | 48.9 | 66.6 | 69.2 | 60.0 | 61.8 | 33.6 | 67.3 | 51.8 | 56.6 | 40.2 | 53.8 | 83.0 | 77.5 | **88.0** | 69.0 | 68.9 | 73.1 | 82.7 | 80.9 | 84.2 | 58.0 |
+| Lithuanian | 43.0 | 51.1 | 35.2 | 37.6 | 25.8 | 65.5 | 68.9 | 37.4 | 78.9 | 78.3 | 73.3 | 49.5 | 74.8 | 87.3 | 71.2 | 77.4 | 54.2 | 69.9 | 69.2 | 79.8 | **87.9** | 84.9 | 47.9 |
+| Icelandic | 60.2 | 67.2 | 38.2 | 36.6 | 30.6 | 65.8 | 40.5 | 33.5 | 66.0 | 68.8 | 41.9 | 24.4 | 74.8 | 72.8 | 71.8 | **87.6** | 70.0 | 78.7 | 66.8 | 85.8 | 84.0 | 85.4 | 53.8 |
+| Hebrew | 73.0 | 82.3 | 71.2 | 75.8 | 54.0 | 66.8 | 57.7 | 32.3 | 66.0 | 71.2 | 57.3 | 26.2 | 79.8 | 87.3 | 81.9 | 85.8 | 82.3 | 70.6 | 75.0 | 79.8 | 86.8 | **87.5** | 65.8 |
+| Malayalam | 77.6 | 57.0 | 62.7 | 56.9 | 51.3 | 59.0 | 43.6 | 24.4 | 53.0 | 42.1 | 38.0 | 26.0 | 58.1 | 81.6 | 81.4 | 86.9 | 74.5 | 69.0 | 69.5 | 81.2 | 74.4 | **87.4** | 39.8 |
+| Tamil | 69.3 | 77.2 | 49.1 | 65.3 | 66.9 | 64.1 | 44.2 | 29.7 | 61.2 | 42.1 | 51.8 | 38.8 | 60.0 | 85.4 | 72.8 | **87.4** | 64.2 | 68.9 | 73.8 | 67.0 | 77.1 | 83.0 | 49.5 |
+| Portuguese | 84.8 | 85.5 | 84.7 | 84.1 | 68.0 | 65.3 | 82.0 | 65.4 | 79.8 | **87.0** | 84.5 | 77.5 | 85.3 | 82.7 | 76.0 | 85.8 | 71.4 | 69.4 | 72.2 | 83.7 | 85.8 | 84.0 | 63.8 |
+| Afrikaans | 85.2 | 81.0 | 50.5 | 71.3 | 64.4 | 60.1 | 64.5 | 42.0 | 73.2 | 81.7 | 74.9 | 37.2 | 78.3 | 85.7 | 71.5 | 85.9 | 76.0 | 69.8 | 65.8 | 73.8 | 84.1 | **86.0** | 60.1 |
+| Welsh | 32.2 | 37.2 | 25.0 | 20.4 | 20.3 | 64.7 | 31.5 | 21.8 | 59.5 | 52.6 | 39.8 | 2.6 | 69.4 | 85.1 | 71.4 | 75.9 | 59.5 | 74.2 | 74.9 | 80.5 | 78.3 | **85.7** | 35.4 |
+| Swahili | 84.0 | 82.6 | 64.8 | 75.5 | 54.6 | 61.9 | 42.5 | 27.7 | 64.8 | 65.9 | 56.2 | 9.6 | 73.8 | 84.4 | 69.7 | **85.2** | 62.8 | 66.7 | 57.8 | 69.2 | 82.7 | 84.8 | 51.2 |
+| Nepali | 76.2 | 74.8 | 67.6 | 77.4 | 69.5 | 59.1 | 52.0 | 35.9 | 65.8 | 53.8 | 63.6 | 49.3 | 45.5 | 82.5 | 84.0 | **84.8** | 68.6 | 62.0 | 64.0 | 73.0 | 82.6 | 76.1 | 65.7 |
+| Tagalog | 78.5 | 78.1 | 66.5 | 79.0 | 68.4 | 69.9 | 46.1 | 29.6 | 57.6 | 57.5 | 55.5 | 37.6 | 70.8 | 82.7 | 68.2 | **84.5** | 67.6 | 74.4 | 54.1 | 82.2 | 81.1 | 82.0 | 46.3 |
+| Bengali | 76.2 | 83.1 | 59.7 | 66.1 | 62.3 | 62.7 | 55.8 | 39.6 | 64.6 | 60.0 | 62.6 | 42.3 | 50.7 | 81.4 | 83.0 | 75.4 | 64.0 | 65.2 | 55.1 | 80.3 | 83.1 | **84.2** | 64.8 |
+| Urdu | 72.2 | 76.2 | 62.4 | 61.6 | 63.0 | 63.5 | 48.0 | 39.2 | 69.7 | 61.8 | 66.7 | 51.7 | 69.3 | 76.5 | 79.8 | 81.7 | 68.3 | 68.5 | 67.3 | 71.3 | 70.8 | **84.1** | 54.4 |
+| Khmer | 71.5 | 52.7 | 61.7 | 62.0 | 74.2 | 60.9 | 35.9 | 29.8 | 60.5 | 60.5 | 55.8 | 25.6 | 40.6 | 81.9 | 73.7 | **83.6** | 77.1 | 73.6 | 73.9 | 75.5 | 76.7 | 83.5 | 39.2 |
+| Mongolian | 71.3 | 65.5 | 45.7 | 57.4 | 44.9 | 58.8 | 35.5 | 22.3 | 63.8 | 65.6 | 38.7 | 11.7 | 65.0 | 82.2 | 69.3 | 73.7 | 59.1 | 71.4 | 69.2 | 81.5 | 82.0 | **82.7** | 51.6 |
+| Kannada | 70.2 | 60.6 | 41.4 | 50.9 | 44.0 | 60.5 | 30.0 | 25.2 | 57.5 | 50.1 | 40.8 | 34.6 | 51.3 | 80.1 | 76.9 | **81.8** | 66.8 | 67.8 | 69.5 | 75.2 | 77.3 | 81.3 | 45.2 |
+| Burmese | 79.2 | 64.0 | 54.4 | 71.1 | 68.0 | 59.0 | 34.9 | 22.9 | 46.2 | 42.2 | 40.8 | 17.9 | 22.5 | **81.3** | 79.7 | 81.0 | 72.2 | 70.5 | 68.0 | 80.4 | 76.2 | 81.1 | 37.1 |
+| Lao | 76.9 | 56.2 | 50.0 | 70.4 | 61.2 | 50.4 | 35.9 | 30.2 | 58.8 | 71.5 | 49.3 | 13.4 | 50.0 | 80.2 | 72.7 | 75.1 | 67.6 | 65.2 | 50.8 | 80.5 | 76.2 | **81.2** | 38.1 |
+| Irish | 23.6 | 27.5 | 17.5 | 18.9 | 15.5 | 54.6 | 33.4 | 23.2 | 51.8 | 49.6 | 47.3 | 26.5 | 62.1 | **81.0** | 69.8 | 69.8 | 56.3 | 61.7 | 66.0 | 69.3 | 72.2 | 71.7 | 30.2 |
+| Sinhala | 73.8 | 66.2 | 58.8 | 56.4 | 60.7 | 52.9 | 39.7 | 20.8 | 50.4 | 57.5 | 45.5 | 32.5 | 38.1 | 76.2 | 69.1 | **80.3** | 59.8 | 67.2 | 71.1 | 73.8 | 70.9 | 75.2 | 33.6 |
+| Telugu | 75.0 | 74.2 | 55.3 | 68.9 | 57.9 | 50.7 | 37.7 | 31.6 | 52.5 | 48.2 | 49.6 | 40.4 | 57.0 | 73.3 | 71.8 | **80.1** | 63.0 | 69.0 | 67.8 | 76.9 | 77.0 | 75.6 | 54.5 |
+| Greek | 60.6 | 59.5 | 41.3 | 48.5 | 31.7 | 59.5 | 49.4 | 31.4 | 50.8 | 57.0 | 51.9 | 31.2 | 58.1 | 71.2 | **79.4** | 79.1 | 60.8 | 65.2 | 61.0 | 68.0 | 64.0 | 73.8 | 60.0 |
+| Interlingua | 54.5 | 45.0 | 41.3 | 44.4 | 41.7 | 60.0 | 60.3 | 50.8 | 69.5 | 61.2 | 64.1 | 18.1 | 63.8 | 73.9 | 63.4 | 74.9 | 59.5 | 62.2 | 55.7 | 64.8 | **75.5** | 75.1 | 42.7 |
 
 This result shows that the optimal model clearly differs depending on the language's characteristics (language family, amount of training resources).
 
@@ -161,21 +166,27 @@ Mean and standard deviation are automatically computed from the comparison table
 | gemini-2.5-flash | 71.65 | 71.20 | 5.73 | The content holds up well down to medium-to-low-resource languages with no deep breakdown, but it drops speaker labels in almost every language, which the evaluator deducts for in each and which holds its scores down across the board |
 | gemini-3-flash (preview) | 69.54 | 69.90 | 5.77 | Drops speaker labels in every language, which holds its scores down across the board. On some low-resource languages it also produces a peculiar failure mode generating strings foreign to the body text, such as JSON fragments or HTML tags, and its Basque translation stops after 18 of 99 lines |
 | qwen3.8 (27B) | 66.47 | 69.80 | 15.06 | Good on high-resource languages, but output is prone to dropping out partway through (the body text disappears leaving only speaker names, or sentences get cut off mid-way) |
+| gemma4-e4b | 66.35 | 69.20 | 18.79 | The strongest of the small gemma4 variants: it tracks `gemma4-12b` closely per language (Spearman +0.93) but scores higher in 50 of 67 languages. Practical on high-resource languages (French, Russian, Swedish, Italian) and keeps its speaker labels, but shares the gemma4 family's collapse into invented vocabulary on the Celtic and Baltic languages, Basque, Estonian, and Icelandic |
 | gpt-oss (120B) | 64.52 | 65.20 | 5.50 | Strong at comprehension, but drops speaker labels in every language and is prone to structural collapse when generating translations. High reading ability, but writing ability is unstable |
+| gemma4-e2b | 56.12 | 62.30 | 16.01 | From the first short back-channel line (`Yes?`) on, the speaker labels vanish and never come back in most languages, which holds its scores down across the board; beneath that, the content is medium quality at best, and the gemma4 family's low-resource collapse is deeper still |
+| gemma4-12b | 60.99 | 61.70 | 19.21 | Keeps its speaker labels and is practical on high-resource languages (French, Spanish), but scatters Japanese, Korean, and Chinese fragments into sentences (`das 사실 jeder kennt` in German) in about half of its languages, more than any other model; with the gemma4 family's low-resource collapse on top, it falls below `gemma4-e4b`. The build tested is QAT (Q4_0) |
+| qwen3.5-9b | 58.56 | 60.60 | 15.29 | Keeps its speaker labels in almost every language and holds up on Chinese and a few high-resource European languages, but beyond them nonsense vocabulary and lexical hallucination spread quickly, with stray Chinese fragments in about a dozen languages |
 | space-bunny-alpha | 56.72 | 60.00 | 11.73 | Drops speaker labels in every language, losing more than half of them in about a third of its languages. Throughout the corpus it also scatters stray Chinese characters and English or other-language fragments into sentences, and sometimes its own English deliberation (Indonesian, Japanese). Unlike the other models, its failures don't track resource level: Japanese is its lowest score |
+| qwen3.5-4b | 43.28 | 41.50 | 14.50 | Below `qwen3.5-9b` in every language. Drops the speaker labels within the first few lines in nearly every language and never restores them, and its content turns to nonsense on most medium-to-low-resource languages; only Chinese, Spanish, and Italian reach the medium range |
 | bonsai2-27b (ternary) | 40.16 | 38.50 | 21.05 | Ternary (PTQ1_0) quantization of Qwen 3.8 27B. It stays usable only on the highest-resource languages (Spanish, Chinese, French, Portuguese); elsewhere it either falls into degenerate repetition loops that bloat the output to several times the source length, or amplifies the unquantized model's own dropout failure until little more than bare speaker names remains |
 
 ### Trend Differences Among Google Models
 
-`gemma4`, `gemma4-31b`, `gemini-3.5-flash-lite`, `gemini-2.5-flash`, `gemini-3-flash`, and `gemini-3.7-flash` are all made by Google, but their strengths and weaknesses differed by model.
+`gemma4`, `gemma4-31b`, `gemma4-12b`, `gemma4-e4b`, `gemma4-e2b`, `gemini-3.5-flash-lite`, `gemini-2.5-flash`, `gemini-3-flash`, and `gemini-3.7-flash` are all made by Google, but their strengths and weaknesses differed by model.
 
-- The per-language scores of the Gemini models correlate weakly with each other and with the gemma4 models — you can't say trends are similar just because they're from the same vendor. The exception is the two gemma4 variants, which track each other closely
+- The per-language scores of the Gemini models correlate weakly with each other and with the gemma4 models — you can't say trends are similar just because they're from the same vendor. The exception is the gemma4 variants, which track each other closely
 - Languages where `gemma4` clearly outperforms `gemini-3.5-flash-lite` are medium-to-high-resource languages where `gemma4` is stable, while `gemini-3.5-flash-lite` is prone to breaking down there due to other-language contamination or source-text leftovers
 - Conversely, languages where `gemini-3.5-flash-lite` clearly outperforms overlap with the band where `gemma4` catastrophically breaks down due to code-switching and the like: Basque, the Celtic and Baltic languages, Estonian
 - Failure patterns also differ: `gemma4` has localized intrusions of irrelevant words into sentences, as seen with Hungarian, whereas `gemini-3.5-flash-lite` has multiple different writing systems mixed in together for specific languages (e.g. other South Asian language scripts intruding broadly into Sinhala) — the very nature of the breakdown is different
 - Of `gemma4`, `gemma4-31b`, `gemini-3.5-flash-lite`, and `gemini-2.5-flash`, `gemini-2.5-flash` has the shallowest failure floor: no language breaks down, where the two gemma4 variants collapse on Irish, Welsh, and Basque
 - There's no clear superiority between the MoE (26B-A4B) and dense (31B) variants of the same `gemma4`: their means are nearly even and their per-language scores move together, with the dense version winning somewhat more languages head to head
 - `gemini-2.5-flash` and `gemini-3-flash` both drop speaker labels in almost every language, and the evaluator deducts for it in each, so both sit in a narrow band below the models that keep their labels; `gemini-3-flash` adds non-natural-language failures of its own (below)
+- Among the smaller gemma4 variants, size doesn't order the scores: `gemma4-e4b` beats `gemma4-12b` in most languages (Wilcoxon p < 0.001), as the 12B build scatters East Asian fragments into its output (below), and `gemma4-e2b` falls below both by dropping speaker labels. Every variant, from `gemma4-e2b` up to `gemma4-31b`, collapses on the same low-resource languages (Irish, Welsh, Basque, the Baltic languages, Estonian), so that weakness belongs to the family rather than to one size
 - `gemini-3.7-flash` is by far the strongest Google model in this comparison, and even its low-resource floor stays ordinary rather than the collapses seen in the gemma4 variants
 - Even within the same Google lineage, differences in model scale, architecture, and tuning policy appear to have a much bigger effect on translation tendencies
 
@@ -187,6 +198,8 @@ Mean and standard deviation are automatically computed from the comparison table
 - **gpt-5.6-terra's chain-of-thought leakage**: across a wide range of medium-to-low-resource languages (French, Dutch, Croatian, Swedish, Polish, and many more), `gpt-5.6-terra` intermittently leaves raw internal-reasoning fragments — English snippets like `Wait`, `Hmm`, `final?`, or tool-call-like text such as `assistant to=python?` — embedded directly in the translated dialogue, in place of or alongside the intended line. This differs from ordinary multilingual contamination in that the leaked text is not another natural language but the model's own unfiltered deliberation.
 - **space-bunny-alpha's scattered contamination**: rather than breaking down a whole language, `space-bunny-alpha` inserts short foreign fragments into otherwise translated lines, mostly Chinese characters (e.g. `Itu adalah平行 yang...` in Malay, `هذا هو正解` in Arabic) along with English and other-language words. In Indonesian and Japanese its own English deliberation also leaks into the body (`We must ensure no meta. Just translate line: ...`, `Suggestion?`, `let's proceed.`), which is the same kind of failure as `gpt-5.6-terra`'s but on far fewer lines. The fragments show up even in high-resource languages, and Japanese, where they appear in over a quarter of its lines, gets its lowest score.
 - **gpt-6-luna's stray `providername` token**: in Mongolian, `gpt-6-luna` ends an otherwise normal line with `...тэр дүр зураг...providername`, a bare identifier-like string rather than a natural-language word or a fragment of deliberation. It occurs once in the whole corpus, but it's a kind of leak not seen in the other models.
+- **gemma4-12b's East Asian fragment injection**: `gemma4-12b` inserts short Japanese, Korean, or Chinese fragments into otherwise translated sentences, e.g. `das 사실 jeder kennt` (German, where `사실` means "in fact", matching the source), `die要是 Raffinesse` (German), or `կարծしましょう` (Armenian). It appears in about half of its languages, a few lines each, including high-resource German, where the other gemma4 variants stay clean.
+- **Speaker labels lost for good in the smallest models**: `gemma4-e2b` and `qwen3.5-4b` keep the speaker labels for the first few lines, then drop one on a short line (for `gemma4-e2b` usually the back-channel `Yes?` on line 5) and never write another for the rest of the text. The result is a script with no attribution on more than 90 of its 99 lines, in most languages for `gemma4-e2b` and nearly all for `qwen3.5-4b`. In the other models a dropped label is mostly an isolated line; here a single drop becomes the pattern the rest of the output follows.
 - **bonsai2-27b's quantization-induced degeneration**: `bonsai2-27b` is Qwen 3.8 27B quantized to ternary (PTQ1_0), so comparing it with the unquantized model isolates what extreme quantization costs. The damage is not spread evenly: the highest-resource languages hold up best (Chinese, Portuguese, French, Spanish), and the loss concentrates in the middle band that the unquantized model could still handle (Romanian, Arabic, Czech, Indonesian, Slovak, Croatian). In that band the model stops producing a translation at all: for Lao, Burmese, Thai, and Mongolian it falls into character- or phrase-level repetition loops that swell the output to several times the source size, while for Slovak, Slovene, and Swahili the body text vanishes and only the speaker labels are emitted line after line — the same dropout the unquantized model already showed, pushed much further. Finnish came back as the untranslated English source. Unlike the contamination and leakage patterns of other models, these are degeneracies of the decoding process itself rather than wrong-language or wrong-content output, suggesting that quantization erodes the ability to sustain generation in a language before it erodes the knowledge of that language.
 
 No universal translation model exists, strongly suggesting the importance of choosing a model to match the language.
