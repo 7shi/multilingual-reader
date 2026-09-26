@@ -27,6 +27,7 @@ QWEN36_27B = -i qwen3.6-27b -l "Qwen 3.6 27B"
 QWEN38     = -i qwen3.8 -l "Qwen 3.8 27B"
 GPT56LUNA  = -i gpt-5.6-luna -l "GPT-5.6 Luna"
 GPT56TERRA = -i gpt-5.6-terra -l "GPT-5.6 Terra"
+GPT6LUNA   = -i gpt-6-luna -l "GPT-6 Luna"
 GPTOSS     = -i gpt-oss -l "GPT-OSS 120B"
 
 sync:
@@ -41,4 +42,4 @@ compare:
 	uv run plot_comparison.py --jev -o compare/gemma4_31b.png $(GEMMA4_31B) $(GEMINI35FL) $(GEMINI25F) $(GEMMA4) $(GEMINI3F)
 	uv run plot_comparison.py --jev -o compare/gemini3f.png $(GEMINI3F) $(GEMINI35FL) $(GEMINI25F) $(GEMMA4) $(GEMMA4_31B)
 	uv run plot_comparison.py --jev -o compare/qwen38.png $(QWEN38) $(QWEN36) $(QWEN36_27B)
-	uv run plot_comparison.py --jev -o compare/gpt56luna.png $(GPT56LUNA) $(GPT56TERRA) $(GPTOSS)
+	uv run plot_comparison.py --jev -o compare/gpt56luna.png $(GPT56LUNA) $(GPT56TERRA) $(GPT6LUNA) $(GPTOSS)

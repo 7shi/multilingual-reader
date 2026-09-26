@@ -12,6 +12,7 @@ Translates and evaluates the onde text with each model.
 - [muse-glimmer](muse-glimmer/)
 - [gpt-5.6-luna](gpt-5.6-luna/)
 - [gpt-5.6-terra](gpt-5.6-terra/)
+- [gpt-6-luna](gpt-6-luna/)
 - [gemini-3.5-flash-lite](gemini-3.5-flash-lite/)
 - [gemini-2.5-flash](gemini-2.5-flash/)
 - [gemini-3-flash](gemini-3-flash/)
