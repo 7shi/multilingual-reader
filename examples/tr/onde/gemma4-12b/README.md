@@ -13,6 +13,9 @@ Target languages: `CORE_LANGS` + `EXTRA_LANGS` defined in [common.mk](../../comm
 - Trend column: written by qwen3.6 from Jev's scores
 - Settings: threshold=20, keep=5, no CoT, term file injection (`../../terms/*-en.{json,tsv}`)
 
+> [!NOTE]
+> During translation, the model often stopped responding partway through, and the run had to be stopped by hand and restarted. None of the other models behaved this way.
+
 ## Translation quality overview
 
 The score is Jev's total, and the trend analysis is a phrase written by qwen3.6 to describe it (`trtools trend --jev`), as follows.
