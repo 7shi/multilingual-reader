@@ -14,6 +14,7 @@ Translates and evaluates the onde text with each model.
 - [qwen3.6](qwen3.6/) (35B-A3B)
 - [qwen3.8](qwen3.8/) (27B)
 - [bonsai2-27b](bonsai2-27b/) (Ternary Bonsai 2 27B PTQ1_0: ternary-quantized Qwen 3.8 27B)
+- [saluki-27b](saluki-27b/) (Underdog Saluki 27B 1.0 IQ2-mix: quantized Qwen 3.8 27B)
 - [muse-glimmer](muse-glimmer/)
 - [gpt-5.6-luna](gpt-5.6-luna/)
 - [gpt-5.6-terra](gpt-5.6-terra/)
