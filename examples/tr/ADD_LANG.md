@@ -28,16 +28,16 @@ For the "Trend Analysis" column in the per-language table in each model director
 
 Once all directories have been updated, update the top-level `examples/tr/README.md` to summarize.
 
-- `uv run examples/tr/generate_compare_rows.py compare --jev` outputs the "Comparison Between Translation Models" table (header row, separator row, body rows). With `--sync`, it directly rewrites the entire table whose header starts with `| Language | [` in README.md.
+- `uv run examples/tr/generate_compare_rows.py compare --jev` outputs the "Comparison Between Translation Models" table (header row, separator row, body rows). With `--sync`, it directly rewrites the entire table whose header starts with `| Language | Score 1 |` in README.md.
 - `uv run examples/tr/generate_compare_rows.py core --jev` outputs the table for "Evaluation Results for Core Languages (core)", and `--sync` writes it into README.md. Its onde column is gemma4's score, taken from `onde/gemma4/SCORES-jev.txt`.
 - `make sync` in `examples/tr/` runs both with `--sync`.
 - In `core` mode, rows are ordered by descending average; ties are stabilized by ascending language code.
 
 ### 2.1 Updating the Comparison Table
 - Reflect the target language's row in the table under "Comparison Between Translation Models".
-- Enter each model's representative score (the number recorded in the base `SCORES-jev.txt`), and bold (`**`) the **cell with the maximum score** in that row. If the maximum is tied, bold all tied cells.
-- The comparison table is updated by running `uv run examples/tr/generate_compare_rows.py compare --sync`. The header row (each model name links to `onde/{model}/README.md`), separator row, and body rows are all rewritten together, so no manual pasting is needed.
-- Columns (models) are automatically read from `MODELS` in `onde/Makefile`. There's no need to add or edit columns manually in the table.
+- Each row shows the top three scores (from the base `SCORES-jev.txt` of each model) with their models. Ties are not merged: each model gets its own entry, ordered by score and then by model name.
+- The comparison table is updated by running `uv run examples/tr/generate_compare_rows.py compare --sync`. The header row, separator row, and body rows are all rewritten together, so no manual pasting is needed.
+- Models are automatically read from `MODELS` in `onde/Makefile`.
 - With `--jev`, which `make sync` passes, this script reads `onde/{each model}/SCORES-jev.txt` (without it, the previous evaluator's `SCORES.txt`), internally builds a **tuple of each language's scores sorted in descending order within the row**, and determines row order by **comparing those tuples in descending order**. Ties on the same tuple are stabilized by ascending language code.
 - Language names are output in their English form (`LANG_NAMES`).
 

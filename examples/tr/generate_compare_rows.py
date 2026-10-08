@@ -56,11 +56,13 @@ LINE_RE = re.compile(r"^([a-z0-9.]+)-([a-z0-9.]+):\s+(\d+(?:\.\d+)?)$")
 README_FILE = ROOT / "README.md"
 GRAPH_OUTPUT = ROOT / "compare" / "MODELS.png"
 GRAPH_SVG_OUTPUT = ROOT / "MODELS.svg"
+COMPARE_TOP = 3
+COMPARE_HEADER = "| Language | " + " | ".join(
+    f"Score {i} | Model {i}" for i in range(1, COMPARE_TOP + 1)
+) + " |"
 STATS_HEADER = "| Model | Mean | Median | Stdev | Notes |"
-# The compare header is matched with its first link, since the core table's header also
-# starts with "| Language | " and precedes it in README.md.
 SYNC_HEADERS = {
-    "compare": "| Language | [",
+    "compare": COMPARE_HEADER,
     "stats": STATS_HEADER,
     "core": "| Language | finetuning |",
 }
@@ -88,13 +90,6 @@ def parse_scores(path: Path) -> dict[tuple[str, str], float]:
     if not scores:
         raise ValueError(f"no scores found in {path}")
     return scores
-
-
-def format_score(score: float, max_score: float) -> str:
-    # One decimal for Jev: its totals are not integers, and rounding them would tie most
-    # of a model's languages. The previous evaluator's are integers.
-    text = f"{score:.1f}" if JEV else f"{score:g}"
-    return f"**{text}**" if score == max_score else text
 
 
 def load_compare_rows() -> list[CompareRow]:
@@ -129,23 +124,21 @@ def load_compare_rows() -> list[CompareRow]:
     return rows
 
 
-def render_compare_header(linked: bool) -> list[str]:
-    if linked:
-        model_cells = [f"[{model}](onde/{model}/README.md)" for model in ONDE_MODELS]
-    else:
-        model_cells = list(ONDE_MODELS)
-    header = f"| Language | {' | '.join(model_cells)} |"
-    separator = f"| --- | {' | '.join(['---:'] * len(ONDE_MODELS))} |"
-    return [header, separator]
+def render_compare_header() -> list[str]:
+    return [COMPARE_HEADER, "| --- |" + " ---: | --- |" * COMPARE_TOP]
 
 
 def render_compare_rows() -> list[str]:
     rows = load_compare_rows()
     rendered = []
     for row in rows:
-        max_score = max(row.scores)
-        scores = [format_score(score, max_score) for score in row.scores]
-        rendered.append(f"| {row.display_name} | {' | '.join(scores)} |")
+        # Ties are not merged: each model gets its own entry, ordered by score
+        # (descending) and then by model name.
+        ranked = sorted(zip(ONDE_MODELS, row.scores), key=lambda x: (-x[1], x[0]))
+        cells = []
+        for model, score in ranked[:COMPARE_TOP]:
+            cells += [f"{score:.1f}" if JEV else f"{score:g}", model]
+        rendered.append(f"| {row.display_name} | {' | '.join(cells)} |")
     return rendered
 
 
@@ -422,7 +415,7 @@ def main() -> int:
 
     try:
         if args.section == "compare":
-            compare_lines = render_compare_header(linked=args.sync) + render_compare_rows()
+            compare_lines = render_compare_header() + render_compare_rows()
             stats_lines = render_stats_header() + render_stats_rows()
         elif args.section == "core":
             lines = render_core_header() + render_core_rows()
@@ -431,7 +424,7 @@ def main() -> int:
         else:
             lines = [
                 "<!-- compare -->",
-                *render_compare_header(linked=False),
+                *render_compare_header(),
                 *render_compare_rows(),
                 "",
                 "<!-- stats -->",

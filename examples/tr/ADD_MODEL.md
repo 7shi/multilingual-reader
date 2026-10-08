@@ -13,7 +13,7 @@ When adding a new model to the benchmark, duplicate [onde/TEMPLATE/](onde/TEMPLA
 1. Copy `TEMPLATE/` to a directory named after the target model
 2. In the copy's `Makefile`, change `TRANSLATOR` to the target model (everything else uses the common definitions in [onde/common.mk](onde/common.mk). The evaluator is Jev, pinned in `trtools/jev.py` and the same for every model to keep the scoring criteria consistent. `TRANSLATOR` isn't used by automated runs — it's a value for recording which model did the translation)
 3. Rewrite the `TODO` spots (title, translation model name) in the copy's `README.md`
-4. Add the target model's directory name to `MODELS` in the parent [onde/Makefile](onde/Makefile), and also add it to the directory list in [onde/README.md](onde/README.md) (`MODELS` is also the source data `generate_compare_rows.py` reads automatically for the comparison table's model columns)
+4. Add the target model's directory name to `MODELS` in the parent [onde/Makefile](onde/Makefile), and also add it to the directory list in [onde/README.md](onde/README.md) (`MODELS` is also the source data `generate_compare_rows.py` reads automatically for the comparison table)
 
 Don't run `make` at this point (running it before the translations are in place will attempt translation via the target model's API and fail).
 
@@ -48,9 +48,8 @@ Once all directories have been updated, update the top-level `examples/tr/README
 - Running `make sync` in `examples/tr/` updates the "Comparison Between Translation Models" table (header row, separator row, body rows) all at once.
 
 #### 3.4.1 Updating the Comparison Table
-- Reflect the added model's column in the table under "Comparison Between Translation Models". Columns follow the order of `MODELS` in `onde/Makefile`, so if you added it to `MODELS` in step 1.4, no manual column editing is needed on the table side.
-- Enter each model's representative score (the number recorded in the base `SCORES-jev.txt`), and bold (`**`) the **cell with the maximum score** in that row. If the maximum is tied, bold all tied cells.
-- Update the comparison table by running `make sync` in `examples/tr/`. The header row (each model name links to `onde/{model}/README.md`), separator row, and body rows are all rewritten together.
+- Add the model to the model table at the top of `examples/tr/README.md` (model name linked to `onde/{model}/README.md`, and a description). The comparison table lists each language's top three scores and their models, so it needs no manual editing; models are read from `MODELS` in `onde/Makefile`.
+- Update the comparison table by running `make sync` in `examples/tr/`. The header row, separator row, and body rows are all rewritten together.
 - Then run `make compare` in `examples/tr/` to regenerate the per-model score-distribution boxplot (`compare/MODELS.png`).
 - See [ADD_LANG.md's 2.1](ADD_LANG.md#21-updating-the-comparison-table) for details on the generation process, including the row-ordering algorithm.
 
