@@ -15,6 +15,7 @@ Directory for translating the English source text into various languages and upd
 | [qwen3.6-27b](onde/qwen3.6-27b/README.md) | Qwen 3.6 27B (dense) |
 | [qwen3.6](onde/qwen3.6/README.md) | Qwen 3.6 35B-A3B (MoE) |
 | [qwen3.8](onde/qwen3.8/README.md) | Qwen 3.8 27B (dense) |
+| [qwen3.8-flash-next](onde/qwen3.8-flash-next/README.md) | Qwen 3.8 Flash Next 125B-A6B (MoE, 51B of it n-gram embeddings), GSQ-RCO quantized to IQ3_S, run with Strata |
 | [bonsai2-27b](onde/bonsai2-27b/README.md) | Ternary Bonsai 2 27B PTQ1_0 (ternary-quantized Qwen 3.8 27B) |
 | [saluki-27b](onde/saluki-27b/README.md) | Underdog Saluki 27B 1.0 IQ2-mix (quantized Qwen 3.8 27B) |
 | [muse-glimmer](onde/muse-glimmer/README.md) | 30B (dense) |
@@ -79,8 +80,8 @@ The guide keeps the cuts it had under qwen3.6. Jev's scale is narrower at the to
 | Language | Score 1 | Model 1 | Score 2 | Model 2 | Score 3 | Model 3 |
 | --- | ---: | --- | ---: | --- | ---: | --- |
 | French | 95.9 | ox-alpha | 94.7 | gemma4-31b | 94.4 | union-alpha |
+| Spanish | 95.5 | qwen3.8-flash-next | 94.6 | union-alpha | 94.5 | gemini-3.7-flash |
 | Catalan | 95.0 | gpt-6-luna | 94.5 | union-alpha | 93.8 | gemini-3.7-flash |
-| Spanish | 94.6 | union-alpha | 94.5 | gemini-3.7-flash | 94.5 | gemma4-31b |
 | Italian | 94.5 | gemini-3.7-flash | 94.0 | union-alpha | 93.1 | muse-glimmer |
 | Swedish | 93.8 | gpt-6-luna | 93.0 | union-alpha | 92.8 | ox-alpha |
 | Czech | 93.4 | gpt-6-luna | 92.0 | gpt-5.6-luna | 91.0 | gemini-3.7-flash |
@@ -109,28 +110,28 @@ The guide keeps the cuts it had under qwen3.6. Jev's scale is narrower at the to
 | Persian | 90.6 | gpt-5.6-terra | 89.5 | gpt-5.6-luna | 89.1 | gpt-6-luna |
 | Chinese | 90.5 | qwen3.5-9b | 90.5 | union-alpha | 90.3 | qwen3.8 |
 | Belarusian | 90.5 | union-alpha | 88.9 | ox-alpha | 88.8 | gpt-5.6-terra |
-| Indonesian | 90.5 | gpt-6-luna | 88.4 | ox-alpha | 88.0 | gemma4-e4b |
+| Indonesian | 90.5 | gpt-6-luna | 88.5 | qwen3.8-flash-next | 88.4 | ox-alpha |
+| Lithuanian | 90.5 | qwen3.8-flash-next | 87.9 | ox-alpha | 87.3 | gpt-5.6-luna |
 | Esperanto | 90.3 | gpt-5.6-luna | 87.0 | gpt-6-luna | 87.0 | ox-alpha |
-| Japanese | 90.2 | gpt-6-luna | 89.5 | gemini-3.7-flash | 88.4 | gpt-5.6-terra |
+| Japanese | 90.2 | gpt-6-luna | 90.1 | qwen3.8-flash-next | 89.5 | gemini-3.7-flash |
 | Azerbaijani | 89.9 | gpt-6-luna | 86.8 | gpt-5.6-luna | 86.6 | union-alpha |
 | Hindi | 89.5 | gpt-6-luna | 89.2 | gpt-5.6-luna | 87.1 | ox-alpha |
 | Vietnamese | 89.5 | gemma4 | 89.0 | gemini-3.7-flash | 88.5 | gpt-5.6-luna |
 | Malay | 89.4 | gpt-5.6-luna | 89.3 | union-alpha | 88.0 | gemma4-e4b |
 | Norwegian | 89.2 | gpt-6-luna | 87.1 | ox-alpha | 86.7 | union-alpha |
-| Korean | 88.9 | gemma4-31b | 87.7 | gpt-5.6-luna | 86.4 | gpt-6-luna |
+| Korean | 88.9 | gemma4-31b | 87.7 | gpt-5.6-luna | 87.3 | qwen3.8-flash-next |
 | Turkish | 88.4 | gpt-5.6-luna | 88.3 | gemma4-31b | 87.8 | gpt-6-luna |
 | Armenian | 88.1 | gpt-5.6-luna | 87.6 | gpt-6-luna | 85.6 | union-alpha |
 | Basque | 88.0 | union-alpha | 86.1 | gpt-5.6-luna | 85.0 | ox-alpha |
 | Marathi | 88.0 | gpt-6-luna | 84.2 | union-alpha | 83.0 | gpt-5.6-luna |
-| Lithuanian | 87.9 | ox-alpha | 87.3 | gpt-5.6-luna | 84.9 | union-alpha |
 | Icelandic | 87.6 | gpt-6-luna | 85.8 | gemini-3.7-flash | 85.4 | union-alpha |
 | Hebrew | 87.5 | union-alpha | 87.3 | gpt-5.6-luna | 86.8 | ox-alpha |
 | Malayalam | 87.4 | union-alpha | 86.9 | gpt-6-luna | 81.6 | gpt-5.6-luna |
 | Tamil | 87.4 | gpt-6-luna | 85.4 | gpt-5.6-luna | 83.0 | union-alpha |
 | Portuguese | 87.0 | qwen3.6 | 85.8 | gpt-6-luna | 85.8 | ox-alpha |
 | Afrikaans | 86.0 | union-alpha | 85.9 | gpt-6-luna | 85.7 | gpt-5.6-luna |
-| Welsh | 85.7 | union-alpha | 85.1 | gpt-5.6-luna | 80.5 | gemini-3.7-flash |
-| Swahili | 85.2 | gpt-6-luna | 84.8 | union-alpha | 84.4 | gpt-5.6-luna |
+| Welsh | 85.7 | union-alpha | 85.1 | gpt-5.6-luna | 84.1 | qwen3.8-flash-next |
+| Swahili | 85.2 | gpt-6-luna | 84.8 | union-alpha | 84.5 | qwen3.8-flash-next |
 | Nepali | 84.8 | gpt-6-luna | 84.0 | gpt-5.6-terra | 82.6 | ox-alpha |
 | Tagalog | 84.5 | gpt-6-luna | 82.7 | gpt-5.6-luna | 82.2 | gemini-3.7-flash |
 | Bengali | 84.2 | union-alpha | 83.1 | gemma4-31b | 83.1 | ox-alpha |
@@ -140,7 +141,7 @@ The guide keeps the cuts it had under qwen3.6. Jev's scale is narrower at the to
 | Kannada | 81.8 | gpt-6-luna | 81.3 | union-alpha | 80.1 | gpt-5.6-luna |
 | Burmese | 81.3 | gpt-5.6-luna | 81.1 | union-alpha | 81.0 | gpt-6-luna |
 | Lao | 81.2 | union-alpha | 80.5 | gemini-3.7-flash | 80.2 | gpt-5.6-luna |
-| Irish | 81.0 | gpt-5.6-luna | 72.2 | ox-alpha | 71.7 | union-alpha |
+| Irish | 81.0 | gpt-5.6-luna | 73.8 | qwen3.8-flash-next | 72.2 | ox-alpha |
 | Sinhala | 80.3 | gpt-6-luna | 76.2 | gpt-5.6-luna | 75.2 | union-alpha |
 | Telugu | 80.1 | gpt-6-luna | 77.0 | ox-alpha | 76.9 | gemini-3.7-flash |
 | Greek | 79.4 | gpt-5.6-terra | 79.1 | gpt-6-luna | 73.8 | union-alpha |
@@ -159,6 +160,7 @@ Mean and standard deviation are automatically computed from each model's `SCORES
 | gpt-6-luna | 85.92 | 87.50 | 6.07 | Tied with `gpt-5.6-luna` and `union-alpha` at the top, but it diverges from `gpt-5.6-luna` per language: it gains most on Icelandic, Japanese, and French and loses most on Latvian, Ukrainian, Hungarian, and Irish. The losses mostly coincide with a single dropped speaker label (ten languages, often on the same line), where `gpt-5.6-luna` keeps every label. Contamination is otherwise limited to a few English words left in place and a stray `providername` token in Mongolian |
 | ox-alpha (320B-A18B) | 84.79 | 86.40 | 6.46 | Broadly stable across medium-to-low-resource languages. On the other hand, some failures leave English meta-commentary unremoved |
 | gemini-3.7-flash | 82.62 | 82.70 | 7.53 | Even at its low-resource floor, failures stay ordinary (Romance-language code-switching on Interlingua, terminology/lexical looseness on Welsh, Irish, Tagalog) rather than the non-natural-language contamination seen in `gemini-3-flash`, though Bengali suffers a distinct glyph-level corruption resembling a font/encoding fault. Drops a speaker label in about a third of its languages |
+| qwen3.8-flash-next (125B-A6B) | 81.18 | 82.50 | 6.96 | The strongest local model in this comparison: above `qwen3.8` (27B) in 60 of 67 languages, and level with `gemini-3.7-flash` (Wilcoxon p = 0.14), though below `ox-alpha` (p < 0.001). The 27B model's mid-text dropout and low-resource collapse are gone, and the content stays in the practical range down to Welsh, Swahili, and Armenian. What holds it down is speaker labels: in French, Italian, Persian, and Tamil they stop for good around line 65, and in Mongolian after line 4, so French, the 27B model's best European language, drops to the medium range. Contamination is limited to an English first line in Hungarian and one Latin-script line in Macedonian |
 | gemma4-31b | 75.60 | 80.60 | 15.52 | Stable on medium-to-high-resource languages, but breaks down catastrophically, with garbled text, on low-resource languages such as Irish, Welsh, Basque, and Estonian |
 | gemma4 (26B-A4B) | 75.65 | 78.50 | 14.69 | Keeps grammatical structure and dialogue flow stable for medium-to-high-resource languages, but can break down catastrophically for low-resource languages, the Celtic and Baltic ones and Basque in particular |
 | muse-glimmer (30B) | 70.89 | 74.10 | 13.74 | Strong on medium-to-low-resource European languages (Macedonian, Bulgarian, Lithuanian, etc.), but sentence/line duplication occurs frequently |
@@ -207,6 +209,7 @@ Mean and standard deviation are automatically computed from each model's `SCORES
 - **Speaker labels lost for good in the smallest models**: `gemma4-e2b` and `qwen3.5-4b` keep the speaker labels for the first few lines, then drop one on a short line (for `gemma4-e2b` usually the back-channel `Yes?` on line 5) and never write another for the rest of the text. The result is a script with no attribution on more than 90 of its 99 lines, in most languages for `gemma4-e2b` and nearly all for `qwen3.5-4b`. In the other models a dropped label is mostly an isolated line; here a single drop becomes the pattern the rest of the output follows.
 - **bonsai2-27b's quantization-induced degeneration**: `bonsai2-27b` is Qwen 3.8 27B quantized to ternary (PTQ1_0), so comparing it with the unquantized model isolates what extreme quantization costs. The damage is not spread evenly: the highest-resource languages hold up best (Chinese, Portuguese, French, Spanish), and the loss concentrates in the middle band that the unquantized model could still handle (Romanian, Arabic, Czech, Indonesian, Slovak, Croatian). In that band the model stops producing a translation at all: for Lao, Burmese, Thai, and Mongolian it falls into character- or phrase-level repetition loops that swell the output to several times the source size, while for Slovak, Slovene, and Swahili the body text vanishes and only the speaker labels are emitted line after line — the same dropout the unquantized model already showed, pushed much further. Finnish came back as the untranslated English source. Unlike the contamination and leakage patterns of other models, these are degeneracies of the decoding process itself rather than wrong-language or wrong-content output, suggesting that quantization erodes the ability to sustain generation in a language before it erodes the knowledge of that language.
 
+- **qwen3.8-flash-next's speaker labels lost partway through**: `qwen3.8-flash-next` keeps the content intact to the end, but in some languages the speaker labels stop and never come back, as in the smallest models. In French, Italian, Persian, and Tamil this happens at the same place, around line 65 of 99 (after the back-channel `Yes...` on line 62); Persian and Tamil had already been dropping the label on short back-channel lines before that, while French and Italian had kept almost every one. In Mongolian the labels stop after line 4, leaving 95 lines without attribution. Since the body text itself stays translated, this costs it scores in languages it otherwise handles well, French most of all.
 - **saluki-27b's progressive truncation**: `saluki-27b` is another low-bit quantization of Qwen 3.8 27B (IQ2-mix), and it degenerates differently from `bonsai2-27b`. Its output never bloats: each line starts out translated, but the lines get cut off mid-sentence, shorter and shorter, until from some point on only the speaker name remains, and sometimes only part of it (`Cam` for `Camille`). In Czech only the first four lines are translated in full; in Malayalam, Sinhala, Irish, and Burmese more than 80 of the 99 lines have no body text. This is the unquantized model's dropout pushed to the end, like `bonsai2-27b`'s Slovak and Slovene, but here it is the main failure rather than one of two. The two quantizations score about the same overall yet fail on different languages (Spearman +0.67 per language): `saluki-27b` keeps Indonesian, Korean, and Arabic where `bonsai2-27b` breaks down, and loses Chinese (33.1 against 90.2), which `bonsai2-27b` and the unquantized model both translate well.
 
 No universal translation model exists, strongly suggesting the importance of choosing a model to match the language.
@@ -217,6 +220,7 @@ What the comparison above can and cannot be read as. These were carried over fro
 
 - **One source text, chosen to be hard.** Every onde score is a translation of one document, [onde-en.txt](../onde-en.txt). It is deliberately spoken in form and technical in content, a combination that is hard to translate, so that translators differ. The scores are therefore not a general-purpose measure of multilingual ability, and whether the ranking would hold for another genre is untested. This is accepted as the corpus's design rather than treated as a gap to fill with a second source.
 - **The top three are even.** `gpt-5.6-luna` and `union-alpha` are not separated per language by either evaluator, qwen3.6 or Jev ([experimental/13/REPORT.md](../../experimental/13/REPORT.md) section 2), so they are treated as tied. `gpt-6-luna`, which only Jev has scored, is tied with both by the same paired test on the per-language differences (Wilcoxon p = 0.89 against `gpt-5.6-luna`, 0.90 against `union-alpha`), while it is separated from `ox-alpha` (p = 0.01) and `gemini-3.7-flash` (p < 0.001). The tie is in overall level only: per language it and `gpt-5.6-luna` correlate only moderately (Spearman +0.62), trading wins across languages. The small differences in their means are not read as an order, and nothing further is being tried to separate them. `union-alpha` turned out to be a router that calls a stronger model when a task needs one, so the tie is between a single model and a system of several.
+- **Greek and Interlingua sit low for every model, likely because Jev knows them less well.** Among the six models whose mean is 80 or above (`gpt-5.6-luna`, `gpt-6-luna`, `union-alpha`, `ox-alpha`, `gemini-3.7-flash`, `qwen3.8-flash-next`), Greek is the lowest language on average and Interlingua the second, and in most models both rank in the bottom dozen of 67 languages. For Interlingua the deduction is concentrated in fluency, which stays far below the other criteria even in the strongest translations, so a ceiling of about 75 applies to every model. Greek is a medium-resource language, and the six models' Greek translations show no breakdown (every speaker label kept but for at most one line, no other-language text), yet Jev rates every criterion uniformly lower than for comparable languages. Jev's own confidence points to the evaluator rather than the translations: averaged over every model's run, Interlingua and Greek are the two languages Jev is least confident on, and they stay among the lowest three after allowing for the lower scores, while Irish, scored as low, gets ordinary confidence. Over the six models above, its mean confidence is 0.38 on Interlingua and 0.47 on Greek, against 0.57 on Irish and 0.71 on Bulgarian. Low scores on these two languages are therefore not read as a defect of a particular model, and they are compared only between models.
 
 ## Evaluation Design Policy: Why Speaker Tags Aren't Separated
 
