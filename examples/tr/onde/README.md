@@ -26,6 +26,7 @@ Translates and evaluates the onde text with each model.
 - [gemini-3-flash](gemini-3-flash/)
 - [gemini-3.7-flash](gemini-3.7-flash/)
 - [deepseek-v4.1-flash](deepseek-v4.1-flash/)
+- [haiku-5.5](haiku-5.5/)
 - [ox-alpha](ox-alpha/) (glm-5.3-flash stealth 320B-A18B)
 - [union-alpha](union-alpha/) (Pareto 26.9 stealth, a router over several models)
 - [space-bunny-alpha](space-bunny-alpha/) (stealth)
