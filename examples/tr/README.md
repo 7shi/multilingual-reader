@@ -25,6 +25,7 @@ Directory for translating the English source text into various languages and upd
 | [gpt-5.6-luna](onde/gpt-5.6-luna/README.md) | GPT-5.6 Luna |
 | [gpt-5.6-terra](onde/gpt-5.6-terra/README.md) | GPT-5.6 Terra |
 | [gpt-6-luna](onde/gpt-6-luna/README.md) | GPT-6 Luna |
+| [gpt-6.1-sol](onde/gpt-6.1-sol/README.md) | GPT-6.1 Sol |
 | [gemini-3.5-flash-lite](onde/gemini-3.5-flash-lite/README.md) | Gemini 3.5 Flash-Lite |
 | [gemini-2.5-flash](onde/gemini-2.5-flash/README.md) | Gemini 2.5 Flash |
 | [gemini-3-flash](onde/gemini-3-flash/README.md) | Gemini 3 Flash Preview |
@@ -84,69 +85,69 @@ The guide keeps the cuts it had under qwen3.6. Jev's scale is narrower at the to
 | Spanish | 95.5 | qwen3.8-flash-next | 94.6 | union-alpha | 94.5 | gemini-3.7-flash |
 | Catalan | 95.0 | gpt-6-luna | 94.5 | union-alpha | 93.8 | gemini-3.7-flash |
 | Italian | 94.5 | gemini-3.7-flash | 94.0 | union-alpha | 93.1 | muse-glimmer |
-| Swedish | 93.8 | gpt-6-luna | 93.0 | union-alpha | 92.8 | ox-alpha |
-| Czech | 93.4 | gpt-6-luna | 92.0 | gpt-5.6-luna | 91.0 | gemini-3.7-flash |
-| Croatian | 93.4 | ox-alpha | 91.6 | gpt-5.6-luna | 90.9 | gpt-6-luna |
+| Swedish | 93.8 | gpt-6-luna | 93.2 | gpt-6.1-sol | 93.0 | union-alpha |
+| Czech | 93.4 | gpt-6-luna | 93.0 | gpt-6.1-sol | 92.0 | gpt-5.6-luna |
+| Croatian | 93.4 | ox-alpha | 93.0 | gpt-6.1-sol | 91.6 | gpt-5.6-luna |
 | Romanian | 93.2 | union-alpha | 93.0 | gpt-5.6-luna | 92.3 | gpt-6-luna |
+| Slovak | 93.0 | gpt-6.1-sol | 92.7 | union-alpha | 91.5 | gpt-5.6-luna |
 | Russian | 92.8 | gemma4-31b | 92.8 | ox-alpha | 92.8 | union-alpha |
 | Dutch | 92.8 | gpt-6-luna | 90.9 | gpt-5.6-luna | 90.2 | gemma4-31b |
-| Slovak | 92.7 | union-alpha | 91.5 | gpt-5.6-luna | 91.3 | gpt-6-luna |
+| Serbian | 92.5 | gpt-6.1-sol | 92.2 | ox-alpha | 92.1 | gpt-6-luna |
 | Polish | 92.5 | gpt-5.6-luna | 91.6 | gemini-3.7-flash | 91.6 | gpt-6-luna |
-| Serbian | 92.2 | ox-alpha | 92.1 | gpt-6-luna | 91.3 | union-alpha |
 | Danish | 92.2 | gpt-5.6-luna | 90.0 | gpt-6-luna | 89.4 | gemini-3.7-flash |
 | Albanian | 92.1 | gpt-5.6-luna | 91.9 | union-alpha | 91.2 | gpt-6-luna |
-| Galician | 92.0 | gemini-3.7-flash | 91.7 | gpt-6-luna | 91.5 | gpt-5.6-luna |
-| Ukrainian | 92.0 | gpt-5.6-luna | 91.6 | gemini-3.7-flash | 91.4 | gemma4-31b |
+| Galician | 92.0 | gemini-3.7-flash | 91.9 | gpt-6.1-sol | 91.7 | gpt-6-luna |
+| Ukrainian | 92.0 | gpt-5.6-luna | 91.7 | gpt-6.1-sol | 91.6 | gemini-3.7-flash |
+| Japanese | 91.9 | gpt-6.1-sol | 90.2 | gpt-6-luna | 90.1 | qwen3.8-flash-next |
 | Arabic | 91.8 | gpt-5.6-luna | 90.8 | gpt-6-luna | 90.1 | gemini-3.7-flash |
-| Finnish | 91.6 | gpt-5.6-luna | 90.6 | gemma4 | 89.8 | gpt-6-luna |
+| Finnish | 91.6 | gpt-5.6-luna | 90.6 | gemma4 | 90.3 | gpt-6.1-sol |
 | German | 91.5 | ox-alpha | 91.0 | gemma4-31b | 90.9 | gpt-6-luna |
-| Latvian | 91.2 | union-alpha | 90.8 | gpt-5.6-terra | 90.4 | gpt-5.6-luna |
+| Bulgarian | 91.5 | gpt-6.1-sol | 90.9 | union-alpha | 90.5 | gpt-5.6-luna |
+| Latvian | 91.3 | gpt-6.1-sol | 91.2 | union-alpha | 90.8 | gpt-5.6-terra |
 | Macedonian | 91.1 | gpt-5.6-luna | 90.6 | gpt-5.6-terra | 90.2 | gpt-6-luna |
 | Slovene | 91.0 | union-alpha | 90.3 | ox-alpha | 89.3 | gpt-6-luna |
 | Estonian | 91.0 | union-alpha | 89.9 | gpt-6-luna | 89.8 | gpt-5.6-luna |
-| Bulgarian | 90.9 | union-alpha | 90.5 | gpt-5.6-luna | 89.5 | gpt-6-luna |
+| Thai | 90.8 | gemma4-31b | 90.8 | gpt-6.1-sol | 88.4 | ox-alpha |
 | Hungarian | 90.8 | gemini-3.7-flash | 89.9 | gpt-5.6-luna | 88.8 | union-alpha |
-| Thai | 90.8 | gemma4-31b | 88.4 | ox-alpha | 88.1 | union-alpha |
+| Persian | 90.6 | gpt-5.6-terra | 90.2 | gpt-6.1-sol | 89.5 | gpt-5.6-luna |
 | Georgian | 90.6 | gpt-5.6-luna | 90.1 | gemini-3.7-flash | 89.8 | gpt-6-luna |
-| Persian | 90.6 | gpt-5.6-terra | 89.5 | gpt-5.6-luna | 89.1 | gpt-6-luna |
 | Chinese | 90.5 | qwen3.5-9b | 90.5 | union-alpha | 90.3 | qwen3.8 |
-| Belarusian | 90.5 | union-alpha | 88.9 | ox-alpha | 88.8 | gpt-5.6-terra |
+| Belarusian | 90.5 | gpt-6.1-sol | 90.5 | union-alpha | 88.9 | ox-alpha |
 | Indonesian | 90.5 | gpt-6-luna | 88.5 | qwen3.8-flash-next | 88.4 | ox-alpha |
 | Lithuanian | 90.5 | qwen3.8-flash-next | 87.9 | ox-alpha | 87.3 | gpt-5.6-luna |
-| Esperanto | 90.3 | gpt-5.6-luna | 87.0 | gpt-6-luna | 87.0 | ox-alpha |
-| Japanese | 90.2 | gpt-6-luna | 90.1 | qwen3.8-flash-next | 89.5 | gemini-3.7-flash |
-| Azerbaijani | 89.9 | gpt-6-luna | 86.8 | gpt-5.6-luna | 86.6 | union-alpha |
-| Hindi | 89.5 | gpt-6-luna | 89.2 | gpt-5.6-luna | 87.1 | ox-alpha |
-| Vietnamese | 89.5 | gemma4 | 89.0 | gemini-3.7-flash | 88.5 | gpt-5.6-luna |
+| Esperanto | 90.3 | gpt-5.6-luna | 87.0 | gpt-6-luna | 87.0 | gpt-6.1-sol |
+| Azerbaijani | 89.9 | gpt-6-luna | 87.0 | gpt-6.1-sol | 86.8 | gpt-5.6-luna |
+| Turkish | 89.7 | gpt-6.1-sol | 88.4 | gpt-5.6-luna | 88.3 | gemma4-31b |
+| Vietnamese | 89.5 | gemma4 | 89.5 | gpt-6.1-sol | 89.0 | gemini-3.7-flash |
+| Hindi | 89.5 | gpt-6-luna | 89.2 | gpt-5.6-luna | 88.8 | gpt-6.1-sol |
 | Malay | 89.4 | gpt-5.6-luna | 89.3 | union-alpha | 88.0 | gemma4-e4b |
-| Norwegian | 89.2 | gpt-6-luna | 87.1 | ox-alpha | 86.7 | union-alpha |
-| Korean | 88.9 | gemma4-31b | 87.7 | gpt-5.6-luna | 87.3 | qwen3.8-flash-next |
-| Turkish | 88.4 | gpt-5.6-luna | 88.3 | gemma4-31b | 87.8 | gpt-6-luna |
-| Armenian | 88.1 | gpt-5.6-luna | 87.6 | gpt-6-luna | 85.6 | union-alpha |
-| Basque | 88.0 | union-alpha | 86.1 | gpt-5.6-luna | 85.0 | ox-alpha |
-| Marathi | 88.0 | gpt-6-luna | 84.2 | union-alpha | 83.0 | gpt-5.6-luna |
-| Icelandic | 87.6 | gpt-6-luna | 85.8 | gemini-3.7-flash | 85.4 | union-alpha |
-| Hebrew | 87.5 | union-alpha | 87.3 | gpt-5.6-luna | 86.8 | ox-alpha |
-| Malayalam | 87.4 | union-alpha | 86.9 | gpt-6-luna | 81.6 | gpt-5.6-luna |
-| Tamil | 87.4 | gpt-6-luna | 85.4 | gpt-5.6-luna | 83.0 | union-alpha |
+| Norwegian | 89.4 | gpt-6.1-sol | 89.2 | gpt-6-luna | 87.1 | ox-alpha |
+| Korean | 88.9 | gemma4-31b | 88.4 | gpt-6.1-sol | 87.7 | gpt-5.6-luna |
+| Armenian | 88.9 | gpt-6.1-sol | 88.1 | gpt-5.6-luna | 87.6 | gpt-6-luna |
+| Icelandic | 88.0 | gpt-6.1-sol | 87.6 | gpt-6-luna | 85.8 | gemini-3.7-flash |
+| Basque | 88.0 | union-alpha | 87.0 | gpt-6.1-sol | 86.1 | gpt-5.6-luna |
+| Marathi | 88.0 | gpt-6-luna | 84.7 | gpt-6.1-sol | 84.2 | union-alpha |
+| Hebrew | 87.5 | union-alpha | 87.3 | gpt-5.6-luna | 87.2 | gpt-6.1-sol |
+| Malayalam | 87.4 | union-alpha | 86.9 | gpt-6-luna | 83.8 | gpt-6.1-sol |
+| Tamil | 87.4 | gpt-6-luna | 86.4 | gpt-6.1-sol | 85.4 | gpt-5.6-luna |
 | Portuguese | 87.0 | qwen3.6 | 85.8 | gpt-6-luna | 85.8 | ox-alpha |
+| Welsh | 86.8 | gpt-6.1-sol | 85.7 | union-alpha | 85.1 | gpt-5.6-luna |
 | Afrikaans | 86.0 | union-alpha | 85.9 | gpt-6-luna | 85.7 | gpt-5.6-luna |
-| Welsh | 85.7 | union-alpha | 85.1 | gpt-5.6-luna | 84.1 | qwen3.8-flash-next |
 | Swahili | 85.2 | gpt-6-luna | 84.8 | union-alpha | 84.5 | qwen3.8-flash-next |
+| Mongolian | 85.0 | gpt-6.1-sol | 82.7 | union-alpha | 82.2 | gpt-5.6-luna |
 | Nepali | 84.8 | gpt-6-luna | 84.0 | gpt-5.6-terra | 82.6 | ox-alpha |
+| Urdu | 84.5 | gpt-6.1-sol | 84.1 | union-alpha | 81.7 | gpt-6-luna |
 | Tagalog | 84.5 | gpt-6-luna | 82.7 | gpt-5.6-luna | 82.2 | gemini-3.7-flash |
 | Bengali | 84.2 | union-alpha | 83.1 | gemma4-31b | 83.1 | ox-alpha |
-| Urdu | 84.1 | union-alpha | 81.7 | gpt-6-luna | 79.8 | gpt-5.6-terra |
-| Khmer | 83.6 | gpt-6-luna | 83.5 | union-alpha | 81.9 | gpt-5.6-luna |
-| Mongolian | 82.7 | union-alpha | 82.2 | gpt-5.6-luna | 82.0 | ox-alpha |
+| Khmer | 83.8 | gpt-6.1-sol | 83.6 | gpt-6-luna | 83.5 | union-alpha |
+| Burmese | 83.8 | gpt-6.1-sol | 81.3 | gpt-5.6-luna | 81.1 | union-alpha |
+| Greek | 83.7 | gpt-6.1-sol | 79.4 | gpt-5.6-terra | 79.1 | gpt-6-luna |
+| Lao | 83.0 | gpt-6.1-sol | 81.2 | union-alpha | 80.5 | gemini-3.7-flash |
+| Sinhala | 82.2 | gpt-6.1-sol | 80.3 | gpt-6-luna | 76.2 | gpt-5.6-luna |
 | Kannada | 81.8 | gpt-6-luna | 81.3 | union-alpha | 80.1 | gpt-5.6-luna |
-| Burmese | 81.3 | gpt-5.6-luna | 81.1 | union-alpha | 81.0 | gpt-6-luna |
-| Lao | 81.2 | union-alpha | 80.5 | gemini-3.7-flash | 80.2 | gpt-5.6-luna |
-| Irish | 81.0 | gpt-5.6-luna | 73.8 | qwen3.8-flash-next | 72.2 | ox-alpha |
-| Sinhala | 80.3 | gpt-6-luna | 76.2 | gpt-5.6-luna | 75.2 | union-alpha |
+| Irish | 81.0 | gpt-5.6-luna | 77.5 | gpt-6.1-sol | 73.8 | qwen3.8-flash-next |
 | Telugu | 80.1 | gpt-6-luna | 77.0 | ox-alpha | 76.9 | gemini-3.7-flash |
-| Greek | 79.4 | gpt-5.6-terra | 79.1 | gpt-6-luna | 73.8 | union-alpha |
-| Interlingua | 75.5 | ox-alpha | 75.1 | union-alpha | 74.9 | gpt-6-luna |
+| Interlingua | 76.2 | gpt-6.1-sol | 75.5 | ox-alpha | 75.1 | union-alpha |
 
 This result shows that the optimal model clearly differs depending on the language's characteristics (language family, amount of training resources).
 
@@ -156,9 +157,10 @@ Mean and standard deviation are automatically computed from each model's `SCORES
 
 | Model | Mean | Median | Stdev | Notes |
 | --- | ---: | ---: | ---: | --- |
-| gpt-5.6-luna | 86.16 | 88.10 | 5.79 | Tied with `union-alpha` and `gpt-6-luna` at the top. Multilingual contamination, system-prompt leakage, and speaker-tag dropout — all frequent in other models — were rarely observed, and it keeps every speaker label in every language; currently the most general-purpose and stable |
-| union-alpha | 86.86 | 87.60 | 5.10 | A router over several models rather than one model, so its languages need not all have been translated by the same model. Tied with `gpt-5.6-luna` and `gpt-6-luna` at the top, with a practical-to-high-quality floor across most low-resource languages; its rare deep failures are concentrated on a handful of outliers, most notably a Chinese-character injection into Irish |
-| gpt-6-luna | 85.92 | 87.50 | 6.07 | Tied with `gpt-5.6-luna` and `union-alpha` at the top, but it diverges from `gpt-5.6-luna` per language: it gains most on Icelandic, Japanese, and French and loses most on Latvian, Ukrainian, Hungarian, and Irish. The losses mostly coincide with a single dropped speaker label (ten languages, often on the same line), where `gpt-5.6-luna` keeps every label. Contamination is otherwise limited to a few English words left in place and a stray `providername` token in Mongolian |
+| gpt-6.1-sol | 87.55 | 88.60 | 4.44 | The highest mean, and the first in 19 of 67 languages, with a narrower spread than `gpt-6-luna` and `gpt-5.6-luna`. It keeps every speaker label and every line in every language with no other-language contamination, and its weak spots are only mild: Telugu (74.0), Interlingua, Irish, and Kannada, none broken down. Against `gpt-6-luna` it gains most on Latvian, Ukrainian, Thai, and Mongolian and loses most on Telugu, Tagalog, Kannada, and Dutch; against `union-alpha` it gains most on Greek and Sinhala and loses most on Italian |
+| gpt-5.6-luna | 86.16 | 88.10 | 5.79 | Tied with `union-alpha`, `gpt-6-luna`, and `gpt-6.1-sol` at the top. Multilingual contamination, system-prompt leakage, and speaker-tag dropout — all frequent in other models — were rarely observed, and it keeps every speaker label in every language; currently the most general-purpose and stable |
+| union-alpha | 86.86 | 87.60 | 5.10 | A router over several models rather than one model, so its languages need not all have been translated by the same model. Tied with `gpt-5.6-luna`, `gpt-6-luna`, and `gpt-6.1-sol` at the top, with a practical-to-high-quality floor across most low-resource languages; its rare deep failures are concentrated on a handful of outliers, most notably a Chinese-character injection into Irish |
+| gpt-6-luna | 85.92 | 87.50 | 6.07 | Tied with `gpt-5.6-luna`, `union-alpha`, and `gpt-6.1-sol` at the top, but it diverges from `gpt-5.6-luna` per language: it gains most on Icelandic, Japanese, and French and loses most on Latvian, Ukrainian, Hungarian, and Irish. The losses mostly coincide with a single dropped speaker label (ten languages, often on the same line), where `gpt-5.6-luna` keeps every label. Contamination is otherwise limited to a few English words left in place and a stray `providername` token in Mongolian |
 | ox-alpha (320B-A18B) | 84.79 | 86.40 | 6.46 | Broadly stable across medium-to-low-resource languages. On the other hand, some failures leave English meta-commentary unremoved |
 | gemini-3.7-flash | 82.62 | 82.70 | 7.53 | Even at its low-resource floor, failures stay ordinary (Romance-language code-switching on Interlingua, terminology/lexical looseness on Welsh, Irish, Tagalog) rather than the non-natural-language contamination seen in `gemini-3-flash`, though Bengali suffers a distinct glyph-level corruption resembling a font/encoding fault. Drops a speaker label in about a third of its languages |
 | qwen3.8-flash-next (125B-A6B) | 81.18 | 82.50 | 6.96 | The strongest local model in this comparison: above `qwen3.8` (27B) in 60 of 67 languages, and level with `gemini-3.7-flash` (Wilcoxon p = 0.14), though below `ox-alpha` (p < 0.001). The 27B model's mid-text dropout and low-resource collapse are gone, and the content stays in the practical range down to Welsh, Swahili, and Armenian. What holds it down is speaker labels: in French, Italian, Persian, and Tamil they stop for good around line 65, and in Mongolian after line 4, so French, the 27B model's best European language, drops to the medium range. Contamination is limited to an English first line in Hungarian and one Latin-script line in Macedonian |
@@ -222,7 +224,7 @@ No universal translation model exists, strongly suggesting the importance of cho
 What the comparison above can and cannot be read as. These were carried over from [experimental/13/PORT.md](../../experimental/13/PORT.md) section 8 when experiments 13 and 14 were frozen; this section is where they are kept up to date.
 
 - **One source text, chosen to be hard.** Every onde score is a translation of one document, [onde-en.txt](../onde-en.txt). It is deliberately spoken in form and technical in content, a combination that is hard to translate, so that translators differ. The scores are therefore not a general-purpose measure of multilingual ability, and whether the ranking would hold for another genre is untested. This is accepted as the corpus's design rather than treated as a gap to fill with a second source.
-- **The top three are even.** `gpt-5.6-luna` and `union-alpha` are not separated per language by either evaluator, qwen3.6 or Jev ([experimental/13/REPORT.md](../../experimental/13/REPORT.md) section 2), so they are treated as tied. `gpt-6-luna`, which only Jev has scored, is tied with both by the same paired test on the per-language differences (Wilcoxon p = 0.89 against `gpt-5.6-luna`, 0.90 against `union-alpha`), while it is separated from `ox-alpha` (p = 0.01) and `gemini-3.7-flash` (p < 0.001). The tie is in overall level only: per language it and `gpt-5.6-luna` correlate only moderately (Spearman +0.62), trading wins across languages. The small differences in their means are not read as an order, and nothing further is being tried to separate them. `union-alpha` turned out to be a router that calls a stronger model when a task needs one, so the tie is between a single model and a system of several.
+- **The top four are close.** `gpt-5.6-luna` and `union-alpha` are not separated per language by either evaluator, qwen3.6 or Jev ([experimental/13/REPORT.md](../../experimental/13/REPORT.md) section 2), so they are treated as tied. `gpt-6-luna`, which only Jev has scored, is tied with both by the same paired test on the per-language differences (Wilcoxon p = 0.89 against `gpt-5.6-luna`, 0.90 against `union-alpha`), while it is separated from `ox-alpha` (p = 0.01) and `gemini-3.7-flash` (p < 0.001). The tie is in overall level only: per language it and `gpt-5.6-luna` correlate only moderately (Spearman +0.62), trading wins across languages. The small differences in their means are not read as an order, and nothing further is being tried to separate them. `union-alpha` turned out to be a router that calls a stronger model when a task needs one, so the tie is between a single model and a system of several. `gpt-6.1-sol`, also scored only by Jev, has the highest mean of the four, but the paired test separates it from the other three only marginally (Wilcoxon p = 0.055 against `gpt-6-luna`, 0.046 against `gpt-5.6-luna`, 0.017 against `union-alpha`; it is clearly separated from `ox-alpha` and `gemini-3.7-flash`), and its per-language correlation with them is moderate to high (Spearman +0.68 to +0.83), so it is read as a leader by a small margin rather than a separate tier.
 - **Greek and Interlingua sit low for every model, likely because Jev knows them less well.** Among the six models whose mean is 80 or above (`gpt-5.6-luna`, `gpt-6-luna`, `union-alpha`, `ox-alpha`, `gemini-3.7-flash`, `qwen3.8-flash-next`), Greek is the lowest language on average and Interlingua the second, and in most models both rank in the bottom dozen of 67 languages. For Interlingua the deduction is concentrated in fluency, which stays far below the other criteria even in the strongest translations, so a ceiling of about 75 applies to every model. Greek is a medium-resource language, and the six models' Greek translations show no breakdown (every speaker label kept but for at most one line, no other-language text), yet Jev rates every criterion uniformly lower than for comparable languages. Jev's own confidence points to the evaluator rather than the translations: averaged over every model's run, Interlingua and Greek are the two languages Jev is least confident on, and they stay among the lowest three after allowing for the lower scores, while Irish, scored as low, gets ordinary confidence. Over the six models above, its mean confidence is 0.38 on Interlingua and 0.47 on Greek, against 0.57 on Irish and 0.71 on Bulgarian. Low scores on these two languages are therefore not read as a defect of a particular model, and they are compared only between models.
 
 ## Evaluation Design Policy: Why Speaker Tags Aren't Separated
