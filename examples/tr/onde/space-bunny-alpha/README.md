@@ -6,10 +6,10 @@ Target languages: `CORE_LANGS` + `EXTRA_LANGS` defined in [common.mk](../../comm
 
 ## Running
 
-`make` runs translation, evaluation, aggregation, and the trend column in one batch. Translations go to `tr/`, Jev's evaluations to `jev.jsonl`, scores to `SCORES-jev.txt`, and the trend column to `TREND-jev.jsonl`.
+`make` runs translation, evaluation, aggregation, and the trend column in one batch. Translations go to `tr/`, Jev's evaluations to `jev.jsonl`, scores to `SCORES-jev.txt`, and the trend column to `TREND-jev.jsonl`. `jev-1.13.0/` holds the same three files from jev-1.13.0, kept frozen.
 
 - Translation model: space-bunny-alpha
-- Evaluation model: jev-1.13.0
+- Evaluation model: jev-1.14.0 (jev-1.13.0 before it)
 - Trend column: written by qwen3.6 from Jev's scores
 - Settings: threshold=20, keep=5, no CoT, term file injection (`../../terms/*-en.{json,tsv}`)
 
@@ -21,70 +21,70 @@ Guide: high quality (90+), practical range (80-89), medium quality (60-79), crit
 
 | Language | Score | Trend Analysis |
 | --- | ---: | --- |
-| Ukrainian | 77.6 | Missing speaker attributions |
-| Romanian | 71.3 | Severe formatting errors and literal calques |
-| Turkish | 70.5 | Frequent separation of speaker names and missing tags |
-| Finnish | 70.3 | Formatting and accuracy errors |
-| Polish | 70.2 | Severe formatting and dialogue tag errors |
-| Russian | 69.8 | Leftover English word and formatting errors |
-| Chinese | 69.6 | Jarring mixed-language error |
-| Slovak | 69.5 | Significant mechanical and grammatical errors |
-| Hindi | 69.4 | Inconsistent formatting and mechanical errors |
-| Danish | 68.7 | Inconsistent speaker labels and formatting defects |
-| Croatian | 68.0 | Untranslated English and swapped speaker labels |
-| Vietnamese | 68.0 | Structural glitches and unnatural phrasing |
-| Dutch | 67.4 | Repeated grammatical errors in math notation phrasing |
-| French | 66.3 | Glaring untranslated errors and garbled text |
-| Hungarian | 66.2 | Inclusion of untranslated English segments |
-| Persian | 65.8 | Inconsistent tone and mixed-language defects |
-| Hebrew | 65.8 | Severe structural disorganization and untranslated segments |
-| Nepali | 65.7 | Inconsistent speaker labeling |
-| Bulgarian | 65.3 | Mixed language and missing speaker attributions |
-| Belarusian | 65.1 | Severe grammatical and structural errors |
-| Bengali | 64.8 | Speaker confusion disrupts dialogue |
-| German | 64.5 | Critical loss of speaker labels |
-| Thai | 64.2 | Missing speaker tags and garbled text |
-| Portuguese | 63.8 | Stray Chinese characters and mixed dialects |
-| Serbian | 63.7 | Stiff and unnatural phrasing |
-| Norwegian | 63.4 | Speaker labels missing and misattributed |
-| Swedish | 63.4 | Severe structural and formatting errors |
-| Spanish | 63.0 | Lost speaker attribution and mixed-language errors |
-| Italian | 62.4 | Major formatting and mixed-language errors |
-| Macedonian | 61.6 | Severe loss of speaker attribution tags |
-| Slovene | 61.2 | Speaker attribution breakdown |
-| Catalan | 60.9 | Significant language mixing and structural errors |
-| Afrikaans | 60.1 | Severe structural and content errors |
-| Czech | 60.0 | Multiple missing speaker labels |
-| Greek | 60.0 | Severe scientific terminology errors |
-| Galician | 59.3 | Mixed language artifacts and missing dialogue tags |
-| Azerbaijani | 58.4 | Orphaned markers and mixed English terms |
-| Latvian | 58.2 | Severe grammatical and structural errors |
-| Marathi | 58.0 | Pervasive grammatical and terminology errors |
-| Korean | 55.9 | Severe mixed-language contamination |
-| Albanian | 54.8 | Severe structural breakdown and speaker attribution errors |
-| Telugu | 54.5 | Severe semantic errors and nonsense |
-| Urdu | 54.4 | Severe structural fragmentation and grammatical errors |
-| Estonian | 54.3 | Severe structural breakdown of dialogue attribution |
-| Icelandic | 53.8 | Severe grammatical and syntactical errors |
-| Esperanto | 52.7 | Broken formatting with English artifacts |
-| Mongolian | 51.6 | Severe linguistic and mechanical failures |
-| Swahili | 51.2 | Severe mixed-language errors and grammatical nonsense |
-| Indonesian | 51.0 | Foreign language intrusion and meta-commentary leakage |
+| Ukrainian | 74.1 | Missing speaker attributions |
+| Turkish | 72.3 | Frequent separation of speaker names and missing tags |
+| Russian | 72.0 | Leftover English word and formatting errors |
+| Romanian | 70.9 | Severe formatting errors and literal calques |
+| Hindi | 70.6 | Inconsistent formatting and mechanical errors |
+| Portuguese | 69.5 | Stray Chinese characters and mixed dialects |
+| Polish | 69.1 | Severe formatting and dialogue tag errors |
+| Vietnamese | 68.7 | Structural glitches and unnatural phrasing |
+| Slovak | 67.9 | Significant mechanical and grammatical errors |
+| French | 67.6 | Glaring untranslated errors and garbled text |
+| Bulgarian | 67.5 | Mixed language and missing speaker attributions |
+| Nepali | 67.4 | Inconsistent speaker labeling |
+| Persian | 67.0 | Inconsistent tone and mixed-language defects |
+| Belarusian | 65.9 | Severe grammatical and structural errors |
+| Bengali | 65.8 | Speaker confusion disrupts dialogue |
+| Thai | 65.5 | Missing speaker tags and garbled text |
+| Swedish | 65.4 | Severe structural and formatting errors |
+| Croatian | 65.2 | Untranslated English and swapped speaker labels |
+| Slovene | 65.0 | Speaker attribution breakdown |
+| Danish | 64.8 | Inconsistent speaker labels and formatting defects |
+| Finnish | 64.8 | Formatting and accuracy errors |
+| Chinese | 64.7 | Jarring mixed-language error |
+| Norwegian | 64.4 | Speaker labels missing and misattributed |
+| Hungarian | 64.1 | Inclusion of untranslated English segments |
+| Hebrew | 64.0 | Severe structural disorganization and untranslated segments |
+| Macedonian | 63.9 | Severe loss of speaker attribution tags |
+| Italian | 63.8 | Major formatting and mixed-language errors |
+| Dutch | 63.7 | Repeated grammatical errors in math notation phrasing |
+| Catalan | 63.0 | Significant language mixing and structural errors |
+| Azerbaijani | 62.9 | Orphaned markers and mixed English terms |
+| German | 62.8 | Critical loss of speaker labels |
+| Serbian | 62.5 | Stiff and unnatural phrasing |
+| Korean | 62.1 | Severe mixed-language contamination |
+| Afrikaans | 62.0 | Severe structural and content errors |
+| Marathi | 60.7 | Pervasive grammatical and terminology errors |
+| Spanish | 60.6 | Lost speaker attribution and mixed-language errors |
+| Greek | 60.5 | Severe scientific terminology errors |
+| Latvian | 60.5 | Severe grammatical and structural errors |
+| Galician | 60.3 | Mixed language artifacts and missing dialogue tags |
+| Czech | 59.6 | Multiple missing speaker labels |
+| Urdu | 55.9 | Severe structural fragmentation and grammatical errors |
+| Indonesian | 55.5 | Foreign language intrusion and meta-commentary leakage |
+| Esperanto | 55.0 | Broken formatting with English artifacts |
+| Icelandic | 54.0 | Severe grammatical and syntactical errors |
+| Estonian | 53.9 | Severe structural breakdown of dialogue attribution |
+| Mongolian | 53.0 | Severe linguistic and mechanical failures |
+| Albanian | 52.7 | Severe structural breakdown and speaker attribution errors |
+| Armenian | 50.4 | Severe mechanical and grammatical errors |
+| Telugu | 50.4 | Severe semantic errors and nonsense |
+| Lithuanian | 49.5 | Severe OCR artifacts and terminology errors |
 | Tamil | 49.5 | Foreign language intrusion |
-| Armenian | 49.2 | Severe mechanical and grammatical errors |
-| Lithuanian | 47.9 | Severe OCR artifacts and terminology errors |
-| Tagalog | 46.3 | Contains untranslated Chinese characters |
-| Basque | 46.2 | Major structural and linguistic errors |
-| Kannada | 45.2 | Severe linguistic contamination and mechanical errors |
-| Interlingua | 42.7 | Hybrid of Italian, Spanish, and English |
-| Georgian | 41.7 | Severe mechanical and OCR corruption |
-| Arabic | 41.1 | Massive code-switching errors |
-| Malayalam | 39.8 | Severe grammatical and vocabulary errors |
-| Khmer | 39.2 | Completely broken and incomprehensible |
-| Lao | 38.1 | Pervasive mechanical errors and unintelligibility |
-| Burmese | 37.1 | Catastrophic semantic failure and hallucination |
-| Welsh | 35.4 | Hybrid language and Chinese character insertions |
-| Sinhala | 33.6 | Severe structural and linguistic defects |
-| Malay | 33.4 | Severe language mixing and chaotic output |
-| Irish | 30.2 | Nonsensical mix of English and fake Irish |
-| Japanese | 28.0 | Mixed-language corruption |
+| Basque | 48.6 | Major structural and linguistic errors |
+| Swahili | 48.4 | Severe mixed-language errors and grammatical nonsense |
+| Kannada | 47.3 | Severe linguistic contamination and mechanical errors |
+| Tagalog | 45.9 | Contains untranslated Chinese characters |
+| Georgian | 45.4 | Severe mechanical and OCR corruption |
+| Interlingua | 45.0 | Hybrid of Italian, Spanish, and English |
+| Arabic | 44.4 | Massive code-switching errors |
+| Lao | 42.9 | Pervasive mechanical errors and unintelligibility |
+| Malayalam | 42.8 | Severe grammatical and vocabulary errors |
+| Khmer | 41.2 | Completely broken and incomprehensible |
+| Malay | 40.9 | Severe language mixing and chaotic output |
+| Burmese | 37.8 | Catastrophic semantic failure and hallucination |
+| Japanese | 36.9 | Mixed-language corruption |
+| Welsh | 35.6 | Hybrid language and Chinese character insertions |
+| Sinhala | 35.2 | Severe structural and linguistic defects |
+| Irish | 32.1 | Nonsensical mix of English and fake Irish |

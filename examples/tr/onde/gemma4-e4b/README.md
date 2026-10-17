@@ -6,10 +6,10 @@ Target languages: `CORE_LANGS` + `EXTRA_LANGS` defined in [common.mk](../../comm
 
 ## Running
 
-`make` runs translation, evaluation, aggregation, and the trend column in one batch. Translations go to `tr/`, Jev's evaluations to `jev.jsonl`, scores to `SCORES-jev.txt`, and the trend column to `TREND-jev.jsonl`.
+`make` runs translation, evaluation, aggregation, and the trend column in one batch. Translations go to `tr/`, Jev's evaluations to `jev.jsonl`, scores to `SCORES-jev.txt`, and the trend column to `TREND-jev.jsonl`. `jev-1.13.0/` holds the same three files from jev-1.13.0, kept frozen.
 
 - Translation model: gemma4:e4b
-- Evaluation model: jev-1.13.0
+- Evaluation model: jev-1.14.0 (jev-1.13.0 before it)
 - Trend column: written by qwen3.6 from Jev's scores
 - Settings: threshold=20, keep=5, no CoT, term file injection (`../../terms/*-en.{json,tsv}`)
 
@@ -21,70 +21,70 @@ Guide: high quality (90+), practical range (80-89), medium quality (60-79), crit
 
 | Language | Score | Trend Analysis |
 | --- | ---: | --- |
-| French | 92.4 | Slight translationese stiffness |
-| Russian | 91.2 | Occasional stiffness and non-idiomatic phrasing |
-| Swedish | 90.2 | Slightly stiff and literal phrasing |
-| Italian | 89.4 | Slightly stiff phrasing and incorrect word usage |
-| Arabic | 88.7 | Slightly stiff phrasing |
-| Indonesian | 88.0 | Slightly unnatural phrasing |
-| Malay | 88.0 | Inconsistent terminology and awkward phrasing |
-| Chinese | 87.2 | awkward phrasing and literal translations |
-| Vietnamese | 86.5 | Lacks natural spoken flow |
-| Spanish | 86.2 | Minor awkwardness and stiffness |
-| Serbian | 84.5 | Significant fluency issues and grammatical inaccuracies |
-| Norwegian | 84.2 | Noticeable mechanical stiffness |
-| Portuguese | 84.1 | Slightly literal phrasing and terminology inconsistencies |
-| Turkish | 83.9 | Unnatural phrasing and literalism detract from fluency |
-| Thai | 83.8 | Lacks natural flow |
-| Dutch | 82.0 | Unnatural handling of mathematical notation |
-| German | 81.9 | Unnatural phrasing |
-| Ukrainian | 81.1 | Literal phrasing lacks fluency |
-| Korean | 80.4 | Slightly stiff or overly literal phrasing |
-| Polish | 80.3 | Noticeable mechanical errors and awkward phrasing |
-| Persian | 79.5 | Literalism and awkward phrasing |
-| Japanese | 79.2 | Slightly unnatural hesitation replication |
-| Tagalog | 79.0 | Unnatural and awkward phrasing |
-| Hindi | 78.5 | Unnatural phrasing and lack of fluency |
-| Nepali | 77.4 | Severe grammatical inconsistencies and awkward phrasing |
-| Danish | 76.3 | Inconsistent technical terminology and stiff phrasing |
-| Hebrew | 75.8 | Inconsistent technical terminology |
-| Finnish | 75.6 | Frequent grammatical errors and awkward phrasing |
-| Swahili | 75.5 | Inconsistent terminology and unnatural phrasing |
-| Azerbaijani | 72.6 | Significant linguistic issues |
-| Afrikaans | 71.3 | Severe lexical and grammatical errors |
-| Burmese | 71.1 | Severe generation glitch with Chinese characters |
-| Lao | 70.4 | Linguistic awkwardness and poor fluency |
-| Czech | 69.2 | Severe grammatical and lexical errors |
-| Telugu | 68.9 | Severe language mixing with Thai script |
-| Romanian | 68.1 | Severe language mixing and terminology errors |
-| Croatian | 67.8 | Severe MT errors and non-existent words |
-| Bulgarian | 66.6 | Severe lack of linguistic competence |
-| Marathi | 66.6 | Significant mechanical errors and language leakage |
-| Bengali | 66.1 | Severe code-switching with Russian and Hindi |
-| Tamil | 65.3 | Mixed scripts throughout |
-| Georgian | 64.5 | Injected foreign characters and words |
-| Galician | 64.3 | Poor fluency and naturalness due to foreign syntax |
-| Catalan | 62.4 | Mixed languages and severe grammatical errors |
-| Khmer | 62.0 | Encoding errors and language mixing |
-| Urdu | 61.6 | Mixed Chinese characters in Urdu text |
-| Mongolian | 57.4 | Severe retention of untranslated English text |
-| Malayalam | 56.9 | Severe code-switching with Chinese and Korean text |
-| Macedonian | 56.8 | Severe mixed language and terminology errors |
-| Sinhala | 56.4 | Intrusive foreign language fragments |
-| Slovak | 53.2 | Severe linguistic degradation and nonsense vocabulary |
-| Albanian | 53.0 | Severe grammatical errors and poor terminology |
-| Kannada | 50.9 | Foreign script artifacts and severe errors |
-| Greek | 48.5 | Severe mixed-language corruption |
-| Slovene | 48.5 | Complete gibberish, not valid Slovene |
-| Interlingua | 44.4 | Malformed Latin-English hybrid |
-| Hungarian | 43.8 | Severe linguistic errors and nonsensical content |
-| Esperanto | 42.7 | Riddled with nonsense vocabulary |
-| Belarusian | 40.4 | Severe mechanical corruption and gibberish |
-| Armenian | 38.4 | Severe hybrid-language contamination |
-| Lithuanian | 37.6 | Severe linguistic errors and gibberish |
-| Icelandic | 36.6 | Hallucinated vocabulary and syntax collapse |
-| Estonian | 34.7 | Lexical hallucinations and nonsense |
-| Latvian | 31.4 | Catastrophic lexical and grammatical failures |
-| Basque | 25.0 | Completely unintelligible and broken grammar |
-| Welsh | 20.4 | Nonsensical mixture of broken Welsh and random characters |
-| Irish | 18.9 | Nonsensical pseudo-Gaelic gibberish |
+| French | 90.8 | Slight translationese stiffness |
+| Swedish | 90.3 | Slightly stiff and literal phrasing |
+| Spanish | 89.5 | Minor awkwardness and stiffness |
+| Russian | 89.5 | Occasional stiffness and non-idiomatic phrasing |
+| Malay | 88.6 | Inconsistent terminology and awkward phrasing |
+| Portuguese | 88.0 | Slightly literal phrasing and terminology inconsistencies |
+| Indonesian | 87.4 | Slightly unnatural phrasing |
+| Arabic | 87.0 | Slightly stiff phrasing |
+| Chinese | 86.3 | awkward phrasing and literal translations |
+| Turkish | 85.8 | Unnatural phrasing and literalism detract from fluency |
+| Vietnamese | 85.4 | Lacks natural spoken flow |
+| Italian | 85.2 | Slightly stiff phrasing and incorrect word usage |
+| Thai | 84.7 | Lacks natural flow |
+| German | 83.8 | Unnatural phrasing |
+| Dutch | 83.8 | Unnatural handling of mathematical notation |
+| Serbian | 83.3 | Significant fluency issues and grammatical inaccuracies |
+| Ukrainian | 83.0 | Literal phrasing lacks fluency |
+| Norwegian | 81.9 | Noticeable mechanical stiffness |
+| Japanese | 81.3 | Slightly unnatural hesitation replication |
+| Persian | 80.6 | Literalism and awkward phrasing |
+| Danish | 78.3 | Inconsistent technical terminology and stiff phrasing |
+| Nepali | 78.3 | Severe grammatical inconsistencies and awkward phrasing |
+| Polish | 78.0 | Noticeable mechanical errors and awkward phrasing |
+| Korean | 77.8 | Slightly stiff or overly literal phrasing |
+| Hindi | 77.2 | Unnatural phrasing and lack of fluency |
+| Hebrew | 76.7 | Inconsistent technical terminology |
+| Finnish | 74.7 | Frequent grammatical errors and awkward phrasing |
+| Tagalog | 74.5 | Unnatural and awkward phrasing |
+| Swahili | 73.4 | Inconsistent terminology and unnatural phrasing |
+| Afrikaans | 73.0 | Severe lexical and grammatical errors |
+| Azerbaijani | 71.7 | Significant linguistic issues |
+| Burmese | 70.3 | Severe generation glitch with Chinese characters |
+| Tamil | 70.3 | Mixed scripts throughout |
+| Lao | 69.8 | Linguistic awkwardness and poor fluency |
+| Czech | 69.4 | Severe grammatical and lexical errors |
+| Romanian | 68.7 | Severe language mixing and terminology errors |
+| Bulgarian | 68.6 | Severe lack of linguistic competence |
+| Bengali | 67.6 | Severe code-switching with Russian and Hindi |
+| Croatian | 67.4 | Severe MT errors and non-existent words |
+| Khmer | 67.2 | Encoding errors and language mixing |
+| Galician | 66.7 | Poor fluency and naturalness due to foreign syntax |
+| Telugu | 65.8 | Severe language mixing with Thai script |
+| Catalan | 65.2 | Mixed languages and severe grammatical errors |
+| Marathi | 64.4 | Significant mechanical errors and language leakage |
+| Georgian | 63.8 | Injected foreign characters and words |
+| Urdu | 61.7 | Mixed Chinese characters in Urdu text |
+| Sinhala | 60.1 | Intrusive foreign language fragments |
+| Malayalam | 59.5 | Severe code-switching with Chinese and Korean text |
+| Macedonian | 59.0 | Severe mixed language and terminology errors |
+| Mongolian | 58.8 | Severe retention of untranslated English text |
+| Slovak | 55.0 | Severe linguistic degradation and nonsense vocabulary |
+| Albanian | 53.4 | Severe grammatical errors and poor terminology |
+| Kannada | 53.3 | Foreign script artifacts and severe errors |
+| Greek | 52.2 | Severe mixed-language corruption |
+| Slovene | 51.2 | Complete gibberish, not valid Slovene |
+| Armenian | 46.2 | Severe hybrid-language contamination |
+| Esperanto | 45.2 | Riddled with nonsense vocabulary |
+| Hungarian | 45.2 | Severe linguistic errors and nonsensical content |
+| Belarusian | 44.8 | Severe mechanical corruption and gibberish |
+| Interlingua | 44.7 | Malformed Latin-English hybrid |
+| Lithuanian | 39.5 | Severe linguistic errors and gibberish |
+| Estonian | 37.6 | Lexical hallucinations and nonsense |
+| Icelandic | 35.6 | Hallucinated vocabulary and syntax collapse |
+| Latvian | 35.3 | Catastrophic lexical and grammatical failures |
+| Basque | 27.3 | Completely unintelligible and broken grammar |
+| Welsh | 21.9 | Nonsensical mixture of broken Welsh and random characters |
+| Irish | 20.2 | Nonsensical pseudo-Gaelic gibberish |

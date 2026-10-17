@@ -6,10 +6,10 @@ Target languages: `CORE_LANGS` + `EXTRA_LANGS` defined in [common.mk](../../comm
 
 ## Running
 
-`make` runs translation, evaluation, aggregation, and the trend column in one batch. Translations go to `tr/`, Jev's evaluations to `jev.jsonl`, scores to `SCORES-jev.txt`, and the trend column to `TREND-jev.jsonl`.
+`make` runs translation, evaluation, aggregation, and the trend column in one batch. Translations go to `tr/`, Jev's evaluations to `jev.jsonl`, scores to `SCORES-jev.txt`, and the trend column to `TREND-jev.jsonl`. `jev-1.13.0/` holds the same three files from jev-1.13.0, kept frozen.
 
 - Translation model: gpt-6.1-sol
-- Evaluation model: jev-1.13.0
+- Evaluation model: jev-1.14.0 (jev-1.13.0 before it)
 - Trend column: written by qwen3.6 from Jev's scores
 - Settings: threshold=20, keep=5, no CoT, term file injection (`../../terms/*-en.{json,tsv}`)
 
@@ -21,70 +21,70 @@ Guide: high quality (90+), practical range (80-89), medium quality (60-79), crit
 
 | Language | Score | Trend Analysis |
 | --- | ---: | --- |
-| Spanish | 94.3 | Slight lack of colloquialism |
-| French | 94.3 | Nearly flawless with minor stylistic debates |
-| Swedish | 93.2 | Slightly literal phrasing and terminology |
-| Czech | 93.0 | Minor grammatical inconsistency with gender agreement |
-| Croatian | 93.0 | Minor formal phrasing instead of colloquial speech |
-| Slovak | 93.0 | Slight formality in dialogue markers |
-| Russian | 92.7 | Minor swap of final speaker roles |
-| Serbian | 92.5 | Minor non-idiomatic terminology |
-| Galician | 91.9 | Subtle use of "largura" for width |
-| Japanese | 91.9 | Minor filler word repetition and phrasing stiffness |
-| Catalan | 91.8 | Minor fluency issues in rhythm |
-| Ukrainian | 91.7 | Slight stiffness in conversational flow |
-| Bulgarian | 91.5 | Occasionally stiff and overuses ellipses |
-| Latvian | 91.3 | Occasional slight literalness in idioms |
-| Polish | 91.3 | Occasional awkward particle placement and phrasing |
-| Albanian | 91.2 | Occasional literal phrasing |
-| Romanian | 91.1 | Minor stylistic hesitations in dialogue |
-| German | 90.9 | Slight translationese and stiff phrasing |
-| Thai | 90.8 | Inconsistent pronoun usage for speakers |
-| Belarusian | 90.5 | Slightly stiff phrasing and transitions |
-| Finnish | 90.3 | Slightly rigid sentence flow |
-| Persian | 90.2 | Minor stylistic fluency issues |
-| Chinese | 90.2 | Some rigid sentence structures and abrupt transitions |
-| Turkish | 89.7 | Retains subtle stiffness from source language |
-| Estonian | 89.5 | Occasional minor awkwardness in complex sentence clauses |
+| French | 94.0 | Nearly flawless with minor stylistic debates |
+| Spanish | 93.1 | Slight lack of colloquialism |
+| Swedish | 93.0 | Slightly literal phrasing and terminology |
+| Galician | 92.5 | Subtle use of "largura" for width |
+| Czech | 92.2 | Minor grammatical inconsistency with gender agreement |
+| Dutch | 92.2 | Slightly stiff phrasing |
+| Russian | 92.2 | Minor swap of final speaker roles |
+| Portuguese | 92.0 | Slightly rigid conversational tone |
+| Slovak | 91.2 | Slight formality in dialogue markers |
+| Ukrainian | 91.2 | Slight stiffness in conversational flow |
+| Japanese | 91.0 | Minor filler word repetition and phrasing stiffness |
+| Bulgarian | 90.8 | Occasionally stiff and overuses ellipses |
+| German | 90.5 | Slight translationese and stiff phrasing |
+| Polish | 90.5 | Occasional awkward particle placement and phrasing |
+| Arabic | 90.3 | Slightly literal phrasing and unidiomatic connectors |
+| Turkish | 90.3 | Retains subtle stiffness from source language |
+| Lithuanian | 90.2 | Slightly stiff phrasing and overly literal syntax |
+| Finnish | 89.7 | Slightly rigid sentence flow |
+| Persian | 89.5 | Minor stylistic fluency issues |
+| Latvian | 89.5 | Occasional slight literalness in idioms |
 | Macedonian | 89.5 | Minor phrasing stiffness due to literal translation |
-| Vietnamese | 89.5 | Slightly stiff sentence rhythm |
-| Norwegian | 89.4 | Occasional stiff phrasing and unidiomatic interjections |
-| Dutch | 89.2 | Slightly stiff phrasing |
-| Arabic | 89.1 | Slightly literal phrasing and unidiomatic connectors |
-| Danish | 89.1 | Slightly stiff phrasing |
-| Armenian | 88.9 | Minor stylistic stiffness in isolated sentences |
-| Hindi | 88.8 | Slightly stiff phrasing and formal tone |
-| Slovene | 88.6 | Minor phrasing issues slightly reduce idiomatic flow |
-| Georgian | 88.4 | Translationese quality in dialogue |
-| Korean | 88.4 | Minor stiffness in phrasing and phonetic choices |
-| Icelandic | 88.0 | Occasional stiffness and slight unidiomatic phrasing |
-| Hungarian | 87.7 | Minor stylistic rigidity and awkward phrasing |
-| Hebrew | 87.2 | Terminology consistency issues |
-| Azerbaijani | 87.0 | Slightly literal and unidiomatic phrasing |
-| Esperanto | 87.0 | Literalism and incorrect terminology |
-| Basque | 87.0 | Minor syntactic calques from English |
-| Indonesian | 87.0 | Minor pronoun inconsistency |
-| Welsh | 86.8 | Minor grammatical inconsistencies |
-| Tamil | 86.4 | Formal tone and stiff rhythm |
-| Malay | 86.1 | Minor stylistic stiffiness and literal phrasing |
-| Lithuanian | 85.8 | Slightly stiff phrasing and overly literal syntax |
-| Portuguese | 85.3 | Slightly rigid conversational tone |
-| Mongolian | 85.0 | awkward filler words and stiff tone |
-| Marathi | 84.7 | Lacks natural fluency |
-| Urdu | 84.5 | Minor translationese in complex clauses |
-| Afrikaans | 84.2 | Literal sentence structures hinder naturalness |
-| Swahili | 84.1 | Lacks natural phrasing |
-| Khmer | 83.8 | Slightly rigid naturalness and fluency |
-| Malayalam | 83.8 | Lack of idiomatic fluency |
-| Burmese | 83.8 | Formal tone and unnatural phrasing |
-| Greek | 83.7 | Inaccurate physics terminology |
-| Lao | 83.0 | Awkward phrasing and literal translations |
-| Italian | 82.9 | Minor stylistic inconsistencies and stiff phrasing |
-| Sinhala | 82.2 | Translationese style reduces fluency and naturalness |
-| Nepali | 81.3 | Literal translation causing awkward flow |
-| Bengali | 80.6 | Inconsistent terminology and clunky phrasing |
-| Tagalog | 80.5 | Unnatural scientific terminology |
-| Kannada | 77.9 | Literal calques and stiff register disrupt fluency |
-| Irish | 77.5 | Significant mistranslation of key scientific terms |
-| Interlingua | 76.2 | Mechanical phrasing lacks natural flow |
-| Telugu | 74.0 | Unnatural literalness and awkward phrasing |
+| Serbian | 89.5 | Minor non-idiomatic terminology |
+| Croatian | 89.4 | Minor formal phrasing instead of colloquial speech |
+| Vietnamese | 89.2 | Slightly stiff sentence rhythm |
+| Chinese | 89.2 | Some rigid sentence structures and abrupt transitions |
+| Catalan | 88.8 | Minor fluency issues in rhythm |
+| Thai | 88.8 | Inconsistent pronoun usage for speakers |
+| Norwegian | 88.7 | Occasional stiff phrasing and unidiomatic interjections |
+| Armenian | 88.5 | Minor stylistic stiffness in isolated sentences |
+| Korean | 88.5 | Minor stiffness in phrasing and phonetic choices |
+| Italian | 88.2 | Minor stylistic inconsistencies and stiff phrasing |
+| Afrikaans | 88.1 | Literal sentence structures hinder naturalness |
+| Icelandic | 87.8 | Occasional stiffness and slight unidiomatic phrasing |
+| Hindi | 87.7 | Slightly stiff phrasing and formal tone |
+| Albanian | 87.5 | Occasional literal phrasing |
+| Malay | 87.4 | Minor stylistic stiffiness and literal phrasing |
+| Romanian | 87.4 | Minor stylistic hesitations in dialogue |
+| Hungarian | 86.9 | Minor stylistic rigidity and awkward phrasing |
+| Slovene | 86.9 | Minor phrasing issues slightly reduce idiomatic flow |
+| Estonian | 86.8 | Occasional minor awkwardness in complex sentence clauses |
+| Indonesian | 86.6 | Minor pronoun inconsistency |
+| Azerbaijani | 86.3 | Slightly literal and unidiomatic phrasing |
+| Esperanto | 86.1 | Literalism and incorrect terminology |
+| Belarusian | 85.9 | Slightly stiff phrasing and transitions |
+| Georgian | 85.9 | Translationese quality in dialogue |
+| Urdu | 85.8 | Minor translationese in complex clauses |
+| Hebrew | 85.6 | Terminology consistency issues |
+| Marathi | 85.5 | Lacks natural fluency |
+| Welsh | 85.3 | Minor grammatical inconsistencies |
+| Tamil | 85.2 | Formal tone and stiff rhythm |
+| Danish | 85.0 | Slightly stiff phrasing |
+| Basque | 84.7 | Minor syntactic calques from English |
+| Khmer | 84.6 | Slightly rigid naturalness and fluency |
+| Malayalam | 84.5 | Lack of idiomatic fluency |
+| Greek | 84.2 | Inaccurate physics terminology |
+| Mongolian | 83.9 | awkward filler words and stiff tone |
+| Nepali | 83.9 | Literal translation causing awkward flow |
+| Swahili | 83.9 | Lacks natural phrasing |
+| Bengali | 82.3 | Inconsistent terminology and clunky phrasing |
+| Burmese | 82.0 | Formal tone and unnatural phrasing |
+| Sinhala | 82.0 | Translationese style reduces fluency and naturalness |
+| Lao | 81.6 | Awkward phrasing and literal translations |
+| Tagalog | 80.6 | Unnatural scientific terminology |
+| Interlingua | 80.0 | Mechanical phrasing lacks natural flow |
+| Irish | 78.9 | Significant mistranslation of key scientific terms |
+| Kannada | 78.6 | Literal calques and stiff register disrupt fluency |
+| Telugu | 71.1 | Unnatural literalness and awkward phrasing |
