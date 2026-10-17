@@ -24,8 +24,9 @@ from .llm import init_usage_path
 from .statusline import StatusLine
 
 # A version, not the `jev-latest` alias, so a model release cannot silently make later
-# runs incomparable with the ones already on disk. Bump deliberately and re-run whole.
-DEFAULT_MODEL = "jev-1.13.0"
+# runs incomparable with the ones already on disk. Bump deliberately and re-run whole,
+# after moving the previous version's files aside (examples/tr/onde/JEV-1.14.md).
+DEFAULT_MODEL = "jev-1.14.0"
 DEFAULT_ATTEMPTS = 3
 DEFAULT_TIMEOUT = 120.0
 
@@ -61,12 +62,14 @@ def add_parser(subparsers):
     return parser
 
 
-def read_done(path):
+def read_done(path, expect_model):
     """Language codes already in the JSONL.
 
     A line that does not parse, or that was scored on another scheme, stops the run. The
     alternative is appending today's judgments to yesterday's under a scheme that has
-    since been reworded, which nothing downstream could detect.
+    since been reworded, which nothing downstream could detect. A line from another model
+    version stops it too: otherwise its language would count as done, and a version bump
+    would leave the old judgments in place and append the new ones beside them.
     """
     done = {}
     if not path.is_file():
@@ -81,6 +84,9 @@ def read_done(path):
         if record.get("rubric") != SCHEME_ID:
             raise SystemExit(f"{path}:{n}: scored on {record.get('rubric')!r}, "
                              f"this run is {SCHEME_ID!r}")
+        if expect_model and record.get("model") != expect_model:
+            raise SystemExit(f"{path}:{n}: scored by {record.get('model')!r}, "
+                             f"this run is {expect_model!r}")
         done[record["lang"]] = record
     return done
 
@@ -164,9 +170,11 @@ def run(args):
     out_path = Path(args.output_file)
     tr_dir = Path(args.tr_dir)
 
+    # A version is its own pin; only an alias needs --expect-model spelled out.
+    expect_model = args.model if args.expect_model is None else args.expect_model
     if args.force and out_path.is_file():
         out_path.unlink()
-    done = read_done(out_path)
+    done = read_done(out_path, expect_model)
 
     # --langs is the corpus's statement of what should exist, so a language missing from
     # tr/ is an error rather than a shorter run.
@@ -186,8 +194,6 @@ def run(args):
     if not pending:
         return
 
-    # A version is its own pin; only an alias needs --expect-model spelled out.
-    expect_model = args.model if args.expect_model is None else args.expect_model
     # Jev is a paid API, so usage is always recorded
     usage_path = init_usage_path(args.model, save_usage=True)
     total_usage = Usage()

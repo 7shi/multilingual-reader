@@ -300,7 +300,7 @@ uv run trtools jev <original> --langs <lang...> [options]
 | `-f`, `--from` | `English` | Source language |
 | `--tr-dir` | `tr` | Directory holding the translations (`<topic>-<lang>.txt`) |
 | `-o`, `--output` | `jev.jsonl` | JSONL file to append to |
-| `-m`, `--model` | `jev-1.13.0` | Model version. A version, not the `jev-latest` alias, so a release cannot silently make later runs incomparable |
+| `-m`, `--model` | `jev-1.14.0` | Model version. A version, not the `jev-latest` alias, so a release cannot silently make later runs incomparable |
 | `--expect-model` | same as `-m` | Version the response must report; empty accepts whatever answers, which an alias needs |
 | `--attempts` | `3` | Attempts per language |
 | `--timeout` | `120` | Per-request timeout in seconds |
@@ -312,7 +312,7 @@ uv run trtools jev <original> --langs <lang...> [options]
 One record per language, appended and flushed as each finishes:
 
 ```json
-{"lang":"ja","model":"jev-1.13.0","rubric":"degrees@f518286e",
+{"lang":"ja","model":"jev-1.14.0","rubric":"degrees@f518286e",
  "scores":{"readability":3.09,"...":0},
  "confidence":{"readability":0.73,"...":0},
  "probabilities":{"readability":[0.0,0.01,0.11,0.68,0.2],"...":[]},
@@ -326,7 +326,7 @@ One record per language, appended and flushed as each finishes:
 
 ### Behavior
 
-**Resuming**: at startup the output file is read and languages already present are skipped, so an interruption loses at most one language. A line that does not parse, or one scored on a different `rubric`, aborts the run rather than being skipped — appending today's judgments to a file scored on a reworded scheme is what nothing downstream could detect.
+**Resuming**: at startup the output file is read and languages already present are skipped, so an interruption loses at most one language. A line that does not parse, or one scored on a different `rubric`, aborts the run rather than being skipped — appending today's judgments to a file scored on a reworded scheme is what nothing downstream could detect. So does a line from a model version other than the expected one: its language would otherwise count as done, and a version bump would append the new judgments beside the old ones. Move the previous version's file aside first (see [examples/tr/onde/JEV-1.14.md](../examples/tr/onde/JEV-1.14.md)).
 
 **Aborting vs retrying**: a response reporting a model version other than the expected one aborts, since the alias having moved is not a transient failure. Other errors retry up to `--attempts`.
 
