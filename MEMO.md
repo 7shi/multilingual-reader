@@ -50,7 +50,7 @@ Every set is now evaluated by TypeSafe's Jev instead of `qwen3.6` (median of thr
 
 **What Jev is**: for each of five criteria it returns a probability distribution over five ordered severity levels, rather than a number and a rationale. There is no reasoning to read, and no rubric wording for the model to interpret loosely. What it is asked, criteria and levels word for word, is the appendix of [examples/tr/onde/JEV.md](examples/tr/onde/JEV.md).
 
-**What was given up**: evaluation was local, free and offline; it is now a paid cloud API. The version is pinned (`jev-1.13.0`) so a model release cannot silently change scores, but when the provider retires it, every score has to be regenerated ([examples/tr/README.md](examples/tr/README.md) lists what).
+**What was given up**: evaluation was local, free and offline; it is now a paid cloud API. The version is pinned (`jev-1.14.0` since 2026-10-17, `jev-1.13.0` before it) so a model release cannot silently change scores, but when the provider retires it, every score has to be regenerated ([examples/tr/README.md](examples/tr/README.md) lists what).
 
 **What did not improve**: the top of the ranking. `gpt-5.6-luna` and `union-alpha` are tied under either evaluator.
 

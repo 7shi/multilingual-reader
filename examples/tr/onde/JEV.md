@@ -1,10 +1,11 @@
 # Jev Evaluation of the Corpus
 
-A record of the run that produced `{model}/jev.jsonl`. When it ran it replaced nothing:
-the corpus's published scores still came from `ollama:qwen3.6` over `evals/`, and switching
-that over was a separate decision
-([experimental/13/PLAN.md](../../../experimental/13/PLAN.md)). The corpus has since
-switched: `SCORES-jev.txt`, the trend column and the charts come from these files, and
+A record of the `jev-1.13.0` run that produced `{model}/jev.jsonl`, now kept frozen as
+`{model}/jev-1.13.0/jev.jsonl` since the corpus moved to `jev-1.14.0`
+([JEV-1.14.md](JEV-1.14.md)). When it ran it replaced nothing: the corpus's published
+scores still came from `ollama:qwen3.6` over `evals/`, and switching that over was a
+separate decision ([experimental/13/PLAN.md](../../../experimental/13/PLAN.md)). The corpus
+has since switched: `SCORES-jev.txt`, the trend column and the charts come from Jev, and
 `evals/`, `SCORES.txt` and `TRENDS.jsonl` remain beside them as the previous evaluator's
 record.
 
@@ -20,7 +21,7 @@ command now.
 | Scheme | `degrees@f518286e` — five criteria, five severity levels, hashed over everything that determines a score |
 | Runs | One per language. Experiment 12 measured this evaluator's run-to-run range at 1.12 points, with run 1 alone reproducing the median of three at Pearson 0.998 |
 | Coverage | 16 models × 67 languages = **1,072 evaluations** |
-| Output | `{model}/jev.jsonl`, one JSONL record per language, beside `evals/` |
+| Output | `{model}/jev.jsonl` (now `{model}/jev-1.13.0/jev.jsonl`), one JSONL record per language, beside `evals/` |
 
 The record format and the reasoning behind each field are in
 [experimental/13/PORT.md](../../../experimental/13/PORT.md).

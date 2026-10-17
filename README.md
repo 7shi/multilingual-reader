@@ -65,17 +65,17 @@ Packages the tooling shared across all experiments. See [trtools/README.md](trto
 
 Proper nouns and show names shared across all topics are pinned in [examples/tr/terms/common.tsv](examples/tr/terms/common.tsv) to avoid translation drift between runs.
 
-[examples/evals/](examples/evals/) holds the evaluations of these reference translations by TypeSafe's Jev (`jev-1.13.0`, one run per language, via `trtools jev`) along with the aggregated results ([SCORES-jev.txt](examples/evals/SCORES-jev.txt)). Re-evaluation can be run via [examples/evals/batch.sh](examples/evals/batch.sh). The previous evaluator's record (`ollama:qwen3.6`, median of 3 runs) is kept beside it; [examples/evals/README.md](examples/evals/README.md) gives the history and compares the two.
+[examples/evals/](examples/evals/) holds the evaluations of these reference translations by TypeSafe's Jev (`jev-1.14.0`, one run per language, via `trtools jev`) along with the aggregated results ([SCORES-jev.txt](examples/evals/SCORES-jev.txt)). Re-evaluation can be run via [examples/evals/batch.sh](examples/evals/batch.sh). The previous evaluator's record (`ollama:qwen3.6`, median of 3 runs) is kept beside it; [examples/evals/README.md](examples/evals/README.md) gives the history and compares the two.
 
 **Evaluation results across all topics (Jev, one evaluation per topic, averaged per language):**
 
 | Language | Average | Topics | Translated from | Translation | Proofreading |
 |-----------|------:|---:|---|---|---|
-| English   | 91.80 |  4 | French | Gemini 2.5 Pro | Claude Sonnet 4.5 |
-| German    | 91.60 |  4 | English | Gemma 4 26B | Gemini 3.1 Pro Preview |
-| Spanish   | 90.70 |  4 | French | Gemma 4 26B | Gemini 3.1 Pro Preview |
-| Chinese   | 90.55 |  4 | English | Gemma 4 26B | Gemini 3.1 Pro Preview |
-| Japanese  | 87.85 |  4 | English | Gemini 2.5 Pro | Claude Sonnet 4.5 |
+| English   | 91.38 |  4 | French | Gemini 2.5 Pro | Claude Sonnet 4.5 |
+| German    | 90.50 |  4 | English | Gemma 4 26B | Gemini 3.1 Pro Preview |
+| Chinese   | 90.30 |  4 | English | Gemma 4 26B | Gemini 3.1 Pro Preview |
+| Spanish   | 89.45 |  4 | French | Gemma 4 26B | Gemini 3.1 Pro Preview |
+| Japanese  | 88.80 |  4 | English | Gemini 2.5 Pro | Claude Sonnet 4.5 |
 
 For the other languages, see [MEMO.md](MEMO.md) and [examples/tr/README.md](examples/tr/README.md).
 
