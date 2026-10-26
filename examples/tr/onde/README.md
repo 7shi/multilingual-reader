@@ -18,6 +18,8 @@ Translates and evaluates the onde text with each model.
 - [saluki-27b](saluki-27b/) (Underdog Saluki 27B 1.0 IQ2-mix: quantized Qwen 3.8 27B)
 - [muse-glimmer](muse-glimmer/)
 - [mai-code-1.1-flash](mai-code-1.1-flash/) (Microsoft 138B-A5B MoE, Q2_XS, llama.cpp)
+- [flint](flint/) (40B-A2.5B MoE)
+- [ornith-1.5](ornith-1.5/) (122B-A10B MoE, tuned from Qwen3.5 122B-A10B)
 - [gpt-5.6-luna](gpt-5.6-luna/)
 - [gpt-5.6-terra](gpt-5.6-terra/)
 - [gpt-6-luna](gpt-6-luna/)
