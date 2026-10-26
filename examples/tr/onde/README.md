@@ -32,6 +32,7 @@ Translates and evaluates the onde text with each model.
 - [deepseek-v4.1-flash](deepseek-v4.1-flash/)
 - [haiku-5.5](haiku-5.5/)
 - [glm-5.3](glm-5.3/) (744B-A40B)
+- [nemotron-3.5-super-vl](nemotron-3.5-super-vl/) (120B-A12B MoE)
 - [ox-alpha](ox-alpha/) (glm-5.3-flash stealth 320B-A18B)
 - [union-alpha](union-alpha/) (Pareto 26.9 stealth, a router over several models)
 - [space-bunny-alpha](space-bunny-alpha/) (stealth)
