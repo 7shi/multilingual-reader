@@ -75,7 +75,6 @@ Guide: high quality (90+), practical range (80-89), medium quality (60-79), crit
 | Bulgarian | 48.5 | Severe structural integrity failures and mixed language contamination |
 | Slovak | 48.2 | Severe grammatical and syntactic flaws |
 | Kannada | 47.4 | Severe mechanical errors and code injection |
-| Interlingua | 42.5 | Not genuine Interlingua |
 | Hungarian | 41.2 | Nonsensical and invented vocabulary |
 | Slovene | 40.3 | Fundamentally flawed and largely unintelligible |
 | Belarusian | 40.0 | Severe grammatical errors and nonsense |
@@ -88,3 +87,4 @@ Guide: high quality (90+), practical range (80-89), medium quality (60-79), crit
 | Basque | 22.7 | Severe structural and lexical defects |
 | Welsh | 19.3 | Catastrophic failure with mixed-language garbling |
 | Irish | 15.0 | Nonsensical and grammatically broken |
+| Interlingua | 0.0 | Not in the target language (detected: Latin) |
