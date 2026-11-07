@@ -4,6 +4,7 @@ import argparse
 import json
 import os
 import re
+import sys
 from statistics import median, mean, stdev
 from pathlib import Path
 
@@ -110,13 +111,41 @@ def aggregate_evaluations(files):
 
     return results
 
-def aggregate_jev(path, prefix):
+def read_langcheck(path):
+    """{lang: record} from a `trtools langcheck` file, all on one scheme."""
+    records = {}
+    scheme = None
+    for n, line in enumerate(Path(path).read_text(encoding="utf-8").splitlines(), 1):
+        if not line.strip():
+            continue
+        try:
+            record = json.loads(line)
+        except json.JSONDecodeError as e:
+            raise SystemExit(f"{path}:{n}: {e}")
+        if scheme is None:
+            scheme = record.get("scheme")
+        elif record.get("scheme") != scheme:
+            raise SystemExit(f"{path}:{n}: checked on {record.get('scheme')!r}, "
+                             f"but line 1 is {scheme!r}")
+        if record["lang"] in records:
+            raise SystemExit(f"{path}:{n}: {record['lang']} appears twice")
+        records[record["lang"]] = record
+    return records
+
+
+def aggregate_jev(path, prefix, langcheck=None):
     """Totals from one jev.jsonl, keyed `{prefix}-{lang}` like the three-run groups.
 
     One run per language, so there is nothing to take a median of: the total is the sum
     of the five levels times POINTS_PER_LEVEL. Every line must agree on `model` and
     `rubric`; a file mixing two of either would be totalled as if it were one
     measurement, so it stops here instead.
+
+    With `langcheck`, a `trtools langcheck` file for the same set, a language found not to
+    be in its target language totals 0: Jev's scoring does not notice the language
+    (experimental/15/README.md section 2). `review` keeps its total. Either is recorded as
+    `verdict` and `detected`. Every language must have been checked, so a set cannot be
+    totalled half-checked.
     """
     results = {}
     first = None
@@ -148,12 +177,28 @@ def aggregate_jev(path, prefix):
         }
     if first is None:
         raise SystemExit(f"{path}: no records")
+    if langcheck is not None:
+        checks = read_langcheck(langcheck)
+        for name, result in results.items():
+            lang = name[len(prefix) + 1:]
+            if lang not in checks:
+                raise SystemExit(f"{langcheck}: {lang} has not been checked")
+            check = checks[lang]
+            if check["verdict"] != "ok":
+                result["verdict"] = check["verdict"]
+                result["detected"] = check["detected"]
+            if check["verdict"] == "wrong":
+                result["total"] = 0.0
     return dict(sorted(results.items()))
 
 def run_jev(args):
     if len(args.files) != 1:
         raise SystemExit("--jev takes exactly one jev.jsonl")
-    results = aggregate_jev(args.files[0], args.prefix)
+    results = aggregate_jev(args.files[0], args.prefix, args.langcheck)
+    for name, result in results.items():
+        if "verdict" in result:
+            print(f"{name}: {result['verdict']} by the language check "
+                  f"(detected {result['detected']})", file=sys.stderr)
 
     if args.verbose:
         first = next(iter(results.values()))
@@ -186,12 +231,17 @@ def add_parser(subparsers):
     parser.add_argument("--verbose", action="store_true", help="Show detailed statistics")
     parser.add_argument("--jev", action="store_true",
                         help="Read one jev.jsonl from `trtools jev` instead of three-run JSON files")
+    parser.add_argument("--langcheck", metavar="FILE",
+                        help="With --jev, a `trtools langcheck` file for the same set: a "
+                             "language not in its target language totals 0")
     parser.add_argument("--prefix",
                         help="Name prefix for --jev, e.g. onde for onde-ja (jev.jsonl records only the language)")
     parser.set_defaults(func=run)
     return parser
 
 def run(args):
+    if args.langcheck and not args.jev:
+        raise SystemExit("--langcheck goes with --jev")
     if args.jev:
         if not args.prefix:
             raise SystemExit("--jev requires --prefix")

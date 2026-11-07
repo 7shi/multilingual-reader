@@ -46,6 +46,10 @@ def add_parser(subparsers):
     parser.add_argument("--jev", default=None, metavar="FILE",
                         help="Describe Jev's scores in this jev.jsonl instead of summarizing "
                              "evaluation files; needs --original")
+    parser.add_argument("--langcheck", default=None, metavar="FILE",
+                        help="With --jev, a `trtools langcheck` file for the same set: a "
+                             "language not in its target language scores 0 and gets a "
+                             "fixed phrase instead of a written one")
     parser.add_argument("--original", default=None,
                         help="Original text file, with --jev")
     parser.add_argument("-f", "--from", dest="from_lang", default="English",
@@ -256,6 +260,44 @@ def sync_readme(path, table_lines):
     return True
 
 
+# The phrase for a language the check found not to be in its target language. Describing
+# the five criteria of such a text would describe the wrong thing.
+WRONG_LANGUAGE = "Not in the target language (detected: {})"
+
+
+def _wrong_language_record(code, detected):
+    return {"lang": code, "score": 0.0, "analysis": WRONG_LANGUAGE.format(detected)}
+
+
+def _apply_langcheck(args, records):
+    """Bring the output file in line with the language check, rewriting it if needed.
+
+    A `wrong` language gets score 0 and the fixed phrase in place of whatever it had. A
+    language that carries the fixed phrase but is no longer `wrong` (the check changed) is
+    dropped, so the normal run writes it a phrase again.
+    """
+    from .aggregate import read_langcheck
+    checks = read_langcheck(args.langcheck)
+    marker = WRONG_LANGUAGE.split("{")[0]
+    changed = False
+    for code in list(records):
+        check = checks.get(code)
+        if check and check["verdict"] == "wrong":
+            record = _wrong_language_record(code, check["detected"])
+            if records[code] != record:
+                records[code] = record
+                changed = True
+        elif records[code]["analysis"].startswith(marker):
+            del records[code]
+            changed = True
+    if changed:
+        with open(args.output_file, "w", encoding="utf-8") as f:
+            for record in records.values():
+                f.write(json.dumps(record, ensure_ascii=False) + "\n")
+        print(f"Updated {args.output_file} from {args.langcheck}")
+    return checks
+
+
 def _generate_jev(args, records):
     """Write a phrase for every language in the jev.jsonl not yet in the output file.
 
@@ -271,13 +313,17 @@ def _generate_jev(args, records):
     original_text = original.read_text(encoding="utf-8").rstrip()
     # Keyed `{prefix}-{lang}`, which is also the translation's file name under --tr-dir.
     prefix = original.stem.rsplit("-", 1)[0]
-    results = aggregate_jev(args.jev, prefix)
+    results = aggregate_jev(args.jev, prefix, args.langcheck)
     tr_dir = Path(args.tr_dir)
 
     pending = []
     for name, result in results.items():
         code = name[len(prefix) + 1:]
         if code in records:
+            continue
+        if result.get("verdict") == "wrong":
+            records[code] = _wrong_language_record(code, result["detected"])
+            append_jsonl(args.output_file, records[code])
             continue
         if code not in LANGUAGES:
             raise SystemExit(f"no language name for {code!r}")
@@ -340,6 +386,10 @@ def run(args):
         # appending the new scale to it would corrupt it with no visible seam.
         args.output_file = "TREND-jev.jsonl" if args.jev else "TRENDS.jsonl"
     records = load_jsonl(args.output_file)
+    if args.langcheck:
+        if not args.jev:
+            raise SystemExit("--langcheck goes with --jev")
+        _apply_langcheck(args, records)
 
     if args.jev and not args.render_only:
         if args.files:

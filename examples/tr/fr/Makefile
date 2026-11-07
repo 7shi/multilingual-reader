@@ -4,7 +4,7 @@ DIR = ../..
 TOPICS = finetuning transformer onde momentum
 LANGS = en es
 
-all: translate evaluate scores-jev
+all: translate evaluate langcheck scores-jev
 
 translate:
 	uv run trtools batch \
@@ -24,7 +24,7 @@ evaluate:
 	done
 
 # Whether each translation is in its target language, appended to langcheck-{topic}.jsonl
-# (experimental/15/PORT.md). Not in all: yet; scores do not read it until --langcheck lands.
+# (experimental/15/PORT.md). A language found not to be in it totals 0 in scores-jev.
 # LANGCHECK_OPTS=--force re-checks a file written on an earlier scheme.
 langcheck:
 	for t in $(TOPICS); do \
@@ -33,7 +33,7 @@ langcheck:
 
 scores-jev:
 	for t in $(TOPICS); do \
-		uv run trtools agg --jev --prefix $$t jev-$$t.jsonl || exit 1; \
+		uv run trtools agg --jev --prefix $$t --langcheck langcheck-$$t.jsonl jev-$$t.jsonl || exit 1; \
 	done > SCORES-jev.txt.tmp
 	mv SCORES-jev.txt.tmp SCORES-jev.txt
 	cat SCORES-jev.txt

@@ -70,6 +70,7 @@ Both models can occasionally drop the speaker tag on short acknowledgment lines 
 | [`review`](#review) | Polish a translation via third-party review |
 | [`eval`](#eval) | Evaluate translation quality on 5 criteria |
 | [`jev`](#jev) | Evaluate translation quality with TypeSafe's Jev (one run per language) |
+| [`langcheck`](#langcheck) | Check that each translation is in its target language (fastText, then Jev where unsure) |
 | [`agg`](#agg) | Aggregate evaluation result JSON (median) |
 | [`trend`](#trend) | Summarize per-language trends from evaluation logs |
 | [`term extract`](#term-extract) | Extract technical terms from text |
@@ -330,7 +331,7 @@ One record per language, appended and flushed as each finishes:
 
 **Aborting vs retrying**: a response reporting a model version other than the expected one aborts, since the alias having moved is not a transient failure. Other errors retry up to `--attempts`.
 
-**`agg` cannot read `jev.jsonl` yet.** `agg`'s file discovery requires three runs per language and silently discards anything else, so aggregation of Jev results is still to be built.
+**Aggregation**: `agg --jev` totals a `jev.jsonl`; with `--langcheck` a translation not in its target language totals 0 (see [langcheck](#langcheck)).
 
 ### Examples
 
@@ -340,6 +341,65 @@ uv run trtools jev ../../../onde-en.txt --langs fr es de ja zh
 
 # Print the rubric the scores are placed on
 uv run trtools jev --show-scheme
+```
+
+---
+
+## langcheck
+
+Checks that each translation is in its target language, appending one JSONL record per language to `langcheck.jsonl`. Jev's five-criterion scoring does not notice the language — French scored as German comes out as high as French ([experimental/15](../experimental/15/README.md)) — so `agg --jev` and `trend --jev` read this file to total a translation in the wrong language as 0.
+
+```
+uv run trtools langcheck <original> --langs <lang...> [options]
+```
+
+Three stages; the first that decides wins ([experimental/15/PORT.md](../experimental/15/PORT.md) section 3.7 is the design and what it was chosen on):
+
+1. **copy**: half or more of the lines (speaker label stripped) are verbatim lines of the original — `wrong`. No model.
+2. **fasttext**: fastText's `lid.176` over the whole text, locally. Its top language decides when it is the target (`ok`), or a language outside the target's group with probability 0.5 or more (`wrong`).
+3. **jev**: only what fastText leaves open, as a Jev `Choice`. A target in a group of close languages (hr/sr, ms/id, da/no), which fastText cannot tell apart, is asked among the group's members. A text whose top language fastText gives only weakly is asked over the target, fastText's top three, the source language and `Other`. P(target) below 0.3 is `wrong`, below 0.5 `review`, otherwise `ok`. Needs `TYPESAFE_API_KEY`; a run whose languages fastText settles makes no request.
+
+The fastText model is `lid.176.ftz` from <https://dl.fbaipublicfiles.com/fasttext/supervised-models/>, read from `--lid-model`, else `$TRTOOLS_LID_MODEL`, else `.cache/lid.176.ftz` at the project root (gitignored).
+
+### Required Arguments
+
+| Argument | Description |
+|---|---|
+| `original` | Original text file, for the copy stage and the translations' file names |
+| `--langs` | Target language codes; a language with no translation is an error |
+
+### Options
+
+| Option | Default | Description |
+|---|---|---|
+| `-f`, `--from` | `English` | Source language |
+| `--tr-dir` | `tr` | Directory holding the translations |
+| `-o`, `--output` | `langcheck.jsonl` | JSONL file to append to |
+| `--lid-model` | see above | fastText language identification model |
+| `-m`, `--model` | `jev-1.14.0` | Jev version, for the languages that reach it |
+| `--attempts` | `3` | Attempts per Jev request |
+| `--timeout` | `120` | Per-request timeout in seconds |
+| `--force` | false | Re-check every language, discarding the existing file |
+
+### Output
+
+```json
+{"lang":"sr","scheme":"langcheck@38bab564","copy_share":0.02,
+ "fasttext":{"top":{"sr":0.41,"hr":0.21,"sh":0.19},"p_target":0.41},"english_lines":0.0,
+ "verdict":"ok","stage":"jev","detected":"Serbian","model":"jev-1.14.0","p_target":0.8,
+ "probabilities":{"Serbian":0.8,"Croatian":0.2},"usage":{"...":0},"seconds":0.4}
+```
+
+- `verdict` is `ok`, `wrong` or `review`; `stage` is the stage that decided; `detected` is the language that stage saw most of
+- `scheme` hashes everything that determines a verdict, the fastText model file included. As with `jev`, a file on another scheme stops the run; `--force` re-checks it
+- `english_lines` is the share of long lines fastText reads as English, recorded but not used: in the corpus it marks collapsing texts rather than wrong languages
+
+### Examples
+
+```bash
+# Check one model directory (from examples/tr/onde/<model>/), or every model
+uv run trtools langcheck ../../../onde-en.txt --langs fr es de sr hr
+make -C examples/tr/onde langcheck LANGCHECK_OPTS=--force
 ```
 
 ---
@@ -364,6 +424,9 @@ uv run trtools agg <json_files...> [options]
 |---|---|---|
 | `-o`, `--output` | none | Where to save the aggregated result JSON |
 | `--verbose` | false | Show the per-criterion median, mean, and standard deviation |
+| `--jev` | false | Read one `jev.jsonl` from `jev` instead of three-run JSON files |
+| `--prefix` | none | Name prefix with `--jev`, e.g. `onde` for `onde-ja` |
+| `--langcheck` | none | With `--jev`, the set's `langcheck.jsonl`: a language not in its target language totals 0, and each `wrong` or `review` language is noted on stderr. A language missing from it is an error |
 
 ### Examples
 
@@ -401,6 +464,7 @@ uv run trtools trend <json_files...> -m <model> [options]
 | `--original` | none | Original text file; required with `--jev` |
 | `-f`, `--from` | `English` | Source language, with `--jev` |
 | `--tr-dir` | `tr` | Directory holding the translations, with `--jev` |
+| `--langcheck` | none | With `--jev`, the set's `langcheck.jsonl`: a language not in its target language scores 0 with the fixed phrase "Not in the target language (detected: …)" instead of a written one. Applied to the existing JSONL as well, so `--render-only` brings it in line |
 | `--sync` | none | Path of the `README.md` to write the table back into after generation |
 | `--render-only` | false | Only output/sync the table from the JSONL, without generating |
 | `--no-think` | false | Disable thinking (`--jev` always runs without it) |

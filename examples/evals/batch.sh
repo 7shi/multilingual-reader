@@ -19,11 +19,22 @@ for topic in $TOPICS; do
     done
 done
 
+# Whether each translation is in its target language (experimental/15/PORT.md); a
+# language found not to be totals 0 below. LANGCHECK_OPTS=--force re-checks a file
+# written on an earlier scheme.
+for topic in $TOPICS; do
+    for src in en fr; do
+        uv run trtools langcheck "../$topic-$src.txt" -f "${SRC_NAME[$src]}" \
+            --tr-dir .. --langs ${TARGETS[$src]} -o "langcheck-$topic-$src.jsonl" $LANGCHECK_OPTS
+    done
+done
+
 # --- Aggregation ---
 echo -e "\nAggregating ..."
 for topic in $TOPICS; do
     for src in en fr; do
-        uv run trtools agg --jev --prefix "$topic-$src" "jev-$topic-$src.jsonl"
+        uv run trtools agg --jev --prefix "$topic-$src" \
+            --langcheck "langcheck-$topic-$src.jsonl" "jev-$topic-$src.jsonl"
     done
 done > SCORES-jev.txt.tmp
 mv SCORES-jev.txt.tmp SCORES-jev.txt

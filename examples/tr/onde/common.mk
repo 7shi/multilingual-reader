@@ -21,7 +21,7 @@ TRANSLATE = uv run trtools batch \
 	$(DIR)/onde-en.txt \
 	--langs $(LANGS)
 
-all: translate evaluate scores-jev trends-jev
+all: translate evaluate langcheck scores-jev trends-jev
 
 translate:
 	$(TRANSLATE) --tr-only -m $(TRANSLATOR)
@@ -32,7 +32,7 @@ evaluate:
 	uv run trtools jev $(DIR)/onde-en.txt --langs $(LANGS)
 
 # Whether each translation is in its target language, appended to langcheck.jsonl
-# (experimental/15/PORT.md). Not in all: yet; scores do not read it until --langcheck lands.
+# (experimental/15/PORT.md). A language found not to be in it totals 0 in scores-jev and trends-jev.
 # LANGCHECK_OPTS=--force re-checks a file written on an earlier scheme.
 langcheck:
 	uv run trtools langcheck $(DIR)/onde-en.txt --langs $(LANGS) $(LANGCHECK_OPTS)
@@ -45,11 +45,11 @@ scores:
 	cat SCORES.txt
 
 scores-jev:
-	uv run trtools agg --jev --prefix onde jev.jsonl > SCORES-jev.txt.tmp
+	uv run trtools agg --jev --prefix onde --langcheck langcheck.jsonl jev.jsonl > SCORES-jev.txt.tmp
 	mv SCORES-jev.txt.tmp SCORES-jev.txt
 	cat SCORES-jev.txt
 
 # The trend column, in its own file so the old scale's TRENDS.jsonl is never appended to.
 trends-jev:
-	uv run trtools trend --jev jev.jsonl --original $(DIR)/onde-en.txt \
+	uv run trtools trend --jev jev.jsonl --langcheck langcheck.jsonl --original $(DIR)/onde-en.txt \
 		-m $(SUMMARIZER) -o TREND-jev.jsonl --sync README.md

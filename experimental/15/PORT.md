@@ -8,7 +8,11 @@ first, qwen3.6 when Jev cannot decide.
 `trtools langcheck` without it; step 2's corpus run showed Jev's verdicts cannot zero a
 score (section 3.5); fastText's lid.176 does (section 3.6). Step 1 is redone around it
 (section 3.7), which supersedes sections 1, 2.2 and 4, and step 2 is rerun on it: 4
-`wrong`, 1 `review`, all of them real. Step 3 (zeroing) is next.
+`wrong`, 1 `review`, all of them real. Steps 3 and 4 are done: `agg --jev` and
+`trend --jev` take `--langcheck`, the Makefiles pass it and run `langcheck` in `all:`, and
+the four `wrong` translations total 0 in `SCORES-jev.txt`, `TREND-jev.jsonl`, the model
+READMEs and the comparison in examples/tr/README.md. The reference translations in
+examples/evals/ are checked too (`batch.sh`): all 20 `ok` by fastText alone.
 
 ---
 
