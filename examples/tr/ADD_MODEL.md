@@ -28,19 +28,28 @@ Using the target model, manually create `onde/{model}/tr/onde-{lang}.txt` for ea
 
 ### 3.1 Running `make`
 
-Run `make` in `onde/{model}/`. If translated files are already in place in `tr/`, the translation phase is entirely skipped, and only evaluation, the language check, aggregation, and trend generation (`evaluate` → `langcheck` → `scores-jev` → `trends-jev`) run. Jev's evaluations are output to `jev.jsonl`, scores to `SCORES-jev.txt`, and the trend column to `TREND-jev.jsonl`. `evaluate` calls TypeSafe's API, which is billed.
+Run `make` in `onde/{model}/`. If translated files are already in place in `tr/`, the translation phase is entirely skipped, and only evaluation, the language check, aggregation, and trend generation (`evaluate` → `langcheck` → `scores-jev` → `trends-jev`) run. Jev's evaluations are output to `jev.jsonl`, the language check to `langcheck.jsonl`, scores to `SCORES-jev.txt`, and the trend column to `TREND-jev.jsonl`. `evaluate` calls TypeSafe's API, which is billed; `langcheck` calls it only for the languages fastText cannot settle (see [trtools langcheck](../../trtools/README.md#langcheck)).
 
-### 3.2 Checking Scores and Evaluation Logs
-- **Settle the language check's `review` languages first.** `langcheck` ends by listing any language it could not decide ("to read and settle with --resolve"); `agg` notes each on stderr as well. A `review` keeps its score until settled. After the run, Claude reads each such translation, decides whether it is in the target language, and records it in `onde/{model}/` with `uv run trtools langcheck --resolve <lang> {ok|wrong} --reason "<what the text is>"`, then reruns `make scores-jev trends-jev` there. The decision goes to `langcheck-resolved.jsonl`, survives a re-run of the check, and stops `agg` if the check of that language later changes (the text has to be read again).
+The user runs this step; the rest of section 3 is done by Claude afterwards.
+
+### 3.2 Checking the Target Language
+
+Jev's scores do not notice a translation that is not in its target language, so the language check decides that separately. Each language comes out `ok`, `wrong` (totals **0** in `SCORES-jev.txt`, with the fixed trend "Not in the target language (detected: …)"), or `review` (undecided; keeps its score until settled). Go through the run's report before looking at the scores:
+
+- **`wrong`**: read the translation and confirm that it really is not in the target language (English left from the source, a neighbouring language, collapse into repetition, etc.), and note what it is for 3.5. A `wrong` cannot be overridden: if the text turns out to be in the target language, the check itself is at fault, so stop and report it instead of going on.
+- **`review`**: `langcheck` ends by listing these ("to read and settle with --resolve"), and `agg` notes each on stderr as well. Read each translation, decide whether it is in the target language, and record it in `onde/{model}/` with `uv run trtools langcheck --resolve <lang> {ok|wrong} --reason "<what the text is>"`. The decision goes to `langcheck-resolved.jsonl`, survives a re-run of the check, and stops `agg` if the check of that language later changes (the text has to be read again).
+- After any `--resolve`, rerun `make scores-jev trends-jev` in `onde/{model}/`. A language settled as `wrong` gets the fixed trend, so no LLM is called for it.
+
+### 3.3 Checking Scores and Evaluation Logs
 - Check the output scores (`SCORES-jev.txt`).
 - Jev returns scores without prose, so there are no evaluation logs to read. Read the translations (text files under `tr/`) alongside each language's per-criterion levels in `jev.jsonl` and its trend column to understand the specific issues (terminology accuracy, unnatural literal translation, garbled text, speaker-tag dropout, hallucinations such as system-prompt or other-language contamination, etc.). `trends-jev` prints the comment each trend phrase was written from while it runs; it is not saved.
 
-### 3.3 Updating `README.md`
+### 3.4 Updating `README.md`
 Update `onde/{model}/README.md` as follows.
 - **Check the "Translation Quality Overview"**: this table is auto-generated from Jev's scores by `make` (the `trends-jev` target) via `trtools trend --jev --sync`, so no manual entry is needed. Check that the generated trend for each language is appropriate (see [ADD_LANG.md's 1.2.1](ADD_LANG.md#121-writing-policy-for-trend-analysis) for the writing policy).
 - **Unify notation**: make sure the language notation is consistent throughout the file, avoiding inconsistencies with existing mentions (e.g. spelling variants of the same language).
 
-### 3.4 Updating the Consolidated Results (`examples/tr/README.md`)
+### 3.5 Updating the Consolidated Results (`examples/tr/README.md`)
 
 Once all directories have been updated, update the top-level `examples/tr/README.md` to summarize.
 
@@ -48,15 +57,16 @@ Once all directories have been updated, update the top-level `examples/tr/README
 - Insert a link to the added directory into the `onde/` description list.
 - Running `make sync` in `examples/tr/` updates the "Comparison Between Translation Models" table (header row, separator row, body rows) all at once.
 
-#### 3.4.1 Updating the Comparison Table
+#### 3.5.1 Updating the Comparison Table
 - Add the model to the model table at the top of `examples/tr/README.md` (model name linked to `onde/{model}/README.md`, and a description). The comparison table lists each language's top three scores and their models, so it needs no manual editing; models are read from `MODELS` in `onde/Makefile`.
 - Update the comparison table by running `make sync` in `examples/tr/`. The header row, separator row, and body rows are all rewritten together.
 - Then run `make compare` in `examples/tr/` to regenerate the per-model score-distribution boxplot (`compare/MODELS.png`).
 - See [ADD_LANG.md's 2.1](ADD_LANG.md#21-updating-the-comparison-table) for details on the generation process, including the row-ordering algorithm.
 
-#### 3.4.2 Updating the Trend Analysis Section
+#### 3.5.2 Updating the Trend Analysis Section
 - **Stability items**: if the added model's results back up or overturn an existing trend, add the model name into the text as a concrete example.
 - **Hallucination items**: add any peculiar phenomenon found for the added model.
+- **Language check**: if any of the added model's translations is `wrong` (3.2), add it to the list of translations at 0 under "Checking the target language" (and update the count before the list), with what the text is instead (e.g. mostly English, written in Latin).
 - **Don't distinguish old from new**: avoid phrasing like "the newly added ~" even in the discussion or notes of the consolidated `README.md`; integrate it naturally as part of the overall comparison across models.
 - **Unify notation**: also check the consolidated `README.md` for inconsistent notation of the model name and unify it.
 
