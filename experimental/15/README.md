@@ -202,6 +202,7 @@ that read `mislabel/tr/` (gitignored, rebuilt from the corpus).
 | [calibrate_jev.py](calibrate_jev.py) | `uv run python experimental/15/calibrate_jev.py [model] [--agg]` | `calib-jev-gpt-6-sol.jsonl`, `candidates-gpt-6-sol.json` |
 | [gate_jev.py](gate_jev.py) | `uv run python experimental/15/gate_jev.py <tr dir>` | `gate-{mislabel,bonsai2-27b,gpt-6-sol}.jsonl` |
 | [narrow_qwen.py](narrow_qwen.py) | `uv run python experimental/15/narrow_qwen.py` | `narrow-qwen.jsonl` ([PORT.md](PORT.md) section 3.4) |
+| [variants_jev.py](variants_jev.py) | `uv run python experimental/15/variants_jev.py [--table]` | `variants-jev.jsonl` ([PORT.md](PORT.md) section 3.5) |
 
 Outputs are in [results/](results/). Jev is `jev-1.14.0` throughout; qwen3.6 runs on ollama
 0.30.6 without thinking, at temperature 0.

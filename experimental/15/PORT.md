@@ -4,8 +4,9 @@ A companion to [README.md](README.md). The README is what experiment 15 measured
 how the check is to go into `trtools`, including the flow it was asked to have — Jev
 first, qwen3.6 when Jev cannot decide.
 
-**Status**, 2026-11-08: step 0 is measured and dropped the qwen3.6 fallback (section
-3.4); step 1 is implemented as `trtools langcheck` without it. Steps 2-4 are open.
+**Status**, 2026-11-08: step 0 dropped the qwen3.6 fallback (section 3.4); step 1 is
+`trtools langcheck` without it; step 2's corpus run showed Jev's verdicts cannot zero a
+score (section 3.5). Step 3 waits on what replaces them.
 
 ---
 
@@ -151,6 +152,45 @@ Under section 3.3's rule a "the target" answer passes the text, so in the band q
 would pass exactly the texts the check exists for; its "the target" carries no
 information. Its one strength, English, is already covered by the copy check. So: no
 fallback, and the band is `review`.
+
+### 3.5 Step 2: the corpus run, and why Jev cannot zero a score
+
+The check over the corpus (2435 texts, `langcheck@be2794c4`, committed beside each
+`jev.jsonl`) gave 2379 `ok`, 51 `review`, 5 `wrong`. Of the five, two are right
+(`bonsai2-27b` fi, the English source; `nemotron-3.5-super-vl` my, romanised Burmese then
+English, by copy) and three are **correct German** sent to `Other` at 0.81-0.87
+(`gemini-2.5-flash`, `gemma4-e2b`, `qwen3.5-4b`). The 51 `review` are mostly sr/hr against
+each other, es against French, zh against `Other`, and the `fr/` set's en and es against
+the French source; `fr/`'s transformer `en`, plain English, came out French 0.72.
+Experiment 15's one-translator calibration ("correct texts are 0.64 and above") did not
+hold over the corpus.
+
+[variants_jev.py](variants_jev.py) asked 14 of those texts and 5 wrong-language controls
+in six variants ([results/variants-jev.jsonl](results/variants-jev.jsonl)); P(label):
+
+| Text | base | no labels | no `Other` | neither | brief `Other` | no labels, brief |
+|---|---:|---:|---:|---:|---:|---:|
+| German, three false `wrong` | 0.07-0.21 | 0.03-0.32 | 0.82-0.85 | 0.79-0.91 | 0.07-0.17 | 0.02-0.25 |
+| Chinese, two | 0.30-0.48 | 0.01-0.03 | 0.93-0.95 | 0.48-0.66 | 0.29-0.65 | 0.02-0.07 |
+| Spanish vs French, two | 0.34-0.53 | 0.73-0.86 | 0.41-0.63 | 0.73-0.86 | 0.54-0.56 | 0.75-0.84 |
+| hr, sr | 0.60-0.62 | 0.65-0.67 | 0.63-0.68 | 0.76-0.80 | 0.59-0.67 | 0.66-0.71 |
+| ia | 0.33 | 0.37 | 0.75 | 0.73 | 0.34 | 0.28 |
+| `fr/` en (plain English) | 0.27 | 0.18 | 0.32 | 0.22 | 0.28 | 0.17 |
+| Controls: fr, es, ja under another label | 0.00 | 0.00 | **0.23-0.77** | **0.26-0.72** | 0.00 | 0.00 |
+| Controls: hr as sr; English as fi | ≤0.02 | ≤0.01 | ≤0.03 | ≤0.02 | ≤0.02 | ≤0.01 |
+
+- **`Other` is both what catches a wrong language and what takes correct German, Chinese
+  and Interlingua.** Without it the controls pass (Spanish labelled Portuguese 0.69); with
+  it, in either wording, correct texts lose. Its wording makes no difference.
+- **The speaker labels pull toward French**, as suspected (Camille, Luc): stripping them
+  lifts Spanish to 0.73-0.86. But it sends Chinese to `Other` at 0.96-0.99 — the
+  translated labels (卡米尔：) were what held it — and does nothing for the `fr/` English.
+- **Jev calls plain English French**, labels or not. That is section 3's weakness on
+  English again, now on a correct text, where it decides the verdict.
+
+No variant separates the corpus's correct texts from the controls with one threshold. A
+Jev P(target) is evidence for a person, not grounds for a 0: until something better is
+found, only the copy check may set `wrong`, and Jev's low answers are `review`.
 
 ## 4. Candidate Table
 
