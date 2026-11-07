@@ -25,9 +25,10 @@ evaluate:
 
 # Whether each translation is in its target language, appended to langcheck-{topic}.jsonl
 # (experimental/15/PORT.md). Not in all: yet; scores do not read it until --langcheck lands.
+# LANGCHECK_OPTS=--force re-checks a file written on an earlier scheme.
 langcheck:
 	for t in $(TOPICS); do \
-		uv run trtools langcheck $(DIR)/$$t-fr.txt -f French --langs $(LANGS) -o langcheck-$$t.jsonl || exit 1; \
+		uv run trtools langcheck $(DIR)/$$t-fr.txt -f French --langs $(LANGS) -o langcheck-$$t.jsonl $(LANGCHECK_OPTS) || exit 1; \
 	done
 
 scores-jev:

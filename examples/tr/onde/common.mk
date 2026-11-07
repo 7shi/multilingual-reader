@@ -33,8 +33,9 @@ evaluate:
 
 # Whether each translation is in its target language, appended to langcheck.jsonl
 # (experimental/15/PORT.md). Not in all: yet; scores do not read it until --langcheck lands.
+# LANGCHECK_OPTS=--force re-checks a file written on an earlier scheme.
 langcheck:
-	uv run trtools langcheck $(DIR)/onde-en.txt --langs $(LANGS)
+	uv run trtools langcheck $(DIR)/onde-en.txt --langs $(LANGS) $(LANGCHECK_OPTS)
 
 # The previous evaluator's totals, from evals/. Kept beside SCORES-jev.txt as its record;
 # not in all:, since evaluate no longer writes evals/.

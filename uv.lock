@@ -1576,6 +1576,7 @@ name = "multilingual-reader"
 version = "2025.7.28"
 source = { editable = "." }
 dependencies = [
+    { name = "fasttext-predict" },
     { name = "jinja2" },
     { name = "llm7shi" },
     { name = "matplotlib", version = "3.10.9", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
@@ -1592,13 +1593,9 @@ dependencies = [
     { name = "xml7shi" },
 ]
 
-[package.dev-dependencies]
-dev = [
-    { name = "fasttext-predict" },
-]
-
 [package.metadata]
 requires-dist = [
+    { name = "fasttext-predict", specifier = ">=0.9.2.4" },
     { name = "jinja2", specifier = ">=3.1.0" },
     { name = "llm7shi", git = "https://github.com/7shi/llm7shi.git" },
     { name = "matplotlib", specifier = ">=3.10.8" },
@@ -1609,9 +1606,6 @@ requires-dist = [
     { name = "typesafe-sdk", specifier = ">=0.7.1" },
     { name = "xml7shi", specifier = ">=0.1.0" },
 ]
-
-[package.metadata.requires-dev]
-dev = [{ name = "fasttext-predict", specifier = ">=0.9.2.4" }]
 
 [[package]]
 name = "numpy"

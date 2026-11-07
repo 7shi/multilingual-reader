@@ -7,9 +7,15 @@ MODELS = gemma4 gemma4-31b gemma4-12b gemma4-e4b gemma4-e2b gpt-oss \
 		 deepseek-v4.1-flash haiku-5.5 glm-5.3 nemotron-3.5-super-vl \
 		 ox-alpha union-alpha space-bunny-alpha
 
-.PHONY: all $(MODELS)
+.PHONY: all langcheck $(MODELS)
 
 all: $(MODELS)
 
 $(MODELS):
 	$(MAKE) -C $@
+
+# The language check over every model (experimental/15/PORT.md); LANGCHECK_OPTS is passed on.
+langcheck: $(MODELS:%=langcheck-%)
+
+langcheck-%:
+	$(MAKE) -C $* langcheck

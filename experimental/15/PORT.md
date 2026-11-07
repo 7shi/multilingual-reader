@@ -6,8 +6,9 @@ first, qwen3.6 when Jev cannot decide.
 
 **Status**, 2026-11-08: step 0 dropped the qwen3.6 fallback (section 3.4); step 1 is
 `trtools langcheck` without it; step 2's corpus run showed Jev's verdicts cannot zero a
-score (section 3.5); fastText's lid.176 does (section 3.6). Step 1 is to be redone
-around it.
+score (section 3.5); fastText's lid.176 does (section 3.6). Step 1 is redone around it
+(section 3.7), which supersedes sections 1, 2.2 and 4, and step 2 is rerun on it: 4
+`wrong`, 1 `review`, all of them real. Step 3 (zeroing) is next.
 
 ---
 
@@ -234,7 +235,51 @@ is fast, local and sure; **Jev only between the members of a group,** where fast
 cannot tell and Jev can, without `Other`. Copy check becomes redundant with fastText for
 the untranslated case, but costs nothing.
 
-## 4. Candidate Table
+### 3.7 The revised check: fastText first, Jev where it is unsure
+
+[trtools/langcheck.py](../../trtools/langcheck.py), scheme `langcheck@<8 hex>` over the
+lid model's sha256, the thresholds, the groups and the option wording:
+
+1. **copy** — half or more of the content lines verbatim from the original: `wrong`.
+2. **fasttext** — lid.176 over the whole text (speaker labels stripped):
+   - top language is the target, and the target has no group: `ok`;
+   - top language outside the target's group at P ≥ 0.5: `wrong`;
+   - otherwise Jev.
+3. **jev** — a `Choice`:
+   - target in a group (hr/sr, ms/id, da/no), whatever fastText's top: the corpus's
+     members of the group only, no source, no `Other`;
+   - fastText unsure outside the group: target, fastText's top three (named, e.g.
+     Latin), the source and `Other`.
+
+   P(target) < 0.3 `wrong`, < 0.5 `review`, else `ok`.
+
+Each record keeps fastText's top three, its P(target), the copy share and the share of
+long lines read as English (recorded, not used: in the corpus it marks collapsing texts).
+
+Routed offline over the corpus (2435 texts, `lid.176.ftz`): 2213 `ok` by fastText; `wrong`
+by copy for `nemotron-3.5-super-vl` my and by fastText for `bonsai2-27b` fi,
+`gemma4-e4b` ia (Latin 0.51), `saluki-27b` eu; 216 to Jev within a group and 2 outside
+(`bonsai2-27b` ia, `gemma4-e2b` ia with Latin offered). The candidate table of section 4
+is gone; the groups replace it.
+
+**The corpus run on `langcheck@38bab564`** (committed beside each `jev.jsonl`): 2430
+`ok`, 4 `wrong`, 1 `review`, routed exactly as the offline count above.
+
+- `wrong`: `bonsai2-27b` fi (English, fastText), `gemma4-e4b` ia (Latin 0.51, fastText),
+  `saluki-27b` eu (English 0.65, fastText), `nemotron-3.5-super-vl` my (copy 0.59).
+- `review`: `gemma4-e2b` ia, Jev Latin 0.49, Interlingua 0.35. The same kind of text as
+  `gemma4-e4b`'s, which fastText settled at 0.51; this one fell at 0.48 and Jev, with
+  Latin on the list, leaned the same way without reaching 0.3.
+- Within the groups Jev separated cleanly without `Other`: correct sr 0.64 and above, hr
+  0.67 and above (0.54 with `Other`, section 3.5); ms, id, da, no 0.97 and above. The
+  correct German, Chinese and Spanish Jev had sent to `Other` never reached it.
+- 218 Jev requests for the whole corpus.
+
+The model is read from `--lid-model`, else `$TRTOOLS_LID_MODEL`, else
+`.cache/lid.176.ftz` at the project root (gitignored). `LANGCHECK_OPTS=--force` on the Makefile targets re-checks
+files written on an earlier scheme.
+
+## 4. Candidate Table (superseded by 3.7)
 
 The options per target are frozen data, [trtools/langcheck_candidates.py](../../trtools/langcheck_candidates.py), copied from
 [results/candidates-gpt-6-sol.json](results/candidates-gpt-6-sol.json): the target plus

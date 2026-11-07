@@ -22,8 +22,8 @@ import json
 import sys
 from pathlib import Path
 
-from trtools.langcheck import (INSTRUCTIONS, OPTION, OTHER, OTHER_DESC, content_lines,
-                               option_names)
+from trtools.langcheck import INSTRUCTIONS, OPTION, OTHER, OTHER_DESC, content_lines
+from trtools.language import LANGUAGES
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
@@ -31,6 +31,14 @@ OUT = HERE / "results/variants-jev.jsonl"
 ONDE = ROOT / "examples/tr/onde"
 FR = ROOT / "examples/tr/fr/tr"
 BRIEF = "None of the listed languages."
+# The candidate table langcheck@be2794c4 used, before trtools moved to fastText.
+CANDIDATES = json.loads((HERE / "results/candidates-gpt-6-sol.json").read_text(encoding="utf-8"))
+
+
+def option_names(lang, source):
+    """Target, its candidates and the source language, as langcheck@be2794c4 asked."""
+    names = [LANGUAGES[lang]["en"]] + CANDIDATES.get(lang, [None])[1:] + [source]
+    return list(dict.fromkeys(names))
 
 # (case id, text path, label, source language, the text is actually in the label: bool)
 CASES = [
