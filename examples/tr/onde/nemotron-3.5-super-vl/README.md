@@ -78,7 +78,6 @@ Guide: high quality (90+), practical range (80-89), medium quality (60-79), crit
 | Welsh | 30.0 | Majority English fragments and gibberish Welsh |
 | Belarusian | 29.4 | Severely corrupted and unintelligible mixed-language text |
 | Kannada | 29.4 | Severe language mixing and hallucination |
-| Burmese | 28.4 | Extremely low quality, nonsensical hybrid text |
 | Lao | 27.9 | Incomprehensible gibberish due to severe lexical and grammatical errors |
 | Azerbaijani | 26.6 | Severe grammatical errors and lexical hallucinations |
 | Irish | 25.4 | Severe grammatical errors and mixed languages |
@@ -88,3 +87,4 @@ Guide: high quality (90+), practical range (80-89), medium quality (60-79), crit
 | Armenian | 16.6 | Corrupted noise from multiple languages |
 | Georgian | 13.1 | Severe mixed-language pollution and structural defects |
 | Khmer | 8.9 | Severe hallucination and repetition loop |
+| Burmese | 0.0 | Not in the target language (detected: English) |

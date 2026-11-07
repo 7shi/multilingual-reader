@@ -72,7 +72,6 @@ Guide: high quality (90+), practical range (80-89), medium quality (60-79), crit
 | Thai | 23.3 | Severe information loss and gibberish |
 | Estonian | 22.3 | Complete failure due to severe grammatical and structural collapse |
 | Kannada | 22.2 | Repetitive nonsensical loop and gibberish |
-| Basque | 21.9 | Catastrophic failure with missing dialogue |
 | Khmer | 19.6 | Severe structural corruption and meaningless repetition |
 | Georgian | 19.0 | Complete failure due to broken grammar and loss of meaning |
 | Tagalog | 15.5 | Complete dialogue truncation resulting in empty lines |
@@ -88,3 +87,4 @@ Guide: high quality (90+), practical range (80-89), medium quality (60-79), crit
 | Armenian | 6.2 | Severe structural failure and nonsensical repetition |
 | Burmese | 4.8 | Catastrophic quality; unintelligible gibberish |
 | Irish | 4.5 | Severe structural defect with empty placeholders |
+| Basque | 0.0 | Not in the target language (detected: English) |

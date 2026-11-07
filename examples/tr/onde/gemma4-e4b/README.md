@@ -80,7 +80,6 @@ Guide: high quality (90+), practical range (80-89), medium quality (60-79), crit
 | Esperanto | 45.2 | Riddled with nonsense vocabulary |
 | Hungarian | 45.2 | Severe linguistic errors and nonsensical content |
 | Belarusian | 44.8 | Severe mechanical corruption and gibberish |
-| Interlingua | 44.7 | Malformed Latin-English hybrid |
 | Lithuanian | 39.5 | Severe linguistic errors and gibberish |
 | Estonian | 37.6 | Lexical hallucinations and nonsense |
 | Icelandic | 35.6 | Hallucinated vocabulary and syntax collapse |
@@ -88,3 +87,4 @@ Guide: high quality (90+), practical range (80-89), medium quality (60-79), crit
 | Basque | 27.3 | Completely unintelligible and broken grammar |
 | Welsh | 21.9 | Nonsensical mixture of broken Welsh and random characters |
 | Irish | 20.2 | Nonsensical pseudo-Gaelic gibberish |
+| Interlingua | 0.0 | Not in the target language (detected: Latin) |

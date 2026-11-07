@@ -86,5 +86,5 @@ Guide: high quality (90+), practical range (80-89), medium quality (60-79), crit
 | Thai | 12.6 | Catastrophic failure with severe structural defects and garbage data |
 | Georgian | 9.3 | Completely unintelligible and corrupted nonsense |
 | Armenian | 7.0 | Complete loss of meaning and grammatical nonsense |
-| Finnish | 5.6 | Structurally broken and meaningless |
 | Welsh | 3.4 | Extensive meaningless repetition and word salad |
+| Finnish | 0.0 | Not in the target language (detected: English) |
