@@ -6,7 +6,8 @@ first, qwen3.6 when Jev cannot decide.
 
 **Status**, 2026-11-08: step 0 dropped the qwen3.6 fallback (section 3.4); step 1 is
 `trtools langcheck` without it; step 2's corpus run showed Jev's verdicts cannot zero a
-score (section 3.5). Step 3 waits on what replaces them.
+score (section 3.5); fastText's lid.176 does (section 3.6). Step 1 is to be redone
+around it.
 
 ---
 
@@ -191,6 +192,47 @@ in six variants ([results/variants-jev.jsonl](results/variants-jev.jsonl)); P(la
 No variant separates the corpus's correct texts from the controls with one threshold. A
 Jev P(target) is evidence for a person, not grounds for a 0: until something better is
 found, only the copy check may set `wrong`, and Jev's low answers are `review`.
+
+### 3.6 fastText's lid.176 does what Jev could not
+
+[lid_fasttext.py](lid_fasttext.py) runs fastText's language identifier (`fasttext-predict`,
+a dev dependency; the model in `lid/`, gitignored) over the same 2435 texts and the five
+controls, locally, in about ten seconds ([results/lid-ftz.jsonl](results/lid-ftz.jsonl),
+[results/lid-bin.jsonl](results/lid-bin.jsonl)). The whole text, speaker labels stripped,
+is one prediction.
+
+- **Where Jev failed, it is sure.** The lowest P(label) over correct German is 0.99,
+  Chinese 0.997, Spanish 0.96; `fr/` (en, es from French) 0.94, `core/` 0.96.
+- **Its absolute probability is not usable for close languages.** hr and sr split with
+  `sh` (Serbo-Croatian) and `bs`, landing at 0.31-0.41 on every correct text; ms loses to
+  Indonesian (0.26-0.38) on every one; ia sits at 0.23-0.41. What works is the **top
+  language**: whether it lies outside the target's group (hr/sr/sh/bs, ms/id, no/da).
+- **The top-language rule flags only real problems.** Correct texts whose top language
+  falls outside the group, either model:
+
+  | Text | Top | What it is |
+  |---|---|---|
+  | `bonsai2-27b` fi | en 0.96 / 0.47 | the English source |
+  | `nemotron-3.5-super-vl` my | en 0.86 / 0.87 | romanised Burmese, then English |
+  | `saluki-27b` eu | en 0.65 / 0.61 | English lines, then collapse |
+  | `gemma4-e2b`, `gemma4-e4b` ia | la 0.48-0.56 | **Latin**, not Interlingua ("Ego sum Camille", "Haec sunt") |
+  | `bonsai2-27b` ia (ftz only) | it 0.27 | Interlingua mixed with Spanish and Italian, collapsing |
+  | `bonsai2-27b` th (bin only) | es 0.45 | collapse ("คา:BBBB…") |
+
+  Jev had the two Latin texts at `Other` 0.60-0.64 — right, but no more confident than it
+  was about correct German.
+- **Controls**: French, English, Spanish and Japanese under another label are caught at
+  0.94-1.00. Croatian labelled Serbian is not — they share a group — and that is the case
+  Jev gets right (Croatian 0.95-0.97 in every variant of section 3.5).
+- **Per-line reading** (lines of 30 characters or more) finds partial English: `bonsai2-27b`
+  th 68% of lines, `nemotron-3.5-super-vl` ka 39%, `saluki-27b` ga 29%, all collapsing
+  texts. As a share of the target it is noise (gl→pt/es, ne→hi, sk→cs, sw→eo on every
+  model's correct text), so only the English share is worth reading.
+
+So the division of labour is: **fastText for "which language family is this",** where it
+is fast, local and sure; **Jev only between the members of a group,** where fastText
+cannot tell and Jev can, without `Other`. Copy check becomes redundant with fastText for
+the untranslated case, but costs nothing.
 
 ## 4. Candidate Table
 
