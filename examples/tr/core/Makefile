@@ -1,4 +1,4 @@
-.PHONY: all translate evaluate scores scores-jev
+.PHONY: all translate evaluate langcheck scores scores-jev
 
 DIR = ../..
 include ../common.mk
@@ -24,6 +24,13 @@ translate:
 evaluate:
 	for t in $(TOPICS); do \
 		uv run trtools jev $(DIR)/$$t-en.txt --langs $(CORE_LANGS) -o jev-$$t.jsonl || exit 1; \
+	done
+
+# Whether each translation is in its target language, appended to langcheck-{topic}.jsonl
+# (experimental/15/PORT.md). Not in all: yet; scores do not read it until --langcheck lands.
+langcheck:
+	for t in $(TOPICS); do \
+		uv run trtools langcheck $(DIR)/$$t-en.txt --langs $(CORE_LANGS) -o langcheck-$$t.jsonl || exit 1; \
 	done
 
 # The previous evaluator's totals, from evals/. Kept beside SCORES-jev.txt as its record;

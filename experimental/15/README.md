@@ -9,7 +9,7 @@ a fixed set of options — the target, the languages it can be confused with, En
 `Other` — the target's probability separates every wrong-language text tried from every
 right one, at a threshold of 0.5.
 
-**Status**: frozen, 2026-11-08. The port into `trtools` is not started (section 7).
+**Status**: frozen, 2026-11-08. The port into `trtools` is [PORT.md](PORT.md).
 
 ## 1. Setup
 
@@ -201,6 +201,7 @@ that read `mislabel/tr/` (gitignored, rebuilt from the corpus).
 | [choose_qwen.py](choose_qwen.py) | `uv run python experimental/15/choose_qwen.py [model]` | `choose-qwen-gpt-6-sol.jsonl` |
 | [calibrate_jev.py](calibrate_jev.py) | `uv run python experimental/15/calibrate_jev.py [model] [--agg]` | `calib-jev-gpt-6-sol.jsonl`, `candidates-gpt-6-sol.json` |
 | [gate_jev.py](gate_jev.py) | `uv run python experimental/15/gate_jev.py <tr dir>` | `gate-{mislabel,bonsai2-27b,gpt-6-sol}.jsonl` |
+| [narrow_qwen.py](narrow_qwen.py) | `uv run python experimental/15/narrow_qwen.py` | `narrow-qwen.jsonl` ([PORT.md](PORT.md) section 3.4) |
 
 Outputs are in [results/](results/). Jev is `jev-1.14.0` throughout; qwen3.6 runs on ollama
 0.30.6 without thinking, at temperature 0.

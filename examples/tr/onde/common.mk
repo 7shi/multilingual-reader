@@ -1,7 +1,7 @@
 # Shared definitions for each onde model directory
 # Each Makefile defines only its model-specific part (TRANSLATOR) and includes this.
 
-.PHONY: all translate evaluate scores scores-jev trends-jev
+.PHONY: all translate evaluate langcheck scores scores-jev trends-jev
 
 DIR = ../../..
 include ../../common.mk
@@ -30,6 +30,11 @@ translate:
 # previous evaluator's record (ollama:qwen3.6, three runs each) and are no longer written.
 evaluate:
 	uv run trtools jev $(DIR)/onde-en.txt --langs $(LANGS)
+
+# Whether each translation is in its target language, appended to langcheck.jsonl
+# (experimental/15/PORT.md). Not in all: yet; scores do not read it until --langcheck lands.
+langcheck:
+	uv run trtools langcheck $(DIR)/onde-en.txt --langs $(LANGS)
 
 # The previous evaluator's totals, from evals/. Kept beside SCORES-jev.txt as its record;
 # not in all:, since evaluate no longer writes evals/.

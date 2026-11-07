@@ -1,5 +1,5 @@
 import argparse
-from trtools import evaluate, aggregate, term, translate, batch, review, trend, summary, jev
+from trtools import evaluate, aggregate, term, translate, batch, review, trend, summary, jev, langcheck
 
 def main():
     parser = argparse.ArgumentParser(
@@ -14,6 +14,7 @@ def main():
 
     evaluate.add_parser(subparsers)
     jev.add_parser(subparsers)
+    langcheck.add_parser(subparsers)
     aggregate.add_parser(subparsers)
     trend.add_parser(subparsers)
     term.add_parser(subparsers)
