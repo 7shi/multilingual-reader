@@ -130,7 +130,9 @@ def read_langcheck(path):
         if record["lang"] in records:
             raise SystemExit(f"{path}:{n}: {record['lang']} appears twice")
         records[record["lang"]] = record
-    return records
+    # Settled `review` verdicts from the -resolved file beside it.
+    from .langcheck import apply_resolutions
+    return apply_resolutions(path, records)
 
 
 def aggregate_jev(path, prefix, langcheck=None):

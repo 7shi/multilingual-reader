@@ -28,9 +28,10 @@ Using the target model, manually create `onde/{model}/tr/onde-{lang}.txt` for ea
 
 ### 3.1 Running `make`
 
-Run `make` in `onde/{model}/`. If translated files are already in place in `tr/`, the translation phase is entirely skipped, and only evaluation, aggregation, and trend generation (`evaluate` → `scores-jev` → `trends-jev`) run. Jev's evaluations are output to `jev.jsonl`, scores to `SCORES-jev.txt`, and the trend column to `TREND-jev.jsonl`. `evaluate` calls TypeSafe's API, which is billed.
+Run `make` in `onde/{model}/`. If translated files are already in place in `tr/`, the translation phase is entirely skipped, and only evaluation, the language check, aggregation, and trend generation (`evaluate` → `langcheck` → `scores-jev` → `trends-jev`) run. Jev's evaluations are output to `jev.jsonl`, scores to `SCORES-jev.txt`, and the trend column to `TREND-jev.jsonl`. `evaluate` calls TypeSafe's API, which is billed.
 
 ### 3.2 Checking Scores and Evaluation Logs
+- **Settle the language check's `review` languages first.** `langcheck` ends by listing any language it could not decide ("to read and settle with --resolve"); `agg` notes each on stderr as well. A `review` keeps its score until settled. After the run, Claude reads each such translation, decides whether it is in the target language, and records it in `onde/{model}/` with `uv run trtools langcheck --resolve <lang> {ok|wrong} --reason "<what the text is>"`, then reruns `make scores-jev trends-jev` there. The decision goes to `langcheck-resolved.jsonl`, survives a re-run of the check, and stops `agg` if the check of that language later changes (the text has to be read again).
 - Check the output scores (`SCORES-jev.txt`).
 - Jev returns scores without prose, so there are no evaluation logs to read. Read the translations (text files under `tr/`) alongside each language's per-criterion levels in `jev.jsonl` and its trend column to understand the specific issues (terminology accuracy, unnatural literal translation, garbled text, speaker-tag dropout, hallucinations such as system-prompt or other-language contamination, etc.). `trends-jev` prints the comment each trend phrase was written from while it runs; it is not saved.
 

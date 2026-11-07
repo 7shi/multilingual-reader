@@ -380,6 +380,8 @@ The fastText model is `lid.176.ftz` from <https://dl.fbaipublicfiles.com/fasttex
 | `--attempts` | `3` | Attempts per Jev request |
 | `--timeout` | `120` | Per-request timeout in seconds |
 | `--force` | false | Re-check every language, discarding the existing file |
+| `--resolve LANG VERDICT` | none | Settle a `review` language as `ok` or `wrong` after reading the translation, and exit. Needs `--reason`; `original` and `--langs` are not needed |
+| `--reason` | none | With `--resolve`, what the text was found to be |
 
 ### Output
 
@@ -393,6 +395,14 @@ The fastText model is `lid.176.ftz` from <https://dl.fbaipublicfiles.com/fasttex
 - `verdict` is `ok`, `wrong` or `review`; `stage` is the stage that decided; `detected` is the language that stage saw most of
 - `scheme` hashes everything that determines a verdict, the fastText model file included. As with `jev`, a file on another scheme stops the run; `--force` re-checks it
 - `english_lines` is the share of long lines fastText reads as English, recorded but not used: in the corpus it marks collapsing texts rather than wrong languages
+
+### Settling `review`
+
+A `review` keeps its score and is listed at the end of each run. Once the translation has been read, `--resolve` records the decision in `<stem>-resolved.jsonl` beside `-o` (`langcheck-resolved.jsonl` by default), together with the check it was made against. `agg --jev`, `trend --jev` and the run's report apply it; a resolution whose check no longer matches (the text or the scheme changed) stops them until the language is read again.
+
+```bash
+uv run trtools langcheck --resolve ia wrong --reason "Written in Latin"
+```
 
 ### Examples
 

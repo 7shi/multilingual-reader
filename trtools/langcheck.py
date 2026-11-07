@@ -99,9 +99,15 @@ def add_parser(subparsers):
         "langcheck", help="Check that each translation is in its target language "
                           "(fastText, then TypeSafe Jev where it is unsure), writing one "
                           "JSONL record per language")
-    parser.add_argument("original", help="Original text file")
-    parser.add_argument("--langs", nargs="+", required=True,
+    parser.add_argument("original", nargs="?",
+                        help="Original text file (not needed with --resolve)")
+    parser.add_argument("--langs", nargs="+",
                         help="Target language codes to check")
+    parser.add_argument("--resolve", nargs=2, metavar=("LANG", "VERDICT"),
+                        help="Settle a `review` language as ok or wrong after reading it, "
+                             "recorded in the -resolved file beside -o, and exit")
+    parser.add_argument("--reason",
+                        help="With --resolve, what the text was found to be")
     parser.add_argument("-f", "--from", dest="from_lang", default="English",
                         help="Source language (default: English)")
     parser.add_argument("--tr-dir", default="tr",
@@ -271,7 +277,48 @@ def jev_verdict(p_target):
     return "ok"
 
 
+def resolved_path(path):
+    """The file of settled `review` verdicts beside a check file."""
+    path = Path(path)
+    return path.with_name(f"{path.stem}-resolved{path.suffix}")
+
+
+def snapshot(record):
+    """What a resolution was made against. A rerun on a changed text, or on another
+    scheme, gives another snapshot, so the resolution no longer applies."""
+    return {k: record.get(k) for k in ("scheme", "fasttext", "p_target", "probabilities")}
+
+
+def resolve(args):
+    """Record that a `review` language was read and found ok or wrong."""
+    lang, verdict = args.resolve
+    if verdict not in ("ok", "wrong"):
+        raise SystemExit(f"a review resolves to ok or wrong, not {verdict!r}")
+    if not args.reason:
+        raise SystemExit("--resolve needs --reason, saying what the text was found to be")
+    out_path = Path(args.output_file)
+    records = {r["lang"]: r for r in read_records(out_path)} if out_path.is_file() else {}
+    record = records.get(lang)
+    if record is None:
+        raise SystemExit(f"{out_path}: {lang} has not been checked")
+    if record["verdict"] != "review":
+        raise SystemExit(f"{out_path}: {lang} is {record['verdict']}, not review")
+    path = resolved_path(out_path)
+    kept = [r for r in read_records(path) if r["lang"] != lang] if path.is_file() else []
+    kept.append({"lang": lang, "verdict": verdict, "reason": args.reason,
+                 "check": snapshot(record)})
+    path.write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in kept),
+                    encoding="utf-8")
+    print(f"{path}: {lang} resolved as {verdict}")
+
+
 def run(args):
+    if args.resolve:
+        resolve(args)
+        return
+    if not args.original or not args.langs:
+        raise SystemExit("the original text file and --langs are required "
+                         "unless --resolve is given")
     original = Path(args.original)
     original_text = original.read_text(encoding="utf-8").rstrip()
     out_path = Path(args.output_file)
@@ -295,8 +342,8 @@ def run(args):
             raise SystemExit(f"no translation at {tr_file}")
         pending.append((lang, tr_file))
 
-    print(f"{out_path}: {len(done)} of {len(args.langs)} languages already checked, "
-          f"{len(pending)} to go, on {scheme}.")
+    print(f"{out_path}: {len(args.langs) - len(pending)} of {len(args.langs)} languages "
+          f"already checked, {len(pending)} to go, on {scheme}.")
     if not pending:
         report(out_path)
         return
@@ -309,8 +356,8 @@ def run(args):
     try:
         ui = StatusLine(label=pending[0][0], left_count=True)
         with contextlib.ExitStack() as stack, \
-                ui.progress(len(args.langs), start=len(done)) as prog:
-            for offset, (lang, tr_file) in enumerate(pending, len(done) + 1):
+                ui.progress(len(args.langs), start=len(args.langs) - len(pending)) as prog:
+            for offset, (lang, tr_file) in enumerate(pending, len(args.langs) - len(pending) + 1):
                 prog.update(offset - 1, label=lang)
                 started = time.monotonic()
                 text = tr_file.read_text(encoding="utf-8").rstrip()
@@ -371,13 +418,37 @@ def run(args):
         print_today_totals(usage_path, models=[args.model])
 
 
+def apply_resolutions(path, records):
+    """{lang: record} with each settled `review` replaced by its resolution.
+
+    A resolution made against another check of the language (the text or the scheme
+    changed since) stops here: the text has to be read again.
+    """
+    rpath = resolved_path(path)
+    if not rpath.is_file():
+        return records
+    for res in read_records(rpath):
+        record = records.get(res["lang"])
+        if record is None or snapshot(record) != res["check"]:
+            raise SystemExit(f"{rpath}: {res['lang']} was resolved against another check "
+                             f"of it; read it again and re-resolve, or remove the line")
+        records[res["lang"]] = dict(record, verdict=res["verdict"],
+                                    resolved=res["reason"])
+    return records
+
+
 def report(path):
-    """One line per language that did not pass."""
-    flagged = [r for r in read_records(path) if r["verdict"] != "ok"]
+    """One line per language that did not pass; a `review` still unsettled says so."""
+    records = apply_resolutions(path, {r["lang"]: r for r in read_records(path)})
+    flagged = [r for r in records.values() if r["verdict"] != "ok" or "resolved" in r]
     if not flagged:
         print(f"{path}: every language ok")
         return
     for r in flagged:
         p = f", Jev P(target) {r['p_target']:.2f}" if "p_target" in r else ""
+        note = f"; resolved: {r['resolved']}" if "resolved" in r else ""
         print(f"{path}: {r['lang']} {r['verdict']} ({r['stage']}, "
-              f"detected {r['detected']}{p})")
+              f"detected {r['detected']}{p}{note})")
+    pending = [r["lang"] for r in flagged if r["verdict"] == "review"]
+    if pending:
+        print(f"{path}: to read and settle with --resolve: {' '.join(pending)}")

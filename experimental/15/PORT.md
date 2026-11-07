@@ -13,6 +13,9 @@ score (section 3.5); fastText's lid.176 does (section 3.6). Step 1 is redone aro
 the four `wrong` translations total 0 in `SCORES-jev.txt`, `TREND-jev.jsonl`, the model
 READMEs and the comparison in examples/tr/README.md. The reference translations in
 examples/evals/ are checked too (`batch.sh`): all 20 `ok` by fastText alone.
+`review` is settled by reading the text after the run (Claude, at the user's direction)
+and recording it with `trtools langcheck --resolve`; `gemma4-e2b`'s ia, Latin like
+`gemma4-e4b`'s, was the first, and is now 0 too.
 
 ---
 
