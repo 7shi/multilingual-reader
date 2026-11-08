@@ -23,8 +23,20 @@ TRANSLATE = uv run trtools batch \
 
 all: translate evaluate langcheck scores-jev trends-jev
 
+# A model that trtools translate cannot drive sets its own TRANSLATE_CMD.
+TRANSLATE_CMD ?= $(TRANSLATE) --tr-only -m $(TRANSLATOR)
+
 translate:
-	$(TRANSLATE) --tr-only -m $(TRANSLATOR)
+	$(TRANSLATE_CMD)
+
+# PLaMo 3 Translate (each size): trtools translate's instructions, glossary and summary
+# messages do not fit the model's chat template, so the whole text goes in one request per
+# language with the glossary as a template variable. A PLaMo Makefile sets, after the
+# include, TRANSLATE_CMD = $(PLAMO_TRANSLATE) and LANGS = $(PLAMO_LANGS).
+PLAMO_TRANSLATE = uv run trtools plamo $(DIR)/onde-en.txt \
+	--terms-dir ../../terms \
+	--langs $(LANGS) \
+	-m $(TRANSLATOR)
 
 # Jev, one run per language, appended to jev.jsonl. evals/ and TRENDS.jsonl are the
 # previous evaluator's record (ollama:qwen3.6, three runs each) and are no longer written.

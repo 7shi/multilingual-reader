@@ -32,6 +32,24 @@ def load_onde_models() -> tuple[str, ...]:
 
 
 ONDE_MODELS = load_onde_models()
+
+
+COMMON_MK = ROOT / "common.mk"
+LANGS_RE = re.compile(r"^(CORE_LANGS|EXTRA_LANGS)\s*=\s*((?:.*\\\n)*.*)$", re.MULTILINE)
+
+
+def load_corpus_codes() -> frozenset[str]:
+    """The corpus's languages, CORE_LANGS + EXTRA_LANGS. A model that translates others
+    (plamo-3-translate-0.8b, into its supported languages) has them cut from the
+    comparison, and the corpus languages it lacks count as 0."""
+    text = COMMON_MK.read_text(encoding="utf-8")
+    found = {name: value for name, value in LANGS_RE.findall(text)}
+    if set(found) != {"CORE_LANGS", "EXTRA_LANGS"}:
+        raise ValueError(f"CORE_LANGS and EXTRA_LANGS not found in {COMMON_MK}")
+    return frozenset(" ".join(found.values()).replace("\\", " ").split())
+
+
+CORPUS_CODES = load_corpus_codes()
 # --jev reads Jev's totals; without it, the previous evaluator's (qwen3.6, median of three),
 # which stay beside them as the old scale's record. Set in main().
 JEV = False
@@ -52,7 +70,7 @@ def core_score_file() -> Path:
 CORE_TOPICS = ("finetuning", "transformer", "momentum")
 CORE_ONDE_MODEL = "gemma4"
 CORE_CODES = ("ja", "zh", "es", "fr", "de")
-LINE_RE = re.compile(r"^([a-z0-9.]+)-([a-z0-9.]+):\s+(\d+(?:\.\d+)?)$")
+LINE_RE = re.compile(r"^([a-z0-9.]+)-([a-z0-9.-]+):\s+(\d+(?:\.\d+)?)$")
 README_FILE = ROOT / "README.md"
 GRAPH_OUTPUT = ROOT / "compare" / "MODELS.png"
 GRAPH_SVG_OUTPUT = ROOT / "MODELS.svg"
@@ -97,7 +115,7 @@ def load_compare_rows() -> list[CompareRow]:
         model: parse_scores(onde_score_file(model)) for model in ONDE_MODELS
     }
     code_sets = {
-        model: {code for prefix, code in scores if prefix == "onde"}
+        model: {code for prefix, code in scores if prefix == "onde" and code in CORPUS_CODES}
         for model, scores in per_model_scores.items()
     }
     all_codes = set().union(*code_sets.values())
