@@ -7,11 +7,13 @@ KEEP        = 5
 TOPICS      = finetuning transformer onde momentum
 CORE_FLAGS  = $(foreach l,$(CORE_LANGS),-t $(l))
 EXTRA_FLAGS = $(foreach l,$(EXTRA_LANGS),-t $(l))
+PLAMO_ONLY  = $(filter-out $(CORE_LANGS) $(EXTRA_LANGS),$(PLAMO_LANGS))
+PLAMO_FLAGS = $(foreach l,$(PLAMO_ONLY),-t $(l))
 CMD         = uv run trtools term
 
-.PHONY: all common core extra $(TOPICS)
+.PHONY: all common core extra plamo $(TOPICS)
 
-all: common core extra
+all: common core extra plamo
 
 common:
 	$(CMD) translate -o $@.tsv $@.json $(EXTRA_FLAGS) -m "$(MODEL)" --no-think
@@ -26,3 +28,10 @@ $(TOPICS): %: ../../%-fr.txt ../../%-en.txt
 
 extra: onde-en.json
 	$(CMD) translate -o onde-en.tsv $< $(EXTRA_FLAGS) -m "$(MODEL)" --no-think -c common.tsv
+
+# The languages PLaMo 3 Translate supports outside the corpus (../common.mk), for its
+# glossary: common.tsv first, so that onde-en.tsv takes the shared names from it.
+plamo: MODEL = gpt-6-luna
+plamo: onde-en.json
+	$(CMD) translate -o common.tsv common.json $(PLAMO_FLAGS) -m "$(MODEL)" --no-think
+	$(CMD) translate -o onde-en.tsv $< $(PLAMO_FLAGS) -m "$(MODEL)" --no-think -c common.tsv
