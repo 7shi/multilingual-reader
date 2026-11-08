@@ -6,7 +6,7 @@ MODELS = gemma4 gemma4-31b gemma4-12b gemma4-e4b gemma4-e2b gpt-oss \
 		 gemini-3.5-flash-lite gemini-2.5-flash gemini-3-flash gemini-3.7-flash \
 		 deepseek-v4.1-flash haiku-5.5 glm-5.3 nemotron-3.5-super-vl \
 		 ox-alpha union-alpha space-bunny-alpha crouton-alpha \
-		 plamo-3-translate-0.8b
+		 plamo-3-translate-0.8b plamo-3-translate-2b plamo-3-translate-8b plamo-3-translate-31b
 
 .PHONY: all langcheck $(MODELS)
 

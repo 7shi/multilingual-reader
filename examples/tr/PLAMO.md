@@ -9,7 +9,7 @@ The first run, of 0.8B over every corpus language, is kept in [experimental/16](
 - **Languages**: `PLAMO_LANGS` in [common.mk](common.mk), every language the model card lists as supported except the source English. It includes some languages the corpus lacks (`zh-hant ceb gu jv kk pa uz`). The corpus's `zh` is sent as `zh-hans`.
 - **Context**: `llama-server -c 32768 --jinja --no-prefill-assistant`. 32,768 tokens is the model card's training length for input and output combined; going past it is not done, since the model is not known to work there. Splitting the text in two, for a model or server that cannot hold that much, is on hold.
 - **Line alignment**: PLaMo is not meant to translate line by line, so dropped, repeated or split lines and runaway repetition are kept as they are, as part of its performance. They are not fixed, retranslated or excluded.
-- **Glossary**: the languages the corpus lacks have no column in [terms/onde-en.tsv](terms/onde-en.tsv) yet, so they are translated without a glossary for now. Columns for them are to be added with `trtools term translate`, and those languages translated again.
+- **Glossary**: the target language's whole column of [terms/onde-en.tsv](terms/onde-en.tsv). The columns for the languages the corpus lacks were added for PLaMo (`make plamo` in [terms/](terms/)), translated by gpt-6-luna and proofread.
 
 ## 1. Every Size of PLaMo 3 Translate
 
