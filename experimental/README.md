@@ -146,3 +146,9 @@ Building on the results of experiments 06–09, the third-party-review approach 
   - **Asked directly, Jev cannot say that plain English is English** (0.57 as `Noul`, 0.62 as `Choice`), while qwen3.6's yes/no rejected 3 of 67 correct translations and its pick-from-list 1 (Interlingua as Esperanto). A Jev `Choice` between English and the target rejected none
   - **The gate that holds**: a Jev `Choice` over the target, the languages it is confused with, English and `Other`, flagging the target below 0.5. The confusable languages come from one pass over all 69 options; 48 of 67 targets have none. It flags all five mislabelled texts, including Croatian as Serbian, and only `bonsai2-27b`'s `fi` (the English source) among 134 correctly labelled translations
   - It runs as a request of its own, so `SCHEME_ID` and the scores on disk stay as they are; the port into `trtools` is not started
+
+- **[16/](16/)**: PLaMo 3 Translate 0.8B over all 67 target languages, against the 53 languages its model card lists. The model is driven through its chat template's variables (`trtools plamo`), one request per language for the whole text
+  - **The list holds**: of the 23 corpus languages outside it, 20 came out in another language — a related one (Portuguese as Spanish, Ukrainian as Polish) or an unrelated script (Turkish as Korean, Lao as Hebrew) — and the language check zeroed them. Chinese came through as Simplified under `zh`, which is not the model's code (`zh-hans`)
+  - The check missed two: Albanian mixed with Cebuano and Serbo-Croatian passed as Albanian, and a one-line collapse in Kannada passed on its script (Jev scores it 1.7)
+  - Among the listed languages, Serbian came out mostly Serbian with Croatian forms and was zeroed as Croatian, and five were cut off by the server's 16,384-token context (Khmer, Burmese, Telugu, Malayalam, Sinhala), whose scripts take many tokens
+  - The benchmark now translates only the listed languages
