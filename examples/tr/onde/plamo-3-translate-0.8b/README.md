@@ -17,9 +17,9 @@ The translations under `tr/` are outputs of PLaMo 3 Translate 0.8B (`plamo-3-tra
 
 The other models translate line by line with summary and glossary messages (`trtools translate`). Those messages do not fit this model's chat template, which skips system messages and reads every user/assistant pair as a source/translation example, so the options go in its template variables instead. `zh` is sent as the model's `zh-hans`.
 
-The seven languages outside the corpus have no column in the term TSV yet, so they were translated without a glossary; columns for them are planned ([PLAMO.md](../../PLAMO.md)).
+The term TSV's columns for the seven languages outside the corpus were added for this model, translated by gpt-6-luna and proofread, where the other columns were translated by gemma4-31b. Those seven were first translated without a glossary and then again with it; the results here are the second run.
 
-The model is not meant to translate line by line, so its output is kept as it came, even where the lines no longer match the source's 99: Burmese and Punjabi skip a long stretch of the dialogue and end naturally, Gujarati translates the closing passage early and repeats two of its lines, Kazakh, Telugu, and Sinhala end in a loop repeating one phrase, and Armenian splits a line. The scores include these.
+The model is not meant to translate line by line, so its output is kept as it came, even where the lines no longer match the source's 99: Burmese skips a long stretch of the dialogue and ends naturally, Telugu and Sinhala end in a loop repeating one phrase, Gujarati, from around line 80, repeats the same three lines (a back-channel `Hmm.` and two of Luc's lines from the closing passage) until the output stops, at 141 lines, and Armenian splits a line. The scores include these.
 
 The language check left Serbian and Traditional Chinese for review, and both were settled as in the target language (`langcheck-resolved.jsonl`): the Serbian is in Latin script with some Croatian forms (`točno`, `što`), and the Traditional Chinese uses no simplified characters.
 
@@ -35,18 +35,17 @@ Guide: high quality (90+), practical range (80-89), medium quality (60-79), crit
 | Vietnamese | 77.2 | Inconsistent tone and awkward phrasing |
 | Spanish | 77.0 | Awkward phrasing and grammatical errors |
 | Hungarian | 76.5 | Significant grammatical and stylistic issues |
+| Javanese | 75.9 | Mixes formal terms with awkward informal phrasing |
 | Indonesian | 74.3 | Awkward and unnatural phrasing |
 | French | 73.2 | Lexical errors and unnatural phrasing |
 | Malay | 73.1 | Severe terminology and syntax errors |
-| Javanese | 72.7 | Severe lexical errors and non-existent words |
 | Dutch | 71.8 | No shortcoming mentioned |
 | Georgian | 71.7 | Significant fluency and syntax issues |
-| Chinese (Traditional) | 70.7 | Notable technical slip-up and linguistic stiffness |
+| Chinese (Traditional) | 70.5 | Role reversal and physics errors |
 | Japanese | 70.1 | Scientifically incorrect Abbe limit definition |
 | Swahili | 69.7 | Significant scientific terminology errors and mistranslation of key concepts like "coherent" as "interaction" |
 | Arabic | 69.0 | High frequency of errors |
 | Thai | 68.6 | Catastrophic gender consistency and speaker role swapping |
-| Cebuano | 68.2 | Fluent mixing of English and Cebuano |
 | Croatian | 67.7 | Severe grammatical and terminology errors |
 | Chinese | 67.5 | Lacks fluency and natural flow |
 | Korean | 67.4 | Critical physics terminology errors |
@@ -55,11 +54,14 @@ Guide: high quality (90+), practical range (80-89), medium quality (60-79), crit
 | German | 65.5 | Pervasive grammatical flaws and unnatural phrasing |
 | Polish | 65.4 | Severe physics terminology and grammar errors |
 | Hindi | 64.5 | Severe technical and grammatical errors |
+| Cebuano | 64.3 | Major terminological errors |
 | Khmer | 63.8 | Inconsistent terminology and awkward phrasing |
 | Nepali | 62.8 | Critical speaker attribution errors and technical inaccuracies |
+| Punjabi | 62.0 | Severe glossing and terminology errors |
 | Slovene | 60.8 | Pervasive grammatical and terminology errors |
 | Marathi | 60.1 | Critical mistranslation of "matter" as "India" |
 | Urdu | 59.2 | Inaccurate technical terminology and poor grammar |
+| Uzbek | 59.2 | Severe lexical and grammatical errors |
 | Azerbaijani | 57.5 | Severe errors and non-Azerbaijani characters |
 | Bengali | 57.1 | Catastrophic lexical and grammatical failures |
 | Hebrew | 57.0 | Systematic lexical errors and gibberish |
@@ -69,17 +71,15 @@ Guide: high quality (90+), practical range (80-89), medium quality (60-79), crit
 | Latvian | 54.1 | Severe grammatical and vocabulary errors |
 | Tamil | 53.8 | Pervasive grammatical errors and syntactic awkwardness |
 | Armenian | 53.4 | Severe linguistic unnaturalness and mechanical errors |
+| Kazakh | 53.2 | Invented words and severe terminology errors |
 | Tagalog | 52.0 | Severe grammatical errors and Taglish mixing |
 | Lithuanian | 51.9 | Catastrophic terminology errors |
 | Belarusian | 51.8 | Severe lexical and grammatical errors throughout |
 | Basque | 51.5 | Severe grammatical and semantic errors |
-| Uzbek | 51.5 | Severe spelling and terminology errors |
 | Estonian | 51.0 | Severe structural and lexical failures |
 | Persian | 50.6 | Severe physics terminology errors and hallucinations |
-| Gujarati | 49.5 | Severe terminology errors and hallucinations |
 | Burmese | 40.7 | Severe incompleteness and logical gaps |
 | Malayalam | 40.1 | Severe hallucination and repetition |
-| Punjabi | 39.0 | Severe terminology and structural errors |
+| Gujarati | 38.7 | Severe infinite text loop and abrupt truncation |
 | Telugu | 38.4 | Abruptly cuts off with repetitive nonsense |
-| Kazakh | 35.6 | Severe repetition errors leading to gibberish |
 | Sinhala | 33.4 | Incomplete and inaccurate with many errors |
