@@ -67,6 +67,7 @@ Both models can occasionally drop the speaker tag on short acknowledgment lines 
 |---|---|
 | [`summary`](#summary) | Pre-generate a summary of the original text (cache for `translate`) |
 | [`translate`](#translate) | Translate text line by line |
+| [`plamo`](#plamo) | Translate a whole text with PLaMo 3 Translate (one request per language) |
 | [`review`](#review) | Polish a translation via third-party review |
 | [`eval`](#eval) | Evaluate translation quality on 5 criteria |
 | [`jev`](#jev) | Evaluate translation quality with TypeSafe's Jev (one run per language) |
@@ -166,6 +167,34 @@ uv run trtools translate finetuning-fr.txt -f fr -t es \
   --threshold 10 --keep 5 --no-think \
   --terms-json terms/finetuning-fr.json \
   --terms-tsv terms/finetuning-fr.tsv
+```
+
+---
+
+## plamo
+
+Translates a whole text with PLaMo 3 Translate, one request per language, through llm7shi's `Client.plamo3translate()`. `translate` cannot drive this model: its chat template skips system messages and reads every user/assistant pair as a source/translation example, so `translate`'s instructions, glossary and summary messages would be translated or taken as history. The options go in the template's variables instead (`target_lang`, `source_lang`, `glossary`).
+
+The source language comes from the input filename (`onde-en.txt` -> `en`). `zh` is sent as the model's `zh-hans`; other codes are sent as they are, whether or not the model lists them. The glossary is the target language's whole column of `{topic}-{source}.tsv` in `--terms-dir`; with no column for the language, the text is translated without one. Each translation goes to `{tr-dir}/{topic}-{lang}.txt`, and a language whose file exists is skipped. A line count different from the source's, or a stop by repetition or by length, is reported as a warning and the translation is saved. The outputs are under the [PLaMo Community License](https://plamo.preferredai.jp/info/plamo-community-license-en), which requires them to be marked as outputs of the model when distributed.
+
+```
+uv run trtools plamo <input_file> --langs <lang...> [options]
+```
+
+### Options
+
+| Option | Default | Description |
+|---|---|---|
+| `--langs` | (required) | Target language codes, sent as `target_lang` |
+| `-m`, `--model` | `llama.cpp:` | Model with vendor prefix; the server comes from `OPENAI_BASE_URL` |
+| `--terms-dir` | none | Directory of term TSVs (no glossary if omitted) |
+| `--tr-dir` | `tr` | Translation output directory |
+
+### Example
+
+```bash
+# llama-server -m plamo-3-translate-0.8b-Q4_K_M.gguf -c 16384 --jinja --no-prefill-assistant
+uv run trtools plamo ../../../onde-en.txt --terms-dir ../../terms --langs ja fr zh
 ```
 
 ---
@@ -356,7 +385,7 @@ uv run trtools langcheck <original> --langs <lang...> [options]
 Three stages; the first that decides wins ([experimental/15/PORT.md](../experimental/15/PORT.md) section 3.7 is the design and what it was chosen on):
 
 1. **copy**: half or more of the lines (speaker label stripped) are verbatim lines of the original — `wrong`. No model.
-2. **fasttext**: fastText's `lid.176` over the whole text, locally. Its top language decides when it is the target (`ok`), or a language outside the target's group with probability 0.5 or more (`wrong`).
+2. **fasttext**: fastText's `lid.176` over the whole text, locally. Its top language decides when it is the target (`ok`), or a language outside the target's group with probability 0.5 or more (`wrong`). `lid.176` has one `zh` for both scripts, so for Traditional Chinese (`zh-hant`) a fastText `ok` is only `review`, to read and settle with `--resolve`.
 3. **jev**: only what fastText leaves open, as a Jev `Choice`. A target in a group of close languages (hr/sr, ms/id, da/no), which fastText cannot tell apart, is asked among the group's members. A text whose top language fastText gives only weakly is asked over the target, fastText's top three, the source language and `Other`. P(target) below 0.3 is `wrong`, below 0.5 `review`, otherwise `ok`. Needs `TYPESAFE_API_KEY`; a run whose languages fastText settles makes no request.
 
 The fastText model is `lid.176.ftz` from <https://dl.fbaipublicfiles.com/fasttext/supervised-models/>, read from `--lid-model`, else `$TRTOOLS_LID_MODEL`, else `.cache/lid.176.ftz` at the project root (gitignored).

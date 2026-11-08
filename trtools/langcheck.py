@@ -52,6 +52,10 @@ LID_NAMES = {
     "jv": "Javanese", "su": "Sundanese", "war": "Waray", "ceb": "Cebuano", "kw": "Cornish",
     "qu": "Quechua", "pms": "Piedmontese", "jbo": "Lojban", "yi": "Yiddish",
 }
+# Targets that lid.176 labels with another code. It has one `zh` for both scripts, so a
+# fastText `ok` for these is only a `review`, read and settled with --resolve. Left out of
+# the scheme ID: it decides only languages that no earlier record has.
+LID_CODES = {"zh-hant": "zh"}
 FT_SURE = 0.5
 FT_TOP_N = 3
 
@@ -362,11 +366,14 @@ def run(args):
                 started = time.monotonic()
                 text = tr_file.read_text(encoding="utf-8").rstrip()
                 share = round(copy_share(original_text, text), 4)
-                top, p_lid, english = lid.read(text, lang)
+                lid_code = LID_CODES.get(lang, lang)
+                top, p_lid, english = lid.read(text, lid_code)
                 record = {"lang": lang, "scheme": scheme, "copy_share": share,
                           "fasttext": {"top": top, "p_target": p_lid},
                           "english_lines": english}
-                verdict = fasttext_verdict(lang, top)
+                verdict = fasttext_verdict(lid_code, top)
+                if verdict == "ok" and lang in LID_CODES:
+                    verdict = "review"
                 if share >= COPY_SHARE:
                     record.update(verdict="wrong", stage="copy",
                                   detected=args.from_lang)
