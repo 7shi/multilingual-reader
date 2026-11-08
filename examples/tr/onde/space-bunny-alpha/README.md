@@ -8,7 +8,7 @@ Target languages: `CORE_LANGS` + `EXTRA_LANGS` defined in [common.mk](../../comm
 
 `make` runs translation, evaluation, aggregation, and the trend column in one batch. Translations go to `tr/`, Jev's evaluations to `jev.jsonl`, scores to `SCORES-jev.txt`, and the trend column to `TREND-jev.jsonl`. `jev-1.13.0/` holds the same three files from jev-1.13.0, kept frozen.
 
-- Translation model: space-bunny-alpha
+- Translation model: space-bunny-alpha (MiniMax-M3.1-Flash stealth)
 - Evaluation model: jev-1.14.0 (jev-1.13.0 before it)
 - Trend column: written by qwen3.6 from Jev's scores
 - Settings: threshold=20, keep=5, no CoT, term file injection (`../../terms/*-en.{json,tsv}`)

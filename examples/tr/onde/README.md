@@ -37,7 +37,7 @@ Translates and evaluates the onde text with each model.
 - [nemotron-3.5-super-vl](nemotron-3.5-super-vl/) (120B-A12B MoE)
 - [ox-alpha](ox-alpha/) (glm-5.3-flash stealth 320B-A18B)
 - [union-alpha](union-alpha/) (Pareto 26.9 stealth, a router over several models)
-- [space-bunny-alpha](space-bunny-alpha/) (stealth)
+- [space-bunny-alpha](space-bunny-alpha/) (MiniMax-M3.1-Flash stealth 428B-A23B)
 - [crouton-alpha](crouton-alpha/) (stealth)
 
 Every model is evaluated by TypeSafe's Jev, one run per language, into `{model}/jev.jsonl`; `SCORES-jev.txt` and the trend column (`TREND-jev.jsonl`) come from it. The evaluator was previously `ollama:qwen3.6` with the median of three runs, and its record remains beside them as `{model}/evals/`, `SCORES.txt`, and `TRENDS.jsonl`. `generate_compare_rows.py` and `plot_comparison.py` read that record unless given `--jev`, which `examples/tr/Makefile` passes. The evaluator is pinned to `jev-1.14.0`; each `{model}/jev-1.13.0/` keeps the same three files from `jev-1.13.0`, frozen. See [JEV.md](JEV.md) for the first run over the corpus and what it measured, and [JEV-1.14.md](JEV-1.14.md) for the move to `jev-1.14.0`.
