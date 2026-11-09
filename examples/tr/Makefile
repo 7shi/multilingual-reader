@@ -42,9 +42,11 @@ GPTOSS     = -i gpt-oss -l "GPT-OSS 120B"
 sync:
 	uv run generate_compare_rows.py compare --jev --sync
 	uv run generate_compare_rows.py core --jev --sync
+	uv run generate_compare_rows.py plamo --jev --sync
 
 compare:
 	uv run generate_compare_rows.py graph --jev
+	uv run generate_compare_rows.py graph --jev --plamo
 	uv run plot_comparison.py --jev -o compare/gemini35fl.png $(GEMINI35FL) $(GEMINI25F) $(GEMMA4) $(GEMMA4_31B) $(GEMINI3F)
 	uv run plot_comparison.py --jev -o compare/gemini25f.png $(GEMINI25F) $(GEMINI35FL) $(GEMMA4) $(GEMMA4_31B) $(GEMINI3F)
 	uv run plot_comparison.py --jev -o compare/gemma4.png $(GEMMA4) $(GEMINI35FL) $(GEMINI25F) $(GEMMA4_31B) $(GEMINI3F)

@@ -20,18 +20,21 @@ matplotlib.rcParams["svg.hashsalt"] = "tr-compare-models-chart"
 
 ROOT = Path(__file__).resolve().parent
 ONDE_MAKEFILE = ROOT / "onde" / "Makefile"
+PLAMO_MAKEFILE = ROOT / "plamo" / "Makefile"
 MODELS_RE = re.compile(r"^MODELS\s*=\s*((?:.*\\\n)*.*)$", re.MULTILINE)
 
 
-def load_onde_models() -> tuple[str, ...]:
-    text = ONDE_MAKEFILE.read_text(encoding="utf-8")
+def load_models(makefile: Path) -> tuple[str, ...]:
+    text = makefile.read_text(encoding="utf-8")
     match = MODELS_RE.search(text)
     if match is None:
-        raise ValueError(f"MODELS assignment not found in {ONDE_MAKEFILE}")
+        raise ValueError(f"MODELS assignment not found in {makefile}")
     return tuple(match.group(1).replace("\\", " ").split())
 
 
-ONDE_MODELS = load_onde_models()
+ONDE_MODELS = load_models(ONDE_MAKEFILE)
+# plamo/ (../PLAMO.md): PLaMo's own languages, compared only among themselves.
+PLAMO_MODELS = load_models(PLAMO_MAKEFILE)
 
 
 COMMON_MK = ROOT / "common.mk"
@@ -62,6 +65,10 @@ def onde_score_file(model: str) -> Path:
     return ROOT / "onde" / model / score_file_name()
 
 
+def plamo_score_file(model: str) -> Path:
+    return ROOT / "plamo" / model / score_file_name()
+
+
 def core_score_file() -> Path:
     return ROOT / "core" / score_file_name()
 
@@ -73,15 +80,23 @@ LINE_RE = re.compile(r"^([a-z0-9.]+)-([a-z0-9.-]+):\s+(\d+(?:\.\d+)?)$")
 README_FILE = ROOT / "README.md"
 GRAPH_OUTPUT = ROOT / "compare" / "MODELS.png"
 GRAPH_SVG_OUTPUT = ROOT / "MODELS.svg"
+PLAMO_GRAPH_OUTPUT = ROOT / "compare" / "PLAMO.png"
+PLAMO_GRAPH_SVG_OUTPUT = ROOT / "PLAMO.svg"
 COMPARE_TOP = 3
 COMPARE_HEADER = "| Language | " + " | ".join(
     f"Score {i} | Model {i}" for i in range(1, COMPARE_TOP + 1)
 ) + " |"
 STATS_HEADER = "| Model | Mean | Median | Stdev | Notes |"
+PLAMO_STATS_HEADER = "| PLaMo model | Mean | Median | Stdev | Notes |"
+PLAMO_LANGS_HEADER = "| Language | " + " | ".join(
+    model.removeprefix("plamo-3-translate-").upper() for model in PLAMO_MODELS
+) + " |"
 SYNC_HEADERS = {
     "compare": COMPARE_HEADER,
     "stats": STATS_HEADER,
     "core": "| Language | finetuning |",
+    "plamo-stats": PLAMO_STATS_HEADER,
+    "plamo-langs": PLAMO_LANGS_HEADER,
 }
 
 
@@ -172,7 +187,7 @@ def compute_stats() -> dict[str, tuple[float, float, float]]:
     return stats
 
 
-def load_existing_model_notes() -> dict[str, tuple[str, str]]:
+def load_existing_model_notes(header: str = STATS_HEADER) -> dict[str, tuple[str, str]]:
     """Read model -> (model column display string, notes) from the existing stats table
     (median/stdev are ignored since they're recomputed). The model column may contain
     manually appended parenthetical notes (parameter scale, etc.), so entries are keyed
@@ -180,7 +195,7 @@ def load_existing_model_notes() -> dict[str, tuple[str, str]]:
     """
     readme_lines = README_FILE.read_text(encoding="utf-8").splitlines()
     header_idx = next(
-        (i for i, line in enumerate(readme_lines) if line == STATS_HEADER),
+        (i for i, line in enumerate(readme_lines) if line == header),
         None,
     )
     if header_idx is None:
@@ -227,10 +242,31 @@ def plot_model_stats(top: int | None = None) -> None:
             model: sorted(scores, reverse=True)[:top]
             for model, scores in per_model_scores.items()
         }
+    title = "Score distribution by model"
+    if top is not None:
+        title += f" (top {top})"
+    output = GRAPH_OUTPUT if top is None else GRAPH_OUTPUT.with_name(f"MODELS{top}.png")
+    draw_boxplot(per_model_scores, notes, title, output,
+                 GRAPH_SVG_OUTPUT if top is None else None)
 
+
+def plot_plamo_stats() -> None:
+    per_model_scores = {model: list(scores.values()) for model, scores in load_plamo_scores().items()}
+    notes = load_existing_model_notes(PLAMO_STATS_HEADER)
+    draw_boxplot(per_model_scores, notes, "Score distribution of PLaMo 3 Translate (its languages)",
+                 PLAMO_GRAPH_OUTPUT, PLAMO_GRAPH_SVG_OUTPUT)
+
+
+def draw_boxplot(
+    per_model_scores: dict[str, list[float]],
+    notes: dict[str, tuple[str, str]],
+    title: str,
+    output: Path,
+    svg_output: Path | None,
+) -> None:
     medians = {model: statistics.median(scores) for model, scores in per_model_scores.items()}
     stdevs = {model: statistics.pstdev(scores) for model, scores in per_model_scores.items()}
-    models = sorted(ONDE_MODELS, key=lambda m: (-medians[m], stdevs[m]))
+    models = sorted(per_model_scores, key=lambda m: (-medians[m], stdevs[m]))
     labels = [notes.get(m, (m, ""))[0] for m in models]
     data = [per_model_scores[m] for m in models]
 
@@ -240,21 +276,17 @@ def plot_model_stats(top: int | None = None) -> None:
     ax.invert_yaxis()
     ax.set_xlim(0, 100)
     ax.set_xlabel("Score")
-    title = "Score distribution by model"
-    if top is not None:
-        title += f" (top {top})"
     ax.set_title(title)
     ax.grid(axis="x", alpha=0.3)
     fig.tight_layout()
 
-    output = GRAPH_OUTPUT if top is None else GRAPH_OUTPUT.with_name(f"MODELS{top}.png")
     output.parent.mkdir(exist_ok=True)
     fig.savefig(output, dpi=150)
     print(f"Saved: {output}")
 
-    if top is None:
-        fig.savefig(GRAPH_SVG_OUTPUT)
-        print(f"Saved: {GRAPH_SVG_OUTPUT}")
+    if svg_output is not None:
+        fig.savefig(svg_output)
+        print(f"Saved: {svg_output}")
 
     print(f"{'label':<20} {'min':>5} {'q1':>5} {'median':>6} {'q3':>5} {'max':>5}")
     for label, stats in zip(labels, boxplot_stats(data)):
@@ -262,6 +294,53 @@ def plot_model_stats(top: int | None = None) -> None:
             f"{label:<20} {stats['whislo']:>5.0f} {stats['q1']:>5.0f} "
             f"{stats['med']:>6.0f} {stats['q3']:>5.0f} {stats['whishi']:>5.0f}"
         )
+
+
+def load_plamo_scores() -> dict[str, dict[str, float]]:
+    """Each PLaMo model's onde scores by language code, over its own languages (no cut
+    to the corpus's, and no zeros for the corpus languages it lacks)."""
+    per_model = {}
+    for model in PLAMO_MODELS:
+        scores = parse_scores(plamo_score_file(model))
+        per_model[model] = {code: score for (prefix, code), score in scores.items() if prefix == "onde"}
+    codes = {frozenset(scores) for scores in per_model.values()}
+    if len(codes) != 1:
+        raise ValueError("PLaMo models cover different languages")
+    missing_names = sorted(code for code in next(iter(codes)) if code not in LANG_NAMES)
+    if missing_names:
+        raise ValueError("missing language names in LANG_NAMES: " + ", ".join(missing_names))
+    return per_model
+
+
+def render_plamo_stats() -> list[str]:
+    per_model = load_plamo_scores()
+    notes = load_existing_model_notes(PLAMO_STATS_HEADER)
+    stats = {
+        model: (
+            statistics.mean(scores.values()),
+            statistics.median(scores.values()),
+            statistics.pstdev(scores.values()),
+        )
+        for model, scores in per_model.items()
+    }
+    rendered = [PLAMO_STATS_HEADER, "| --- | ---: | ---: | ---: | --- |"]
+    for model in sorted(PLAMO_MODELS, key=lambda m: (-stats[m][1], stats[m][2])):
+        mean, median, stdev = stats[model]
+        model_cell, remark = notes.get(model, (model, ""))
+        rendered.append(f"| {model_cell} | {mean:.2f} | {median:.2f} | {stdev:.2f} | {remark} |")
+    return rendered
+
+
+def render_plamo_langs() -> list[str]:
+    """Each language's score at every size, ordered by the last (largest) size."""
+    per_model = load_plamo_scores()
+    largest = PLAMO_MODELS[-1]
+    codes = sorted(per_model[largest], key=lambda c: (-per_model[largest][c], c))
+    rendered = [PLAMO_LANGS_HEADER, "| --- |" + " ---: |" * len(PLAMO_MODELS)]
+    for code in codes:
+        cells = [f"{per_model[model][code]:.1f}" for model in PLAMO_MODELS]
+        rendered.append(f"| {LANG_NAMES[code]} | {' | '.join(cells)} |")
+    return rendered
 
 
 def render_core_header() -> list[str]:
@@ -402,6 +481,12 @@ def main() -> int:
         action="store_true",
         help="write the generated rows into README.md's core table",
     )
+    plamo_parser = subparsers.add_parser("plamo", help="plamo/ tables (stats and per language)", parents=[scale])
+    plamo_parser.add_argument(
+        "--sync",
+        action="store_true",
+        help="write the generated rows into README.md's plamo tables",
+    )
     subparsers.add_parser("all", help="compare + stats + core tables", parents=[scale])
     graph_parser = subparsers.add_parser("graph", help="generate compare/MODELS.png (score boxplot per model)", parents=[scale])
     graph_parser.add_argument(
@@ -410,6 +495,11 @@ def main() -> int:
         default=None,
         help="use only each model's top-N languages by score (writes compare/MODELS<N>.png)",
     )
+    graph_parser.add_argument(
+        "--plamo",
+        action="store_true",
+        help="plot plamo/'s models instead (writes compare/PLAMO.png and PLAMO.svg)",
+    )
     classify_parser = subparsers.add_parser("classify", help="classify languages by score tier", parents=[scale])
     classify_parser.add_argument(
         "--overall",
@@ -417,14 +507,17 @@ def main() -> int:
         help="show overall best-score classification instead of per-model",
     )
 
-    parser.set_defaults(section="compare", sync=False, overall=False, jev=False)
+    parser.set_defaults(section="compare", sync=False, overall=False, jev=False, plamo=False)
     args = parser.parse_args()
     global JEV
     JEV = args.jev
 
     if args.section == "graph":
         try:
-            plot_model_stats(top=args.top)
+            if args.plamo:
+                plot_plamo_stats()
+            else:
+                plot_model_stats(top=args.top)
         except ValueError as exc:
             print(f"error: {exc}", file=sys.stderr)
             return 1
@@ -436,6 +529,9 @@ def main() -> int:
             stats_lines = render_stats_header() + render_stats_rows()
         elif args.section == "core":
             lines = render_core_header() + render_core_rows()
+        elif args.section == "plamo":
+            plamo_stats_lines = render_plamo_stats()
+            plamo_langs_lines = render_plamo_langs()
         elif args.section == "classify":
             lines = render_classify_rows(overall=args.overall)
         else:
@@ -466,6 +562,19 @@ def main() -> int:
             )
             return 0
         for line in compare_lines + [""] + stats_lines:
+            print(line)
+        return 0
+
+    if args.section == "plamo":
+        if args.sync:
+            sync_section("plamo-stats", plamo_stats_lines)
+            sync_section("plamo-langs", plamo_langs_lines)
+            print(
+                f"synced {len(plamo_stats_lines)} lines (plamo-stats) and "
+                f"{len(plamo_langs_lines)} lines (plamo-langs) into {README_FILE}"
+            )
+            return 0
+        for line in plamo_stats_lines + [""] + plamo_langs_lines:
             print(line)
         return 0
 

@@ -17,7 +17,7 @@ Evaluate each size the model is published in (0.8B, 2B, 8B and 31B), each as its
 
 ## 2. Kept Apart from the Other Models
 
-PLaMo's languages differ from the corpus's: put side by side with the other models in [onde/](onde/), the 22 corpus languages it does not support would count as 0 and pull it far below models it matches on its own languages. So the results under [plamo/](plamo/) are not part of the main comparison in [README.md](README.md), and are compared only with each other, on PLaMo's languages ([plamo/README.md](plamo/README.md)).
+PLaMo's languages differ from the corpus's: put side by side with the other models in [onde/](onde/), the 22 corpus languages it does not support would count as 0 and pull it far below models it matches on its own languages. So the results under [plamo/](plamo/) are not part of the main comparison in [README.md](README.md), and are compared only with each other, on PLaMo's languages, in its own section there ([PLaMo 3 Translate](README.md#plamo-3-translate-plamo)).
 
 ## 3. General Models under PLaMo's Conditions
 

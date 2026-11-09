@@ -81,6 +81,8 @@ For the other languages, see [MEMO.md](MEMO.md) and [examples/tr/README.md](exam
 
 ![Score distribution by model](examples/tr/MODELS.svg)
 
+![Score distribution of PLaMo 3 Translate](examples/tr/PLAMO.svg)
+
 The translation-evaluation framework has reached a stable level, so going forward, per-model directories are added under [examples/tr/onde/](examples/tr/onde/) and used as a language-capability benchmark. See [examples/tr/ADD_MODEL.md](examples/tr/ADD_MODEL.md) for the procedure.
 
 ## 📝 Adding data
