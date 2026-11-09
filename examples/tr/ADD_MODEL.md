@@ -55,12 +55,12 @@ Once all directories have been updated, update the top-level `examples/tr/README
 
 - Add the added model's full name (parameter scale, whether it's MoE, etc.) to the model abbreviation list at the top.
 - Insert a link to the added directory into the `onde/` description list.
-- Running `make sync` in `examples/tr/` updates the "Comparison Between Translation Models" table (header row, separator row, body rows) all at once.
+- Running `make sync-onde` in `examples/tr/` updates the "Comparison Between Translation Models" table (header row, separator row, body rows) all at once.
 
 #### 3.5.1 Updating the Comparison Table
 - Add the model to the model table at the top of `examples/tr/README.md` (model name linked to `onde/{model}/README.md`, and a description). The comparison table lists each language's top three scores and their models, so it needs no manual editing; models are read from `MODELS` in `onde/Makefile`.
-- Update the comparison table by running `make sync` in `examples/tr/`. The header row, separator row, and body rows are all rewritten together.
-- Then run `make compare` in `examples/tr/` to regenerate the per-model score-distribution boxplot (`compare/MODELS.png`).
+- Update the comparison table by running `make sync-onde` in `examples/tr/`. The header row, separator row, and body rows are all rewritten together.
+- Then run `make compare-onde` in `examples/tr/` to regenerate the per-model score-distribution boxplot (`MODELS.svg` and `compare/MODELS.png`).
 - See [ADD_LANG.md's 2.1](ADD_LANG.md#21-updating-the-comparison-table) for details on the generation process, including the row-ordering algorithm.
 
 #### 3.5.2 Updating the Trend Analysis Section

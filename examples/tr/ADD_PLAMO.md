@@ -80,8 +80,8 @@ Add, as facts and without scores, the line-alignment breaks found in 3.1 and the
 
 ### 3.5 Updating `plamo/README.md`
 
-- Run `make sync` in `examples/tr/`: it rewrites plamo/'s two tables in [plamo/README.md](plamo/README.md) (the stats per model and the scores per language), along with the main comparison, which the plamo/ models are not part of.
+- Run `make sync-plamo` in `examples/tr/`: it rewrites plamo/'s two tables in [plamo/README.md](plamo/README.md) (the stats per model and the scores per language), and leaves the main comparison, which the plamo/ models are not part of, untouched.
 - Write the model's Notes in the stats table by hand, comparing it only with the other plamo/ models, on PLaMo's languages (e.g. Wilcoxon signed-rank against the neighbouring sizes, or a general model against the largest PLaMo). For a general model, also compare it with its onde/ counterpart on the corpus languages they share, which is the method's own effect.
 - Update the text around the tables, such as the comparison between sizes and the line-alignment breaks, if the model changes them.
-- Run `make compare` in `examples/tr/` to regenerate plamo/'s chart (`PLAMO.svg` and `compare/PLAMO.png`).
+- Run `make compare-plamo` in `examples/tr/` to regenerate plamo/'s chart (`PLAMO.svg` and `compare/PLAMO.png`) without touching the main chart (`MODELS.svg`).
 - Don't add the model to [README.md](README.md)'s model table, its comparison or its discussion.

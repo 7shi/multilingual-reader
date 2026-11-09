@@ -1,14 +1,18 @@
-.PHONY: help all core onde plamo sync compare
+.PHONY: help all core onde plamo sync sync-onde sync-plamo compare compare-onde compare-plamo
 
 help:
 	@echo "Usage: make <target>"
 	@echo ""
-	@echo "  all      core + onde + plamo"
-	@echo "  core     build core examples"
-	@echo "  onde     build onde examples"
-	@echo "  plamo    build onde under PLaMo 3 Translate's conditions"
-	@echo "  sync     sync comparison table into README.md"
-	@echo "  compare  generate comparison graphs/tables"
+	@echo "  all            core + onde + plamo"
+	@echo "  core           build core examples"
+	@echo "  onde           build onde examples"
+	@echo "  plamo          build onde under PLaMo 3 Translate's conditions"
+	@echo "  sync           sync-onde + sync-plamo"
+	@echo "  sync-onde      sync comparison tables into README.md"
+	@echo "  sync-plamo     sync plamo/ tables into plamo/README.md"
+	@echo "  compare        compare-onde + compare-plamo"
+	@echo "  compare-onde   generate comparison graphs (MODELS.svg, compare/*.png)"
+	@echo "  compare-plamo  generate plamo/ graph (PLAMO.svg, compare/PLAMO.png)"
 
 all: core onde plamo
 
@@ -39,14 +43,22 @@ GPT56TERRA = -i gpt-5.6-terra -l "GPT-5.6 Terra"
 GPT6LUNA   = -i gpt-6-luna -l "GPT-6 Luna"
 GPTOSS     = -i gpt-oss -l "GPT-OSS 120B"
 
-sync:
+sync: sync-onde sync-plamo
+
+sync-onde:
 	uv run generate_compare_rows.py compare --jev --sync
 	uv run generate_compare_rows.py core --jev --sync
+
+sync-plamo:
 	uv run generate_compare_rows.py plamo --jev --sync
 
-compare:
-	uv run generate_compare_rows.py graph --jev
+compare: compare-onde compare-plamo
+
+compare-plamo:
 	uv run generate_compare_rows.py graph --jev --plamo
+
+compare-onde:
+	uv run generate_compare_rows.py graph --jev
 	uv run plot_comparison.py --jev -o compare/gemini35fl.png $(GEMINI35FL) $(GEMINI25F) $(GEMMA4) $(GEMMA4_31B) $(GEMINI3F)
 	uv run plot_comparison.py --jev -o compare/gemini25f.png $(GEMINI25F) $(GEMINI35FL) $(GEMMA4) $(GEMMA4_31B) $(GEMINI3F)
 	uv run plot_comparison.py --jev -o compare/gemma4.png $(GEMMA4) $(GEMINI35FL) $(GEMINI25F) $(GEMMA4_31B) $(GEMINI3F)
