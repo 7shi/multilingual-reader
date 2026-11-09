@@ -40,8 +40,7 @@ LANGS_RE = re.compile(r"^(CORE_LANGS|EXTRA_LANGS)\s*=\s*((?:.*\\\n)*.*)$", re.MU
 
 def load_corpus_codes() -> frozenset[str]:
     """The corpus's languages, CORE_LANGS + EXTRA_LANGS. A model that translates others
-    (plamo-3-translate-0.8b, into its supported languages) has them cut from the
-    comparison, and the corpus languages it lacks count as 0."""
+    has them cut from the comparison, and the corpus languages it lacks count as 0."""
     text = COMMON_MK.read_text(encoding="utf-8")
     found = {name: value for name, value in LANGS_RE.findall(text)}
     if set(found) != {"CORE_LANGS", "EXTRA_LANGS"}:

@@ -1,6 +1,6 @@
 # Experiment 16: PLaMo 3 Translate 0.8B over Every Language
 
-The first run of `examples/tr/onde/plamo-3-translate-0.8b/` over all 67 target languages, before the target languages were narrowed to the ones the [model card](https://huggingface.co/pfnet/plamo-3-translate-0.8b) lists as supported. The languages were left unnarrowed on purpose, to set the model card's list against what the language check finds.
+The first run of `examples/tr/plamo/plamo-3-translate-0.8b/` over all 67 target languages, before the target languages were narrowed to the ones the [model card](https://huggingface.co/pfnet/plamo-3-translate-0.8b) lists as supported. The languages were left unnarrowed on purpose, to set the model card's list against what the language check finds.
 
 **Answer: the list holds.** Outside it, every language but Chinese came out in another language, mixed or collapsed, so the benchmark now translates only the listed languages.
 

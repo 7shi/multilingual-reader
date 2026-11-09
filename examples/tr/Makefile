@@ -1,21 +1,25 @@
-.PHONY: help all core onde sync compare
+.PHONY: help all core onde plamo sync compare
 
 help:
 	@echo "Usage: make <target>"
 	@echo ""
-	@echo "  all      core + onde"
+	@echo "  all      core + onde + plamo"
 	@echo "  core     build core examples"
 	@echo "  onde     build onde examples"
+	@echo "  plamo    build onde under PLaMo 3 Translate's conditions"
 	@echo "  sync     sync comparison table into README.md"
 	@echo "  compare  generate comparison graphs/tables"
 
-all: core onde
+all: core onde plamo
 
 core:
 	$(MAKE) -C core
 
 onde:
 	$(MAKE) -C onde
+
+plamo:
+	$(MAKE) -C plamo
 
 GEMINI35FL = -i gemini-3.5-flash-lite -l "Gemini 3.5 Flash Lite"
 GEMINI25F  = -i gemini-2.5-flash -l "Gemini 2.5 Flash"
