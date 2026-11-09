@@ -11,7 +11,7 @@ Target languages: `CORE_LANGS` + `EXTRA_LANGS` defined in [common.mk](../../comm
 - Translation model: gemini-3.7-flash
 - Evaluation model: jev-1.14.0 (jev-1.13.0 and qwen3.6 before it)
 - Trend column: written by qwen3.6 from Jev's scores
-- Settings: threshold=20, keep=5, no CoT, term file injection (`../../terms/*-en.{json,tsv}`)
+- Settings: threshold=20, keep=5, thinking not turned off (no `--no-think`), term file injection (`../../terms/*-en.{json,tsv}`)
 
 ## Translation quality overview
 
