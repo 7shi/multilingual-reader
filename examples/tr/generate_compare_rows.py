@@ -100,7 +100,7 @@ COMPARE_HEADER = "| Language | " + " | ".join(
 STATS_HEADER = "| Model | Mean | Median | Stdev | Notes |"
 # The same columns as the main stats table, in another file (SYNC_FILES).
 PLAMO_STATS_HEADER = STATS_HEADER
-PLAMO_LANGS_HEADER = "| Language | " + " | ".join(map(plamo_column, PLAMO_MODELS)) + " |"
+PLAMO_LANGS_HEADER = "| Language | " + " | ".join(map(plamo_column, PLAMO_SIZES)) + " |"
 SYNC_HEADERS = {
     "compare": COMPARE_HEADER,
     "stats": STATS_HEADER,
@@ -350,13 +350,13 @@ def render_plamo_stats() -> list[str]:
 
 
 def render_plamo_langs() -> list[str]:
-    """Each language's score for every model, ordered by PLaMo's largest size."""
+    """Each language's score for PLaMo's sizes alone, the general models being left to
+    the stats table and the text, in alphabetical order of the language names."""
     per_model = load_plamo_scores()
-    largest = PLAMO_SIZES[-1]
-    codes = sorted(per_model[largest], key=lambda c: (-per_model[largest][c], c))
-    rendered = [PLAMO_LANGS_HEADER, "| --- |" + " ---: |" * len(PLAMO_MODELS)]
+    codes = sorted(per_model[PLAMO_SIZES[0]], key=lambda c: LANG_NAMES[c])
+    rendered = [PLAMO_LANGS_HEADER, "| --- |" + " ---: |" * len(PLAMO_SIZES)]
     for code in codes:
-        cells = [f"{per_model[model][code]:.1f}" for model in PLAMO_MODELS]
+        cells = [f"{per_model[model][code]:.1f}" for model in PLAMO_SIZES]
         rendered.append(f"| {LANG_NAMES[code]} | {' | '.join(cells)} |")
     return rendered
 
