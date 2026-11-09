@@ -17,7 +17,7 @@ Guide: high quality (90+), practical range (80-89), medium quality (60-79), crit
 
 Mean and standard deviation are computed from each size's `SCORES-jev.txt` by `uv run generate_compare_rows.py plamo --jev --sync` in examples/tr/ (Notes are entered manually).
 
-| PLaMo model | Mean | Median | Stdev | Notes |
+| Model | Mean | Median | Stdev | Notes |
 | --- | ---: | ---: | ---: | --- |
 | plamo-3-translate-31b | 78.92 | 78.50 | 8.08 | High quality on French, Spanish, both Chinese scripts, and Japanese, and no language below 60; Telugu, Burmese, and Basque are its floor. Keeps its place in all but two languages, each two lines short |
 | plamo-3-translate-8b | 75.94 | 77.00 | 9.92 | French and Spanish reach high quality, but Japanese falls to 60.0 when the request loops back over a stretch of the dialogue, and Burmese, Sinhala, and Malayalam each skip 20 to 33 lines |

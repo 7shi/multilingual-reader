@@ -33,8 +33,18 @@ def load_models(makefile: Path) -> tuple[str, ...]:
 
 
 ONDE_MODELS = load_models(ONDE_MAKEFILE)
-# plamo/ (plamo/PLAN.md): PLaMo's own languages, compared only among themselves.
+# plamo/ (plamo/PLAN.md): PLaMo's own languages, compared only among themselves: the
+# sizes of PLaMo 3 Translate, and general models translating under its conditions.
 PLAMO_MODELS = load_models(PLAMO_MAKEFILE)
+PLAMO_PREFIX = "plamo-3-translate-"
+PLAMO_SIZES = tuple(model for model in PLAMO_MODELS if model.startswith(PLAMO_PREFIX))
+
+
+def plamo_column(model: str) -> str:
+    """A PLaMo size by its size alone (0.8B), any other model by its name."""
+    if model.startswith(PLAMO_PREFIX):
+        return model.removeprefix(PLAMO_PREFIX).upper()
+    return model
 
 
 COMMON_MK = ROOT / "common.mk"
@@ -88,16 +98,16 @@ COMPARE_HEADER = "| Language | " + " | ".join(
     f"Score {i} | Model {i}" for i in range(1, COMPARE_TOP + 1)
 ) + " |"
 STATS_HEADER = "| Model | Mean | Median | Stdev | Notes |"
-PLAMO_STATS_HEADER = "| PLaMo model | Mean | Median | Stdev | Notes |"
-PLAMO_LANGS_HEADER = "| Language | " + " | ".join(
-    model.removeprefix("plamo-3-translate-").upper() for model in PLAMO_MODELS
-) + " |"
+# The same columns as the main stats table, in another file (SYNC_FILES).
+PLAMO_STATS_HEADER = STATS_HEADER
+PLAMO_LANGS_HEADER = "| Language | " + " | ".join(map(plamo_column, PLAMO_MODELS)) + " |"
 SYNC_HEADERS = {
     "compare": COMPARE_HEADER,
     "stats": STATS_HEADER,
     "core": "| Language | finetuning |",
     "plamo-stats": PLAMO_STATS_HEADER,
-    "plamo-langs": PLAMO_LANGS_HEADER,
+    # found by its first column, so that adding a model does not lose the table
+    "plamo-langs": f"| Language | {plamo_column(PLAMO_MODELS[0])} |",
 }
 # The plamo tables live in plamo/'s own README, apart from the main comparison.
 SYNC_FILES = {
@@ -261,7 +271,7 @@ def plot_model_stats(top: int | None = None) -> None:
 def plot_plamo_stats() -> None:
     per_model_scores = {model: list(scores.values()) for model, scores in load_plamo_scores().items()}
     notes = load_existing_model_notes(PLAMO_STATS_HEADER, PLAMO_README_FILE)
-    draw_boxplot(per_model_scores, notes, "Score distribution of PLaMo 3 Translate (its languages)",
+    draw_boxplot(per_model_scores, notes, "Score distribution on PLaMo 3 Translate's languages",
                  PLAMO_GRAPH_OUTPUT, PLAMO_GRAPH_SVG_OUTPUT)
 
 
@@ -340,9 +350,9 @@ def render_plamo_stats() -> list[str]:
 
 
 def render_plamo_langs() -> list[str]:
-    """Each language's score at every size, ordered by the last (largest) size."""
+    """Each language's score for every model, ordered by PLaMo's largest size."""
     per_model = load_plamo_scores()
-    largest = PLAMO_MODELS[-1]
+    largest = PLAMO_SIZES[-1]
     codes = sorted(per_model[largest], key=lambda c: (-per_model[largest][c], c))
     rendered = [PLAMO_LANGS_HEADER, "| --- |" + " ---: |" * len(PLAMO_MODELS)]
     for code in codes:
