@@ -13,8 +13,10 @@ import time
 from pathlib import Path
 
 from llm7shi import Client
+from llm7shi.usage import append_usage, print_today_totals
 
 from .language import LANG_NAMES
+from .llm import init_usage_path
 
 
 def add_parser(subparsers):
@@ -36,6 +38,8 @@ def add_common_arguments(parser):
     parser.add_argument("--terms-dir", default=None,
                         help="Directory of term files; {topic}-{source}.tsv is used (no glossary if omitted)")
     parser.add_argument("--tr-dir", default="tr", help="Translation output directory (default: tr)")
+    parser.add_argument("--save-usage", action="store_true",
+                        help="Record usage regardless of model name (recorded by default for openai: and gpt- models)")
 
 
 def load_glossary(tsv_path, from_lang, to_lang):
@@ -64,14 +68,19 @@ def translate_each(args, make_client):
     language; each call sends the whole text as its prompt. A language whose output
     file exists is skipped. A line count different from the source's, a stop by
     repetition or by length, and a code fence around the text are warned about, and
-    the translation is saved as it came: these count as part of the performance.
+    the translation is saved as it came: these count as part of the performance. Only
+    blank lines are dropped when the source has none, since a model may set its lines
+    apart as paragraphs, which is layout rather than translation.
+    Each language's usage is shown and recorded as in trtools translate.
     """
     input_file = Path(args.input_file)
     topic, from_code = input_file.stem.rsplit("-", 1)
     text = input_file.read_text(encoding="utf-8").rstrip("\n")
     source_lines = len(text.splitlines())
+    source_has_blank = any(not line.strip() for line in text.splitlines())
     tsv_path = Path(args.terms_dir) / f"{topic}-{from_code}.tsv" if args.terms_dir else None
     os.makedirs(args.tr_dir, exist_ok=True)
+    usage_path = init_usage_path(args.model, args.save_usage)
 
     for index, lang in enumerate(args.langs, 1):
         out = Path(args.tr_dir) / f"{topic}-{lang}.txt"
@@ -86,8 +95,16 @@ def translate_each(args, make_client):
         # a runaway guard: a translation is rarely more than a few times its source
         client = make_client(from_code, lang, glossary, len(text) * 5 + 100)
         started = time.monotonic()
-        resp = client(text)
+        try:
+            resp = client(text)
+        finally:
+            # Recorded even on failure, since the tokens were spent either way
+            usage = sum(client.usages) if client.usages else None
+            if usage is not None and usage_path is not None:
+                append_usage(usage, args.model, usage_path)
         result = resp.text.strip()
+        if not source_has_blank:
+            result = drop_blank_lines(result)
         if not result:
             raise SystemExit(f"{out}: empty translation")
         if resp.repetition or resp.max_length is not None:
@@ -102,6 +119,15 @@ def translate_each(args, make_client):
         tmp.write_text(result + "\n", encoding="utf-8")
         tmp.replace(out)
         print(f"Elapsed time: {time.monotonic() - started:.1f}s")
+        if usage is not None:
+            print(f"Usage: {usage}")
+            if usage_path is not None:
+                print()
+                print_today_totals(usage_path, models=[args.model])
+
+
+def drop_blank_lines(text):
+    return "\n".join(line for line in text.splitlines() if line.strip())
 
 
 def system_message(from_lang, to_lang, glossary):

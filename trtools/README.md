@@ -176,7 +176,7 @@ uv run trtools translate finetuning-fr.txt -f fr -t es \
 
 Translates a whole text with PLaMo 3 Translate, one request per language, through llm7shi's `Client.plamo3translate()`. `translate` cannot drive this model: its chat template skips system messages and reads every user/assistant pair as a source/translation example, so `translate`'s instructions, glossary and summary messages would be translated or taken as history. The options go in the template's variables instead (`target_lang`, `source_lang`, `glossary`).
 
-The source language comes from the input filename (`onde-en.txt` -> `en`). `zh` is sent as the model's `zh-hans`; other codes are sent as they are, whether or not the model lists them. The glossary is the target language's whole column of `{topic}-{source}.tsv` in `--terms-dir`; with no column for the language, the text is translated without one. Each translation goes to `{tr-dir}/{topic}-{lang}.txt`, and a language whose file exists is skipped. A line count different from the source's, or a stop by repetition or by length, is reported as a warning and the translation is saved. The outputs are under the [PLaMo Community License](https://plamo.preferredai.jp/info/plamo-community-license-en), which requires them to be marked as outputs of the model when distributed.
+The source language comes from the input filename (`onde-en.txt` -> `en`). `zh` is sent as the model's `zh-hans`; other codes are sent as they are, whether or not the model lists them. The glossary is the target language's whole column of `{topic}-{source}.tsv` in `--terms-dir`; with no column for the language, the text is translated without one. Each translation goes to `{tr-dir}/{topic}-{lang}.txt`, and a language whose file exists is skipped. A line count different from the source's, or a stop by repetition or by length, is reported as a warning and the translation is saved; only blank lines are dropped when the source has none. Each language's usage is shown and recorded as in `translate`. The outputs are under the [PLaMo Community License](https://plamo.preferredai.jp/info/plamo-community-license-en), which requires them to be marked as outputs of the model when distributed.
 
 ```
 uv run trtools plamo <input_file> --langs <lang...> [options]
@@ -190,6 +190,7 @@ uv run trtools plamo <input_file> --langs <lang...> [options]
 | `-m`, `--model` | `llama.cpp:` | Model with vendor prefix; the server comes from `OPENAI_BASE_URL` |
 | `--terms-dir` | none | Directory of term TSVs (no glossary if omitted) |
 | `--tr-dir` | `tr` | Translation output directory |
+| `--save-usage` | off | Record usage regardless of model name (recorded by default for `openai:` and `gpt-` models) |
 
 ### Example
 
@@ -204,7 +205,7 @@ uv run trtools plamo ../../../onde-en.txt --terms-dir ../../terms --langs ja fr 
 
 Translates a whole text with a general model, one request per language, under the same conditions as `plamo` ([examples/tr/plamo/PLAN.md](../examples/tr/plamo/PLAN.md)). The model gets only what PLaMo 3 Translate's template variables carry: a system message with the source and target languages and the target language's whole glossary column (`term => translation` lines), and the source text alone as the user message. Unlike `translate`, it sends no summary or surrounding lines, and it does not ask for the lines to be kept.
 
-Languages are named as in `translate` (`zh` is `Chinese`). The source language, the glossary file, the output files, the skipping of existing ones, and the warnings are those of `plamo`, whose loop it shares; a code fence around the output is also warned about. A stop by repetition or by the length limit (five times the source's length plus 100 characters) is not retried, and every output is saved as it came.
+Languages are named as in `translate` (`zh` is `Chinese`). The source language, the glossary file, the output files, the skipping of existing ones, and the warnings are those of `plamo`, whose loop it shares; a code fence around the output is also warned about. Blank lines are dropped from the output when the source has none, since a model may set its lines apart as paragraphs. A stop by repetition or by the length limit (five times the source's length plus 100 characters) is not retried, and every output is saved as it came.
 
 ```
 uv run trtools whole <input_file> --langs <lang...> -m <model> [options]
@@ -218,6 +219,7 @@ uv run trtools whole <input_file> --langs <lang...> -m <model> [options]
 | `-m`, `--model` | (required) | Model with vendor prefix |
 | `--terms-dir` | none | Directory of term TSVs (no glossary if omitted) |
 | `--tr-dir` | `tr` | Translation output directory |
+| `--save-usage` | off | Record usage regardless of model name (recorded by default for `openai:` and `gpt-` models) |
 | `--no-think` | off | Disable thinking |
 
 ### Example
