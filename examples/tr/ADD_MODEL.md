@@ -1,6 +1,6 @@
 # Evaluation Update Procedure When Adding a Model
 
-Procedure for reflecting a newly added translation model in the comparison table and discussion after creating a benchmark set for it. The translation work itself is done manually by the user, so proceed through the following 3 steps.
+Procedure for reflecting a newly added translation model in the comparison table and discussion after creating a benchmark set for it. For [plamo/](plamo/), the set under PLaMo 3 Translate's conditions, see [ADD_PLAMO.md](ADD_PLAMO.md) instead. The translation work itself is done manually by the user, so proceed through the following 3 steps.
 
 1. Prepare under `onde/`
 2. User translates

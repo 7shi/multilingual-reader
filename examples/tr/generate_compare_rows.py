@@ -33,7 +33,7 @@ def load_models(makefile: Path) -> tuple[str, ...]:
 
 
 ONDE_MODELS = load_models(ONDE_MAKEFILE)
-# plamo/ (../PLAMO.md): PLaMo's own languages, compared only among themselves.
+# plamo/ (plamo/PLAN.md): PLaMo's own languages, compared only among themselves.
 PLAMO_MODELS = load_models(PLAMO_MAKEFILE)
 
 
@@ -78,6 +78,7 @@ CORE_ONDE_MODEL = "gemma4"
 CORE_CODES = ("ja", "zh", "es", "fr", "de")
 LINE_RE = re.compile(r"^([a-z0-9.]+)-([a-z0-9.-]+):\s+(\d+(?:\.\d+)?)$")
 README_FILE = ROOT / "README.md"
+PLAMO_README_FILE = ROOT / "plamo" / "README.md"
 GRAPH_OUTPUT = ROOT / "compare" / "MODELS.png"
 GRAPH_SVG_OUTPUT = ROOT / "MODELS.svg"
 PLAMO_GRAPH_OUTPUT = ROOT / "compare" / "PLAMO.png"
@@ -97,6 +98,11 @@ SYNC_HEADERS = {
     "core": "| Language | finetuning |",
     "plamo-stats": PLAMO_STATS_HEADER,
     "plamo-langs": PLAMO_LANGS_HEADER,
+}
+# The plamo tables live in plamo/'s own README, apart from the main comparison.
+SYNC_FILES = {
+    "plamo-stats": PLAMO_README_FILE,
+    "plamo-langs": PLAMO_README_FILE,
 }
 
 
@@ -187,13 +193,15 @@ def compute_stats() -> dict[str, tuple[float, float, float]]:
     return stats
 
 
-def load_existing_model_notes(header: str = STATS_HEADER) -> dict[str, tuple[str, str]]:
+def load_existing_model_notes(
+    header: str = STATS_HEADER, readme: Path = README_FILE
+) -> dict[str, tuple[str, str]]:
     """Read model -> (model column display string, notes) from the existing stats table
     (median/stdev are ignored since they're recomputed). The model column may contain
     manually appended parenthetical notes (parameter scale, etc.), so entries are keyed
     by the leading whitespace-separated token (the base model name).
     """
-    readme_lines = README_FILE.read_text(encoding="utf-8").splitlines()
+    readme_lines = readme.read_text(encoding="utf-8").splitlines()
     header_idx = next(
         (i for i, line in enumerate(readme_lines) if line == header),
         None,
@@ -252,7 +260,7 @@ def plot_model_stats(top: int | None = None) -> None:
 
 def plot_plamo_stats() -> None:
     per_model_scores = {model: list(scores.values()) for model, scores in load_plamo_scores().items()}
-    notes = load_existing_model_notes(PLAMO_STATS_HEADER)
+    notes = load_existing_model_notes(PLAMO_STATS_HEADER, PLAMO_README_FILE)
     draw_boxplot(per_model_scores, notes, "Score distribution of PLaMo 3 Translate (its languages)",
                  PLAMO_GRAPH_OUTPUT, PLAMO_GRAPH_SVG_OUTPUT)
 
@@ -314,7 +322,7 @@ def load_plamo_scores() -> dict[str, dict[str, float]]:
 
 def render_plamo_stats() -> list[str]:
     per_model = load_plamo_scores()
-    notes = load_existing_model_notes(PLAMO_STATS_HEADER)
+    notes = load_existing_model_notes(PLAMO_STATS_HEADER, PLAMO_README_FILE)
     stats = {
         model: (
             statistics.mean(scores.values()),
@@ -438,21 +446,22 @@ def render_classify_rows(overall: bool = False) -> list[str]:
 
 def sync_section(section: str, table_lines: list[str]) -> None:
     header_prefix = SYNC_HEADERS[section]
-    readme_lines = README_FILE.read_text(encoding="utf-8").splitlines()
+    readme_file = SYNC_FILES.get(section, README_FILE)
+    readme_lines = readme_file.read_text(encoding="utf-8").splitlines()
 
     header_idx = next(
         (i for i, line in enumerate(readme_lines) if line.startswith(header_prefix)),
         None,
     )
     if header_idx is None:
-        raise ValueError(f"header line starting with {header_prefix!r} not found in {README_FILE}")
+        raise ValueError(f"header line starting with {header_prefix!r} not found in {readme_file}")
 
     rows_end = header_idx + 2  # header line + separator line
     while rows_end < len(readme_lines) and readme_lines[rows_end].startswith("|"):
         rows_end += 1
 
     new_lines = readme_lines[:header_idx] + table_lines + readme_lines[rows_end:]
-    README_FILE.write_text("\n".join(new_lines) + "\n", encoding="utf-8")
+    readme_file.write_text("\n".join(new_lines) + "\n", encoding="utf-8")
 
 
 def main() -> int:
@@ -485,7 +494,7 @@ def main() -> int:
     plamo_parser.add_argument(
         "--sync",
         action="store_true",
-        help="write the generated rows into README.md's plamo tables",
+        help="write the generated rows into plamo/README.md's tables",
     )
     subparsers.add_parser("all", help="compare + stats + core tables", parents=[scale])
     graph_parser = subparsers.add_parser("graph", help="generate compare/MODELS.png (score boxplot per model)", parents=[scale])
@@ -571,7 +580,7 @@ def main() -> int:
             sync_section("plamo-langs", plamo_langs_lines)
             print(
                 f"synced {len(plamo_stats_lines)} lines (plamo-stats) and "
-                f"{len(plamo_langs_lines)} lines (plamo-langs) into {README_FILE}"
+                f"{len(plamo_langs_lines)} lines (plamo-langs) into {PLAMO_README_FILE}"
             )
             return 0
         for line in plamo_stats_lines + [""] + plamo_langs_lines:

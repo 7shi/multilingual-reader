@@ -1,5 +1,5 @@
 # Shared definitions for each model directory under plamo/: the onde text, translated
-# under PLaMo 3 Translate's conditions (../PLAMO.md). Each Makefile defines only its
+# under PLaMo 3 Translate's conditions (PLAN.md). Each Makefile defines only its
 # TRANSLATOR and includes this.
 
 include ../../onde/common.mk

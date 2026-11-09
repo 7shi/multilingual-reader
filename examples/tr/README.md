@@ -54,7 +54,7 @@ Each set manages its own target languages separately, and all of them are evalua
   - [gpt-oss/](onde/gpt-oss/): includes past experiments (verifying behavioral differences between local (Ollama) and cloud (OpenRouter) execution environments)
   - [qwen3.6/](onde/qwen3.6/): includes past experiments (comparing self-evaluation with third-party evaluation (gpt-oss) to verify the asymmetry between an LLM's reading and writing ability)
   - etc.
-- [plamo/](plamo/): translation of the onde text under PLaMo 3 Translate's conditions, its supported languages with the whole text in one request ([PLAMO.md](PLAMO.md)); kept apart from the comparison below
+- [plamo/](plamo/): translation of the onde text under PLaMo 3 Translate's conditions, its supported languages with the whole text in one request ([plamo/PLAN.md](plamo/PLAN.md)); kept apart from the comparison below
 
 Translation starting from French was done in the past, with results stored in the directory below, but it is now treated as obsolete.
 
@@ -248,75 +248,7 @@ No universal translation model exists, strongly suggesting the importance of cho
 
 ## PLaMo 3 Translate (plamo)
 
-[PLaMo 3 Translate](PLAMO.md) is a translation-only model, given the whole text in one request rather than line by line, and only on the languages it supports, some of which the corpus lacks. Put side by side with the models above, the corpus languages it does not support would count as 0 and pull it far below models it matches on its own languages, so its sizes, under [plamo/](plamo/), are compared here only with each other, over its 52 languages.
-
-Mean and standard deviation are computed from each size's `SCORES-jev.txt` by `uv run generate_compare_rows.py plamo --jev --sync` (Notes are entered manually).
-
-| PLaMo model | Mean | Median | Stdev | Notes |
-| --- | ---: | ---: | ---: | --- |
-| plamo-3-translate-31b | 78.92 | 78.50 | 8.08 | High quality on French, Spanish, both Chinese scripts, and Japanese, and no language below 60; Telugu, Burmese, and Basque are its floor. Keeps its place in all but two languages, each two lines short |
-| plamo-3-translate-8b | 75.94 | 77.00 | 9.92 | French and Spanish reach high quality, but Japanese falls to 60.0 when the request loops back over a stretch of the dialogue, and Burmese, Sinhala, and Malayalam each skip 20 to 33 lines |
-| plamo-3-translate-2b | 73.36 | 73.75 | 9.51 | Above the 0.8B in 46 of 52 languages; Italian and Dutch reach high quality. Loses its place most often of the four sizes: six languages skip 17 to 43 lines, Khmer stops in a loop, and Vietnamese adds a line |
-| plamo-3-translate-0.8b | 61.06 | 62.40 | 10.86 | No language reaches the practical range (Italian, Vietnamese, Spanish, and Hungarian are its best, 76.5–78.5), and 23 fall below 60, with Burmese skipping a stretch and Telugu, Sinhala, and Gujarati ending in loops |
-
-Each size is above the next smaller one (Wilcoxon signed-rank, paired by language): 2B over 0.8B in 46 of 52 languages (p < 0.001), 8B over 2B in 31 (p = 0.022), and 31B over 8B in 32 (p = 0.024). The largest step is from 0.8B to 2B; above that the gain is a few points per size, and not every language follows it (the 31B is below the 2B in Swahili, Slovene, and Lithuanian).
-
-| Language | 0.8B | 2B | 8B | 31B |
-| --- | ---: | ---: | ---: | ---: |
-| French | 73.2 | 83.7 | 91.9 | 93.6 |
-| Spanish | 77.0 | 78.1 | 90.9 | 92.0 |
-| Chinese (Traditional) | 70.5 | 87.3 | 89.0 | 90.8 |
-| Chinese | 67.5 | 87.0 | 89.4 | 90.7 |
-| Japanese | 70.1 | 76.5 | 60.0 | 90.3 |
-| Korean | 67.4 | 85.5 | 79.1 | 88.8 |
-| Vietnamese | 77.2 | 73.6 | 87.8 | 88.1 |
-| Arabic | 69.0 | 85.9 | 84.2 | 88.0 |
-| Catalan | 66.6 | 80.2 | 87.1 | 88.0 |
-| Dutch | 71.8 | 90.1 | 88.0 | 87.8 |
-| German | 65.5 | 81.1 | 85.2 | 87.7 |
-| Indonesian | 74.3 | 73.9 | 77.5 | 87.6 |
-| Malay | 73.1 | 76.8 | 84.7 | 86.2 |
-| Italian | 78.5 | 90.5 | 85.5 | 86.0 |
-| Polish | 65.4 | 74.2 | 88.8 | 85.9 |
-| Russian | 56.8 | 80.3 | 71.7 | 84.5 |
-| Croatian | 67.7 | 78.4 | 77.2 | 83.2 |
-| Thai | 68.6 | 79.5 | 82.5 | 82.2 |
-| Hindi | 64.5 | 72.3 | 70.9 | 81.8 |
-| Serbian | 66.5 | 82.0 | 76.8 | 81.6 |
-| Uzbek | 59.2 | 81.6 | 76.5 | 81.6 |
-| Javanese | 75.9 | 68.2 | 78.4 | 81.5 |
-| Marathi | 60.1 | 59.3 | 75.6 | 81.5 |
-| Estonian | 51.0 | 77.8 | 83.7 | 81.1 |
-| Nepali | 62.8 | 73.0 | 76.7 | 79.0 |
-| Khmer | 63.8 | 54.4 | 62.1 | 78.8 |
-| Persian | 50.6 | 76.2 | 66.4 | 78.2 |
-| Hungarian | 76.5 | 67.4 | 84.7 | 77.9 |
-| Azerbaijani | 57.5 | 66.3 | 78.0 | 77.5 |
-| Punjabi | 62.0 | 63.3 | 57.0 | 77.5 |
-| Bengali | 57.1 | 69.0 | 61.2 | 77.0 |
-| Belarusian | 51.8 | 72.5 | 74.9 | 76.7 |
-| Georgian | 71.7 | 81.2 | 81.2 | 76.6 |
-| Cebuano | 64.3 | 69.4 | 75.0 | 75.6 |
-| Slovak | 55.1 | 58.4 | 74.8 | 74.8 |
-| Hebrew | 57.0 | 68.4 | 76.5 | 74.5 |
-| Kazakh | 53.2 | 73.0 | 67.3 | 74.2 |
-| Bulgarian | 56.6 | 72.7 | 79.4 | 73.9 |
-| Gujarati | 38.7 | 68.8 | 67.4 | 73.0 |
-| Urdu | 59.2 | 76.4 | 80.4 | 72.7 |
-| Malayalam | 40.1 | 53.4 | 64.7 | 72.0 |
-| Armenian | 53.4 | 72.0 | 77.2 | 71.9 |
-| Tagalog | 52.0 | 63.5 | 72.3 | 71.2 |
-| Slovene | 60.8 | 82.3 | 81.1 | 70.3 |
-| Lithuanian | 51.9 | 76.3 | 76.2 | 69.2 |
-| Sinhala | 33.4 | 66.7 | 50.8 | 68.6 |
-| Latvian | 54.1 | 68.2 | 73.1 | 68.2 |
-| Tamil | 53.8 | 71.9 | 70.8 | 68.0 |
-| Swahili | 69.7 | 78.8 | 79.2 | 67.3 |
-| Basque | 51.5 | 65.2 | 65.7 | 64.6 |
-| Burmese | 40.7 | 51.4 | 49.8 | 62.6 |
-| Telugu | 38.4 | 50.6 | 62.5 | 61.4 |
-
-- **Skipped, repeated, and runaway passages**: with the whole text in one request, nothing holds the output to the source's lines, and in some languages the model loses its place. Most often it skips part of the dialogue and goes on to a natural ending, so the line count falls short with no visible break: the 0.8B does so in Burmese, and the 2B and 8B skip 17 to 43 lines in nine languages between them, Telugu at 2B the most. Otherwise it falls into a loop until the output stops: the 0.8B repeats one phrase in Telugu and Sinhala (`වර්ගයේ වර්ගයේ ...`) and three lines of the closing passage in Gujarati, the 2B one word in Khmer at the summary, and the 8B's Japanese goes back from line 53 to line 40 and runs through the same stretch again before jumping ahead. Larger sizes lose their place less often, though not steadily: the 2B does in eight languages and the 8B in five, while the 31B only joins two lines into one in Kazakh and Burmese. These are kept as they are, as part of its performance under its intended use; each size's README lists them.
+[PLaMo 3 Translate](plamo/PLAN.md), a translation-only model run only on the languages it supports with the whole text in one request, is kept apart from the comparison above: the corpus languages it does not support would count as 0 there. Its sizes are compared with each other, over its own languages, in [plamo/README.md](plamo/README.md).
 
 ## Scope of the Comparison
 

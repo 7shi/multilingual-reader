@@ -2,7 +2,7 @@
 
 Translation and evaluation of the onde text, covering an extended set of languages.
 
-Target languages: every language the [model card](https://huggingface.co/pfnet/plamo-3-translate-0.8b) lists as supported except the source English, set in [common.mk](../common.mk). Seven of them are outside the corpus's `CORE_LANGS` + `EXTRA_LANGS` ([common.mk](../../common.mk)): Traditional Chinese (`zh-hant`), Cebuano, Gujarati, Javanese, Kazakh, Punjabi and Uzbek. It is compared only with the other models under [plamo/](../), on these languages ([PLAMO.md](../../PLAMO.md)). A first run over every corpus language is kept in [experimental/16](../../../../experimental/16/): outside the list, the translations came out in another language, mixed or collapsed.
+Target languages: every language the [model card](https://huggingface.co/pfnet/plamo-3-translate-0.8b) lists as supported except the source English, set in [common.mk](../common.mk). Seven of them are outside the corpus's `CORE_LANGS` + `EXTRA_LANGS` ([common.mk](../../common.mk)): Traditional Chinese (`zh-hant`), Cebuano, Gujarati, Javanese, Kazakh, Punjabi and Uzbek. It is compared only with the other models under [plamo/](../), on these languages ([PLAN.md](../PLAN.md)). A first run over every corpus language is kept in [experimental/16](../../../../experimental/16/): outside the list, the translations came out in another language, mixed or collapsed.
 
 The translations under `tr/` are outputs of PLaMo 3 Translate 0.8B (`plamo-3-translate-0.8b-Q4_K_M.gguf`), provided under the [PLaMo Community License](https://plamo.preferredai.jp/info/plamo-community-license-en).
 
