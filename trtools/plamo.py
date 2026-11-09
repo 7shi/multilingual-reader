@@ -32,12 +32,13 @@ def add_parser(subparsers):
 
 
 def run(args):
-    def make_client(from_code, lang, glossary, max_length):
+    def make_client(from_code, lang, glossary, max_length, stream):
         return Client.plamo3translate(
             MODEL_CODES.get(lang, lang),
             model=args.model,
             source_lang=from_code,
             glossary=glossary or None,
+            file=stream,
             show_params=False,
             keep_history=False,
             # temperature 0 makes a retry repeat the same output; a stop is reported instead

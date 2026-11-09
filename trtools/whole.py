@@ -17,6 +17,7 @@ from llm7shi.usage import append_usage, print_today_totals
 
 from .language import LANG_NAMES
 from .llm import init_usage_path
+from .statusline import StatusLine
 
 
 def add_parser(subparsers):
@@ -64,8 +65,10 @@ def load_glossary(tsv_path, from_lang, to_lang):
 def translate_each(args, make_client):
     """Translate args.input_file into each of args.langs, one request per language.
 
-    make_client(from_code, lang, glossary, max_length) returns a Client for one
-    language; each call sends the whole text as its prompt. A language whose output
+    make_client(from_code, lang, glossary, max_length, stream) returns a Client for
+    one language, streaming to `stream`; each call sends the whole text as its prompt.
+    The display follows trtools translate's: a status line per language, its bar
+    counting the translated lines as they stream in. A language whose output
     file exists is skipped. A line count different from the source's, a stop by
     repetition or by length, and a code fence around the text are warned about, and
     the translation is saved as it came: these count as part of the performance. Only
@@ -82,48 +85,92 @@ def translate_each(args, make_client):
     os.makedirs(args.tr_dir, exist_ok=True)
     usage_path = init_usage_path(args.model, args.save_usage)
 
+    # The batch's start, for the elapsed time on every language's status line
+    batch_start = getattr(args, "start", None) or time.time()
+    from_lang = LANG_NAMES.get(from_code, from_code)
+
     for index, lang in enumerate(args.langs, 1):
+        to_lang = LANG_NAMES.get(lang, lang)
         out = Path(args.tr_dir) / f"{topic}-{lang}.txt"
+        ui = StatusLine(label=lang, start=batch_start, index=index, count=len(args.langs))
         if out.exists():
-            print(f"Skipping {out} (already exists)")
+            ui.write(f"Already translated: {out}\n")
             continue
-        glossary = []
-        if tsv_path:
-            glossary = load_glossary(tsv_path, LANG_NAMES.get(from_code, from_code),
-                                     LANG_NAMES.get(lang, lang))
-        print(f"\nTranslating {out} ({index}/{len(args.langs)}, {len(glossary)} terms) ...")
-        # a runaway guard: a translation is rarely more than a few times its source
-        client = make_client(from_code, lang, glossary, len(text) * 5 + 100)
-        started = time.monotonic()
-        try:
-            resp = client(text)
-        finally:
-            # Recorded even on failure, since the tokens were spent either way
-            usage = sum(client.usages) if client.usages else None
-            if usage is not None and usage_path is not None:
-                append_usage(usage, args.model, usage_path)
-        result = resp.text.strip()
-        if not source_has_blank:
-            result = drop_blank_lines(result)
+        glossary = load_glossary(tsv_path, from_lang, to_lang) if tsv_path else []
+        ui.write(f"\nTranslating: {from_lang} -> {to_lang} ({out}, {len(glossary)} glossary terms)\n")
+        start_time = time.time()
+        with ui.progress(source_lines) as prog:
+            stream = LineCountingStream(ui.stream, lambda n: prog.update(min(n, source_lines)))
+            # a runaway guard: a translation is rarely more than a few times its source
+            client = make_client(from_code, lang, glossary, len(text) * 5 + 100, stream)
+            try:
+                resp = client(text)
+            finally:
+                ui.stream.end()
+                # Recorded even on failure, since the tokens were spent either way
+                usage = sum(client.usages) if client.usages else None
+                if usage is not None and usage_path is not None:
+                    append_usage(usage, args.model, usage_path)
+            result = resp.text.strip()
+            if not source_has_blank:
+                result = drop_blank_lines(result)
+            lines = len(result.splitlines())
+            prog.update(min(lines, source_lines))
         if not result:
             raise SystemExit(f"{out}: empty translation")
         if resp.repetition or resp.max_length is not None:
             reason = "repetition" if resp.repetition else "length limit"
-            print(f"WARNING: {out}: output stopped ({reason})")
+            ui.write(f"WARNING: {out}: output stopped ({reason})\n")
         if result.startswith("```") or result.endswith("```"):
-            print(f"WARNING: {out}: code fence around the translation (kept)")
-        lines = len(result.splitlines())
+            ui.write(f"WARNING: {out}: code fence around the translation (kept)\n")
         if lines != source_lines:
-            print(f"WARNING: {out}: {lines} lines, the source has {source_lines}")
+            ui.write(f"WARNING: {out}: {lines} lines, the source has {source_lines}\n")
         tmp = out.with_name(out.name + ".tmp")
         tmp.write_text(result + "\n", encoding="utf-8")
         tmp.replace(out)
-        print(f"Elapsed time: {time.monotonic() - started:.1f}s")
+
+        elapsed = time.time() - start_time
+        ui.write(f"\nTranslation complete: {from_lang} -> {to_lang} ({out})\n")
+        ui.write(f"Elapsed time: {elapsed:.1f}s ({elapsed/60:.1f}min)\n")
         if usage is not None:
-            print(f"Usage: {usage}")
+            ui.write(f"Usage: {usage}\n")
             if usage_path is not None:
                 print()
                 print_today_totals(usage_path, models=[args.model])
+
+
+class LineCountingStream:
+    """Passes the streamed display through, calling on_line(n) with the number of
+    non-blank answer lines so far, for the progress bar. The thinking section, which
+    llm7shi opens with a 🤔 header and closes with a 💡 one, is not counted."""
+
+    def __init__(self, stream, on_line):
+        self._stream = stream
+        self._on_line = on_line
+        self._thinking = False
+        self._current = ""
+        self._count = 0
+
+    def write(self, text):
+        self._stream.write(text)
+        for part in text.splitlines(keepends=True):
+            if "🤔" in part:
+                self._thinking, self._current = True, ""
+                continue
+            if "💡" in part:
+                self._thinking, self._current = False, ""
+                continue
+            if self._thinking:
+                continue
+            self._current += part
+            if self._current.endswith("\n"):
+                if self._current.strip():
+                    self._count += 1
+                    self._on_line(self._count)
+                self._current = ""
+
+    def __getattr__(self, name):
+        return getattr(self._stream, name)
 
 
 def drop_blank_lines(text):
@@ -145,9 +192,10 @@ def system_message(from_lang, to_lang, glossary):
 
 
 def run(args):
-    def make_client(from_code, lang, glossary, max_length):
+    def make_client(from_code, lang, glossary, max_length, stream):
         client = Client(
             model=args.model,
+            file=stream,
             include_thoughts=not args.no_think,
             show_params=False,
             # the system message is sent with every call, and calls do not add to it
