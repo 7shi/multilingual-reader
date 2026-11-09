@@ -68,6 +68,7 @@ Both models can occasionally drop the speaker tag on short acknowledgment lines 
 | [`summary`](#summary) | Pre-generate a summary of the original text (cache for `translate`) |
 | [`translate`](#translate) | Translate text line by line |
 | [`plamo`](#plamo) | Translate a whole text with PLaMo 3 Translate (one request per language) |
+| [`whole`](#whole) | Translate a whole text with a general model (one request per language) |
 | [`review`](#review) | Polish a translation via third-party review |
 | [`eval`](#eval) | Evaluate translation quality on 5 criteria |
 | [`jev`](#jev) | Evaluate translation quality with TypeSafe's Jev (one run per language) |
@@ -195,6 +196,34 @@ uv run trtools plamo <input_file> --langs <lang...> [options]
 ```bash
 # llama-server -m plamo-3-translate-0.8b-Q4_K_M.gguf -c 16384 --jinja --no-prefill-assistant
 uv run trtools plamo ../../../onde-en.txt --terms-dir ../../terms --langs ja fr zh
+```
+
+---
+
+## whole
+
+Translates a whole text with a general model, one request per language, under the same conditions as `plamo` ([examples/tr/plamo/PLAN.md](../examples/tr/plamo/PLAN.md)). The model gets only what PLaMo 3 Translate's template variables carry: a system message with the source and target languages and the target language's whole glossary column (`term => translation` lines), and the source text alone as the user message. Unlike `translate`, it sends no summary or surrounding lines, and it does not ask for the lines to be kept.
+
+Languages are named as in `translate` (`zh` is `Chinese`). The source language, the glossary file, the output files, the skipping of existing ones, and the warnings are those of `plamo`, whose loop it shares; a code fence around the output is also warned about. A stop by repetition or by the length limit (five times the source's length plus 100 characters) is not retried, and every output is saved as it came.
+
+```
+uv run trtools whole <input_file> --langs <lang...> -m <model> [options]
+```
+
+### Options
+
+| Option | Default | Description |
+|---|---|---|
+| `--langs` | (required) | Target language codes |
+| `-m`, `--model` | (required) | Model with vendor prefix |
+| `--terms-dir` | none | Directory of term TSVs (no glossary if omitted) |
+| `--tr-dir` | `tr` | Translation output directory |
+| `--no-think` | off | Disable thinking |
+
+### Example
+
+```bash
+uv run trtools whole ../../../onde-en.txt --terms-dir ../../terms --langs ja fr zh -m gpt-6-luna
 ```
 
 ---
