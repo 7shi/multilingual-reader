@@ -13,19 +13,28 @@ The same three steps apply.
 2. User translates
 3. Process the results
 
-The general models of [plamo/PLAN.md](plamo/PLAN.md)'s section 3 need the whole-text path designed there (`trtools whole`), which is not implemented yet; until it is, only PLaMo 3 Translate itself can be added.
+PLaMo 3 Translate translates with `trtools plamo`, and a general model, compared with it on the same request ([plamo/PLAN.md](plamo/PLAN.md)'s section 3), with `trtools whole`. A general model takes the name of its onde/ directory, so that its line-by-line counterpart is [onde/{model}/](onde/).
 
 ## 1. Preparing Under `plamo/`
 
 `plamo/` has no template directory; an existing model directory such as [plamo/plamo-3-translate-2b/](plamo/plamo-3-translate-2b/) serves as one.
 
-1. Create a directory named after the model, with a `Makefile` that sets only `TRANSLATOR` and includes `../common.mk` (the languages and the translation command come from [plamo/common.mk](plamo/common.mk)):
-   ```make
-   TRANSLATOR = llama.cpp:plamo-3-translate-2b-Q4_K_M
+1. Create a directory named after the model, with a `Makefile` that includes `../common.mk` (the languages and the translation command come from [plamo/common.mk](plamo/common.mk)):
+   - a general model sets `TRANSLATOR` and `OPTIONS` as in its onde/ `Makefile`, and translates with `trtools whole` by default, as [plamo/gpt-6-luna/](plamo/gpt-6-luna/) does:
+     ```make
+     TRANSLATOR = gpt-6-luna
+     OPTIONS    =
 
-   include ../common.mk
-   ```
-2. Copy `README.md` from an existing directory and rewrite its title, model card link, model name, model file name and running conditions. Leave out the parts about the earlier model's results (line breaks, the language check), and empty the quality table, which `make` fills.
+     include ../common.mk
+     ```
+   - PLaMo 3 Translate sets `TRANSLATOR` and switches the command to `trtools plamo` after the include:
+     ```make
+     TRANSLATOR = llama.cpp:plamo-3-translate-2b-Q4_K_M
+
+     include ../common.mk
+     TRANSLATE_CMD = $(PLAMO_TRANSLATE)
+     ```
+2. Copy `README.md` from an existing directory of the same kind ([plamo/gpt-6-luna/](plamo/gpt-6-luna/) for a general model) and rewrite its title, model card link, model name, model file name and running conditions. Leave out the parts about the earlier model's results (line breaks, the language check), and empty the quality table, which `make` fills.
 3. Add the directory name to `MODELS` in [plamo/Makefile](plamo/Makefile), and to the list in [plamo/README.md](plamo/README.md). `MODELS` is also what `generate_compare_rows.py` reads for plamo/'s tables and chart.
 
 Check the Makefile with `make -n` in the new directory. Don't run `make` itself at this point.
@@ -34,9 +43,10 @@ Check the Makefile with `make -n` in the new directory. Don't run `make` itself 
 
 The user starts the model's server and runs `make` in `plamo/{model}/`, which translates every language and then evaluates.
 
+- A general model: as in onde/, with the same server or API. On Ollama, set the context to 32,768 tokens (`OLLAMA_CONTEXT_LENGTH=32768` for the server), since the whole text and its translation go in one request.
 - PLaMo 3 Translate: `llama-server -c 32768 --jinja --no-prefill-assistant`, reached with `OPENAI_BASE_URL` (e.g. `OPENAI_BASE_URL=http://host:8000/v1 make`). 32,768 tokens is the model card's training length for input and output combined; whether a larger model fits that much context on the machine is the user's to check.
 - A language whose file exists in `tr/` is skipped, so an interrupted run can be resumed by running `make` again.
-- `trtools plamo` warns when a translation's line count differs from the source's, or when the output stopped on repetition or length. The translation is saved either way; it is not retranslated.
+- `trtools plamo` and `trtools whole` warn when a translation's line count differs from the source's, or when the output stopped on repetition or length. The translation is saved either way; it is not retranslated.
 
 ## 3. Processing the Results
 
@@ -71,7 +81,7 @@ Add, as facts and without scores, the line-alignment breaks found in 3.1 and the
 ### 3.5 Updating `plamo/README.md`
 
 - Run `make sync` in `examples/tr/`: it rewrites plamo/'s two tables in [plamo/README.md](plamo/README.md) (the stats per model and the scores per language), along with the main comparison, which the plamo/ models are not part of.
-- Write the model's Notes in the stats table by hand, comparing it only with the other plamo/ models, on PLaMo's languages (e.g. Wilcoxon signed-rank against the neighbouring sizes).
+- Write the model's Notes in the stats table by hand, comparing it only with the other plamo/ models, on PLaMo's languages (e.g. Wilcoxon signed-rank against the neighbouring sizes, or a general model against the largest PLaMo). For a general model, also compare it with its onde/ counterpart on the corpus languages they share, which is the method's own effect.
 - Update the text around the tables, such as the comparison between sizes and the line-alignment breaks, if the model changes them.
 - Run `make compare` in `examples/tr/` to regenerate plamo/'s chart (`PLAMO.svg` and `compare/PLAMO.png`).
 - Don't add the model to [README.md](README.md)'s model table, its comparison or its discussion.

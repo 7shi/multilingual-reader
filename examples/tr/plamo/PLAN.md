@@ -46,11 +46,13 @@ The aim is to change only the method from each model's onde/ run, and to give th
 
 ## 4. Schedule
 
-1. **gpt-6-luna** ([gpt-6-luna/](gpt-6-luna/)): once its translation and evaluation are done ([ADD_PLAMO.md](../ADD_PLAMO.md)'s section 3):
+1. **gpt-6-luna** ([gpt-6-luna/](gpt-6-luna/)), done: once its translation and evaluation are done ([ADD_PLAMO.md](../ADD_PLAMO.md)'s section 3):
    - check the line counts, settle the language check's reviews, and check the scores and trends, adding the facts to its README;
    - compare it with the PLaMo sizes on PLaMo's 52 languages, and with [onde/gpt-6-luna/](../onde/gpt-6-luna/) on the 45 corpus languages among them, the comparison of the method alone; on the seven languages outside the corpus it was given a glossary it wrote;
    - run `make sync` and `make compare` in `examples/tr/`, and write its Notes and the text in [README.md](README.md).
-2. **Procedure and plan**: drop from [ADD_PLAMO.md](../ADD_PLAMO.md) the note that only PLaMo can be added, and add the steps for a general model (the onde/ counterpart's `TRANSLATOR` and `OPTIONS` in its `Makefile`; blank lines dropped and usage recorded by `trtools whole`); record here what gpt-6-luna showed.
+
+   It kept the source's 99 lines in all 52 languages without being asked to, and is above the 31B in 51 of them (mean 87.48 against 78.92), so losing one's place is not a cost of the whole-text request itself. On the 45 corpus languages it is above its own line-by-line translation (mean 88.0 against 86.0, above in 33, p = 0.002), the line-by-line run having lost points in a few languages to typos, a missing speaker label and fragments ([README.md](README.md)).
+2. **Procedure and plan**, done: drop from [ADD_PLAMO.md](../ADD_PLAMO.md) the note that only PLaMo can be added, and add the steps for a general model (the onde/ counterpart's `TRANSLATOR` and `OPTIONS` in its `Makefile`; blank lines dropped and usage recorded by `trtools whole`); record here what gpt-6-luna showed.
 3. **Gemma 4**: the dense E2B, E4B, 12B and 31B, and the MoE 26B-A4B for reference, each as `plamo/<model>/` with the onde/ counterpart's `TRANSLATOR` (no `OPTIONS`, so `--no-think`). The user runs Ollama with `OLLAMA_CONTEXT_LENGTH=32768` before `make`, or the whole text and its translation may not fit. Then:
    - compare each size with PLaMo's sizes, to see whether dropped lines and repetition in one request come from PLaMo or from small models in general, and, with the MoE, whether that depends on the total or the active size;
    - compare each with its onde/ counterpart, for the method;
