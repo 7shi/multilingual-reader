@@ -21,7 +21,7 @@ As for PLaMo, the output is kept as it came, even where the lines no longer matc
 
 The model translated every language into the target language and kept the source's 99 lines in all but one:
 
-- **Khmer**: breaks off in the middle of line 17, Camille's line on the Born rule, with no ending (17 lines). gemini-4-argon breaks off a line earlier, on line 16; the cause was not recorded.
+- **Khmer**: breaks off in the middle of line 17, Camille's line on the Born rule, with no ending (17 lines). A rerun broke off again, at line 18, with no error, and gemini-4-argon breaks off at nearly the same point (lines 16 and 15 in its two runs), so the model seems unable to carry Khmer that far. The first run is kept.
 
 The language check left Traditional Chinese for review, as it always does, since the detector does not tell the two scripts apart. It was settled as in the target language (`langcheck-resolved.jsonl`): it uses no simplified characters.
 

@@ -21,7 +21,7 @@ As for PLaMo, the output is kept as it came, even where the lines no longer matc
 
 The model translated every language into the target language and kept the source's 99 lines in all but two:
 
-- **Khmer**: breaks off in the middle of line 16, on the first letter of Luc's `Ah yes.`, with no ending (16 lines). gemini-3.8-flash breaks off a line later, on line 17; the cause was not recorded.
+- **Khmer**: breaks off in the middle of line 16, on the first letter of Luc's `Ah yes.`, with no ending (16 lines). A rerun broke off again, at line 15, with no error, and gemini-3.8-flash breaks off at nearly the same point (lines 17 and 18 in its two runs), so the model seems unable to carry Khmer that far. The first run is kept.
 - **Traditional Chinese**: keeps the 99 lines but gives Camille's `Hmm.` on line 89 to Luc, so Luc speaks three lines in a row.
 
 The language check left Traditional Chinese for review, as it always does, since the detector does not tell the two scripts apart. It was settled as in the target language (`langcheck-resolved.jsonl`): it uses no simplified characters.
