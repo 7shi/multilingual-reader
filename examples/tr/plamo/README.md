@@ -10,6 +10,8 @@ PLaMo's languages differ from the corpus's, and the one-request method differs f
 - [plamo-3-translate-31b](plamo-3-translate-31b/) (PLaMo 3 Translate 31B Q4_K_M, llama.cpp)
 - [gpt-6-luna](gpt-6-luna/) (a general model, `trtools whole`; its line-by-line counterpart is [onde/gpt-6-luna](../onde/gpt-6-luna/))
 - [gpt-6-astra](gpt-6-astra/) (a general model, `trtools whole`; its line-by-line counterpart is [onde/gpt-6-astra](../onde/gpt-6-astra/))
+- [gemini-4-argon](gemini-4-argon/) (a general model, `trtools whole`; no line-by-line counterpart in onde/)
+- [gemini-3.8-flash](gemini-3.8-flash/) (a general model, `trtools whole`; no line-by-line counterpart in onde/)
 - [gemma4-e2b](gemma4-e2b/) (Gemma 4 E2B, Ollama, `trtools whole`; its line-by-line counterpart is [onde/gemma4-e2b](../onde/gemma4-e2b/))
 - [gemma4-e4b](gemma4-e4b/) (Gemma 4 E4B, Ollama, `trtools whole`; its line-by-line counterpart is [onde/gemma4-e4b](../onde/gemma4-e4b/))
 - [gemma4-12b](gemma4-12b/) (Gemma 4 12B, Ollama, `trtools whole`; its line-by-line counterpart is [onde/gemma4-12b](../onde/gemma4-12b/))
@@ -28,6 +30,8 @@ Mean and standard deviation are computed from each model's `SCORES-jev.txt` by `
 | --- | ---: | ---: | ---: | --- |
 | gpt-6-luna | 87.48 | 88.30 | 4.16 | A general model given the same request (`trtools whole`), for reference. Above the 31B in 51 of 52 languages, all but Korean, and keeps all 99 lines in every language; only Telugu, Cebuano, Tagalog, and Gujarati fall below 80 |
 | gpt-6-astra | 87.16 | 87.85 | 4.22 | A second general model from the API, beside gpt-6-luna. Not distinguishable from it (above in 16 of 52, p = 0.15) and above the 31B in 50; keeps all 99 lines in every language. Only Cebuano and Telugu fall below 80 |
+| gemini-3.8-flash | 85.15 | 85.50 | 4.97 | A general model from Google's API, beside gemini-4-argon. Not distinguishable from it (above in 27 of 52, p = 0.89), below gpt-6-luna in 41 (p < 0.001), and above the 31B in 42. Khmer breaks off at line 17; the other 51 languages keep all 99 lines |
+| gemini-4-argon | 85.25 | 85.40 | 4.60 | A general model from Google's API. Below gpt-6-luna in 43 of 52 languages (p < 0.001) and above the 31B in 44. Khmer breaks off at line 16, and Traditional Chinese gives one of Camille's replies to Luc; the other 50 languages keep their lines |
 | gemma4-31b | 76.90 | 78.75 | 12.35 | Not distinguishable from PLaMo's 31B (above in 23 of 52, p = 0.36), but differs by language: 16 points higher in Burmese and 12 to 15 in Telugu and Gujarati, 26 to 29 lower in Khmer, Georgian, and Estonian. Seven languages reach high quality, and all keep their 99 lines |
 | plamo-3-translate-31b | 78.92 | 78.50 | 8.08 | High quality on French, Spanish, both Chinese scripts, and Japanese, and no language below 60; Telugu, Burmese, and Basque are its floor. Keeps its place in all but two languages, each two lines short |
 | plamo-3-translate-8b | 75.94 | 77.00 | 9.92 | French and Spanish reach high quality, but Japanese falls to 60.0 when the request loops back over a stretch of the dialogue, and Burmese, Sinhala, and Malayalam each skip 20 to 33 lines |
@@ -43,6 +47,8 @@ Each size is above the next smaller one (Wilcoxon signed-rank, paired by languag
 gpt-6-luna, a general model given what PLaMo's template carries and nothing more, is above the 31B in 51 of 52 languages (p < 0.001), by 8.6 points on average, and keeps the source's 99 lines in every language without being asked to. Losing one's place is therefore not a cost of the whole-text request itself. On the 45 corpus languages it is also above its own line-by-line translation in [onde/gpt-6-luna](../onde/gpt-6-luna/) (mean 88.0 against 86.0; above in 33, one tie, p = 0.002). The largest gains are in Latvian, Hungarian, Basque, and Thai, where the line-by-line run lost points to typos, a missing speaker label, and grammatical fragments; the largest loss is Persian (7.0 points lower).
 
 gpt-6-astra, given the same request, is not distinguishable from gpt-6-luna (above in 16 of 52, two ties, p = 0.15; mean 87.16 against 87.48) and is above the 31B in 50 (p < 0.001), keeping the source's 99 lines in every language as well. On the 45 corpus languages it is not distinguishable from its own line-by-line translation in [onde/gpt-6-astra](../onde/gpt-6-astra/) either (mean 87.6 against 87.3; above in 26, two ties, p = 0.056): for both API models the whole-text request costs nothing, and gives gpt-6-luna a little.
+
+gemini-4-argon and gemini-3.8-flash, given the same request, are not distinguishable from each other (mean 85.25 against 85.15; argon above in 25 of 52, p = 0.89), and both are below gpt-6-luna, by about two points (above it in 7 and 9 of 52, p < 0.001) and above the 31B (in 44 and 42, p < 0.001). Both break off Khmer in the middle of the dialogue at nearly the same point, argon in line 16 and flash in line 17, with no ending; the cause was not recorded. Apart from that, they keep the source's 99 lines in every language, but for one reply in argon's Traditional Chinese given to the wrong speaker. Neither has a line-by-line run in onde/, so the method's own effect is not measured for them.
 
 gemma4-e2b, the smallest Gemma 4, given the same request, is above the 0.8B in 38 of 52 languages (p = 0.002, 7.0 points on average), not distinguishable from the 2B (above in 22, p = 0.10), and below the 8B (above in 18, p = 0.002). It keeps its place better than PLaMo's small sizes: only Uzbek, which folds one line into another and drops a short reply, and Thai, which leaves out the closing line, fall short, by two lines and one. Against its own line-by-line translation in [onde/gemma4-e2b](../onde/gemma4-e2b/), it is above in 39 of the 45 corpus languages (p < 0.001, mean 67.9 against 59.4).
 
@@ -111,9 +117,10 @@ Against each size's line-by-line translation in onde/ on the 45 corpus languages
 
 ## Reliability of the Evaluation and the Choice of API Model
 
-Every comparison here rests on Jev's scores, so what it can tell apart bounds what these results show. Two findings suggest that it tells apart differences of a few points, in the middle of the scale and near its top:
+Every comparison here rests on Jev's scores, so what it can tell apart bounds what these results show. Three findings suggest that it tells apart differences of a few points, in the middle of the scale and near its top:
 
 - **Middle of the scale**: PLaMo's four sizes, one model at different sizes, come out in order of size, each above the next smaller one (p < 0.001, 0.022, and 0.024). In the 60–80 range, the scores follow a difference known in advance.
 - **Near the top**: gpt-6-luna's whole-text translation is above its line-by-line one by two points (88.0 against 86.0, p = 0.002), and the languages where the line-by-line run lost points show concrete defects in the text: typos, a missing speaker label, and grammatical fragments. Around 85–90, a gap of a few points still matches flaws that can be read in the translation.
+- **Among the API models**: gemini-4-argon and gemini-3.8-flash, about two points below gpt-6-luna, are told apart from it (p < 0.001 for both), on the same languages and the same request.
 
 So the lack of a difference between gpt-6-astra and gpt-6-luna (p = 0.15 on PLaMo's 52 languages) is better read as the two translating about equally well than as the evaluator running out of resolution. gpt-6-astra, the top model, costs about ten times as much as gpt-6-luna; for translation, at least as far as these evaluations can see, it gains nothing, and gpt-6-luna is enough as the API reference.
