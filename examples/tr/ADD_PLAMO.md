@@ -13,7 +13,7 @@ The same three steps apply.
 2. User translates
 3. Process the results
 
-PLaMo 3 Translate translates with `trtools plamo`, and a general model, compared with it on the same request ([plamo/PLAN.md](plamo/PLAN.md)'s section 3), with `trtools whole`. A general model takes the name of its onde/ directory, so that its line-by-line counterpart is [onde/{model}/](onde/), unless it runs a different build of the model, which then takes a name of its own (`gemma4-26b`, the QAT build, beside onde/'s `gemma4`, Q4_K_M).
+PLaMo 3 Translate translates with `trtools plamo`, and a general model, compared with it on the same request, with `trtools whole`. A general model takes the name of its onde/ directory, so that its line-by-line counterpart is [onde/{model}/](onde/), unless it runs a different build of the model, which then takes a name of its own (`gemma4-26b`, the QAT build, beside onde/'s `gemma4`, Q4_K_M).
 
 ## 1. Preparing Under `plamo/`
 
